@@ -11210,7 +11210,8 @@ html:not(.dark) .creation-duration-menu strong { color: #20242a; }
    选中态用 control-selected 角色，而不是主操作色：它表达「当前视图」而非主要命令。 */
 .previs-mode-switch {
     display: flex;
-    min-width: 0;
+    /* Keep the mode buttons at their own width: the header scrolls sideways instead of letting them overlap the next control. */
+    flex: none;
     align-items: center;
     gap: var(--space-half);
 }

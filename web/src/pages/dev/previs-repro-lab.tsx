@@ -188,7 +188,7 @@ function DiagnosticEventList({ events }: { events: PrevisEventRow[] }) {
 function ReproMatrix() {
     return (
         <section className="mb-4">
-            <h2 className="mb-2 text-[var(--fs-label)] font-semibold opacity-75">{tr("P0 手工复现矩阵（")}{PREVIS_REPRO_MATRIX.length}）</h2>
+            <h2 className="mb-2 text-[var(--fs-label)] font-semibold opacity-75">{tr("P0 手工复现矩阵（")}{PREVIS_REPRO_MATRIX.length})</h2>
             <Table
                 size="small"
                 rowKey="id"

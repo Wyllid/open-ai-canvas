@@ -394,17 +394,17 @@ async function openUnifiedWorkbench(cdp, label) {
 
 /** 使用当前产品流程从预设库加入一个真实道具，不依赖旧版快捷菜单。 */
 async function addProp(cdp, name, label) {
-    if (!(await cdp.click('[aria-label="添加到场景"]'))) throw new Error(`${label}: 添加到场景 button not clickable`);
+    if (!(await cdp.click('[aria-label="Add to scene"]'))) throw new Error(`${label}: Add to scene button not clickable`);
     if (!(await cdp.poll(`!!document.querySelector('.previs-add-dialog [role="tab"]')`, `${label} add dialog`, 10000))) throw new Error(`${label}: add dialog did not open`);
-    if (!(await cdp.clickText("道具", '[role="tab"]'))) throw new Error(`${label}: 道具 tab not clickable`);
+    if (!(await cdp.clickText("Props", '[role="tab"]'))) throw new Error(`${label}: Props tab not clickable`);
 
     const card = `[...document.querySelectorAll('.previs-add-dialog__card')].find((button) => (button.textContent || '').includes(${JSON.stringify(name)}) && button.getClientRects().length > 0)`;
     if (!(await cdp.poll(`!!(${card})`, `${label} prop card`, 10000))) throw new Error(`${label}: ${name} prop card not visible`);
     if (!(await cdp.clickPoint(card, `${label}: prop ${name}`))) throw new Error(`${label}: ${name} prop card not clickable`);
 
-    const confirmLabel = `加入「${name}」`;
+    const confirmLabel = `Add “${name}”`;
     if (!(await cdp.clickText(confirmLabel, ".previs-add-dialog__footer button"))) throw new Error(`${label}: ${confirmLabel} button not clickable`);
-    if (!(await cdp.poll(`!!document.querySelector(${JSON.stringify(`[aria-label="删除 ${name}"]`)})`, `${label} prop row`, 20000))) throw new Error(`${label}: ${name} row did not appear`);
+    if (!(await cdp.poll(`!!document.querySelector(${JSON.stringify(`[aria-label="Delete ${name}"]`)})`, `${label} prop row`, 20000))) throw new Error(`${label}: ${name} row did not appear`);
 }
 
 async function smokeWorkbench(cdp, baseUrl) {
@@ -414,15 +414,15 @@ async function smokeWorkbench(cdp, baseUrl) {
     const initial = await cdp.evaluate(`(() => {
         const headings = [...document.querySelectorAll('h2')].map((h) => h.textContent || "");
         return {
-            snapshot: headings.some((t) => t.includes('环境快照')),
-            matrix15: headings.some((t) => t.includes('P0 手工复现矩阵（15）')),
+            snapshot: headings.some((t) => t.includes('Environment snapshot')),
+            matrix15: headings.some((t) => t.includes('P0 manual reproduction matrix (15)')),
             injectLocal: !!document.querySelector('[data-testid="inject-local-model"]'),
             injectMissing: !!document.querySelector('[data-testid="inject-missing-model"]'),
             shellCount: document.querySelectorAll('.previs-viewport-shell').length,
         };
     })()`);
-    assert(initial.snapshot, "A1 环境快照 rendered");
-    assert(initial.matrix15, "A2 P0 手工复现矩阵（15）rendered");
+    assert(initial.snapshot, "A1 environment snapshot rendered");
+    assert(initial.matrix15, "A2 P0 manual reproduction matrix (15) rendered");
     assert(initial.injectLocal && initial.injectMissing, "A3 both inject buttons present");
     assert(initial.shellCount === 0, "A4 workbench closed initially", `shellCount=${initial.shellCount}`);
 
@@ -431,14 +431,14 @@ async function smokeWorkbench(cdp, baseUrl) {
     const hasCanvas = await cdp.poll(`(() => { const c = document.querySelector('.previs-viewport-shell canvas'); return !!c && c.clientWidth > 0; })()`, "canvas", 40000);
     assert(hasCanvas, "A5 real canvas present in viewport shell");
     const defaultLayoutMode = await cdp.evaluate(`document.querySelector('button[data-mode="layout"]')?.getAttribute('aria-pressed')`);
-    assert(defaultLayoutMode === "true", "A5a 统一预演台默认进入布景上下文", `got ${JSON.stringify(defaultLayoutMode)}`);
+    assert(defaultLayoutMode === "true", "A5a previs stage opens in layout context by default", `got ${JSON.stringify(defaultLayoutMode)}`);
     await openUnifiedWorkbench(cdp, "A");
 
     // 使用真实产品 dock（FloatingDock）验证提示的 hover 与键盘触发，不能只验证按钮存在。
-    const dockSelector = '[role="toolbar"][aria-label="预演台视口工具"]';
-    assert(await cdp.poll(`!!document.querySelector(${JSON.stringify(dockSelector)})`, "previs dock", 10000), "A5b 预演台视口工具条已渲染");
-    assert(await cdp.evaluate(`!!document.querySelector('${dockSelector} [role="radiogroup"][aria-label="变换模式"] [role="radio"][aria-label="移动 (W)"]')`), "A5b 变换模式切换包含移动 (W)");
-    const tooltipButton = `${dockSelector} button[aria-label="适配全部对象 (A)"]`;
+    const dockSelector = '[role="toolbar"][aria-label="Previs stage viewport tools"]';
+    assert(await cdp.poll(`!!document.querySelector(${JSON.stringify(dockSelector)})`, "previs dock", 10000), "A5b previs viewport toolbar rendered");
+    assert(await cdp.evaluate(`!!document.querySelector('${dockSelector} [role="radiogroup"][aria-label="Transform mode"] [role="radio"][aria-label="Move (W)"]')`), "A5b transform mode switch includes Move (W)");
+    const tooltipButton = `${dockSelector} button[aria-label="Fit all objects (A)"]`;
     const tooltipMode = await cdp.evaluate(`(() => {
         const button = document.querySelector(${JSON.stringify(tooltipButton)});
         return button ? {
@@ -449,18 +449,18 @@ async function smokeWorkbench(cdp, baseUrl) {
             label: button.getAttribute('aria-label'),
         } : null;
     })()`);
-    if (!tooltipMode) throw new Error("A: 适配全部对象 dock button disappeared");
+    if (!tooltipMode) throw new Error("A: Fit all objects dock button disappeared");
     if (tooltipMode.nativeTitle) {
         // 窄屏/触控模式下产品有意使用原生 title，避免自定义浮层被可滚动 dock 裁切。
-        assert(tooltipMode.title.includes("适配全部对象") && tooltipMode.label.includes("适配全部对象"), "A5b native Tooltip fallback names the actual control", JSON.stringify(tooltipMode));
+        assert(tooltipMode.title.includes("Fit all objects") && tooltipMode.label.includes("Fit all objects"), "A5b native Tooltip fallback names the actual control", JSON.stringify(tooltipMode));
         await cdp.evaluate(`document.querySelector(${JSON.stringify(tooltipButton)}).focus()`);
         assert(await cdp.poll(`document.activeElement === document.querySelector(${JSON.stringify(tooltipButton)})`, "native tooltip control focus", 5000), "A5c native Tooltip fallback keeps the control keyboard focusable");
         await cdp.evaluate("document.activeElement?.blur()");
     } else {
         const hoverPoint = await cdp.evaluate(`(() => { const b = document.querySelector(${JSON.stringify(tooltipButton)}); if (!b) return null; const r = b.getBoundingClientRect(); return {x:r.x+r.width/2, y:r.y+r.height/2}; })()`);
-        if (!hoverPoint) throw new Error("A: 适配全部对象 dock button not visible");
+        if (!hoverPoint) throw new Error("A: Fit all objects dock button not visible");
         await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", ...hoverPoint });
-        const describedTooltip = `(() => { const b = document.querySelector(${JSON.stringify(tooltipButton)}); return !!b && [...(b.parentElement?.querySelectorAll('.aceternity-dock-tooltip') || [])].some((t) => (t.textContent || '').includes('适配全部对象')); })()`;
+        const describedTooltip = `(() => { const b = document.querySelector(${JSON.stringify(tooltipButton)}); return !!b && [...(b.parentElement?.querySelectorAll('.aceternity-dock-tooltip') || [])].some((t) => (t.textContent || '').includes('Fit all objects')); })()`;
         assert(await cdp.poll(describedTooltip, "tooltip on hover", 5000), "A5b Tooltip hover describes the actual control");
         await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 1, y: 1 });
         assert(await cdp.poll(`!(${describedTooltip})`, "tooltip dismiss", 5000), "A5b Tooltip dismisses when pointer leaves");
@@ -478,30 +478,32 @@ async function smokeWorkbench(cdp, baseUrl) {
         workbench: !!document.querySelector('[data-canvas-previs-workbench]'),
         layout: !!document.querySelector('.pv-layout'),
         sequencer: document.querySelectorAll('.previs-sequencer').length,
-        autoKey: document.querySelector('button[title="自动关键帧"]')?.getAttribute('aria-pressed') ?? null,
+        autoKey: document.querySelector('button[title="Auto keyframe"]')?.getAttribute('aria-pressed') ?? null,
     }))()`;
     const layoutGating = await cdp.evaluate(readGating);
-    assert(layoutGating.workbench && layoutGating.layout, "A6 统一预演台布局上下文已就绪", JSON.stringify(layoutGating));
-    assert(layoutGating.sequencer === 0, "A6a 摆场模式不显示时间轴", JSON.stringify(layoutGating));
-    if (!(await cdp.click('button[data-mode="animate"]'))) throw new Error("A: 动画模式按钮不可点击");
-    assert(await cdp.poll(`document.querySelectorAll('.previs-sequencer').length === 1`, "animate sequencer", 10000), "A7 动画模式显示时间轴");
+    assert(layoutGating.workbench && layoutGating.layout, "A6 previs stage layout context ready", JSON.stringify(layoutGating));
+    assert(layoutGating.sequencer === 0, "A6a layout mode hides the timeline", JSON.stringify(layoutGating));
+    // Opening the stage may toast at the top of the viewport (e.g. objects put back on the ground); the header controls sit under it.
+    await cdp.poll(`!document.querySelector('.ant-message-notice')`, "toasts cleared", 10000);
+    if (!(await cdp.click('button[data-mode="animate"]'))) throw new Error("A: animate mode button not clickable");
+    assert(await cdp.poll(`document.querySelectorAll('.previs-sequencer').length === 1`, "animate sequencer", 10000), "A7 animate mode shows the timeline");
     const animateGating = await cdp.evaluate(readGating);
-    assert(animateGating.autoKey === "false", "A7a AutoKey 默认关闭", JSON.stringify(animateGating));
-    if (!(await cdp.click('button[data-mode="layout"]'))) throw new Error("A: 摆场模式按钮不可点击");
-    assert(await cdp.poll(`document.querySelectorAll('.previs-sequencer').length === 0`, "layout hides sequencer", 10000), "A7b 回到摆场模式隐藏时间轴");
+    assert(animateGating.autoKey === "false", "A7a AutoKey off by default", JSON.stringify(animateGating));
+    if (!(await cdp.click('button[data-mode="layout"]'))) throw new Error("A: layout mode button not clickable");
+    assert(await cdp.poll(`document.querySelectorAll('.previs-sequencer').length === 0`, "layout hides sequencer", 10000), "A7b back in layout mode hides the timeline");
 
-    await addProp(cdp, "单人沙发", "A");
-    const propAppeared = await cdp.poll(`!!document.querySelector('[aria-label="删除 单人沙发"]')`, "prop row", 20000);
+    await addProp(cdp, "Armchair", "A");
+    const propAppeared = await cdp.poll(`!!document.querySelector('[aria-label="Delete Armchair"]')`, "prop row", 20000);
     assert(propAppeared, "A10 added prop appears in object list");
 
-    const undone = await cdp.click('[aria-label="撤销"]');
-    if (!undone) throw new Error("A: 撤销 button not clickable");
-    const propGone = await cdp.poll(`!document.querySelector('[aria-label="删除 单人沙发"]')`, "prop removed by undo", 20000);
+    const undone = await cdp.click('[aria-label="Undo"]');
+    if (!undone) throw new Error("A: Undo button not clickable");
+    const propGone = await cdp.poll(`!document.querySelector('[aria-label="Delete Armchair"]')`, "prop removed by undo", 20000);
     assert(propGone, "A11 Undo removes the added prop");
 
     // 场景结束前必须真实关闭：下一个场景要重新导航，不能靠忽略 beforeunload 绕过未保存态。
-    const closed = await cdp.click('[aria-label="关闭预演台"]');
-    if (!closed) throw new Error("A: 关闭预演台 button not clickable");
+    const closed = await cdp.click('[aria-label="Close previs"]');
+    if (!closed) throw new Error("A: Close previs button not clickable");
     const shellGone = await cdp.poll(`document.querySelectorAll('.previs-viewport-shell').length === 0`, "workbench closed", 30000);
     assert(shellGone, "A12 workbench closed cleanly before leaving scenario A");
 
@@ -526,7 +528,7 @@ async function localModel(cdp, baseUrl) {
     if (!opened) throw new Error("B: toggle-workbench not clickable");
     await openUnifiedWorkbench(cdp, "B");
 
-    const rowReady = await cdp.poll(`!!document.querySelector('[aria-label="删除 本地模型 repro triangle"]')`, "model row", 30000);
+    const rowReady = await cdp.poll(`!!document.querySelector('[aria-label="Delete Local model repro triangle"]')`, "model row", 30000);
     assert(rowReady, "B2 local model row present in object list");
     const hasCanvas = await cdp.poll(`(() => { const c = document.querySelector('.previs-viewport-shell canvas'); return !!c && c.clientWidth > 0; })()`, "canvas", 40000);
     assert(hasCanvas, "B3 real canvas present");
@@ -537,10 +539,10 @@ async function localModel(cdp, baseUrl) {
         const t = document.body.innerText || "";
         const c = document.querySelector('.previs-viewport-shell canvas');
         return {
-            modelFailed: t.includes('个 3D 模型加载失败'),
-            retryLoad: [...document.querySelectorAll('.previs-viewport-notice button')].some((b) => (b.textContent || "").includes('重试加载') && b.getClientRects().length > 0),
-            renderFailed: t.includes('3D 视口渲染失败'),
-            contextLost: t.includes('3D 显示上下文已丢失'),
+            modelFailed: t.includes('3D models failed to load'),
+            retryLoad: [...document.querySelectorAll('.previs-viewport-notice button')].some((b) => (b.textContent || "").includes('Retry loading') && b.getClientRects().length > 0),
+            renderFailed: t.includes('3D viewport rendering failed'),
+            contextLost: t.includes('3D display context was lost'),
             canvasUsable: !!c && c.clientWidth > 0 && c.clientHeight > 0,
         };
     })()`);
@@ -548,7 +550,7 @@ async function localModel(cdp, baseUrl) {
     assert(!stable.retryLoad, "B5 no retry-load affordance");
     assert(!stable.renderFailed, "B6 no viewport render failure");
     assert(!stable.contextLost, "B7 no WebGL context-lost notice");
-    assert(stable.canvasUsable, "B8 5s 稳定窗口内无失败且 canvas 持续可用");
+    assert(stable.canvasUsable, "B8 no failures and canvas usable during a 5s stable window");
 
     assert(cdp.problems.length === 0, "B9 no browser problems in scenario B", JSON.stringify(cdp.problems));
 }
@@ -570,21 +572,21 @@ async function missingRetry(cdp, baseUrl) {
     if (!opened) throw new Error("C: toggle-workbench not clickable");
     await openUnifiedWorkbench(cdp, "C");
 
-    const failed = await cdp.poll(`/个 3D 模型加载失败/.test(document.body.innerText || "")`, "load-failed notice", 40000);
+    const failed = await cdp.poll(`/3D models failed to load/.test(document.body.innerText || "")`, "load-failed notice", 40000);
     assert(failed, "C2 model-load-failed notice appears");
-    const retryVisible = await cdp.poll(`[...document.querySelectorAll('button')].some((b) => (b.textContent || "").includes('重试加载'))`, "retry affordance", 20000);
-    assert(retryVisible, "C3 actionable 重试加载 affordance present");
+    const retryVisible = await cdp.poll(`[...document.querySelectorAll('button')].some((b) => (b.textContent || "").includes('Retry loading'))`, "retry affordance", 20000);
+    assert(retryVisible, "C3 actionable Retry loading affordance present");
 
-    const clickedRetry = await cdp.clickText("重试加载");
-    if (!clickedRetry) throw new Error("C: 重试加载 button not clickable");
+    const clickedRetry = await cdp.clickText("Retry loading");
+    if (!clickedRetry) throw new Error("C: Retry loading button not clickable");
 
-    const noticeCleared = await cdp.poll(`!/个 3D 模型加载失败/.test(document.body.innerText || "")`, "notice cleared after retry", 20000);
+    const noticeCleared = await cdp.poll(`!/3D models failed to load/.test(document.body.innerText || "")`, "notice cleared after retry", 20000);
     assert(noticeCleared, "C4 notice clears when retry restarts the load");
-    const failedAgain = await cdp.poll(`/个 3D 模型加载失败/.test(document.body.innerText || "")`, "second-round failure", 40000);
+    const failedAgain = await cdp.poll(`/3D models failed to load/.test(document.body.innerText || "")`, "second-round failure", 40000);
     assert(failedAgain, "C5 second-round failure after retry");
 
-    const closed = await cdp.click('[aria-label="关闭预演台"]');
-    if (!closed) throw new Error("C: 关闭预演台 button not clickable");
+    const closed = await cdp.click('[aria-label="Close previs"]');
+    if (!closed) throw new Error("C: Close previs button not clickable");
     const shellGone = await cdp.poll(`document.querySelectorAll('.previs-viewport-shell').length === 0`, "workbench closed", 20000);
     assert(shellGone, "C6 workbench closed cleanly");
 
@@ -624,12 +626,12 @@ async function deleteWhileLoading(cdp, baseUrl) {
         if (!opened) throw new Error("D: toggle-workbench not clickable");
         await openUnifiedWorkbench(cdp, "D");
 
-        const rowReady = await cdp.poll(`!!document.querySelector('[aria-label="删除 本地模型 repro triangle"]')`, "model row", 30000);
+        const rowReady = await cdp.poll(`!!document.querySelector('[aria-label="Delete Local model repro triangle"]')`, "model row", 30000);
         assert(rowReady, "D1 model row present while load still in flight");
 
-        const deleted = await cdp.click('[aria-label="删除 本地模型 repro triangle"]');
+        const deleted = await cdp.click('[aria-label="Delete Local model repro triangle"]');
         if (!deleted) throw new Error("D: delete button not clickable");
-        const gone = await cdp.poll(`!(document.body.innerText || "").includes('本地模型 repro triangle')`, "name removed", 20000);
+        const gone = await cdp.poll(`!(document.body.innerText || "").includes('Local model repro triangle')`, "name removed", 20000);
         assert(gone, "D2 object removed while its load was in flight");
     } finally {
         await cdp.send("Network.emulateNetworkConditions", {
@@ -646,11 +648,11 @@ async function deleteWhileLoading(cdp, baseUrl) {
         const t = document.body.innerText || "";
         const c = document.querySelector('.previs-viewport-shell canvas');
         return {
-            nameBack: t.includes('本地模型 repro triangle'),
-            modelFailed: t.includes('个 3D 模型加载失败'),
-            retryLoad: [...document.querySelectorAll('.previs-viewport-notice button')].some((b) => (b.textContent || "").includes('重试加载') && b.getClientRects().length > 0),
-            renderFailed: t.includes('3D 视口渲染失败'),
-            contextLost: t.includes('3D 显示上下文已丢失'),
+            nameBack: t.includes('Local model repro triangle'),
+            modelFailed: t.includes('3D models failed to load'),
+            retryLoad: [...document.querySelectorAll('.previs-viewport-notice button')].some((b) => (b.textContent || "").includes('Retry loading') && b.getClientRects().length > 0),
+            renderFailed: t.includes('3D viewport rendering failed'),
+            contextLost: t.includes('3D display context was lost'),
             canvasUsable: !!c && c.clientWidth > 0 && c.clientHeight > 0,
         };
     })()`);
@@ -659,8 +661,8 @@ async function deleteWhileLoading(cdp, baseUrl) {
     assert(!settled.renderFailed && !settled.contextLost, "D5 viewport stayed healthy");
     assert(settled.canvasUsable, "D6 canvas still usable after in-flight delete");
 
-    const closed = await cdp.click('[aria-label="关闭预演台"]');
-    if (!closed) throw new Error("D: 关闭预演台 button not clickable");
+    const closed = await cdp.click('[aria-label="Close previs"]');
+    if (!closed) throw new Error("D: Close previs button not clickable");
     const shellGone = await cdp.poll(`document.querySelectorAll('.previs-viewport-shell').length === 0`, "workbench closed", 20000);
     assert(shellGone, "D7 workbench closed cleanly");
 
@@ -708,17 +710,17 @@ async function webglLossRestore(cdp, baseUrl) {
     assert(prepared, "E3 WEBGL_lose_context extension acquired from live context");
 
     await cdp.evaluate(`(() => { window.__previsE2ELoseContext.loseContext(); return true; })()`);
-    const lostNotice = await cdp.poll(`(document.body.innerText || "").includes('3D 显示上下文已丢失')`, "context-lost notice", 30000);
+    const lostNotice = await cdp.poll(`(document.body.innerText || "").includes('3D display context was lost')`, "context-lost notice", 30000);
     assert(lostNotice, "E4 context-lost notice surfaced in DOM");
 
     await cdp.evaluate(`(() => { window.__previsE2ELoseContext.restoreContext(); return true; })()`);
-    const restored = await cdp.poll(`!(document.body.innerText || "").includes('3D 显示上下文已丢失')`, "context-lost notice cleared", 30000);
+    const restored = await cdp.poll(`!(document.body.innerText || "").includes('3D display context was lost')`, "context-lost notice cleared", 30000);
     assert(restored, "E5 context-lost notice cleared after restore");
     const canvasUsable = await cdp.poll(`(() => { const c = document.querySelector('.previs-viewport-shell canvas'); return !!c && c.clientWidth > 0 && c.clientHeight > 0; })()`, "canvas usable after restore", 20000);
     assert(canvasUsable, "E6 canvas remains usable after restore");
 
-    const closed = await cdp.click('[aria-label="关闭预演台"]');
-    if (!closed) throw new Error("E: 关闭预演台 button not clickable");
+    const closed = await cdp.click('[aria-label="Close previs"]');
+    if (!closed) throw new Error("E: Close previs button not clickable");
     const shellGone = await cdp.poll(`document.querySelectorAll('.previs-viewport-shell').length === 0`, "workbench closed", 20000);
     assert(shellGone, "E7 workbench closed cleanly");
 
@@ -751,17 +753,17 @@ async function saveFailureCloseGuard(cdp, baseUrl) {
     const hasCanvas = await cdp.poll(`(() => { const c = document.querySelector('.previs-viewport-shell canvas'); return !!c && c.clientWidth > 0; })()`, "canvas", 40000);
     assert(hasCanvas, "F2 workbench open with real canvas");
 
-    await addProp(cdp, "单人沙发", "F");
+    await addProp(cdp, "Armchair", "F");
 
-    const errorState = await cdp.poll(`(document.body.innerText || "").includes('保存失败')`, "save failure header", 40000);
-    assert(errorState, "F3 header surfaces 保存失败 after forced flush failure");
-    const retryVisible = await cdp.poll(`[...document.querySelectorAll('button')].some((b) => (b.textContent || "").includes('重试保存'))`, "retry save affordance", 20000);
-    assert(retryVisible, "F4 actionable 重试保存 affordance present");
+    const errorState = await cdp.poll(`(document.body.innerText || "").includes('Save failed')`, "save failure header", 40000);
+    assert(errorState, "F3 header surfaces Save failed after forced flush failure");
+    const retryVisible = await cdp.poll(`[...document.querySelectorAll('button')].some((b) => (b.textContent || "").includes('Retry save'))`, "retry save affordance", 20000);
+    assert(retryVisible, "F4 actionable Retry save affordance present");
 
-    const closeClicked = await cdp.click('[aria-label="关闭预演台"]');
-    if (!closeClicked) throw new Error("F: 关闭预演台 button not clickable");
+    const closeClicked = await cdp.click('[aria-label="Close previs"]');
+    if (!closeClicked) throw new Error("F: Close previs button not clickable");
 
-    const modalShown = await cdp.poll(`!!document.querySelector('.ant-modal-confirm') && (document.body.innerText || "").includes('留在预演台')`, "close confirm modal", 40000);
+    const modalShown = await cdp.poll(`!!document.querySelector('.ant-modal-confirm') && (document.body.innerText || "").includes('Stay in the previs stage')`, "close confirm modal", 40000);
     assert(modalShown, "F5 close is guarded by a confirm dialog, not silent exit");
 
     // 坐标点击成功派发不代表按钮收到了点击：CI 的动画/渲染调度可能让坐标落到遮罩。
@@ -770,7 +772,7 @@ async function saveFailureCloseGuard(cdp, baseUrl) {
         const probe = { count: 0 };
         probe.listener = (event) => {
             const button = event.target instanceof Element ? event.target.closest('button') : null;
-            if (event.isTrusted && button?.closest('.ant-modal-confirm') && (button.textContent || '').trim() === '留在预演台') probe.count++;
+            if (event.isTrusted && button?.closest('.ant-modal-confirm') && (button.textContent || '').trim() === 'Stay in the previs stage') probe.count++;
         };
         window.__previsStayClickProbe = probe;
         document.addEventListener('click', probe.listener, true);
@@ -778,11 +780,11 @@ async function saveFailureCloseGuard(cdp, baseUrl) {
     let stayClicked = false;
     try {
         for (let attempt = 0; attempt < 3 && !stayClicked; attempt++) {
-            const dispatched = await cdp.clickText("留在预演台", ".ant-modal-confirm button");
-            if (!dispatched) throw new Error("F: 留在预演台 button not clickable");
+            const dispatched = await cdp.clickText("Stay in the previs stage", ".ant-modal-confirm button");
+            if (!dispatched) throw new Error("F: Stay in the previs stage button not clickable");
             stayClicked = await cdp.poll(`window.__previsStayClickProbe.count > 0`, "stay button received trusted click", 1500);
         }
-        if (!stayClicked) throw new Error("F: 留在预演台 button did not receive a trusted click");
+        if (!stayClicked) throw new Error("F: Stay in the previs stage button did not receive a trusted click");
     } finally {
         await cdp.evaluate(`(() => {
             document.removeEventListener('click', window.__previsStayClickProbe.listener, true);
@@ -798,11 +800,11 @@ async function saveFailureCloseGuard(cdp, baseUrl) {
         "modal dismissed",
         20000,
     );
-    assert(modalGone, "F6 confirm dialog dismissed after choosing 留在预演台");
+    assert(modalGone, "F6 confirm dialog dismissed after choosing Stay in the previs stage");
 
     await sleep(1000);
     const stillOpen = await cdp.evaluate(`document.querySelectorAll('.previs-viewport-shell').length`);
-    assert(stillOpen === 1, "F7 unified workbench remains open after choosing 留在预演台", `shellCount=${stillOpen}`);
+    assert(stillOpen === 1, "F7 unified workbench remains open after choosing Stay in the previs stage", `shellCount=${stillOpen}`);
 
     assert(cdp.problems.length === 0, "F8 no browser problems in scenario F", JSON.stringify(cdp.problems));
 }
@@ -890,9 +892,9 @@ async function shotOutputs(cdp, baseUrl) {
     })()`);
     assert(recording.bytes > 0 && recording.width === 180 && recording.height === 320, "G6 recording is decodable at shot dimensions", JSON.stringify(recording));
     assert(recording.cancelled, "G7 recording cancellation rejects and releases session");
-    const monitorButton = 'button[title^="投放到第二屏幕"]';
+    const monitorButton = 'button[title^="Send to a second screen"]';
     await cdp.evaluate(`(() => { const open=window.open.bind(window);window.open=(...args)=>{const popup=open(...args);window.__previsPopup=popup;return popup;}; })()`);
-    if (!(await cdp.click(monitorButton))) throw new Error("G: 第二屏监看 button not clickable");
+    if (!(await cdp.click(monitorButton))) throw new Error("G: second screen monitor button not clickable");
     assert(await cdp.poll(`window.__previsPopup?.document.querySelector('canvas')?.width === 1080`, "monitor frame", 20000), "G8 monitor displays full portrait shot");
     const reused = await cdp.evaluate(`(async () => {
         const {openPrevisMonitorWindow}=await import('/src/components/canvas/previs/previs-monitor-window.ts');

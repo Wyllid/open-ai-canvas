@@ -283,7 +283,7 @@ export function CanvasPrevisWorkbench({
         next.shots = next.shots.map((shot) => ({ ...shot, fps: shot.fps || 24 }));
         // 旧数据可能有掉到地下的对象（例如误拖 gizmo 的 Y 轴）：打开时一次性拉回地面并提示。
         const grounded = groundPrevisScene(next);
-        if (grounded.fixed.length) message.info(tr("已将 {0}{1} 放回地面", grounded.fixed.slice(0, 3).join("、"), grounded.fixed.length > 3 ? tr(" 等") : ""));
+        if (grounded.fixed.length) message.info(tr("已将 {0}{1} 放回地面", grounded.fixed.slice(0, 3).join(tr("，")), grounded.fixed.length > 3 ? tr(" 等") : ""));
         stagedRef.current?.end("cancel");
         initializedSceneIdRef.current = scene.id;
         writeDraft(grounded.scene);
