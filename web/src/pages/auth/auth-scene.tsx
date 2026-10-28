@@ -1,8 +1,7 @@
 import { motion, useReducedMotion } from "motion/react";
-import { Tabs } from "antd";
 import { ArrowLeft, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { SiteComplianceFooter } from "@/components/layout/site-compliance-footer";
@@ -10,27 +9,10 @@ import { aceternityMotion } from "@/lib/aceternity-motion";
 import { brandStudioLabel, useAppearanceStore } from "@/stores/use-appearance-store";
 import { useThemeStore } from "@/stores/use-theme-store";
 
-const AUTH_TABS = [
-    { key: "login", label: "登录" },
-    { key: "register", label: "注册" },
-];
-
 const authCopy = {
-    login: {
-        eyebrow: "WELCOME BACK",
-        title: "进入创作现场",
-        description: "继续编辑你的画布、素材与生成任务。",
-    },
-    register: {
-        eyebrow: "CREATE ACCOUNT",
-        title: "建立你的创作空间",
-        description: "一个账号管理画布、素材、技能和模型偏好。",
-    },
-    recovery: {
-        eyebrow: "ACCOUNT RECOVERY",
-        title: "重新设置密码",
-        description: "验证账号邮箱后，设置一个新的登录密码。",
-    },
+    eyebrow: "WELCOME BACK",
+    title: "Enter the studio",
+    description: "Pick up your canvases, assets and generation tasks.",
 } as const;
 
 export function LinuxDOIcon() {
@@ -50,15 +32,12 @@ export function AuthScene() {
     const appearance = useAppearanceStore((state) => state.appearance);
     const theme = useThemeStore((state) => state.theme);
     const location = useLocation();
-    const navigate = useNavigate();
     const reducedMotion = useReducedMotion();
     const videoRef = useRef<HTMLVideoElement>(null);
     const [manualVideoActive, setManualVideoActive] = useState(false);
     const [videoPlaying, setVideoPlaying] = useState(false);
     const [failedPosterURL, setFailedPosterURL] = useState("");
-    const recovery = location.pathname === "/forgot-password";
-    const activeTab = location.pathname === "/register" ? "register" : "login";
-    const copy = recovery ? authCopy.recovery : activeTab === "register" ? authCopy.register : authCopy.login;
+    const copy = authCopy;
     const automaticVideoActive = appearance.authVideoAutoplay && !reducedMotion;
     const videoActive = Boolean(appearance.authVideoUrl && (automaticVideoActive || manualVideoActive));
 
@@ -77,7 +56,7 @@ export function AuthScene() {
     return (
         <main className="auth-scene h-dvh min-h-0 overflow-y-auto lg:overflow-hidden">
             <div className="grid min-h-full lg:h-full lg:grid-cols-[minmax(0,1.32fr)_minmax(520px,1fr)]">
-                <section className="auth-scene-hero relative min-h-[250px] overflow-hidden sm:min-h-[320px] lg:min-h-0" aria-label={`${appearance.brandName}品牌影片`}>
+                <section className="auth-scene-hero relative min-h-[250px] overflow-hidden sm:min-h-[320px] lg:min-h-0" aria-label={`${appearance.brandName} brand film`}>
                     {videoActive && appearance.authVideoUrl ? <video ref={videoRef} className="absolute inset-0 size-full object-cover" src={appearance.authVideoUrl} poster={appearance.authVideoPosterUrl || undefined} autoPlay muted loop playsInline preload="metadata" onPlay={() => setVideoPlaying(true)} onPause={() => setVideoPlaying(false)} /> : appearance.authVideoPosterUrl && failedPosterURL !== appearance.authVideoPosterUrl ? <img className="absolute inset-0 size-full object-cover" src={appearance.authVideoPosterUrl} alt="" decoding="async" onError={() => setFailedPosterURL(appearance.authVideoPosterUrl)} /> : null}
                     <div aria-hidden className="auth-scene-hero-overlay absolute inset-0" />
                     <div aria-hidden className="auth-scene-video-blend absolute inset-y-0 right-0 hidden w-[clamp(120px,14vw,240px)] lg:block" />
@@ -88,7 +67,7 @@ export function AuthScene() {
                         </Link>
                         <button type="button" className="auth-scene-hero-control inline-flex items-center gap-2 rounded-full px-3 py-2 text-[var(--fs-label)] backdrop-blur-xl transition disabled:cursor-default" onClick={playVideo} disabled={videoPlaying || !appearance.authVideoUrl} aria-pressed={videoPlaying}>
                             <Play className="size-3 fill-current" />
-                            {videoPlaying ? "创作正在发生" : "播放品牌影片"}
+                            {videoPlaying ? "Playing" : "Play brand film"}
                         </button>
                     </div>
                     <motion.div
@@ -106,7 +85,7 @@ export function AuthScene() {
                 <section className="auth-scene-form-pane relative flex min-h-[660px] flex-col items-center overflow-y-auto px-4 pt-20 sm:px-8 lg:min-h-0 lg:px-10 lg:pt-20">
                     <Link to="/" className="auth-scene-return absolute right-5 top-5 z-20 inline-flex h-9 items-center gap-2 rounded-full px-4 text-xs backdrop-blur-xl transition lg:right-8 lg:top-8">
                         <ArrowLeft className="size-3.5" />
-                        返回首页
+                        Back to home
                     </Link>
 
                     <div className="flex w-full flex-1 items-center justify-center">
@@ -118,18 +97,13 @@ export function AuthScene() {
                             className="my-auto w-full max-w-[460px]"
                         >
                             <div className="auth-scene-card h-auto overflow-hidden rounded-lg backdrop-blur-2xl">
-                                <section aria-label={copy.title} className={`flex flex-col ${recovery ? "min-h-[600px]" : activeTab === "login" ? "" : "min-h-[620px] sm:min-h-[640px]"}`}>
+                                <section aria-label={copy.title} className="flex flex-col">
                                     <header className="px-6 pb-5 pt-6 sm:px-8 sm:pt-7">
                                         <p className="auth-scene-eyebrow text-xs font-semibold tracking-[0.18em]">{copy.eyebrow}</p>
                                         <h2 className="mt-2 text-3xl font-semibold">{copy.title}</h2>
                                         <p className="auth-scene-muted mt-2 text-sm leading-6">{copy.description}</p>
                                     </header>
-                                    {!recovery ? (
-                                        <div className="px-6 sm:px-8">
-                                            <Tabs className="auth-card-tabs" activeKey={activeTab} items={AUTH_TABS} onChange={(key) => navigate({ pathname: key === "register" ? "/register" : "/login", search: location.search })} />
-                                        </div>
-                                    ) : null}
-                                    <div key={location.pathname} className={`${!recovery && activeTab === "login" ? "" : "flex-1"} px-6 py-6 sm:px-8 sm:py-7`}>
+                                    <div key={location.pathname} className="px-6 py-6 sm:px-8 sm:py-7">
                                         <Outlet />
                                     </div>
                                 </section>

@@ -42,8 +42,6 @@ const AdminFeedbacksPage = lazy(() => import("@/pages/admin/feedbacks/feedbacks-
 const UsersPage = lazy(() => import("@/pages/admin/users/users-page"));
 const AssetsPage = lazy(loadAssetsPage);
 const LoginPage = lazy(() => import("@/pages/auth/login"));
-const RegisterPage = lazy(() => import("@/pages/auth/register"));
-const ForgotPasswordPage = lazy(() => import("@/pages/auth/forgot-password"));
 const CanvasPage = lazy(loadCanvasPage);
 const CanvasProjectPage = lazy(loadCanvasProjectPage);
 const SharedCanvasPage = lazy(() => import("@/pages/canvas/shared"));
@@ -112,8 +110,8 @@ export const router = createBrowserRouter([
         errorElement: <RouteErrorPage />,
         children: [
             { path: "/login", element: fullScreenDeferred(<LoginPage />) },
-            { path: "/register", element: fullScreenDeferred(<RegisterPage />) },
-            { path: "/forgot-password", element: fullScreenDeferred(<ForgotPasswordPage />) },
+            { path: "/register", element: <Navigate to="/login" replace /> },
+            { path: "/forgot-password", element: <Navigate to="/login" replace /> },
         ],
     },
     { path: "/share/canvas/:token", element: fullScreenDeferred(<SharedCanvasPage />), errorElement: <RouteErrorPage /> },

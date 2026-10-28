@@ -130,7 +130,11 @@ func (s *Service) authDomain() *auth.Service {
 }
 
 func (s *Service) PublicAuthSettings() (*PublicAuthSettings, error) {
-	return s.authDomain().PublicAuthSettings()
+	return auth.LocalAdminPublicSettings(), nil
+}
+
+func (s *Service) EnsureLocalAdmin(creds auth.LocalAdminCredentials) (*model.User, error) {
+	return s.authDomain().EnsureLocalAdmin(creds)
 }
 
 func (s *Service) Register(req RegisterRequest) (*AuthSessionResult, error) {
