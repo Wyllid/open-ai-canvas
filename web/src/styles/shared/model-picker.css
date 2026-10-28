@@ -941,4 +941,3 @@ html:not(.dark) .creation-home .creation-chat-composer .creation-model-picker.ca
 .creation-model-picker-surface .canvas-model-picker-option > span:first-child > span:first-child svg { color: currentColor !important; opacity: 1 !important; }
 .creation-model-picker-surface .canvas-model-picker-option:nth-child(3n) > span:first-child > span:first-child { color: #d57b16; }
 .creation-model-picker-surface .canvas-model-picker-option:nth-child(4n) > span:first-child > span:first-child { color: #25845d; }
-.creation-model-picker-surface .canvas-model-picker-option 
