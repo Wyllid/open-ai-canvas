@@ -41,7 +41,11 @@ type renderTrack struct {
 	Kind    string `json:"kind"`
 	Visible *bool  `json:"visible"`
 	Muted   bool   `json:"muted"`
+	// Role 只对音频轨有效：music 轨在人声下自动压低（ducking），其余按对白/音效直接混入。
+	Role string `json:"role,omitempty"`
 }
+
+const renderTrackRoleMusic = "music"
 
 type renderProject struct {
 	Version    int           `json:"version"`
@@ -51,6 +55,8 @@ type renderProject struct {
 	// Width/Height 为输出画布尺寸；缺省按 1920x1080 横屏输出。
 	Width  int `json:"width,omitempty"`
 	Height int `json:"height,omitempty"`
+	// LoudnessLUFS 非 0 时对总线做 loudnorm 响度归一（例如 -14 适合线上视频）；0 保持原响度。
+	LoudnessLUFS float64 `json:"loudnessLufs,omitempty"`
 }
 
 type renderSource struct {
@@ -70,6 +76,8 @@ type renderSegment struct {
 	GapMs      int64
 	Clip       renderClip
 	Source     *renderSource
+	// Music 标记来自 music 轨的音频片段，混音时会被人声压低。
+	Music bool
 }
 
 type renderPlan struct {
@@ -80,6 +88,7 @@ type renderPlan struct {
 	HasMedia      bool
 	Width         int
 	Height        int
+	LoudnessLUFS  float64
 }
 
 // buildRenderPlan 挑选可见视频/图片轨片段按 startMs 排序，并把片段之间的
@@ -87,9 +96,11 @@ type renderPlan struct {
 func buildRenderPlan(project renderProject) renderPlan {
 	visible := map[string]bool{}
 	muted := map[string]bool{}
+	music := map[string]bool{}
 	for _, track := range project.Tracks {
 		visible[track.ID] = track.Visible == nil || *track.Visible
 		muted[track.ID] = track.Muted
+		music[track.ID] = track.Role == renderTrackRoleMusic
 	}
 	clips := make([]renderClip, 0, len(project.Clips))
 	overlays := make([]renderSegment, 0)
@@ -100,7 +111,7 @@ func buildRenderPlan(project renderProject) renderPlan {
 		if clip.Kind == "audio" {
 			if !muted[clip.TrackID] {
 				if _, ok := mediaResourceID(clip); ok {
-					overlays = append(overlays, renderSegment{Kind: "audio", DurationMs: clip.DurationMs, Clip: clip})
+					overlays = append(overlays, renderSegment{Kind: "audio", DurationMs: clip.DurationMs, Clip: clip, Music: music[clip.TrackID]})
 				}
 			}
 			continue
@@ -123,6 +134,9 @@ func buildRenderPlan(project renderProject) renderPlan {
 	})
 
 	plan := renderPlan{SubtitleSRT: buildRenderSubtitleSRT(project), AudioOverlays: overlays, Width: renderWidth, Height: renderHeight}
+	if project.LoudnessLUFS >= renderMinLoudnessLUFS && project.LoudnessLUFS <= renderMaxLoudnessLUFS {
+		plan.LoudnessLUFS = project.LoudnessLUFS
+	}
 	if project.Width >= 16 && project.Height >= 16 && project.Width <= 4096 && project.Height <= 4096 {
 		// libx264 yuv420p 要求偶数尺寸。
 		plan.Width, plan.Height = project.Width&^1, project.Height&^1
@@ -269,32 +283,8 @@ func buildRenderFFmpegArgs(plan renderPlan, target string) []string {
 	for _, label := range labels {
 		fmt.Fprintf(&concatInputs, "[%s]", label)
 	}
-	audioOut := "aout"
-	if len(overlays) > 0 {
-		audioOut = "abase"
-	}
-	filters = append(filters, fmt.Sprintf("%sconcat=n=%d:v=1:a=1[vout][%s]", concatInputs.String(), len(plan.Segments), audioOut))
-	if len(overlays) > 0 {
-		var mixInputs strings.Builder
-		mixInputs.WriteString("[abase]")
-		for i, overlay := range overlays {
-			volume := 1.0
-			if overlay.Clip.Volume > 0 {
-				volume = overlay.Clip.Volume
-			}
-			delay := overlay.Clip.StartMs
-			if delay < 0 {
-				delay = 0
-			}
-			label := fmt.Sprintf("o%d", i)
-			filters = append(filters, fmt.Sprintf("[%d:a]aformat=sample_fmts=fltp:sample_rates=%d:channel_layouts=stereo,volume=%.3f,adelay=%d|%d[%s]",
-				overlayBase+i, renderSampleRate, volume, delay, delay, label))
-			fmt.Fprintf(&mixInputs, "[%s]", label)
-		}
-		// amix 会按输入数衰减音量，混音后乘回，保证配音响度不随片段数量变化。
-		filters = append(filters, fmt.Sprintf("%samix=inputs=%d:duration=first:dropout_transition=0,volume=%d[aout]", mixInputs.String(), len(overlays)+1, len(overlays)+1))
-	}
-
+	filters = append(filters, fmt.Sprintf("%sconcat=n=%d:v=1:a=1[vout][abase]", concatInputs.String(), len(plan.Segments)))
+	filters = append(filters, renderAudioMixFilters(plan, overlays, overlayBase)...)
 	args = append(args,
 		"-filter_complex", strings.Join(filters, ";"),
 		"-map", "[vout]", "-map", "[aout]",
@@ -304,6 +294,69 @@ func buildRenderFFmpegArgs(plan renderPlan, target string) []string {
 		target,
 	)
 	return args
+}
+
+// 响度归一只接受常见的成片目标区间，越界值视为未设置。
+const (
+	renderMinLoudnessLUFS = -24
+	renderMaxLoudnessLUFS = -10
+)
+
+// renderAudioMixFilters 把拼接后的主音轨 [abase] 与音频轨片段混成 [aout]：
+// 对白/音效直接叠加；音乐先合成一路，再以人声为侧链压缩（ducking），最后可选做响度归一。
+// amix 一律 normalize=0，避免某一路结束后其余输入被重新放大。
+func renderAudioMixFilters(plan renderPlan, overlays []renderSegment, overlayBase int) []string {
+	var filters []string
+	voice, music := []string{}, []string{}
+	for i, overlay := range overlays {
+		volume := 1.0
+		if overlay.Clip.Volume > 0 {
+			volume = overlay.Clip.Volume
+		}
+		delay := max(overlay.Clip.StartMs, 0)
+		label := fmt.Sprintf("o%d", i)
+		filters = append(filters, fmt.Sprintf("[%d:a]aformat=sample_fmts=fltp:sample_rates=%d:channel_layouts=stereo,volume=%.3f,adelay=%d|%d[%s]",
+			overlayBase+i, renderSampleRate, volume, delay, delay, label))
+		if overlay.Music {
+			music = append(music, label)
+		} else {
+			voice = append(voice, label)
+		}
+	}
+	current := "abase"
+	if len(voice) > 0 {
+		filters = append(filters, fmt.Sprintf("[abase]%samix=inputs=%d:duration=first:dropout_transition=0:normalize=0[avoice]", renderLabels(voice), len(voice)+1))
+		current = "avoice"
+	}
+	if len(music) > 0 {
+		bed := music[0]
+		if len(music) > 1 {
+			filters = append(filters, fmt.Sprintf("%samix=inputs=%d:duration=longest:dropout_transition=0:normalize=0[amusic]", renderLabels(music), len(music)))
+			bed = "amusic"
+		}
+		// 人声出现时音乐压低约 12 dB，人声停顿后约半秒内回升。
+		filters = append(filters,
+			fmt.Sprintf("[%s]asplit=2[amain][akey]", current),
+			fmt.Sprintf("[%s][akey]sidechaincompress=threshold=0.02:ratio=8:attack=20:release=500[aducked]", bed),
+			"[amain][aducked]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[amixed]",
+		)
+		current = "amixed"
+	}
+	if plan.LoudnessLUFS != 0 {
+		// loudnorm 内部升采样到 192 kHz，输出前重采样回成片采样率。
+		filters = append(filters, fmt.Sprintf("[%s]loudnorm=I=%.1f:TP=-1.5:LRA=11,aresample=%d[aout]", current, plan.LoudnessLUFS, renderSampleRate))
+	} else {
+		filters = append(filters, fmt.Sprintf("[%s]anull[aout]", current))
+	}
+	return filters
+}
+
+func renderLabels(labels []string) string {
+	var b strings.Builder
+	for _, label := range labels {
+		fmt.Fprintf(&b, "[%s]", label)
+	}
+	return b.String()
 }
 
 func planTotalSeconds(plan renderPlan) float64 {

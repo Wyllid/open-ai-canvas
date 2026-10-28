@@ -329,6 +329,8 @@ type DramaEpisodeDetail struct {
 	ScriptJob *DramaJobView `json:"scriptJob,omitempty"`
 	// DialogueCheck 只在本集有镜头、且原文章节不与其他集共用时给出（共用时无法判断哪些台词属于本集）。
 	DialogueCheck *DramaDialogueCheck `json:"dialogueCheck,omitempty"`
+	// MusicCues 是本集配乐，合成成片时放到音乐轨上并在人声下压低。
+	MusicCues []DramaMusicCue `json:"musicCues"`
 }
 
 // DramaSegmentView 是一个剧情段：视频提示词、参考图、生成方式与视频结果。

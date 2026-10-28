@@ -268,6 +268,13 @@ var schemaMigrations = []migration{
 		}
 		return tx.Migrator().AddColumn(&model.DramaSegment{}, "ReferenceCastIDsJSON")
 	}},
+	{version: 75, name: "drama_episode_music", checksum: "sha256:drama-episode-music-v75-20261028", apply: func(tx *gorm.DB) error {
+		// 空串表示这一集没有配乐。
+		if tx.Migrator().HasColumn(&model.DramaEpisode{}, "MusicCuesJSON") {
+			return nil
+		}
+		return tx.Migrator().AddColumn(&model.DramaEpisode{}, "MusicCuesJSON")
+	}},
 }
 
 // migrateDramaSegmentMode 把旧的剧情段目标秒数改写为新的切段模式：大于 0 的是用户指定的固定时长，0 表示按模型上限，即智能。

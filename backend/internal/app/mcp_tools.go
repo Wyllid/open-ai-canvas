@@ -55,6 +55,8 @@ const (
 	mcpDramaShotInsert = "drama_shot_insert"
 	mcpDramaCastUpdate = "drama_cast_update"
 	mcpDramaEpisodeSet = "drama_episode_update"
+	mcpDramaMusicSet   = "drama_music_set"
+	mcpAudioResources  = "audio_resources"
 )
 
 const mcpCanvasIDDescription = "Canvas ID from canvas_list."
@@ -128,6 +130,25 @@ func (s *Service) MCPTools() ([]MCPTool, error) {
 			"episodeId": map[string]any{"type": "string"},
 			"title":     map[string]any{"type": "string"},
 		}, "projectId", "episodeId", "title"),
+		mcpTool(mcpAudioResources, "List the admin's ready audio resources, newest first, to pick music cues from. Returns ids and durations only.", map[string]any{
+			"limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 100},
+		}),
+		mcpTool(mcpDramaMusicSet, "Replace the music cues of an episode. Each cue places an audio resource on the music track at startMs (ms from the episode start); music is ducked under speech and the final mix is normalized to -14 LUFS. An empty list means no music. A rendered episode is marked stale and rendered again.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"episodeId": map[string]any{"type": "string"},
+			"cues": map[string]any{"type": "array", "maxItems": dramaMaxMusicCues, "items": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"label":         map[string]any{"type": "string", "description": "Cue name such as M1."},
+					"resourceId":    map[string]any{"type": "string", "description": "Audio resource id from audio_resources."},
+					"startMs":       map[string]any{"type": "integer", "minimum": 0},
+					"durationMs":    map[string]any{"type": "integer", "minimum": 500},
+					"sourceStartMs": map[string]any{"type": "integer", "minimum": 0, "description": "Where to start inside the audio file."},
+					"volume":        map[string]any{"type": "number", "minimum": 0, "maximum": 2, "description": "0 or omitted uses the default music level (0.35)."},
+				},
+				"required": []string{"resourceId", "startMs", "durationMs"},
+			}},
+		}, "projectId", "episodeId", "cues"),
 	}
 	registry := cloudAgentRegistry()
 	for _, name := range append(append([]string{}, mcpCanvasTools...), mcpSkillTools...) {
@@ -275,6 +296,24 @@ func (s *Service) CallMCPTool(userID, name string, arguments json.RawMessage) (a
 			return nil, BadAuthRequest("title is required")
 		}
 		return s.UpdateDramaEpisode(userID, args.ProjectID, args.EpisodeID, UpdateDramaEpisodeRequest{Title: &title})
+	case mcpAudioResources:
+		var args struct {
+			Limit int `json:"limit"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args); err != nil {
+			return nil, err
+		}
+		return s.DramaAudioResources(userID, args.Limit)
+	case mcpDramaMusicSet:
+		var args struct {
+			ProjectID string          `json:"projectId"`
+			EpisodeID string          `json:"episodeId"`
+			Cues      []DramaMusicCue `json:"cues"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID); err != nil {
+			return nil, err
+		}
+		return s.SetDramaMusic(userID, args.ProjectID, args.EpisodeID, SetDramaMusicRequest{Cues: args.Cues})
 	}
 	if isMCPCanvasTool(name) {
 		canvasID, rest, err := splitMCPCanvasID(arguments)
