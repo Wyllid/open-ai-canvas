@@ -336,6 +336,8 @@ type DramaEpisodeDetail struct {
 	// Captions 是本集当前生效的字幕（自动或改写）与 SRT；Motion 是成片上的人名条与图片叠加。
 	Captions DramaCaptions     `json:"captions"`
 	Motion   []DramaMotionItem `json:"motion"`
+	// Enhance 是最近一次成片画质增强；从未增强时为空。
+	Enhance *DramaEnhanceState `json:"enhance,omitempty"`
 }
 
 // DramaSegmentView 是一个剧情段：视频提示词、参考图、生成方式与视频结果。
@@ -356,7 +358,9 @@ type DramaSegmentView struct {
 	VideoStatus         string `json:"videoStatus"`
 	VideoResourceID     string `json:"videoResourceId,omitempty"`
 	TailFrameResourceID string `json:"tailFrameResourceId,omitempty"`
-	VideoError          string `json:"videoError,omitempty"`
+	// StartFrameResourceID 是用户为本段指定的起幅画面；为空时按衔接规则起幅。
+	StartFrameResourceID string `json:"startFrameResourceId,omitempty"`
+	VideoError           string `json:"videoError,omitempty"`
 	// VideoReprocessable：视频已生成并入库，只是结果回写（如抽尾帧）失败；可重新处理已有视频，不重新生成。
 	VideoReprocessable bool             `json:"videoReprocessable,omitempty"`
 	VideoModel         DramaModelChoice `json:"videoModel"`
@@ -374,14 +378,14 @@ type DramaSegmentView struct {
 
 // DramaSegmentRequest 是一段视频请求的预演，与提交时同一函数计算。
 type DramaSegmentRequest struct {
-	// Operation：image_to_video（上一段最后一帧作首帧）、reference_to_video（参考图）、text_to_video。
+	// Operation：image_to_video（上一段最后一帧或指定的起幅画面作首帧）、reference_to_video（参考图）、text_to_video。
 	Operation       string `json:"operation"`
 	Seconds         int    `json:"seconds"`
 	MaxVideoSeconds int    `json:"maxVideoSeconds"`
 	// FirstFrame 是上一段视频的最后一帧；第一段为空。FirstFramePending 表示上一段还没生成，生成后才能提交本段。
 	FirstFrameResourceID string `json:"firstFrameResourceId,omitempty"`
 	FirstFramePending    bool   `json:"firstFramePending"`
-	// Continuity 是本段与上一段的衔接：continuous 接上一段最后一帧，reanchor 只按参考图重新起幅。
+	// Continuity 是本段与上一段的衔接：continuous 接上一段最后一帧，reanchor 只按参考图重新起幅，start_frame 从指定的起幅画面开始。
 	Continuity string                  `json:"continuity"`
 	References []DramaSegmentReference `json:"references"`
 	// ReferenceCapacity 是本段最多随请求发送的参考图张数（已扣除首帧，并受每段上限约束）；ModelMaxImages 是视频模型声明的图片上限。
@@ -411,6 +415,8 @@ type UpdateDramaSegmentRequest struct {
 	// ReferenceCastIDs 指定本段参考图（顺序即编号，可为空数组表示不发参考图）；AutoReferences=true 恢复按镜头自动取。
 	ReferenceCastIDs *[]string `json:"referenceCastIds"`
 	AutoReferences   bool      `json:"autoReferences"`
+	// StartFrameResourceID 指定本段的起幅画面（就绪的图片资源，如预演渲染）；传空串清除。
+	StartFrameResourceID *string `json:"startFrameResourceId"`
 }
 
 // UpdateDramaShotRequest 修改镜头的剧本内容；镜头只是撰写视频提示词的素材，修改后本段提示词标记过期。

@@ -5,6 +5,7 @@ import { Download, Film } from "lucide-react";
 import type { DramaEpisodeDetail } from "@/services/api/drama";
 
 import { aspectRatioValue, downloadResource, formatDuration, MediaThumb, STAGE_LABEL, useResourceMediaUrl } from "../drama-shared";
+import { FinalUpscale } from "./final-upscale";
 import { PostProduction } from "./post-production";
 import { secondsLabel } from "./segment-parts";
 
@@ -76,6 +77,7 @@ export function FinalView({ projectId, title, detail, aspectRatio, onOpenSegment
                     Download video
                 </Button>
                 <PostProduction projectId={projectId} episodeId={episode.id} fileName={fileName} captions={detail.captions} motion={detail.motion} />
+                <FinalUpscale projectId={projectId} episode={episode} enhance={detail.enhance} fileName={fileName} />
             </aside>
         </div>
     );

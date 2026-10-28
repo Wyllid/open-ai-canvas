@@ -5570,3 +5570,26 @@
     flex: 1;
     min-width: 0;
 }
+
+/* ===== Segment start frame ===== */
+.drama-sd-start {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-top: 8px;
+}
+.drama-sd-start-thumb {
+    flex: none;
+    width: 72px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 6px;
+}
+.drama-sd-start-text {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+.drama-sd-start-text small {
+    color: var(--drama-muted);
+}

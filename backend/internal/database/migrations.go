@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const CurrentSchemaVersion int64 = 78
+const CurrentSchemaVersion int64 = 79
 
 const baselineSchemaChecksum = "sha256:open-ai-canvas-schema-v1-20260830"
 const schemaMigrationAppliedAtIndexChecksum = "sha256:schema-migrations-applied-at-index-v2-20260830"
@@ -300,6 +300,19 @@ var schemaMigrations = []migration{
 			}
 		}
 		return nil
+	}},
+	{version: 79, name: "drama_start_frame_and_enhance", checksum: "sha256:drama-start-frame-and-enhance-v79-20261028", apply: func(tx *gorm.DB) error {
+		// 空串表示按衔接规则起幅（接上一段最后一帧或只用参考图）。
+		if !tx.Migrator().HasColumn(&model.DramaSegment{}, "StartFrameResourceID") {
+			if err := tx.Migrator().AddColumn(&model.DramaSegment{}, "StartFrameResourceID"); err != nil {
+				return err
+			}
+		}
+		// 空串表示这一集没有做过画质增强。
+		if tx.Migrator().HasColumn(&model.DramaEpisode{}, "EnhanceJSON") {
+			return nil
+		}
+		return tx.Migrator().AddColumn(&model.DramaEpisode{}, "EnhanceJSON")
 	}},
 }
 

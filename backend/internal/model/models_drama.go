@@ -129,10 +129,12 @@ type DramaEpisode struct {
 	// CaptionsJSON 是字幕设置（是否烧录、样式）与改写后的字幕；空串表示自动字幕、不烧录。
 	CaptionsJSON string `json:"-" gorm:"type:text"`
 	// MotionJSON 是成片图形元素（DramaMotionItem 列表：人名条、台标等）。
-	MotionJSON string    `json:"-" gorm:"type:text"`
-	Revision   int64     `json:"revision"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
+	MotionJSON string `json:"-" gorm:"type:text"`
+	// EnhanceJSON 是最近一次成片画质增强（DramaEnhanceState）：任务、来源成片与结果。
+	EnhanceJSON string    `json:"-" gorm:"type:text"`
+	Revision    int64     `json:"revision"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 // DramaShot 保存镜头脚本，作为剧情段视频提示词的素材。
@@ -185,13 +187,16 @@ type DramaSegment struct {
 	// ReferenceCastIDsJSON 为空表示按镜头自动取参考图；非空是用户为本段指定的设定 ID 列表（顺序即参考图编号，可为 []）。
 	ReferenceCastIDsJSON string `json:"referenceCastIdsJson" gorm:"type:text"`
 	// VideoStatus 为空表示待生成；TailFrameResourceID 是本段视频最后一帧，作为下一段的参考图，保证段与段衔接。
-	VideoStatus         string    `json:"videoStatus" gorm:"size:16"`
-	VideoResourceID     string    `json:"videoResourceId,omitempty" gorm:"size:36"`
-	TailFrameResourceID string    `json:"tailFrameResourceId,omitempty" gorm:"size:36"`
-	VideoSeconds        int       `json:"videoSeconds"`
-	VideoError          string    `json:"videoError" gorm:"type:text"`
-	CreatedAt           time.Time `json:"createdAt"`
-	UpdatedAt           time.Time `json:"updatedAt"`
+	// StartFrameResourceID 是用户指定的起幅画面（预演渲染、精修关键帧或上传图）；非空时本段从这张图开始，
+	// 不再接上一段最后一帧。
+	StartFrameResourceID string    `json:"startFrameResourceId,omitempty" gorm:"size:36"`
+	VideoStatus          string    `json:"videoStatus" gorm:"size:16"`
+	VideoResourceID      string    `json:"videoResourceId,omitempty" gorm:"size:36"`
+	TailFrameResourceID  string    `json:"tailFrameResourceId,omitempty" gorm:"size:36"`
+	VideoSeconds         int       `json:"videoSeconds"`
+	VideoError           string    `json:"videoError" gorm:"type:text"`
+	CreatedAt            time.Time `json:"createdAt"`
+	UpdatedAt            time.Time `json:"updatedAt"`
 }
 
 // DramaTake 保存每个产物的全部版本：角色/场景参考图（cast）、剧情段视频（video）与成片（final）。
