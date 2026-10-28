@@ -49,6 +49,12 @@ const (
 	mcpDramaList       = "drama_list"
 	mcpDramaGet        = "drama_get"
 	mcpDramaEpisodeGet = "drama_episode_get"
+	mcpDramaJobs       = "drama_jobs"
+	mcpDramaCasts      = "drama_casts"
+	mcpDramaShotUpdate = "drama_shot_update"
+	mcpDramaShotInsert = "drama_shot_insert"
+	mcpDramaCastUpdate = "drama_cast_update"
+	mcpDramaEpisodeSet = "drama_episode_update"
 )
 
 const mcpCanvasIDDescription = "Canvas ID from canvas_list."
@@ -83,6 +89,45 @@ func (s *Service) MCPTools() ([]MCPTool, error) {
 			"projectId": map[string]any{"type": "string"},
 			"episodeId": map[string]any{"type": "string"},
 		}, "projectId", "episodeId"),
+		mcpTool(mcpDramaJobs, "List the latest pipeline jobs of a drama with their status and errors, newest first.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"limit":     map[string]any{"type": "integer", "minimum": 1, "maximum": 100},
+		}, "projectId"),
+		mcpTool(mcpDramaCasts, "List the characters, scenes and props of a drama with their appearance notes and reference image status.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+		}, "projectId"),
+		mcpTool(mcpDramaShotUpdate, "Edit one shot's text: speaker, dialogue, action, framing, camera, prompts, transition or duration. Only the fields you send change. Nothing is regenerated; the person decides when to render again.", map[string]any{
+			"projectId":       map[string]any{"type": "string"},
+			"shotId":          map[string]any{"type": "string"},
+			"speaker":         map[string]any{"type": "string"},
+			"dialogue":        map[string]any{"type": "string"},
+			"action":          map[string]any{"type": "string"},
+			"shotSize":        map[string]any{"type": "string"},
+			"camera":          map[string]any{"type": "string"},
+			"imagePrompt":     map[string]any{"type": "string"},
+			"videoPrompt":     map[string]any{"type": "string"},
+			"transition":      map[string]any{"type": "string", "enum": []string{"cut", "fadeblack", "fadewhite"}, "description": "Transition into this shot. A project-wide transition setting overrides it."},
+			"durationSeconds": map[string]any{"type": "number", "minimum": 0},
+		}, "projectId", "shotId"),
+		mcpTool(mcpDramaShotInsert, "Insert an empty shot before or after a shot, in the same beat. Fill it with drama_shot_update.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"shotId":    map[string]any{"type": "string"},
+			"position":  map[string]any{"type": "string", "enum": []string{"before", "after"}},
+		}, "projectId", "shotId", "position"),
+		mcpTool(mcpDramaCastUpdate, "Edit a character, scene or prop's name, aliases, appearance, description or voice notes. The reference image is not regenerated.", map[string]any{
+			"projectId":         map[string]any{"type": "string"},
+			"castId":            map[string]any{"type": "string"},
+			"name":              map[string]any{"type": "string"},
+			"aliases":           map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+			"appearance":        map[string]any{"type": "string"},
+			"description":       map[string]any{"type": "string"},
+			"voiceInstructions": map[string]any{"type": "string"},
+		}, "projectId", "castId"),
+		mcpTool(mcpDramaEpisodeSet, "Rename an episode.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"episodeId": map[string]any{"type": "string"},
+			"title":     map[string]any{"type": "string"},
+		}, "projectId", "episodeId", "title"),
 	}
 	registry := cloudAgentRegistry()
 	for _, name := range append(append([]string{}, mcpCanvasTools...), mcpSkillTools...) {
@@ -162,6 +207,74 @@ func (s *Service) CallMCPTool(userID, name string, arguments json.RawMessage) (a
 			return nil, BadAuthRequest("projectId and episodeId are required")
 		}
 		return s.DramaEpisodeDetail(userID, strings.TrimSpace(args.ProjectID), strings.TrimSpace(args.EpisodeID))
+	case mcpDramaJobs:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			Limit     int    `json:"limit"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID); err != nil {
+			return nil, err
+		}
+		if args.Limit <= 0 || args.Limit > 100 {
+			args.Limit = 20
+		}
+		return s.DramaJobs(userID, args.ProjectID, args.Limit)
+	case mcpDramaCasts:
+		var args struct {
+			ProjectID string `json:"projectId"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID); err != nil {
+			return nil, err
+		}
+		return s.DramaCasts(userID, args.ProjectID)
+	case mcpDramaShotUpdate:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			ShotID    string `json:"shotId"`
+			UpdateDramaShotRequest
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.ShotID); err != nil {
+			return nil, err
+		}
+		return s.UpdateDramaShot(userID, args.ProjectID, args.ShotID, args.UpdateDramaShotRequest)
+	case mcpDramaShotInsert:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			ShotID    string `json:"shotId"`
+			Position  string `json:"position"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.ShotID); err != nil {
+			return nil, err
+		}
+		return s.InsertDramaShot(userID, args.ProjectID, args.ShotID, InsertDramaShotRequest{Position: args.Position})
+	case mcpDramaCastUpdate:
+		var args struct {
+			ProjectID         string    `json:"projectId"`
+			CastID            string    `json:"castId"`
+			Name              *string   `json:"name"`
+			Aliases           *[]string `json:"aliases"`
+			Appearance        *string   `json:"appearance"`
+			Description       *string   `json:"description"`
+			VoiceInstructions *string   `json:"voiceInstructions"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.CastID); err != nil {
+			return nil, err
+		}
+		return s.UpdateDramaCast(userID, args.ProjectID, args.CastID, UpdateDramaCastRequest{Name: args.Name, Aliases: args.Aliases, Appearance: args.Appearance, Description: args.Description, VoiceInstructions: args.VoiceInstructions})
+	case mcpDramaEpisodeSet:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			EpisodeID string `json:"episodeId"`
+			Title     string `json:"title"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID); err != nil {
+			return nil, err
+		}
+		title := strings.TrimSpace(args.Title)
+		if title == "" {
+			return nil, BadAuthRequest("title is required")
+		}
+		return s.UpdateDramaEpisode(userID, args.ProjectID, args.EpisodeID, UpdateDramaEpisodeRequest{Title: &title})
 	}
 	if isMCPCanvasTool(name) {
 		canvasID, rest, err := splitMCPCanvasID(arguments)
@@ -234,6 +347,21 @@ func (s *Service) mcpAddedSkills(userID string) ([]cloudAgentSkill, error) {
 		skills = append(skills, loaded...)
 	}
 	return skills, nil
+}
+
+// decodeMCPDramaArgs decodes strictly and trims the required ids, so a missing id
+// is reported by name instead of reaching the drama service as an empty lookup.
+func decodeMCPDramaArgs(arguments json.RawMessage, target any, ids ...*string) error {
+	if err := decodeCloudAgentJSONObject(string(arguments), target); err != nil {
+		return cloudAgentJSONArgumentError(err)
+	}
+	for _, id := range ids {
+		*id = strings.TrimSpace(*id)
+		if *id == "" {
+			return BadAuthRequest("projectId and the item id are required")
+		}
+	}
+	return nil
 }
 
 func isMCPCanvasTool(name string) bool {
