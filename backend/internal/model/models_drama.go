@@ -116,13 +116,15 @@ type DramaEpisode struct {
 	// Approved 表示用户已确认本集视频提示词（逐集确认模式下的审阅关口）。
 	Approved bool `json:"approved"`
 	// MediaReleased 为 true 后才为本集生成视频；手动模式下由用户确认剧本与提示词后打开。
-	MediaReleased   bool      `json:"mediaReleased"`
-	FinalResourceID string    `json:"finalResourceId,omitempty" gorm:"size:36"`
-	FinalStale      bool      `json:"finalStale"`
-	SubtitleSRT     string    `json:"subtitleSrt" gorm:"type:text"`
-	Revision        int64     `json:"revision"`
-	CreatedAt       time.Time `json:"createdAt"`
-	UpdatedAt       time.Time `json:"updatedAt"`
+	MediaReleased   bool   `json:"mediaReleased"`
+	FinalResourceID string `json:"finalResourceId,omitempty" gorm:"size:36"`
+	FinalStale      bool   `json:"finalStale"`
+	SubtitleSRT     string `json:"subtitleSrt" gorm:"type:text"`
+	// MusicCuesJSON 是本集配乐（DramaMusicCue 列表），合成成片时放到音乐轨上。
+	MusicCuesJSON string    `json:"-" gorm:"type:text"`
+	Revision      int64     `json:"revision"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 // DramaShot 保存镜头脚本，作为剧情段视频提示词的素材。

@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const CurrentSchemaVersion int64 = 74
+const CurrentSchemaVersion int64 = 75
 
 const baselineSchemaChecksum = "sha256:open-ai-canvas-schema-v1-20260830"
 const schemaMigrationAppliedAtIndexChecksum = "sha256:schema-migrations-applied-at-index-v2-20260830"
@@ -267,6 +267,13 @@ var schemaMigrations = []migration{
 			return nil
 		}
 		return tx.Migrator().AddColumn(&model.DramaSegment{}, "ReferenceCastIDsJSON")
+	}},
+	{version: 75, name: "drama_episode_music", checksum: "sha256:drama-episode-music-v75-20261028", apply: func(tx *gorm.DB) error {
+		// 空串表示这一集没有配乐。
+		if tx.Migrator().HasColumn(&model.DramaEpisode{}, "MusicCuesJSON") {
+			return nil
+		}
+		return tx.Migrator().AddColumn(&model.DramaEpisode{}, "MusicCuesJSON")
 	}},
 }
 

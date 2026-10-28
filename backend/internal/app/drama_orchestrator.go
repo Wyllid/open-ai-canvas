@@ -1239,7 +1239,7 @@ func buildDramaTimeline(settings DramaSettings, segments []model.DramaSegment, s
 	fadeIn, fadeOut := dramaBoundaryFades(settings, shots, segments)
 	width, height := dramaRenderSize(aspect)
 	visible := true
-	timeline := renderProject{Version: 2, Width: width, Height: height, Tracks: []renderTrack{{ID: "video", Kind: "video", Visible: &visible}}}
+	timeline := renderProject{Version: 2, Width: width, Height: height, LoudnessLUFS: dramaLoudnessLUFS, Tracks: []renderTrack{{ID: "video", Kind: "video", Visible: &visible}}}
 	if len(segments) == 0 {
 		return timeline, errors.New("没有可合成的剧情段")
 	}
@@ -1283,6 +1283,7 @@ func (r *dramaRun) submitRender(job *model.DramaJob) (*model.Task, bool, error) 
 	if err != nil {
 		return nil, false, err
 	}
+	timeline = withDramaMusic(timeline, decodeDramaMusicCues(episode.MusicCuesJSON))
 	job.PayloadJSON = encodeDramaRevision(episode.Revision)
 	return r.s.createDramaRenderTask(r.project, timeline)
 }

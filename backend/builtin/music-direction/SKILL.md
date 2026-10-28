@@ -81,4 +81,4 @@ Give the person:
 2. The cue sheet table.
 3. One prompt per cue.
 
-When an audio model is available and the person approves, generate cues one at a time and check each against its length and mood before the next. Mixing: voice on top, music ducked under speech, final loudness around −14 LUFS for online video.
+When an audio model is available and the person approves, generate cues one at a time and check each against its length and mood before the next. On a drama, attach the approved cues with `drama_music_set` (pick audio ids from `audio_resources`): the renderer puts them on a music track, ducks them under speech and normalizes the episode to −14 LUFS, so write cues at their natural level rather than pre-mixing them quiet.
