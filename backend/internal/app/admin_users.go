@@ -33,22 +33,9 @@ func (s *Service) AdminUsers(actor *model.User, query AdminListQuery) (*AdminUse
 	if err != nil {
 		return nil, err
 	}
-	userIDs := make([]string, 0, len(users))
-	for _, user := range users {
-		userIDs = append(userIDs, user.ID)
-	}
-	accounts, err := s.repo.CreditAccounts(userIDs)
-	if err != nil {
-		return nil, err
-	}
-	accountByUserID := make(map[string]model.CreditAccount, len(accounts))
-	for _, account := range accounts {
-		accountByUserID[account.UserID] = account
-	}
 	result := make([]AdminUser, 0, len(users))
 	for _, user := range users {
-		account := accountByUserID[user.ID]
-		result = append(result, AdminUser{User: user, AvailableMicrocredits: account.AvailableMicrocredits, ReservedMicrocredits: account.ReservedMicrocredits})
+		result = append(result, AdminUser{User: user})
 	}
 	return &AdminUserPage{Users: result, Total: total, Page: page, Limit: limit}, nil
 }
@@ -154,21 +141,10 @@ func (s *Service) CreateAdminUser(actor *model.User, req CreateAdminUserRequest)
 	if err := s.repo.Create(user); err != nil {
 		return nil, err
 	}
-	if err := s.ensureSignupBonus(user.ID); err != nil {
-		return nil, err
-	}
 	if err := s.appendAdminAudit(actor, "user.create", "user", user.ID, "\u521b\u5efa\u7528\u6237\u8d26\u53f7", map[string]any{"role": user.Role, "status": user.Status}); err != nil {
 		return nil, err
 	}
-	account, err := s.repo.CreditAccount(user.ID)
-	if err != nil {
-		return nil, err
-	}
-	return &AdminUser{
-		User:                  *user,
-		AvailableMicrocredits: account.AvailableMicrocredits,
-		ReservedMicrocredits:  account.ReservedMicrocredits,
-	}, nil
+	return &AdminUser{User: *user}, nil
 }
 
 func (s *Service) UpdateUser(actor *model.User, userID string, req UpdateUserRequest) (*model.User, error) {
@@ -245,14 +221,11 @@ func (s *Service) UpdateUser(actor *model.User, userID string, req UpdateUserReq
 	}
 	user.Role = nextRole
 	user.Status = nextStatus
-	if req.IsPromoter != nil {
-		user.IsPromoter = *req.IsPromoter
-	}
 	user.UpdatedAt = time.Now()
 	if err := s.repo.Save(user); err != nil {
 		return nil, err
 	}
-	if err := s.appendAdminAudit(actor, "user.update", "user", user.ID, "更新用户账号状态或资料", map[string]any{"role": user.Role, "status": user.Status, "isPromoter": user.IsPromoter}); err != nil {
+	if err := s.appendAdminAudit(actor, "user.update", "user", user.ID, "更新用户账号状态或资料", map[string]any{"role": user.Role, "status": user.Status}); err != nil {
 		return nil, err
 	}
 	return user, nil

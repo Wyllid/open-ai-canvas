@@ -95,12 +95,7 @@ func RegisterAuthRoutes(r *gin.RouterGroup, svc *service.Service) {
 			failService(c, err)
 			return
 		}
-		referralAvailable, err := svc.ReferralAvailable(user)
-		if err != nil {
-			failService(c, err)
-			return
-		}
-		ok(c, gin.H{"user": publicUser, "runtimeLimits": limits, "drawingEngine": drawingEngine, "features": features, "referralAvailable": referralAvailable})
+		ok(c, gin.H{"user": publicUser, "runtimeLimits": limits, "drawingEngine": drawingEngine, "features": features})
 	})
 	r.GET("/channels/system", func(c *gin.Context) {
 		actor, err := currentUser(c, svc)
@@ -289,14 +284,6 @@ func proxySystemRequestPath(c *gin.Context, svc *service.Service, user *model.Us
 		fail(c, http.StatusForbidden, err)
 		return
 	}
-	if channelModel != nil && channelModel.BillingMode == "token" && protocol == model.ChannelInterfaceChatCompletion {
-		body, err = service.EnsureChatCompletionStreamUsageRequest(body)
-		if err != nil {
-			fail(c, http.StatusBadRequest, err)
-			return
-		}
-	}
-	billingOrderID := ""
 	query := c.Request.URL.Query()
 	for _, key := range []string{"key", "api_key", "access_token", "token"} {
 		query.Del(key)
@@ -318,31 +305,15 @@ func proxySystemRequestPath(c *gin.Context, svc *service.Service, user *model.Us
 	// 同步代理与后台任务必须共享渠道槽位，否则两条入口会共同超过供应商并发上限。
 	releaseChannel, concurrencyLimit, err := svc.AcquireChannelSlot(c.Request.Context(), channel.ID, "", 36*time.Minute)
 	if err != nil {
-		log := apiCallLog(user, channel, billingOrderID, capability, protocol, c.Request.Method, path, target, body, c.GetHeader("Content-Type"), model.ApiCallStatusFailed, 0, time.Since(startedAt), err.Error(), concurrencyLimit)
+		log := apiCallLog(user, channel, capability, protocol, c.Request.Method, path, target, body, c.GetHeader("Content-Type"), model.ApiCallStatusFailed, 0, time.Since(startedAt), err.Error(), concurrencyLimit)
 		log.ErrorCode, log.Error = service.ChannelSlotFailureDetails(err)
 		logSystemProxyCall(svc, log, nil)
 		failInternal(c, http.StatusServiceUnavailable, err)
 		return
 	}
 	defer releaseChannel()
-	if c.Request.Method == http.MethodPost {
-		order, err := svc.ReserveProxyBillingWithBody(user.ID, channel.ID, strings.TrimPrefix(modelName, "models/"), capability, c.GetHeader("X-Canvas-Scene"), c.GetHeader("X-Idempotency-Key"), proxyRequestVideoSeconds(c.GetHeader("Content-Type"), body), body)
-		if err != nil {
-			failService(c, err)
-			return
-		}
-		if order != nil {
-			billingOrderID = order.ID
-			if err := svc.MarkBillingRunning(billingOrderID); err != nil {
-				refundSystemProxyBilling(svc, billingOrderID, "系统渠道请求尚未发出")
-				failService(c, err)
-				return
-			}
-		}
-	}
 	upstreamReq, err := http.NewRequestWithContext(c.Request.Context(), c.Request.Method, validatedTarget.String(), bytes.NewReader(body))
 	if err != nil {
-		refundSystemProxyBilling(svc, billingOrderID, "系统渠道请求构造失败")
 		fail(c, http.StatusBadRequest, err)
 		return
 	}
@@ -370,8 +341,7 @@ func proxySystemRequestPath(c *gin.Context, svc *service.Service, user *model.Us
 	if err != nil {
 		status = model.ApiCallStatusFailed
 		errorText = err.Error()
-		markSystemProxyBillingUncertain(svc, billingOrderID, "系统渠道连接中断，费用状态待核对")
-		logSystemProxyCall(svc, apiCallLog(user, channel, billingOrderID, capability, protocol, c.Request.Method, path, target, body, c.GetHeader("Content-Type"), status, statusCode, time.Since(startedAt), errorText, concurrencyLimit), nil)
+		logSystemProxyCall(svc, apiCallLog(user, channel, capability, protocol, c.Request.Method, path, target, body, c.GetHeader("Content-Type"), status, statusCode, time.Since(startedAt), errorText, concurrencyLimit), nil)
 		fail(c, http.StatusBadGateway, errors.New("系统渠道连接失败"))
 		return
 	}
@@ -392,12 +362,7 @@ func proxySystemRequestPath(c *gin.Context, svc *service.Service, user *model.Us
 	if readErr != nil {
 		status = model.ApiCallStatusFailed
 		errorText = readErr.Error()
-		billingNote := "系统渠道响应读取失败，费用状态待核对"
-		if errors.Is(readErr, errSystemProxyResponseTooLarge) {
-			billingNote = "上游已响应但流式响应体超过限制，费用状态待核对"
-		}
-		markSystemProxyBillingUncertain(svc, billingOrderID, billingNote)
-		logSystemProxyCall(svc, apiCallLog(user, channel, billingOrderID, capability, protocol, c.Request.Method, path, target, body, c.GetHeader("Content-Type"), status, statusCode, time.Since(startedAt), errorText, concurrencyLimit), responseBody)
+		logSystemProxyCall(svc, apiCallLog(user, channel, capability, protocol, c.Request.Method, path, target, body, c.GetHeader("Content-Type"), status, statusCode, time.Since(startedAt), errorText, concurrencyLimit), responseBody)
 		// SSE 响应头已经发送，流中断后只能关闭连接；非流式响应仍返回结构化错误。
 		if !streamed {
 			fail(c, http.StatusBadGateway, errors.New("系统渠道响应读取失败"))
@@ -405,22 +370,10 @@ func proxySystemRequestPath(c *gin.Context, svc *service.Service, user *model.Us
 		return
 	}
 	if int64(len(responseBody)) > responseLimit {
-		markSystemProxyBillingUncertain(svc, billingOrderID, "上游已响应但响应体超过限制，费用状态待核对")
 		fail(c, http.StatusBadGateway, fmt.Errorf("系统渠道响应超过 %dMB 限制", policy.Request.SystemRelayResponseMB))
 		return
 	}
-	logErr := logSystemProxyCall(svc, apiCallLog(user, channel, billingOrderID, capability, protocol, c.Request.Method, path, target, body, c.GetHeader("Content-Type"), status, statusCode, time.Since(startedAt), errorText, concurrencyLimit), responseBody)
-	if status == model.ApiCallStatusSucceeded {
-		if logErr != nil {
-			markSystemProxyBillingUncertain(svc, billingOrderID, "上游成功但调用日志写入失败，费用状态待核对")
-		} else if err := svc.SettleBilling(billingOrderID, ""); err != nil {
-			markSystemProxyBillingUncertain(svc, billingOrderID, "上游成功但积分结算失败："+err.Error())
-		}
-	} else if statusCode == 524 {
-		markSystemProxyBillingUncertain(svc, billingOrderID, "上游返回 524，费用状态待核对")
-	} else {
-		refundSystemProxyBilling(svc, billingOrderID, "上游明确返回失败")
-	}
+	logSystemProxyCall(svc, apiCallLog(user, channel, capability, protocol, c.Request.Method, path, target, body, c.GetHeader("Content-Type"), status, statusCode, time.Since(startedAt), errorText, concurrencyLimit), responseBody)
 	if streamed {
 		return
 	}
@@ -428,27 +381,7 @@ func proxySystemRequestPath(c *gin.Context, svc *service.Service, user *model.Us
 	c.Data(resp.StatusCode, resp.Header.Get("Content-Type"), responseBody)
 }
 
-func refundSystemProxyBilling(svc *service.Service, billingOrderID string, reason string) {
-	if billingOrderID == "" {
-		return
-	}
-	if err := svc.RefundBilling(billingOrderID, reason); err != nil {
-		log.Printf("system proxy billing refund failed: billing_order_id=%s error=%v", billingOrderID, err)
-		// 退款写失败不能当没发生：转待核对，避免订单停在 running 被当成已扣费。
-		markSystemProxyBillingUncertain(svc, billingOrderID, "退款失败，费用状态待核对："+err.Error())
-	}
-}
-
-func markSystemProxyBillingUncertain(svc *service.Service, billingOrderID string, reason string) {
-	if billingOrderID == "" {
-		return
-	}
-	if err := svc.MarkBillingUncertain(billingOrderID, reason); err != nil {
-		log.Printf("system proxy billing uncertainty update failed: billing_order_id=%s error=%v", billingOrderID, err)
-	}
-}
-
-func apiCallLog(user *model.User, channel *model.ModelChannel, billingOrderID string, capability string, protocol model.ChannelInterfaceType, method string, path string, target string, body []byte, contentType string, status model.ApiCallStatus, statusCode int, duration time.Duration, errorText string, concurrencyLimit int) model.ApiCallLog {
+func apiCallLog(user *model.User, channel *model.ModelChannel, capability string, protocol model.ChannelInterfaceType, method string, path string, target string, body []byte, contentType string, status model.ApiCallStatus, statusCode int, duration time.Duration, errorText string, concurrencyLimit int) model.ApiCallLog {
 	requestKind := "create"
 	apiFormat := "openai"
 	if protocol == model.ChannelInterfaceGeminiVeo || protocol == model.ChannelInterfaceGeminiImage {
@@ -463,7 +396,6 @@ func apiCallLog(user *model.User, channel *model.ModelChannel, billingOrderID st
 	return model.ApiCallLog{
 		UserID:             user.ID,
 		ChannelID:          channel.ID,
-		BillingOrderID:     billingOrderID,
 		Source:             "system-channel",
 		Capability:         capability,
 		RequestKind:        requestKind,

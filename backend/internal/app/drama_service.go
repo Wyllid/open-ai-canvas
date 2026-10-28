@@ -36,11 +36,8 @@ func (s *Service) CreateDrama(userID string, req CreateDramaRequest) (DramaSumma
 	if len(req.Chapters) == 0 || len(req.Chapters) > dramaMaxChapters {
 		return DramaSummary{}, BadAuthRequest("章节数量必须在 1 到 3000 之间")
 	}
-	if req.BudgetMicrocredits < 0 {
-		return DramaSummary{}, BadAuthRequest("预算不能为负数")
-	}
 	if req.Settings.MediaMode == "" {
-		// 新作品默认先只跑文本：先看剧情、分镜与资产，确认后再花钱生图。
+		// 新作品默认先只跑文本：先看剧情、分镜与资产，确认后再生图。
 		req.Settings.MediaMode = DramaMediaManual
 	}
 	settings := req.Settings.normalized()
@@ -93,7 +90,7 @@ func (s *Service) CreateDrama(userID string, req CreateDramaRequest) (DramaSumma
 	if req.Start {
 		status = model.DramaStatusRunning
 	}
-	productionRow := model.DramaProduction{ProjectID: project.ID, UserID: userID, Status: status, Stage: model.DramaStageBible, SettingsJSON: encodeDramaSettings(settings), BudgetMicrocredits: req.BudgetMicrocredits, Revision: 1, CreatedAt: now, UpdatedAt: now}
+	productionRow := model.DramaProduction{ProjectID: project.ID, UserID: userID, Status: status, Stage: model.DramaStageBible, SettingsJSON: encodeDramaSettings(settings), Revision: 1, CreatedAt: now, UpdatedAt: now}
 	var episodes []model.DramaEpisode
 	if perChapter {
 		// 每章直接成为一集，分集规划视为已完成；建档后各集按窗口依次写剧本。
@@ -188,7 +185,7 @@ func (s *Service) ListDramas(userID string, req DramaListRequest) (map[string]an
 		item := DramaListItem{
 			Project: project, Status: productionRow.Status, Stage: productionRow.Stage, PauseReason: productionRow.PauseReason,
 			EpisodeCount: count[0], DoneCount: count[1], CoverResourceIDs: covers[project.ID], AspectRatio: settings.AspectRatio,
-			StyleName: settings.StyleName, SpentMicrocredits: productionRow.SpentMicrocredits, UpdatedAt: project.UpdatedAt.Format(time.RFC3339),
+			StyleName: settings.StyleName, UpdatedAt: project.UpdatedAt.Format(time.RFC3339),
 		}
 		if len(item.CoverResourceIDs) > 0 {
 			item.CoverResourceID = item.CoverResourceIDs[0]
@@ -237,8 +234,7 @@ func (s *Service) DramaSummary(userID string, projectID string) (DramaSummary, e
 		Project: *project,
 		Production: DramaProductionView{
 			Status: productionRow.Status, Stage: productionRow.Stage, PauseReason: productionRow.PauseReason,
-			Settings: parseDramaSettings(productionRow.SettingsJSON), BudgetMicrocredits: productionRow.BudgetMicrocredits,
-			SpentMicrocredits: productionRow.SpentMicrocredits, PlanDone: productionRow.PlanDone, PlanCursor: productionRow.PlanCursor,
+			Settings: parseDramaSettings(productionRow.SettingsJSON), PlanDone: productionRow.PlanDone, PlanCursor: productionRow.PlanCursor,
 			SampleApproved: productionRow.SampleApproved, AssetsReleased: productionRow.AssetsReleased, Logline: meta.Logline, Tone: meta.Tone,
 			ChapterCount: len(chapters), WordCount: words,
 		},
@@ -362,7 +358,7 @@ func (s *Service) DramaEpisodeDetail(userID string, projectID string, episodeID 
 }
 
 func dramaJobView(job model.DramaJob) DramaJobView {
-	view := DramaJobView{ID: job.ID, Kind: job.Kind, Status: job.Status, Label: job.Label, Error: job.Error, EpisodeID: job.EpisodeID, ShotID: job.ShotID, TaskID: job.TaskID, CostMicrocredits: job.CostMicrocredits, Attempt: job.Attempt, CreatedAt: job.CreatedAt.Format(time.RFC3339), UpdatedAt: job.UpdatedAt.Format(time.RFC3339)}
+	view := DramaJobView{ID: job.ID, Kind: job.Kind, Status: job.Status, Label: job.Label, Error: job.Error, EpisodeID: job.EpisodeID, ShotID: job.ShotID, TaskID: job.TaskID, Attempt: job.Attempt, CreatedAt: job.CreatedAt.Format(time.RFC3339), UpdatedAt: job.UpdatedAt.Format(time.RFC3339)}
 	if job.StartedAt != nil {
 		view.StartedAt = job.StartedAt.Format(time.RFC3339)
 	}
@@ -388,7 +384,7 @@ func (s *Service) DramaJobDetail(userID string, projectID string, jobID string) 
 	var attempts []DramaJobAttempt
 	_ = json.Unmarshal([]byte(job.AttemptsJSON), &attempts)
 	if job.TaskID != "" && (len(attempts) == 0 || attempts[len(attempts)-1].TaskID != job.TaskID) {
-		attempts = append(attempts, DramaJobAttempt{TaskID: job.TaskID, Status: "running", CostMicrocredits: job.CostMicrocredits, At: dramaTime(job.StartedAt, job.UpdatedAt)})
+		attempts = append(attempts, DramaJobAttempt{TaskID: job.TaskID, Status: "running", At: dramaTime(job.StartedAt, job.UpdatedAt)})
 	}
 	labels := dramaModelLabels(parseDramaSettings(productionRow.SettingsJSON).Models)
 	detail := DramaJobDetail{Job: dramaJobView(*job), Target: s.dramaJobTarget(project.ID, job), Attempts: make([]DramaJobAttemptView, 0, len(attempts))}

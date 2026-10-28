@@ -14,13 +14,8 @@ import (
 const cloudAgentMediaQuoteLifetime = 30 * time.Minute
 
 type cloudAgentMediaQuote struct {
-	ID                 string    `json:"id"`
-	AmountMicrocredits int64     `json:"amountMicrocredits"`
-	BillingMode        string    `json:"billingMode"`
-	PriceVersion       int64     `json:"priceVersion"`
-	PriceTierID        string    `json:"priceTierId,omitempty"`
-	PriceTierVersion   int64     `json:"priceTierVersion"`
-	ExpiresAt          time.Time `json:"expiresAt"`
+	ID        string    `json:"id"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 // Prepared inputs contain public resource selectors, never resolved credentials.
@@ -31,7 +26,6 @@ type cloudAgentPreparedMedia struct {
 	GenerationID       string               `json:"generationId"`
 	DependencyHash     string               `json:"dependencyHash"`
 	ResolvedHash       string               `json:"resolvedHash"`
-	QuoteHash          string               `json:"quoteHash"`
 	Quote              cloudAgentMediaQuote `json:"quote"`
 	Input              map[string]any       `json:"input,omitempty"`
 	ResourceSignatures map[string]string    `json:"resourceSignatures,omitempty"`
@@ -167,14 +161,7 @@ func cloudAgentResolvedMediaHash(task *model.Task) (string, error) {
 	return creationHash(map[string]any{"mode": input["mode"], "prompt": input["prompt"], "config": public, "referenceImages": input["referenceImages"], "referenceVideos": input["referenceVideos"], "referenceAudios": input["referenceAudios"], "operation": task.Operation, "logicalModelId": task.LogicalModelID, "logicalModelRevisionId": task.LogicalModelRevisionID, "channelModelId": task.ChannelModelID}), nil
 }
 
-func cloudAgentQuoteHash(order *model.BillingOrder) string {
-	if order == nil {
-		return creationHash(nil)
-	}
-	return creationHash(map[string]any{"amount": order.AmountMicrocredits, "billingMode": order.BillingMode, "priceVersion": order.PriceVersion, "priceTierId": order.PriceTierID, "priceTierVersion": order.PriceTierVersion, "quantity": order.Quantity, "unitPrice": order.UnitPriceMicrocredits, "inputTokenPrice": order.InputTokenPriceMicrocredits, "outputTokenPrice": order.OutputTokenPriceMicrocredits, "cachedTokenPrice": order.CachedTokenPriceMicrocredits, "multiplier": order.MultiplierBasisPoints})
-}
-
-func prepareCloudAgentMediaApproval(repo *repository.Repository, userID string, doc map[string]any, plan *cloudAgentMediaPlan, request CreateTaskRequest, task *model.Task, order *model.BillingOrder) (*cloudAgentPreparedMedia, error) {
+func prepareCloudAgentMediaApproval(repo *repository.Repository, userID string, doc map[string]any, plan *cloudAgentMediaPlan, request CreateTaskRequest, task *model.Task) (*cloudAgentPreparedMedia, error) {
 	dependency, err := cloudAgentMediaDependencyHash(doc, plan.Args)
 	if err != nil {
 		return nil, err
@@ -183,12 +170,8 @@ func prepareCloudAgentMediaApproval(repo *repository.Repository, userID string, 
 	if err != nil {
 		return nil, err
 	}
-	prepared := &cloudAgentPreparedMedia{Version: 1, GenerationID: newID(), DependencyHash: dependency, ResolvedHash: resolved, QuoteHash: cloudAgentQuoteHash(order), Input: request.Input, ResourceSignatures: map[string]string{}, Quote: cloudAgentMediaQuote{ID: newID(), ExpiresAt: time.Now().UTC().Add(cloudAgentMediaQuoteLifetime)}}
+	prepared := &cloudAgentPreparedMedia{Version: 1, GenerationID: newID(), DependencyHash: dependency, ResolvedHash: resolved, Input: request.Input, ResourceSignatures: map[string]string{}, Quote: cloudAgentMediaQuote{ID: newID(), ExpiresAt: time.Now().UTC().Add(cloudAgentMediaQuoteLifetime)}}
 	prepared.CharacterVersions = plan.Args.CharacterVersions
-	if order != nil {
-		prepared.Quote.AmountMicrocredits, prepared.Quote.BillingMode = order.AmountMicrocredits, order.BillingMode
-		prepared.Quote.PriceVersion, prepared.Quote.PriceTierID, prepared.Quote.PriceTierVersion = order.PriceVersion, order.PriceTierID, order.PriceTierVersion
-	}
 	for _, field := range []string{"referenceImages", "referenceVideos", "referenceAudios"} {
 		for _, ref := range creationMaps(request.Input[field]) {
 			key := stringValue(ref["storageKey"])
@@ -238,12 +221,12 @@ func cloudAgentStaleApprovalError(message, action string) error {
 	}
 }
 
-func validateCloudAgentPreparedAdmission(repo *repository.Repository, userID string, prepared *cloudAgentPreparedMedia, task *model.Task, order *model.BillingOrder, doc map[string]any, args cloudAgentMediaArgs) error {
+func validateCloudAgentPreparedAdmission(repo *repository.Repository, userID string, prepared *cloudAgentPreparedMedia, task *model.Task, doc map[string]any, args cloudAgentMediaArgs) error {
 	if prepared == nil || prepared.Version != 1 || prepared.Hash == "" {
 		return creationConflict("缺少已批准的生成准备态，请重新申请审批；未提交任务")
 	}
 	if time.Now().After(prepared.Quote.ExpiresAt) {
-		return cloudAgentStaleApprovalError("生成报价已过期，请重新调用 generate_media 申请审批；未提交任务", "retry")
+		return cloudAgentStaleApprovalError("生成审批已过期，请重新调用 generate_media 申请审批；未提交任务", "retry")
 	}
 	dependency, err := cloudAgentMediaDependencyHash(doc, args)
 	if err != nil {
@@ -276,7 +259,7 @@ func validateCloudAgentPreparedAdmission(repo *repository.Repository, userID str
 	if err != nil {
 		return err
 	}
-	if hash != prepared.ResolvedHash || cloudAgentQuoteHash(order) != prepared.QuoteHash {
+	if hash != prepared.ResolvedHash {
 		return cloudAgentStaleApprovalError("模型规格或价格已变化，请重新调用 generate_media 申请审批；未提交任务", "retry")
 	}
 	if _, err := cloudAgentPreparedReferences(repo, userID, prepared); err != nil {

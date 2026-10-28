@@ -40,7 +40,6 @@ type RegisterRequest struct {
 	DisplayName   string       `json:"displayName"`
 	Password      string       `json:"password"`
 	AcceptedTerms bool         `json:"acceptedTerms"`
-	ReferralCode  string       `json:"referralCode"`
 }
 
 type LoginRequest struct {
@@ -248,12 +247,6 @@ func (s *Service) Register(req RegisterRequest) (*AuthSessionResult, error) {
 	} else if err := s.repo.CreateRegisteredUser(&user); err != nil {
 		return nil, err
 	}
-	if err := s.host.EnsureSignupBonus(user.ID); err != nil {
-		return nil, err
-	}
-	if count > 0 {
-		s.host.BindReferral(user.ID, req.ReferralCode)
-	}
 	event := NewLoginLog("password", "registration", req.LoginContext)
 	result, err := s.createAuthSession(&user, event)
 	if err != nil {
@@ -302,9 +295,6 @@ func (s *Service) Login(req LoginRequest) (result *AuthSessionResult, err error)
 	user.LastLoginAt = &now
 	user.UpdatedAt = now
 	if err := s.repo.UpdateUserLoginTime(user.ID, now); err != nil {
-		return nil, err
-	}
-	if err := s.host.EnsureSignupBonus(user.ID); err != nil {
 		return nil, err
 	}
 	return s.createAuthSession(user, event)

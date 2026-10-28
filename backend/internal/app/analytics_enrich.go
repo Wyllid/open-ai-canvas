@@ -1,4 +1,4 @@
-// 调用日志的费用估算与上游响应补全（请求 ID、视频 token、失败摘要）。
+// 调用日志的上游响应补全（请求 ID、视频 token、失败摘要）。
 
 package app
 
@@ -6,37 +6,10 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"strings"
 
-	"gorm.io/gorm"
 	"yingce/backend/internal/model"
 )
-
-func (s *Service) estimateCallCost(log *model.ApiCallLog) {
-	if log.Status == model.ApiCallStatusFailed && !log.UsageAvailable {
-		return
-	}
-	pricing, err := s.repo.ModelPricing(log.ChannelID, log.Model, log.Capability)
-	if err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return
-		}
-		return
-	}
-	cost := int64(0)
-	if log.Billable {
-		cost = pricing.PerRequestMicros
-	}
-	cost += log.InputTokens * pricing.InputPerMillionMicros / 1_000_000
-	cost += log.OutputTokens * pricing.OutputPerMillionMicros / 1_000_000
-	cost += log.CachedTokens * pricing.CachedPerMillionMicros / 1_000_000
-	cost += int64(log.MediaCount) * pricing.PerMediaMicros
-	cost += int64(log.VideoSeconds) * pricing.PerVideoSecondMicros
-	log.EstimatedCostMicros = cost
-	log.CostAvailable = true
-	log.Currency = pricing.Currency
-}
 
 func (s *Service) EnrichAPICallLog(log *model.ApiCallLog, responseBody []byte) {
 	if log == nil {

@@ -140,10 +140,6 @@ func TestCloudAgentMissingModelCreatesNoDraftApprovalOrTask(t *testing.T) {
 	if err := db.Model(&model.Task{}).Count(&before).Error; err != nil {
 		t.Fatal(err)
 	}
-	var billingBefore int64
-	if err := db.Model(&model.BillingOrder{}).Count(&billingBefore).Error; err != nil {
-		t.Fatal(err)
-	}
 	if err := s.advanceCloudAgentByID("user", run.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -157,12 +153,8 @@ func TestCloudAgentMissingModelCreatesNoDraftApprovalOrTask(t *testing.T) {
 	if err := db.Model(&model.Task{}).Count(&after).Error; err != nil {
 		t.Fatal(err)
 	}
-	var billingAfter int64
-	if err := db.Model(&model.BillingOrder{}).Count(&billingAfter).Error; err != nil {
-		t.Fatal(err)
-	}
-	if before != after || billingBefore != billingAfter || canvas.PayloadJSON != afterCanvas.PayloadJSON || state.Approval != nil || state.MediaTaskID != "" {
-		t.Fatal("invalid selection created a task, draft, approval or billing order")
+	if before != after || canvas.PayloadJSON != afterCanvas.PayloadJSON || state.Approval != nil || state.MediaTaskID != "" {
+		t.Fatal("invalid selection created a task, draft or approval")
 	}
 	found := false
 	for _, event := range state.Events {

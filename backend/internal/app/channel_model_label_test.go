@@ -20,7 +20,7 @@ func TestChannelModelLabelSaveAndCatalogPreserveChannelIdentity(t *testing.T) {
 		Description:      "  适合分镜脚本，请先确认输入要求。  ",
 		Tags:             []model.ChannelModelTag{{Text: " 限时特价 ", Color: "purple"}, {Text: "官方1折", Color: "gold"}},
 		CapabilityConfig: DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceChatCompletion), "gpt-test"),
-		PriceTiers:       []ChannelModelPriceTierRequest{{BillingMode: "fixed_request", UnitPriceMicrocredits: 300000, PriceConfigured: true, Enabled: &enabled}},
+		PriceTiers:       []ChannelModelPriceTierRequest{{Enabled: &enabled}},
 		Enabled:          &enabled,
 	}
 	var firstID string
@@ -65,8 +65,8 @@ func TestChannelModelLabelSaveAndCatalogPreserveChannelIdentity(t *testing.T) {
 		if len(channel.Models) == 1 && channel.Models[0].Description != "适合分镜脚本，请先确认输入要求。" {
 			t.Fatal("catalog lost model description")
 		}
-		if len(channel.Models) != 1 || channel.Models[0].ChannelLabel != "优惠渠道-993" || !channel.Models[0].Available || channel.Models[0].PriceTiers[0].UnitPriceMicrocredits != 300000 {
-			t.Fatalf("catalog lost label or pricing: %#v", channel)
+		if len(channel.Models) != 1 || channel.Models[0].ChannelLabel != "优惠渠道-993" || !channel.Models[0].Available || len(channel.Models[0].PriceTiers) == 0 {
+			t.Fatalf("catalog lost label or spec tiers: %#v", channel)
 		}
 	}
 	invalidTags := request

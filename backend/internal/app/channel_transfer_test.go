@@ -21,7 +21,7 @@ func seedTransferChannel(t *testing.T, svc *Service, admin *model.User) string {
 	if _, err := svc.SaveAdminChannelModel(admin, channel.ID, "", ChannelModelRequest{
 		ModelKey: "gpt-test", DisplayName: "GPT Test", Icon: "OpenAI", Description: "说明", Capability: "text", Protocol: string(model.ChannelInterfaceChatCompletion),
 		CapabilityConfig: DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceChatCompletion), "gpt-test"),
-		PriceTiers:       []ChannelModelPriceTierRequest{{BillingMode: "fixed_request", UnitPriceMicrocredits: 120000, PriceConfigured: true, Enabled: &enabled}}, Enabled: &enabled,
+		PriceTiers:       []ChannelModelPriceTierRequest{{Enabled: &enabled}}, Enabled: &enabled,
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -85,12 +85,12 @@ func TestImportSystemChannelsCreatesDisabledAndKeepsExistingSecrets(t *testing.T
 		t.Fatalf("imported channel = %#v", channels)
 	}
 	items, _ := target.repo.ChannelModels(channels[0].ID, true)
-	if len(items) != 1 || items[0].Icon != "OpenAI" || items[0].Description != "说明" || len(items[0].PriceTiers) != 1 || items[0].PriceTiers[0].UnitPriceMicrocredits != 120000 {
+	if len(items) != 1 || items[0].Icon != "OpenAI" || items[0].Description != "说明" || len(items[0].PriceTiers) != 1 {
 		t.Fatalf("imported models = %#v", items)
 	}
 
-	// 已有环境：按名称合并，保留原有密钥，价格按文件更新。
-	payload.Channels[0].Models[0].PriceTiers[0].UnitPriceMicrocredits = 200000
+	// 已有环境：按名称合并，保留原有密钥，规格档按文件更新。
+	payload.Channels[0].Models[0].PriceTiers[0].ProviderModelKey = "imported-sku"
 	result, err = source.ImportSystemChannels(admin, payload)
 	if err != nil {
 		t.Fatal(err)
@@ -109,7 +109,7 @@ func TestImportSystemChannelsCreatesDisabledAndKeepsExistingSecrets(t *testing.T
 		t.Fatalf("merge changed credentials or state: %#v", existing[0])
 	}
 	merged, _ := source.repo.ChannelModels(existing[0].ID, true)
-	if len(merged) != 1 || merged[0].PriceTiers[0].UnitPriceMicrocredits != 200000 {
+	if len(merged) != 1 || merged[0].PriceTiers[0].ProviderModelKey != "imported-sku" {
 		t.Fatalf("merged models = %#v", merged)
 	}
 

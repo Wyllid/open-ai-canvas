@@ -5,9 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"yingce/backend/internal/model"
 	"yingce/backend/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 func registerLive2DRoutes(r *gin.RouterGroup, svc *service.Service) {

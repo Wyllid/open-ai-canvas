@@ -20,7 +20,7 @@ func TestVideoPollLogSchedulesNextCheckThirtySecondsLater(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := db.AutoMigrate(&model.Task{}, &model.ApiCallLog{}, &model.ModelPricing{}); err != nil {
+	if err := db.AutoMigrate(&model.Task{}, &model.ApiCallLog{}); err != nil {
 		t.Fatal(err)
 	}
 	task := model.Task{ID: "task-1", UserID: "user-1", Type: "canvas_video", Status: model.TaskStatusRunning}
@@ -57,7 +57,7 @@ func TestImagePollLogMergesIntoCreateLog(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := db.AutoMigrate(&model.Task{}, &model.ApiCallLog{}, &model.ModelPricing{}); err != nil {
+	if err := db.AutoMigrate(&model.Task{}, &model.ApiCallLog{}); err != nil {
 		t.Fatal(err)
 	}
 	task := model.Task{ID: "image-task-1", UserID: "user-1", Type: "canvas_image", Status: model.TaskStatusRunning}
@@ -98,7 +98,6 @@ func TestEnsureFailedProviderAttemptLoggedFillsPreflightGapOnce(t *testing.T) {
 		&model.Result{},
 		&model.ApiCallLog{},
 		&model.TaskTextDelta{},
-		&model.ModelPricing{},
 	); err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +171,7 @@ func TestRecordProviderRequestKeepsUserVisibleSpeechAndNetworkErrors(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := db.AutoMigrate(&model.SystemSetting{}, &model.Asset{}, &model.CanvasProject{}, &model.Task{}, &model.TaskLog{}, &model.Result{}, &model.ApiCallLog{}, &model.TaskTextDelta{}, &model.ModelPricing{}); err != nil {
+	if err := db.AutoMigrate(&model.SystemSetting{}, &model.Asset{}, &model.CanvasProject{}, &model.Task{}, &model.TaskLog{}, &model.Result{}, &model.ApiCallLog{}, &model.TaskTextDelta{}); err != nil {
 		t.Fatal(err)
 	}
 	service := &Service{repo: repository.New(db)}
@@ -207,7 +206,7 @@ func TestEnsureFailedProviderAttemptLoggedRecordsFailureHiddenBySuccessLog(t *te
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := db.AutoMigrate(&model.SystemSetting{}, &model.Asset{}, &model.CanvasProject{}, &model.Task{}, &model.TaskLog{}, &model.Result{}, &model.ApiCallLog{}, &model.TaskTextDelta{}, &model.ModelPricing{}); err != nil {
+	if err := db.AutoMigrate(&model.SystemSetting{}, &model.Asset{}, &model.CanvasProject{}, &model.Task{}, &model.TaskLog{}, &model.Result{}, &model.ApiCallLog{}, &model.TaskTextDelta{}); err != nil {
 		t.Fatal(err)
 	}
 	success := model.ApiCallLog{ID: "api-log-success", TaskID: "task-1", Status: model.ApiCallStatusSucceeded, RequestKind: "create"}

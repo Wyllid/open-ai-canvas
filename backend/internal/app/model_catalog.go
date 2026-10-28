@@ -78,24 +78,16 @@ type PublicChannelModel struct {
 	CapabilityConfig map[string]any                `json:"capabilityConfig,omitempty"`
 	DefaultOptions   map[string]any                `json:"defaultOptions,omitempty"`
 	PriceTiers       []PublicChannelModelPriceTier `json:"priceTiers"`
-	PricingMode      string                        `json:"pricingMode"`
-	DisplayPrice     *int64                        `json:"displayPrice,omitempty"`
-	PriceLabel       string                        `json:"priceLabel"`
 	Available        bool                          `json:"available"`
 	Availability     *PublicModelAvailability      `json:"availability,omitempty"`
 }
 
-// PublicChannelModelPriceTier 公开的渠道模型价格档（脱敏）
+// PublicChannelModelPriceTier 公开的渠道模型规格档（历史名称，已不含价格；脱敏）
 type PublicChannelModelPriceTier struct {
-	ID                           string            `json:"id"`
-	Selector                     map[string]string `json:"selector,omitempty"`
-	Resolution                   string            `json:"resolution"`
-	VideoSeconds                 int               `json:"videoSeconds"`
-	BillingMode                  string            `json:"billingMode"`
-	UnitPriceMicrocredits        int64             `json:"unitPriceMicrocredits"`
-	InputTokenPriceMicrocredits  int64             `json:"inputTokenPriceMicrocredits"`
-	OutputTokenPriceMicrocredits int64             `json:"outputTokenPriceMicrocredits"`
-	CachedTokenPriceMicrocredits int64             `json:"cachedTokenPriceMicrocredits"`
+	ID           string            `json:"id"`
+	Selector     map[string]string `json:"selector,omitempty"`
+	Resolution   string            `json:"resolution"`
+	VideoSeconds int               `json:"videoSeconds"`
 }
 
 // ModelCatalog 的创作端目录始终来自系统渠道模型，不反查逻辑模型或路由。
@@ -195,12 +187,12 @@ func (s *Service) sanitizeChannelModel(cm *model.ChannelModel) (PublicChannelMod
 	if err != nil {
 		return PublicChannelModel{}, err
 	}
-	// 仓储层已预加载价格档；这里只发布当前启用且价格字段自洽的活动档位。
+	// 仓储层已预加载规格档；这里只发布当前启用的档位。
 	priceTiers := cm.PriceTiers
 
 	publicTiers := make([]PublicChannelModelPriceTier, 0, len(priceTiers))
 	for _, tier := range priceTiers {
-		if !tier.Enabled || !tier.PriceConfigured || !ValidatePriceTierPrice(&tier, cm.Capability, cm.Protocol) {
+		if !tier.Enabled {
 			continue
 		}
 		if normalized != nil && normalized.Image != nil && normalized.Image.Parameters != nil {
@@ -209,20 +201,12 @@ func (s *Service) sanitizeChannelModel(cm *model.ChannelModel) (PublicChannelMod
 			}
 		}
 		publicTiers = append(publicTiers, PublicChannelModelPriceTier{
-			ID:                           tier.ID,
-			Selector:                     model.DecodeSKUSelector(tier.SelectorJSON),
-			Resolution:                   tier.Resolution,
-			VideoSeconds:                 tier.VideoSeconds,
-			BillingMode:                  tier.BillingMode,
-			UnitPriceMicrocredits:        tier.UnitPriceMicrocredits,
-			InputTokenPriceMicrocredits:  tier.InputTokenPriceMicrocredits,
-			OutputTokenPriceMicrocredits: tier.OutputTokenPriceMicrocredits,
-			CachedTokenPriceMicrocredits: tier.CachedTokenPriceMicrocredits,
+			ID:           tier.ID,
+			Selector:     model.DecodeSKUSelector(tier.SelectorJSON),
+			Resolution:   tier.Resolution,
+			VideoSeconds: tier.VideoSeconds,
 		})
 	}
-
-	// 展示价格和 Available 必须从同一批有效档位派生，不能回退旧标量价格制造“可用”假象。
-	pricingMode, displayPrice, priceLabel := computeChannelModelPriceDisplay(cm, publicTiers)
 
 	var capabilityConfig map[string]any
 	if normalized != nil {
@@ -257,44 +241,8 @@ func (s *Service) sanitizeChannelModel(cm *model.ChannelModel) (PublicChannelMod
 		CapabilityConfig: capabilityConfig,
 		DefaultOptions:   defaultOptions,
 		PriceTiers:       publicTiers,
-		PricingMode:      pricingMode,
-		DisplayPrice:     displayPrice,
-		PriceLabel:       priceLabel,
 		Available:        len(publicTiers) > 0,
 	}, nil
-}
-
-// computeChannelModelPriceDisplay 从已过滤的公开价格档生成展示信息。
-// 无有效档位时明确标记未配置；多档位不猜测用户最终规格。
-func computeChannelModelPriceDisplay(cm *model.ChannelModel, priceTiers []PublicChannelModelPriceTier) (string, *int64, string) {
-	if len(priceTiers) == 0 {
-		return "provider", nil, "未配置"
-	}
-
-	if len(priceTiers) == 1 {
-		tier := priceTiers[0]
-		price := getChannelTierDisplayPrice(tier)
-		if price > 0 {
-			return "provider", &price, ""
-		}
-	}
-
-	// 多个价格档，显示"按渠道规格计费"
-	return "provider", nil, "按渠道规格计费"
-}
-
-// getChannelTierDisplayPrice 获取渠道价格档的展示价格
-func getChannelTierDisplayPrice(tier PublicChannelModelPriceTier) int64 {
-	if tier.BillingMode == "fixed_request" || tier.BillingMode == "per_second" {
-		return tier.UnitPriceMicrocredits
-	}
-	if tier.OutputTokenPriceMicrocredits > 0 {
-		return tier.OutputTokenPriceMicrocredits
-	}
-	if tier.InputTokenPriceMicrocredits > 0 {
-		return tier.InputTokenPriceMicrocredits
-	}
-	return 0
 }
 
 // channelModelMatchesIntent 使用与任务 admission 相同的服务端能力合同过滤目录。

@@ -192,7 +192,7 @@ func TestCloudAgentCharacterReferenceUsesDefinitionAndTurnaround(t *testing.T) {
 	if err := db.Model(&model.Asset{}).Where("id = ?", "character-asset").Update("primary_version_id", "character-v1").Error; err != nil {
 		t.Fatal(err)
 	}
-	if err := validateCloudAgentPreparedAdmission(service.repo, "user", prepared, &model.Task{ProjectID: canvas.ID}, nil, doc, plan.Args); err == nil || !strings.Contains(err.Error(), "角色卡版本已变化") {
+	if err := validateCloudAgentPreparedAdmission(service.repo, "user", prepared, &model.Task{ProjectID: canvas.ID}, doc, plan.Args); err == nil || !strings.Contains(err.Error(), "角色卡版本已变化") {
 		t.Fatalf("approved character version drift not rejected: %v", err)
 	}
 }

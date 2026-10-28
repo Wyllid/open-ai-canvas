@@ -1,10 +1,9 @@
-// 逻辑模型的前台目录与价格展示：把后台配置的逻辑模型投影成用户可见的列表和价格档。
+// 逻辑模型的前台目录：把后台配置的逻辑模型投影成用户可见的列表和规格档。
 
 package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 	"strings"
 
@@ -32,8 +31,8 @@ func (s *Service) PublicLogicalModels(intent *ModelRequestIntent) ([]PublicLogic
 			available = false
 			if coverageValid {
 				for _, route := range cached.Routes {
-					priceCompatible := cached.Model.PricePolicy != "channel" || channelModelHasCompatiblePriceTier(route.ChannelModel, resolvedIntent, route.CapabilitySpec)
-					if route.Route.Enabled && route.Route.Weight > 0 && !s.logicalRouteBlocked(route) && MatchCapability(route.CapabilitySpec, resolvedIntent).Matched && priceCompatible {
+					specCompatible := channelModelHasCompatiblePriceTier(route.ChannelModel, resolvedIntent, route.CapabilitySpec)
+					if route.Route.Enabled && route.Route.Weight > 0 && !s.logicalRouteBlocked(route) && MatchCapability(route.CapabilitySpec, resolvedIntent).Matched && specCompatible {
 						available = true
 						break
 					}
@@ -61,28 +60,16 @@ func publicLogicalModel(cached cachedLogicalModel, available bool) PublicLogical
 		}
 	}
 
-	priceTiers := publicLogicalModelPriceTiers(cached)
-	pricingMode, displayPrice, priceLabel := computeModelPriceDisplay(item, priceTiers)
-
 	return PublicLogicalModel{
 		ID: item.ID, Code: item.Code, Name: item.Name, Icon: item.Icon,
 		Description: item.Description, Capability: item.Capability, SortOrder: item.SortOrder,
-		PricePolicy: item.PricePolicy, PricingMode: pricingMode, DisplayPrice: displayPrice,
-		PriceLabel: priceLabel, BillingMode: item.BillingMode,
-		UnitPriceMicrocredits:   item.UnitPriceMicrocredits,
-		InputPriceMicrocredits:  item.InputPriceMicrocredits,
-		OutputPriceMicrocredits: item.OutputPriceMicrocredits,
-		CachedPriceMicrocredits: item.CachedPriceMicrocredits,
-		PriceTiers:              priceTiers, LegacyModelIDs: decodeLegacyModelIDs(item.LegacyModelIDsJSON),
+		PriceTiers: publicLogicalModelPriceTiers(cached), LegacyModelIDs: decodeLegacyModelIDs(item.LegacyModelIDsJSON),
 		CapabilitySpec: productSpec, CapabilityProfiles: profiles,
 		DefaultOptions: cached.Defaults, Available: available,
 	}
 }
 
 func publicLogicalModelPriceTiers(cached cachedLogicalModel) []PublicLogicalModelPriceTier {
-	if cached.Model.PricePolicy != "channel" {
-		return []PublicLogicalModelPriceTier{}
-	}
 	result := make([]PublicLogicalModelPriceTier, 0)
 	seen := make(map[string]bool)
 	for _, route := range cached.Routes {
@@ -90,7 +77,7 @@ func publicLogicalModelPriceTiers(cached cachedLogicalModel) []PublicLogicalMode
 			continue
 		}
 		for _, tier := range route.ChannelModel.PriceTiers {
-			if !tier.Enabled || !tier.PriceConfigured {
+			if !tier.Enabled {
 				continue
 			}
 			selector := skuSelectorForTier(tier)
@@ -104,12 +91,11 @@ func publicLogicalModelPriceTiers(cached cachedLogicalModel) []PublicLogicalMode
 			if selectorErr != nil {
 				continue
 			}
-			key := fmt.Sprintf("%s:%s:%d:%d:%d:%d", selectorKey, tier.BillingMode, tier.UnitPriceMicrocredits, tier.InputTokenPriceMicrocredits, tier.OutputTokenPriceMicrocredits, tier.CachedTokenPriceMicrocredits)
-			if seen[key] {
+			if seen[selectorKey] {
 				continue
 			}
-			seen[key] = true
-			result = append(result, PublicLogicalModelPriceTier{Selector: selector, Resolution: normalizeChannelModelTierResolution(tier.Resolution), VideoSeconds: tier.VideoSeconds, BillingMode: tier.BillingMode, UnitPriceMicrocredits: tier.UnitPriceMicrocredits, InputTokenPriceMicrocredits: tier.InputTokenPriceMicrocredits, OutputTokenPriceMicrocredits: tier.OutputTokenPriceMicrocredits, CachedTokenPriceMicrocredits: tier.CachedTokenPriceMicrocredits})
+			seen[selectorKey] = true
+			result = append(result, PublicLogicalModelPriceTier{Selector: selector, Resolution: normalizeChannelModelTierResolution(tier.Resolution), VideoSeconds: tier.VideoSeconds})
 		}
 	}
 	return result

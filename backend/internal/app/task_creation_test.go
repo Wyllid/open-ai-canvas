@@ -69,12 +69,12 @@ func TestResolveTaskModelSelectionAllowsExplicitSystemChannelWhenFrontendModelsE
 	}
 	channelModel := model.ChannelModel{
 		ID: "channel-model-1", ChannelID: channel.ID, ModelKey: "agnes-video-2.5", Capability: "video",
-		Protocol: model.ChannelInterfaceNewAPIVideo, BillingMode: "per_second", PriceConfigured: true, Enabled: true,
+		Protocol: model.ChannelInterfaceNewAPIVideo, Enabled: true,
 		CapabilityConfigJSON: string(capabilityJSON),
 	}
 	priceTier := model.ChannelModelPriceTier{
 		ID: "tier-1", ChannelModelID: channelModel.ID, SelectorKey: `{}`, SelectorJSON: `{}`,
-		BillingMode: "per_second", UnitPriceMicrocredits: 1, PriceConfigured: true, Enabled: true,
+		Enabled: true,
 	}
 	if err := db.Create(&channel).Error; err != nil {
 		t.Fatal(err)
@@ -419,7 +419,7 @@ func createSystemChannelSelectionFixture(t *testing.T, capability string, protoc
 func newSelectionPriceTier(id string, selector string, providerModelKey string, billingMode string) model.ChannelModelPriceTier {
 	return model.ChannelModelPriceTier{
 		ID: id, SelectorKey: selector, SelectorJSON: selector, ProviderModelKey: providerModelKey,
-		BillingMode: billingMode, UnitPriceMicrocredits: 10, PriceConfigured: true, Enabled: true,
+		Enabled: true,
 	}
 }
 

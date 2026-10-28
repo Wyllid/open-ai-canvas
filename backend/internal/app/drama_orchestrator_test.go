@@ -312,19 +312,6 @@ func TestDramaTailFailureRetriesPaidOutputWithoutNewGeneration(t *testing.T) {
 	}
 }
 
-func TestDramaBudgetPausesDispatch(t *testing.T) {
-	svc, fake := newDramaTestService(t)
-	project := createTestDrama(t, svc, DramaReviewAuto).Project.ID
-	if err := svc.repo.UpdateDramaProduction(project, map[string]any{"budget_microcredits": 100, "spent_microcredits": 100}); err != nil {
-		t.Fatal(err)
-	}
-	runDramaTicks(t, svc, project, 1)
-	p, _ := svc.repo.DramaProduction(project)
-	if p.Status != "paused" || p.PauseReason != dramaBudgetPauseReason || len(fake.requests) != 0 {
-		t.Fatalf("budget: %+v", p)
-	}
-}
-
 func TestDramaMissingVideoContractFails(t *testing.T) {
 	svc, fake := newDramaTestService(t)
 	if _, err := svc.dramaVideoProfile(DramaModelChoice{ChannelID: "missing", ModelKey: "missing"}); err == nil {

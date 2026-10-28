@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
+	"yingce/backend/internal/service"
+
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 	"github.com/gin-gonic/gin"
-	"yingce/backend/internal/service"
 )
 
 func RegisterCanvasRealtimeRoutes(r *gin.RouterGroup, svc *service.Service) {

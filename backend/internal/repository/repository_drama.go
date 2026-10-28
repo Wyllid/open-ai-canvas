@@ -465,7 +465,7 @@ func (r *Repository) SaveDramaProductionProgress(production *model.DramaProducti
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		now := time.Now()
 		if err := tx.Model(&model.DramaProduction{}).Where("project_id = ?", production.ProjectID).Updates(map[string]any{
-			"stage": production.Stage, "bible_json": production.BibleJSON, "spent_microcredits": production.SpentMicrocredits,
+			"stage": production.Stage, "bible_json": production.BibleJSON,
 			"plan_done": production.PlanDone, "last_tick_at": production.LastTickAt, "updated_at": now,
 		}).Error; err != nil {
 			return err

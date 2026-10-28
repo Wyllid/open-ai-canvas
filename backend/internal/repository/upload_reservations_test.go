@@ -8,9 +8,10 @@ import (
 	"testing"
 	"time"
 
+	"yingce/backend/internal/model"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"yingce/backend/internal/model"
 )
 
 func uploadReservationTestDB(t *testing.T) (*gorm.DB, *Repository, *Repository) {

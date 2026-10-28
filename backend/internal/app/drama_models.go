@@ -28,14 +28,14 @@ func (s *Service) dramaModelOptions(capability string) ([]DramaModelOption, []Dr
 	options := []DramaModelOption{}
 	unavailable := []DramaModelUnavailable{}
 	seen := map[string]bool{}
-	add := func(choice DramaModelChoice, key, label, priceLabel string, available bool) {
+	add := func(choice DramaModelChoice, key, label string, available bool) {
 		if seen[key] {
 			return
 		}
 		seen[key] = true
 		reason := ""
 		if !available {
-			reason = "模型暂不可用或未配置有效价格"
+			reason = "模型暂不可用"
 		} else {
 			reason = s.dramaChoiceIssue(choice, capability)
 		}
@@ -43,7 +43,7 @@ func (s *Service) dramaModelOptions(capability string) ([]DramaModelOption, []Dr
 			unavailable = append(unavailable, DramaModelUnavailable{Choice: choice, Reason: reason})
 			return
 		}
-		options = append(options, s.dramaModelOption(choice, capability, label, priceLabel))
+		options = append(options, s.dramaModelOption(choice, capability, label))
 	}
 	frontendEnabled, err := s.FeatureEnabled(FeatureFrontendModels)
 	if err != nil {
@@ -58,7 +58,7 @@ func (s *Service) dramaModelOptions(capability string) ([]DramaModelOption, []Dr
 			if normalizeCapability(item.Capability) != capability {
 				continue
 			}
-			add(DramaModelChoice{LogicalModelID: item.ID, Label: item.Name, PriceLabel: item.PriceLabel}, "l:"+item.ID, item.Name, item.PriceLabel, item.Available)
+			add(DramaModelChoice{LogicalModelID: item.ID, Label: item.Name}, "l:"+item.ID, item.Name, item.Available)
 		}
 	}
 	catalog, err := s.ModelCatalog(nil)
@@ -71,7 +71,7 @@ func (s *Service) dramaModelOptions(capability string) ([]DramaModelOption, []Dr
 				continue
 			}
 			label := firstNonEmpty(item.DisplayName, item.ModelKey)
-			add(DramaModelChoice{ChannelID: channel.ID, ModelKey: item.ModelKey, Label: label, PriceLabel: item.PriceLabel}, "c:"+channel.ID+":"+item.ModelKey, label, item.PriceLabel, item.Available)
+			add(DramaModelChoice{ChannelID: channel.ID, ModelKey: item.ModelKey, Label: label}, "c:"+channel.ID+":"+item.ModelKey, label, item.Available)
 		}
 	}
 	return options, unavailable, nil
@@ -247,24 +247,7 @@ func (s *Service) dramaVideoProfile(choice DramaModelChoice) (dramaVideoProfile,
 	return profile, nil
 }
 
-func (s *Service) quoteDramaChoice(choice DramaModelChoice, intent ModelRequestIntent) (int64, bool) {
-	if choice.Empty() {
-		return 0, false
-	}
-	var quote *LogicalModelQuote
-	var err error
-	if choice.LogicalModelID != "" {
-		quote, err = s.QuoteLogicalModel(choice.LogicalModelID, intent)
-	} else {
-		quote, err = s.QuoteChannelModel(ChannelModelQuoteRequest{ChannelID: choice.ChannelID, ModelKey: choice.ModelKey, Intent: intent})
-	}
-	if err != nil || quote == nil {
-		return 0, false
-	}
-	return quote.AmountMicrocredits, true
-}
-
-// EstimateDrama 依据真实报价估算整部剧的费用区间；数量按经验比例推算，结果只用于预算决策。
+// EstimateDrama 估算整部剧的集数、镜头与各类调用次数；数量按经验比例推算，只用于规划。
 func (s *Service) EstimateDrama(req DramaEstimateRequest) (DramaEstimate, error) {
 	settings := req.Settings.normalized()
 	models, err := s.resolveDramaModels(settings.Models)
@@ -296,20 +279,7 @@ func (s *Service) EstimateDrama(req DramaEstimateRequest) (DramaEstimate, error)
 		TextCalls:       1 + (chapters+9)/10 + episodes*(1+segmentsPerEpisode),
 		DurationMinutes: episodes * settings.EpisodeSeconds / 60,
 	}
-	textCost, okText := s.quoteDramaChoice(models.Text, ModelRequestIntent{Capability: "text"})
-	imageCost, okImage := s.quoteDramaChoice(models.Image, *dramaModelIntent("image"))
-	videoCost, okVideo := s.quoteDramaChoice(models.Video, ModelRequestIntent{Capability: "video", Operation: "image_to_video", Inputs: map[string]int{"image": 1}, Options: map[string]any{"videoSeconds": itoa(production.SnapVideoSeconds(int64(segmentSeconds)*1000, profile.Durations))}})
-	total := int64(estimate.TextCalls)*textCost + int64(estimate.Images)*imageCost + int64(estimate.Videos)*videoCost
-	sample := textCost*int64(2+segmentsPerEpisode) + int64(casts)*imageCost + int64(segmentsPerEpisode)*videoCost
-	estimate.Priced = okText || okImage || okVideo
-	estimate.MinMicrocredits = total * 9 / 10
-	// 上限包含失败重试与返工的余量。
-	estimate.MaxMicrocredits = total * 14 / 10
-	estimate.SampleMicrocredit = sample
 	notes := []string{}
-	if !(okText && okImage && okVideo) {
-		notes = append(notes, "部分模型暂无报价，费用按已知部分估算")
-	}
 	if missing := missingDramaCapabilities(models); len(missing) > 0 {
 		notes = append(notes, "尚无可用的"+strings.Join(missing, "、")+"模型")
 	}
@@ -442,8 +412,8 @@ func dramaRatioValue(value string) (float64, bool) {
 
 // dramaSizeRejected 判断准入错误是否只因尺寸参数；只看结构化字段，不解析文案。
 
-func (s *Service) dramaModelOption(choice DramaModelChoice, capability, label, priceLabel string) DramaModelOption {
-	option := DramaModelOption{Choice: choice, Capability: capability, Label: label, PriceLabel: priceLabel}
+func (s *Service) dramaModelOption(choice DramaModelChoice, capability, label string) DramaModelOption {
+	option := DramaModelOption{Choice: choice, Capability: capability, Label: label}
 	if capability == "video" {
 		if profile, err := s.dramaVideoProfile(choice); err == nil {
 			option.MaxVideoSeconds = profile.maxSeconds()

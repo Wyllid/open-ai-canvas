@@ -23,20 +23,19 @@ func (p *queuedChannelExecutionProbe) processTask(context.Context, model.Task) (
 
 func TestQueuedCustomChannelRecheck(t *testing.T) {
 	for _, tc := range []struct {
-		name                              string
-		retry, enabled, system, uncertain bool
-		dispatch                          string
+		name                   string
+		retry, enabled, system bool
+		dispatch               string
 	}{
 		{name: "new"}, {name: "retry", retry: true},
 		{name: "enabled", enabled: true}, {name: "system", system: true},
-		{name: "accepted", dispatch: "accepted", uncertain: true},
-		{name: "submission_unknown", dispatch: "submission_unknown", uncertain: true},
-		{name: "billing_review", uncertain: true},
+		{name: "accepted", dispatch: "accepted"},
+		{name: "submission_unknown", dispatch: "submission_unknown"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			s, db := newMediaRecoveryTestService(t)
 			actor := &model.User{ID: "admin", Role: "admin"}
-			features := FeatureAvailability{CustomChannelsEnabled: true, TaskCenterEnabled: true, CreditsEnabled: true}
+			features := FeatureAvailability{CustomChannelsEnabled: true, TaskCenterEnabled: true}
 			if _, err := s.UpdateFeatureAvailability(actor, features); err != nil {
 				t.Fatal(err)
 			}
@@ -61,28 +60,16 @@ func TestQueuedCustomChannelRecheck(t *testing.T) {
 			}
 			if tc.retry {
 				var err error
-				task, err = s.repo.RetryTaskWithBilling(task.UserID, task, nil, 10)
+				task, err = s.repo.RetryTask(task.UserID, task, 10)
 				if err != nil {
 					t.Fatal(err)
 				}
-			}
-			order := model.BillingOrder{ID: newID(), UserID: task.UserID, TaskID: task.ID, IdempotencyKey: newID(), Status: model.BillingStatusReserved, AmountMicrocredits: 100, ReservedAmountMicrocredits: 100}
-			if tc.uncertain && tc.dispatch == "" {
-				order.Status = model.BillingStatusUncertain
 			}
 			if tc.dispatch != "" {
 				attempt := &model.RouteAttempt{ID: newID(), TaskID: task.ID, RouteRun: task.RouteRun, DispatchState: tc.dispatch, Status: "selected", AttemptNumber: 1}
 				if err := db.Create(attempt).Error; err != nil {
 					t.Fatal(err)
 				}
-			}
-			for _, value := range []any{&order, &model.CreditAccount{UserID: task.UserID, AvailableMicrocredits: 900, ReservedMicrocredits: 100}} {
-				if err := db.Create(value).Error; err != nil {
-					t.Fatal(err)
-				}
-			}
-			if err := db.Model(task).Update("billing_order_id", order.ID).Error; err != nil {
-				t.Fatal(err)
 			}
 			features.CustomChannelsEnabled = tc.enabled
 			if _, err := s.UpdateFeatureAvailability(actor, features); err != nil {
@@ -105,21 +92,6 @@ func TestQueuedCustomChannelRecheck(t *testing.T) {
 			}
 			if err == nil || !strings.Contains(stored.Error, wantError) || stored.Status != model.TaskStatusFailed || probe.calls != wantCalls || stored.CompletedAt == nil || stored.LeaseOwner != "" {
 				t.Errorf("queued channel rejection: err=%v status=%s error=%q calls=%d", err, stored.Status, stored.Error, probe.calls)
-			}
-			got, err := s.repo.BillingOrder(order.ID)
-			if err != nil {
-				t.Fatal(err)
-			}
-			var account model.CreditAccount
-			if err := db.First(&account, "user_id = ?", task.UserID).Error; err != nil {
-				t.Fatal(err)
-			}
-			wantStatus, available, reserved := model.BillingStatusRefunded, int64(1000), int64(0)
-			if tc.uncertain {
-				wantStatus, available, reserved = model.BillingStatusUncertain, 900, 100
-			}
-			if got.Status != wantStatus || account.AvailableMicrocredits != available || account.ReservedMicrocredits != reserved {
-				t.Errorf("reservation not refunded: status=%s available=%d reserved=%d", got.Status, account.AvailableMicrocredits, account.ReservedMicrocredits)
 			}
 		})
 	}

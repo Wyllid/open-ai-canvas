@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"yingce/backend/internal/model"
-	"yingce/backend/internal/repository"
 )
 
 func (s *Service) createRouteAttempt(task *model.Task, routed *RoutedModel, attemptNumber int) (*model.RouteAttempt, error) {
@@ -157,12 +156,6 @@ func (s *Service) routedModelForTaskSelection(task *model.Task) (*RoutedModel, e
 	if err != nil {
 		return nil, err
 	}
-	if logicalModel.PricePolicy == "channel" && !channelModel.PriceConfigured {
-		return nil, errors.New("任务使用的模型服务价格配置已失效")
-	}
-	if logicalModel.PricePolicy == "unified" && logicalModel.BillingMode == "token" && !supportsTokenBilling(logicalModel.Capability, channelModel.Protocol) {
-		return nil, errors.New("任务使用的模型服务不再支持当前 Token 计费配置")
-	}
 	routed := &RoutedModel{LogicalModel: *logicalModel, Revision: *revision, Route: *route, ChannelModel: *channelModel, CapabilitySpec: capabilitySpec, Defaults: defaults}
 	return routed, nil
 }
@@ -214,7 +207,7 @@ func (s *Service) switchTaskToNextRoute(task *model.Task, attempts []model.Route
 	}
 	channelModelByID := make(map[string]model.ChannelModel, len(channelModels))
 	for _, channelModel := range channelModels {
-		if channelModel.Enabled && enabledSystemChannels[channelModel.ChannelID] && (logicalModel.PricePolicy != "channel" || channelModelHasActivePriceTier(channelModel)) {
+		if channelModel.Enabled && enabledSystemChannels[channelModel.ChannelID] {
 			channelModelByID[channelModel.ID] = channelModel
 		}
 	}
@@ -243,17 +236,14 @@ func (s *Service) switchTaskToNextRoute(task *model.Task, attempts []model.Route
 	for _, attempt := range attempts {
 		tried[attempt.RouteID] = true
 	}
-	eligible := s.eligibleLogicalRoutes(candidates, intent, tried, logicalModel.PricePolicy == "channel")
+	eligible := s.eligibleLogicalRoutes(candidates, intent, tried)
 	if len(eligible) == 0 {
 		return nil, BadAuthRequest("当前模型暂时无法满足这组输入和参数")
 	}
 	selected := weightedRoute(eligible)
-	var priceTier *model.ChannelModelPriceTier
-	if logicalModel.PricePolicy == "channel" {
-		priceTier = channelModelPriceTierForIntent(selected.ChannelModel, intent, selected.CapabilitySpec)
-		if priceTier == nil {
-			return nil, BadAuthRequest("当前模型尚未配置所选规格的价格")
-		}
+	priceTier := channelModelPriceTierForIntent(selected.ChannelModel, intent, selected.CapabilitySpec)
+	if priceTier == nil {
+		return nil, BadAuthRequest("当前模型尚未配置所选规格")
 	}
 	routed := &RoutedModel{LogicalModel: *logicalModel, Revision: *revision, Route: selected.Route, ChannelModel: selected.ChannelModel, CapabilitySpec: selected.CapabilitySpec, PriceTier: priceTier, Defaults: defaults, Intent: intent}
 	nextInput := applyRoutedProviderSelection(input, routed)
@@ -267,36 +257,8 @@ func (s *Service) switchTaskToNextRoute(task *model.Task, attempts []model.Route
 	if err != nil {
 		return nil, err
 	}
-	var replacement *model.BillingOrder
-	if logicalModel.PricePolicy == "channel" && task.BillingOrderID != "" {
-		config, _ := nextInput["config"].(map[string]any)
-		capability := normalizeCapability(fmt.Sprint(nextInput["mode"]))
-		if capability == "" {
-			capability = capabilityFromTaskType(task.Type)
-		}
-		priceTierID, _ := config["priceTierId"].(string)
-		replacement, err = s.newBillingOrderWithPriceTier(task.UserID, task.ID, "route-switch:"+task.ID+":"+selected.Route.ID, selected.ChannelModel.ChannelID, selected.ChannelModel.ModelKey, capability, firstNonEmpty(strings.TrimSpace(task.Operation), task.Type), requestedBillingQuantity(capability, config), estimateTaskBillingTokens(nextInput, capability), strings.TrimSpace(priceTierID), intent)
-		if err != nil {
-			return nil, err
-		}
-		replacement.Model = logicalModel.Code
-	}
 	previousRouteID := task.RouteID
-	var costOrder model.BillingOrder
-	if replacement != nil {
-		costOrder.BillingCostSnapshot = replacement.BillingCostSnapshot
-	} else if task.BillingOrderID != "" {
-		config, _ := nextInput["config"].(map[string]any)
-		capability := selected.ChannelModel.Capability
-		snapshotCreditCost(&costOrder, channelModelPriceTierForIntent(selected.ChannelModel, intent, selected.CapabilitySpec), requestedBillingQuantity(capability, config), estimateTaskBillingTokens(nextInput, capability))
-	}
-	if err := s.repo.SwitchTaskLogicalRoute(task.ID, previousRouteID, selected.Route.ID, string(encoded), task.BillingOrderID, selected.ChannelModel.ChannelID, selected.ChannelModel.ID, replacement, costOrder.BillingCostSnapshot); err != nil {
-		if errors.Is(err, repository.ErrInsufficientCredits) {
-			return nil, BadAuthRequest("模型服务价格发生变化，当前积分余额不足")
-		}
-		if errors.Is(err, repository.ErrBillingChargeLimit) {
-			return nil, creationConflict("备用线路报价超过已批准费用上限，未切换线路；请重新确认生成报价")
-		}
+	if err := s.repo.SwitchTaskLogicalRoute(task.ID, previousRouteID, selected.Route.ID, string(encoded), selected.ChannelModel.ID); err != nil {
 		return nil, err
 	}
 	task.RouteID = selected.Route.ID
@@ -441,9 +403,6 @@ func (s *Service) resolveArchivedTaskRoute(task *model.Task, intent ModelRequest
 	}
 	if match := MatchCapability(capabilitySpec, intent); !match.Matched {
 		return nil, BadAuthRequest("历史任务原供应线路不再支持这些参数：" + strings.Join(match.Reasons, "；"))
-	}
-	if logicalModel.PricePolicy == "channel" && !channelModel.PriceConfigured {
-		return nil, BadAuthRequest("历史任务原模型价格配置已失效，无法重试")
 	}
 	return &RoutedModel{LogicalModel: *logicalModel, Revision: *revision, Route: *route, ChannelModel: *channelModel, CapabilitySpec: capabilitySpec, Defaults: defaults, Intent: intent}, nil
 }

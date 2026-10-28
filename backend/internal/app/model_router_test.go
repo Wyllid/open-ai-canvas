@@ -12,7 +12,7 @@ func TestImagePriceTiersMatchResolutionAndActualReferences(t *testing.T) {
 	for _, operation := range []string{"text_to_image", "image_to_image"} {
 		for _, quality := range []string{"1k", "2k", "4k"} {
 			channelModel.PriceTiers = append(channelModel.PriceTiers, model.ChannelModelPriceTier{
-				ID: operation + "-" + quality, SelectorJSON: fmt.Sprintf(`{"operation":%q,"quality":%q}`, operation, quality), Enabled: true, PriceConfigured: true,
+				ID: operation + "-" + quality, SelectorJSON: fmt.Sprintf(`{"operation":%q,"quality":%q}`, operation, quality), Enabled: true,
 			})
 		}
 	}
@@ -113,8 +113,8 @@ func TestSKUSelectorSeparatesImageQualityAndResolution(t *testing.T) {
 		t.Fatalf("selector = %#v, want quality=medium and resolution=2k", selector)
 	}
 	modelWithTiers := model.ChannelModel{PriceTiers: []model.ChannelModelPriceTier{
-		{ID: "legacy-2k", SelectorJSON: `{"quality":"2k"}`, Enabled: true, PriceConfigured: true},
-		{ID: "new-medium-2k", SelectorJSON: `{"quality":"medium","resolution":"2k"}`, Enabled: true, PriceConfigured: true},
+		{ID: "legacy-2k", SelectorJSON: `{"quality":"2k"}`, Enabled: true},
+		{ID: "new-medium-2k", SelectorJSON: `{"quality":"medium","resolution":"2k"}`, Enabled: true},
 	}}
 	matched := channelModelPriceTierForIntent(modelWithTiers, ModelRequestIntent{Capability: "image", Options: map[string]any{"quality": "medium", "size": "2048x2048"}})
 	if matched == nil || matched.ID != "new-medium-2k" {
@@ -146,8 +146,8 @@ func TestSKUSelectorIncludesVideoReferenceImageCount(t *testing.T) {
 		t.Fatalf("selector = %#v", selector)
 	}
 	modelWithTiers := model.ChannelModel{PriceTiers: []model.ChannelModelPriceTier{
-		{SelectorJSON: `{"vquality":"720p","imageCount":"5"}`, Enabled: true, PriceConfigured: true},
-		{SelectorJSON: `{"vquality":"720p","imageCount":"9"}`, Enabled: true, PriceConfigured: true},
+		{SelectorJSON: `{"vquality":"720p","imageCount":"5"}`, Enabled: true},
+		{SelectorJSON: `{"vquality":"720p","imageCount":"9"}`, Enabled: true},
 	}}
 	matched := channelModelPriceTierForIntent(modelWithTiers, ModelRequestIntent{Capability: "video", Inputs: map[string]int{"image": 5}, Options: map[string]any{"vquality": "720p"}})
 	if matched == nil || matched.SelectorJSON != `{"vquality":"720p","imageCount":"5"}` {
@@ -169,8 +169,8 @@ func TestSKUSelectorTreatsAnyVideoReferenceAsVideoToVideo(t *testing.T) {
 	}
 
 	modelWithTiers := model.ChannelModel{PriceTiers: []model.ChannelModelPriceTier{
-		{SelectorJSON: `{}`, Enabled: true, PriceConfigured: true},
-		{SelectorJSON: `{"operation":"video_to_video"}`, Enabled: true, PriceConfigured: true},
+		{SelectorJSON: `{}`, Enabled: true},
+		{SelectorJSON: `{"operation":"video_to_video"}`, Enabled: true},
 	}}
 	matched := channelModelPriceTierForIntent(modelWithTiers, intent)
 	if matched == nil || matched.SelectorJSON != `{"operation":"video_to_video"}` {
@@ -193,8 +193,8 @@ func TestSKUSelectorTreatsAnyImageReferenceCountAsImageToVideo(t *testing.T) {
 	}
 
 	modelWithTiers := model.ChannelModel{PriceTiers: []model.ChannelModelPriceTier{
-		{SelectorJSON: `{}`, Enabled: true, PriceConfigured: true},
-		{SelectorJSON: `{"operation":"image_to_video"}`, Enabled: true, PriceConfigured: true},
+		{SelectorJSON: `{}`, Enabled: true},
+		{SelectorJSON: `{"operation":"image_to_video"}`, Enabled: true},
 	}}
 	matched := channelModelPriceTierForIntent(modelWithTiers, intent)
 	if matched == nil || matched.SelectorJSON != `{"operation":"image_to_video"}` {

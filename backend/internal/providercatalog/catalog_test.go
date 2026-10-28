@@ -92,33 +92,6 @@ func TestActiveFiltersByWindowAndSortsByRank(t *testing.T) {
 	}
 }
 
-func TestPricingAppliesMarkupWithCeil(t *testing.T) {
-	bp, err := MarkupBasisPoints(30)
-	if err != nil || bp != 3000 {
-		t.Fatalf("bp = %d, %v", bp, err)
-	}
-	if got := ApplyMarkup(1_200_000, bp); got != 1_560_000 {
-		t.Fatalf("sale = %d", got)
-	}
-	if got := ApplyMarkup(1, bp); got != 2 {
-		t.Fatalf("sale must round up, got %d", got)
-	}
-	if _, err := MarkupBasisPoints(1000.01); err == nil {
-		t.Fatal("markup above limit must fail")
-	}
-	if _, err := MarkupBasisPoints(10.001); err == nil {
-		t.Fatal("more than two decimals must fail")
-	}
-	video := PriceFor("video", PriceTier{BillingMode: "token", InputPerMillion: 1, OutputPerMillion: 10, CachedPerMillion: 1}, 0)
-	if video.CostInput != 0 || video.CostCached != 0 || video.CostOutput != 10_000_000 {
-		t.Fatalf("video token cost = %#v", video)
-	}
-	text := PriceFor("text", PriceTier{BillingMode: "token", InputPerMillion: 2, OutputPerMillion: 8}, 5000)
-	if text.SaleInput != 3_000_000 || text.SaleOutput != 12_000_000 {
-		t.Fatalf("text token sale = %#v", text)
-	}
-}
-
 func TestSourceFallsBackToPersistedSnapshot(t *testing.T) {
 	fail := false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

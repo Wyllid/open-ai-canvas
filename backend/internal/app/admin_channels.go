@@ -125,7 +125,7 @@ func (s *Service) DuplicateSystemChannel(actor *model.User, id string) (*PublicM
 	}
 	if len(sourceModels) == 0 {
 		for _, name := range channelModelNames(*source) {
-			sourceModels = append(sourceModels, model.ChannelModel{ModelKey: name, ProviderModelKey: name, DisplayName: name, BillingMode: "fixed_request", Enabled: false, PriceVersion: 1})
+			sourceModels = append(sourceModels, model.ChannelModel{ModelKey: name, ProviderModelKey: name, DisplayName: name, Enabled: false})
 		}
 	}
 	channelID, err := s.repo.NextPrefixedID("CHANNEL")

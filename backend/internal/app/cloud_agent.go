@@ -7,16 +7,16 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"math"
 	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
 
-	"gorm.io/gorm"
 	"yingce/backend/internal/kernel"
 	"yingce/backend/internal/model"
 	"yingce/backend/internal/repository"
+
+	"gorm.io/gorm"
 )
 
 const cloudAgentOperation = "cloud_agent"
@@ -39,9 +39,8 @@ type CloudAgentRequest struct {
 	FocusNodeIDs          []string `json:"focusNodeIds,omitempty"`
 	FocusNodeOmittedCount int      `json:"focusNodeOmittedCount,omitempty"`
 	Budget                struct {
-		MaxCredits         float64 `json:"maxCredits"`
-		MaxGenerationTasks int     `json:"maxGenerationTasks,omitempty"`
-		MaxVideoSeconds    int     `json:"maxVideoSeconds,omitempty"`
+		MaxGenerationTasks int `json:"maxGenerationTasks,omitempty"`
+		MaxVideoSeconds    int `json:"maxVideoSeconds,omitempty"`
 		// 0 = 不限制模型调用步数（与官方取消固定截断一致）。正数时夹到上限。
 		MaxSteps int `json:"maxSteps,omitempty"`
 	} `json:"budget"`
@@ -96,7 +95,6 @@ type CloudAgentRun struct {
 	Events         []CloudAgentEvent   `json:"events,omitempty"`
 	Skills         []cloudAgentSkill   `json:"skills,omitempty"`
 	Approval       *cloudAgentApproval `json:"approval,omitempty"`
-	SpentCredits   float64             `json:"spentCredits"`
 	Step           int                 `json:"step"`
 	ActiveMessage  map[string]string   `json:"activeMessage,omitempty"`
 	// 事件已全量落库，运行详情只返回一页，因此必须把"这一页在整条日志里的位置"说清楚：
@@ -218,9 +216,6 @@ func validateCloudAgentRequest(req *CloudAgentRequest) error {
 	}
 	if req.CanvasID == "" && (len(req.ContextScope) > 0 || len(req.FocusNodeIDs) > 0 || req.FocusNodeOmittedCount > 0) {
 		return BadAuthRequest("未绑定画布的对话不能读取画布上下文或焦点节点")
-	}
-	if math.IsNaN(req.Budget.MaxCredits) || math.IsInf(req.Budget.MaxCredits, 0) || req.Budget.MaxCredits <= 0 || req.Budget.MaxCredits > 1000000 {
-		return BadAuthRequest("本轮积分上限必须大于 0 且不超过 1000000")
 	}
 	return nil
 }
@@ -541,7 +536,7 @@ func (s *Service) CreateCloudAgentRun(userID string, req CloudAgentRequest, pare
 		}
 	}
 	task, err := s.CreateTask(userID, CreateTaskRequest{ProjectID: req.CanvasID, Type: "canvas_text", Operation: cloudAgentOperation, Prompt: req.Prompt, Model: req.Model, LogicalModelID: req.LogicalModelID, Input: input,
-		admission: &taskAdmission{ID: id, MaxCharge: int64(math.Floor(req.Budget.MaxCredits * float64(CreditScale))), NonBillable: true}})
+		admission: &taskAdmission{ID: id, ControlPlane: true}})
 	if err != nil {
 		// A concurrent identical request may have won the transaction. Never
 		// replace its result or reserve credits a second time.

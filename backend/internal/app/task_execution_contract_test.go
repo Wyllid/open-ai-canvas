@@ -8,22 +8,21 @@ import (
 	"yingce/backend/internal/model"
 )
 
-func TestAgentMediaAdmissionPersistsOriginAndChargeAuthorization(t *testing.T) {
+func TestAgentMediaAdmissionPersistsOrigin(t *testing.T) {
 	s, _, args := agentMediaFixture(t)
 	run, state := agentMediaRun(t, s, args, "auto")
 	req, _, err := s.prepareCloudAgentMedia(run, &state, agentMediaCall(args))
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.admission = &taskAdmission{ID: "generation-task", MaxCharge: 1000, AgentRunID: run.ID, GenerationID: "generation", ApprovalID: "approval"}
+	req.admission = &taskAdmission{ID: "generation-task", AgentRunID: run.ID, GenerationID: "generation", ApprovalID: "approval"}
 	req.creationPrepare = &creationTaskPreparation{}
 	task, err := s.CreateTask(run.UserID, req)
 	if err != nil {
 		t.Fatal(err)
 	}
-	order := req.creationPrepare.Order
-	if task.AgentRunID != run.ID || task.GenerationID != "generation" || task.ApprovalID != "approval" || order == nil || !order.ChargeLimitSet || task.AuthorizedChargeMicrocredits != order.AmountMicrocredits || order.ChargeLimitMicrocredits != order.AmountMicrocredits {
-		t.Fatalf("incomplete generation authorization: task=%+v order=%+v", task, order)
+	if task.AgentRunID != run.ID || task.GenerationID != "generation" || task.ApprovalID != "approval" {
+		t.Fatalf("incomplete generation origin: task=%+v", task)
 	}
 }
 
@@ -49,7 +48,7 @@ func TestAgentMediaRetryRequiresNewGenerationAuthorization(t *testing.T) {
 			t.Fatalf("media retry retained old authorization: %v", err)
 		}
 		stored, err := s.repo.Task(task.ID)
-		if err != nil || stored.Status != model.TaskStatusFailed || stored.BillingOrderID != "" {
+		if err != nil || stored.Status != model.TaskStatusFailed {
 			t.Fatalf("retry changed old execution: %+v %v", stored, err)
 		}
 	}

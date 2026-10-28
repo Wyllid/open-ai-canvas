@@ -12,8 +12,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/gin-gonic/gin"
 	"yingce/backend/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Agent orchestration is durable; the browser stream never drives execution.

@@ -8,13 +8,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"yingce/backend/internal/model"
 	"yingce/backend/internal/platform"
 	"yingce/backend/internal/repository"
 	"yingce/backend/internal/service"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func TestLoginIdentityAliasSharesThrottle(t *testing.T) {

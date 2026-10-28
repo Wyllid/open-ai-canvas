@@ -266,11 +266,10 @@ func TestCloudAgentExpiredApprovalQuoteContinuesWithoutCharge(t *testing.T) {
 	if run.Status != "running" {
 		t.Fatalf("expired quote terminated the run: %s %s", run.Status, run.FailureMessage)
 	}
-	var tasks, orders int64
+	var tasks int64
 	db.Model(&model.Task{}).Where("type = ?", "canvas_video").Count(&tasks)
-	db.Model(&model.BillingOrder{}).Where("capability = ?", "video").Count(&orders)
-	if tasks != 0 || orders != 0 || state.MediaTaskID != "" {
-		t.Fatalf("expired approval created paid work: tasks=%d orders=%d", tasks, orders)
+	if tasks != 0 || state.MediaTaskID != "" {
+		t.Fatalf("expired approval created work: tasks=%d", tasks)
 	}
 	last := stringField(state.Canonical.Messages[len(state.Canonical.Messages)-1], "content")
 	if !strings.Contains(last, "approval_stale") || !strings.Contains(last, `"taskSubmitted":false`) {

@@ -25,15 +25,7 @@ type mediaCheckpoint struct {
 	Attempts       int                   `json:"attempts"`
 	ManualAttempts int                   `json:"manualAttempts"`
 	LastManualAt   time.Time             `json:"lastManualAt"`
-	// RefundedBilling 是管理员恢复已退款订单时的计费决定：charge 补扣，waive 免除。
-	// 为空时，已退款订单交付成功后也不会自动补扣。
-	RefundedBilling string `json:"refundedBilling,omitempty"`
 }
-
-const (
-	refundedBillingCharge = "charge"
-	refundedBillingWaive  = "waive"
-)
 
 type mediaCheckpointItem struct {
 	Reference  protocol.MediaReference `json:"reference"`
@@ -353,22 +345,6 @@ func (s *Service) RecoverTaskMedia(userID, id string) (*model.Task, error) {
 	if _, err := s.mediaTaskProject(task); err != nil {
 		return nil, err
 	}
-	if err := s.taskBilling().CheckRetryEligibility(task.BillingOrderID); err != nil && !errors.Is(err, errTaskBillingReview) {
-		return nil, err
-	}
-	// Never silently restore a refunded order (the old video recovery does that).
-	if task.BillingOrderID != "" {
-		order, err := s.repo.BillingOrder(task.BillingOrderID)
-		if err != nil {
-			return nil, err
-		}
-		if order.UserID != task.UserID || order.TaskID != task.ID {
-			return nil, BadAuthRequest("任务与计费订单归属不一致")
-		}
-		if order.Status == model.BillingStatusRefunded {
-			return nil, BadAuthRequest("原任务已退款，请联系管理员处理作品，不会自动重新扣费")
-		}
-	}
 	checkpoint, err := s.decodeMediaCheckpoint(task)
 	if err != nil {
 		return nil, err
@@ -407,9 +383,8 @@ func (s *Service) RecoverTaskMedia(userID, id string) (*model.Task, error) {
 }
 
 // AdminRecoverTaskMedia 由管理员把“作品已生成但保存失败”的任务重新排队保存。
-// 与用户重试不同：不受手动次数限制，重新给满自动重试窗口，并且可以处理已退款订单。
-// 订单已退款时必须明确选择补扣（charge）或免除（waive）。
-func (s *Service) AdminRecoverTaskMedia(actor *model.User, logID string, refundedBilling string) (result *model.Task, returnErr error) {
+// 与用户重试不同：不受手动次数限制，并重新给满自动重试窗口。
+func (s *Service) AdminRecoverTaskMedia(actor *model.User, logID string) (result *model.Task, returnErr error) {
 	if err := s.RequireAdmin(actor); err != nil {
 		return nil, err
 	}
@@ -436,16 +411,13 @@ func (s *Service) AdminRecoverTaskMedia(actor *model.User, logID string, refunde
 	if task.UserID != log.UserID {
 		return nil, BadAuthRequest("请求与任务归属不一致")
 	}
-	billingStatus := ""
-	refundedBilling = strings.TrimSpace(refundedBilling)
 	defer func() {
 		outcome := "requeued"
 		if returnErr != nil {
 			outcome = "failed"
 		}
 		_ = s.appendAdminAudit(actor, "api_log.recover_task_media", "api_call_log", log.ID, "人工恢复作品保存", map[string]any{
-			"apiCallLogId": log.ID, "taskId": task.ID, "billingOrderId": task.BillingOrderID, "billingStatus": billingStatus,
-			"refundedBilling": refundedBilling, "outcome": outcome, "error": errorString(returnErr),
+			"apiCallLogId": log.ID, "taskId": task.ID, "outcome": outcome, "error": errorString(returnErr),
 		})
 	}()
 	if task.MediaRecoveryJSON == "" {
@@ -457,31 +429,12 @@ func (s *Service) AdminRecoverTaskMedia(actor *model.User, logID string, refunde
 	if task.Status != model.TaskStatusFailed {
 		return nil, BadAuthRequest("仅保存失败的作品可以恢复")
 	}
-	if task.BillingOrderID != "" {
-		order, err := s.repo.BillingOrder(task.BillingOrderID)
-		if err != nil {
-			return nil, err
-		}
-		if order.UserID != task.UserID || order.TaskID != task.ID {
-			return nil, BadAuthRequest("任务与计费订单归属不一致")
-		}
-		billingStatus = string(order.Status)
-		if order.Status == model.BillingStatusRefunded {
-			if refundedBilling != refundedBillingCharge && refundedBilling != refundedBillingWaive {
-				return nil, BadAuthRequest("原订单已退款，请选择恢复后补扣或免除扣费")
-			}
-		} else {
-			refundedBilling = ""
-		}
-	} else {
-		refundedBilling = ""
-	}
 	checkpoint, err := s.decodeMediaCheckpoint(task)
 	if err != nil {
 		return nil, err
 	}
 	// 管理员恢复给一次完整的自动重试窗口；存储仍不可用时由本地兜底接住。
-	checkpoint.Attempts, checkpoint.StartedAt, checkpoint.RefundedBilling = 0, time.Now(), refundedBilling
+	checkpoint.Attempts, checkpoint.StartedAt = 0, time.Now()
 	data, err := json.Marshal(checkpoint)
 	if err != nil {
 		return nil, err
@@ -517,7 +470,7 @@ func (s *Service) logMediaStage(task model.Task, stage string, started time.Time
 			message += "（存储熔断中，未直传）"
 		}
 	}
-	if logErr := s.LogAPICall(model.ApiCallLog{UserID: task.UserID, TaskID: task.ID, BillingOrderID: task.BillingOrderID, ProviderRequestID: task.ProviderRequestID, Source: "backend-task", Capability: capabilityFromTaskType(task.Type), Model: task.Model, RequestKind: stage, Method: "INTERNAL", Path: "task/media/" + stage, Status: status, ErrorCode: code, Error: message, DurationMs: time.Since(started).Milliseconds()}); logErr != nil {
+	if logErr := s.LogAPICall(model.ApiCallLog{UserID: task.UserID, TaskID: task.ID, ProviderRequestID: task.ProviderRequestID, Source: "backend-task", Capability: capabilityFromTaskType(task.Type), Model: task.Model, RequestKind: stage, Method: "INTERNAL", Path: "task/media/" + stage, Status: status, ErrorCode: code, Error: message, DurationMs: time.Since(started).Milliseconds()}); logErr != nil {
 		_ = s.log(task.UserID, task.ID, "error", "记录作品保存阶段失败", logErr.Error())
 	}
 }
@@ -550,41 +503,6 @@ func (s *Service) finishTaskMediaRecovery(task *model.Task, result map[string]in
 	if err != nil {
 		return s.handleMediaRecoveryFailure(task, &mediaRecoveryError{stage: "register", cause: err})
 	}
-	settle := s.refundedMediaSettlement(task)
 	s.cleanupMediaCheckpointFiles(task)
-	return s.terminalCoordinator().handleSuccessWithSettlement(task, settle)
-}
-
-// refundedMediaSettlement 处理“订单已退款、作品后来交付成功”的结算。未退款订单返回
-// nil，走常规结算。已退款订单只按管理员的决定补扣或免除，绝不静默重新扣费。
-func (s *Service) refundedMediaSettlement(task *model.Task) func() error {
-	if task.BillingOrderID == "" {
-		return nil
-	}
-	order, err := s.repo.BillingOrder(task.BillingOrderID)
-	if err != nil {
-		// 读不到订单时交给常规结算报错，进入待核对并记录日志。
-		return nil
-	}
-	if order.Status != model.BillingStatusRefunded {
-		return nil
-	}
-	action := ""
-	if checkpoint, err := s.decodeMediaCheckpoint(task); err == nil {
-		action = checkpoint.RefundedBilling
-	}
-	return func() error {
-		switch action {
-		case refundedBillingCharge:
-			if err := s.settleRecoveredBilling(task, task.ProviderRequestID); err != nil {
-				return err
-			}
-			_ = s.log(task.UserID, task.ID, "info", "作品已恢复，管理员确认补扣原订单", "")
-		case refundedBillingWaive:
-			_ = s.log(task.UserID, task.ID, "info", "作品已恢复，管理员确认免除扣费", "")
-		default:
-			_ = s.log(task.UserID, task.ID, "warn", "作品已交付，但订单此前已退款，未自动补扣", "")
-		}
-		return nil
-	}
+	return s.terminalCoordinator().handleSuccess(task)
 }

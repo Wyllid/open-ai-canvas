@@ -57,17 +57,15 @@ const (
 
 // DramaProduction 是一个项目的自动制作控制面，项目内唯一。
 type DramaProduction struct {
-	ProjectID          string `json:"projectId" gorm:"primaryKey;size:36"`
-	UserID             string `json:"userId" gorm:"index;size:36"`
-	Status             string `json:"status" gorm:"index;size:24"`
-	Stage              string `json:"stage" gorm:"size:24"`
-	SettingsJSON       string `json:"settingsJson" gorm:"type:text"`
-	BibleJSON          string `json:"bibleJson" gorm:"type:text"`
-	BudgetMicrocredits int64  `json:"budgetMicrocredits"`
-	SpentMicrocredits  int64  `json:"spentMicrocredits"`
-	PlanCursor         int    `json:"planCursor"`
-	PlanDone           bool   `json:"planDone"`
-	SampleApproved     bool   `json:"sampleApproved"`
+	ProjectID      string `json:"projectId" gorm:"primaryKey;size:36"`
+	UserID         string `json:"userId" gorm:"index;size:36"`
+	Status         string `json:"status" gorm:"index;size:24"`
+	Stage          string `json:"stage" gorm:"size:24"`
+	SettingsJSON   string `json:"settingsJson" gorm:"type:text"`
+	BibleJSON      string `json:"bibleJson" gorm:"type:text"`
+	PlanCursor     int    `json:"planCursor"`
+	PlanDone       bool   `json:"planDone"`
+	SampleApproved bool   `json:"sampleApproved"`
 	// AssetsReleased 为 true 后才自动生成角色/场景参考图；手动生图模式下由用户确认资产后打开。
 	AssetsReleased bool       `json:"assetsReleased"`
 	PauseReason    string     `json:"pauseReason" gorm:"size:500"`
@@ -215,11 +213,10 @@ type DramaJob struct {
 	Label       string `json:"label" gorm:"size:240"`
 	PayloadJSON string `json:"-" gorm:"type:text"`
 	// AttemptsJSON 记录每次提交过的任务（重试会清空 TaskID），用于在队列里回看历次请求。
-	AttemptsJSON     string     `json:"-" gorm:"type:text"`
-	Error            string     `json:"error" gorm:"type:text"`
-	CostMicrocredits int64      `json:"costMicrocredits"`
-	StartedAt        *time.Time `json:"startedAt,omitempty"`
-	FinishedAt       *time.Time `json:"finishedAt,omitempty"`
-	CreatedAt        time.Time  `json:"createdAt"`
-	UpdatedAt        time.Time  `json:"updatedAt"`
+	AttemptsJSON string     `json:"-" gorm:"type:text"`
+	Error        string     `json:"error" gorm:"type:text"`
+	StartedAt    *time.Time `json:"startedAt,omitempty"`
+	FinishedAt   *time.Time `json:"finishedAt,omitempty"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
 }

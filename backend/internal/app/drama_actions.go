@@ -41,16 +41,6 @@ func (s *Service) UpdateDramaSettings(userID string, projectID string, req Updat
 		next.Models = models
 		fields["settings_json"] = encodeDramaSettings(next)
 	}
-	if req.BudgetMicrocredits != nil {
-		budget := *req.BudgetMicrocredits
-		if budget < 0 {
-			return DramaSummary{}, BadAuthRequest("预算不能为负数")
-		}
-		fields["budget_microcredits"] = budget
-		if productionRow.PauseReason == dramaBudgetPauseReason && (budget == 0 || productionRow.SpentMicrocredits < budget) {
-			fields["pause_reason"] = ""
-		}
-	}
 	if len(fields) > 0 {
 		if err := s.repo.UpdateDramaProduction(productionRow.ProjectID, fields); err != nil {
 			return DramaSummary{}, err
@@ -77,7 +67,7 @@ func (s *Service) SetDramaRunning(userID string, projectID string, running bool)
 	return s.DramaSummary(userID, projectID)
 }
 
-// resumeDrama 校验模型与预算后把制作切回运行；“继续制作”和所有显式生成请求共用这一入口。
+// resumeDrama 校验模型后把制作切回运行；“继续制作”和所有显式生成请求共用这一入口。
 func (s *Service) resumeDrama(productionRow *model.DramaProduction) error {
 	settings := parseDramaSettings(productionRow.SettingsJSON)
 	models, err := s.resolveDramaModels(settings.Models)
@@ -86,9 +76,6 @@ func (s *Service) resumeDrama(productionRow *model.DramaProduction) error {
 	}
 	if missing := missingDramaCapabilities(models); len(missing) > 0 {
 		return BadAuthRequest("还没有可用的" + strings.Join(missing, "、") + "模型")
-	}
-	if productionRow.BudgetMicrocredits > 0 && productionRow.SpentMicrocredits >= productionRow.BudgetMicrocredits {
-		return BadAuthRequest("已达到预算上限，请先提高预算")
 	}
 	settings.Models = models
 	fields := map[string]any{"status": model.DramaStatusRunning, "pause_reason": "", "settings_json": encodeDramaSettings(settings)}

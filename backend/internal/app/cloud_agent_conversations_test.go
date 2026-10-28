@@ -140,10 +140,6 @@ func TestCloudAgentConversationRejectsStaleParentButReplaysOriginalKey(t *testin
 				t.Fatal(err)
 			}
 			finishConversationTestRun(t, db, child.ID)
-			before, err := s.repo.CreditAccount("user")
-			if err != nil {
-				t.Fatal(err)
-			}
 			stale := req
 			stale.IdempotencyKey = "conversation-child-stale"
 			_, err = s.CreateCloudAgentRun("user", stale, root.ID)
@@ -154,10 +150,6 @@ func TestCloudAgentConversationRejectsStaleParentButReplaysOriginalKey(t *testin
 			replayed, err := s.CreateCloudAgentRun("user", req, root.ID)
 			if err != nil || replayed.ID != child.ID {
 				t.Fatalf("idempotent replay lost priority: %+v %v", replayed, err)
-			}
-			after, err := s.repo.CreditAccount("user")
-			if err != nil || after.AvailableMicrocredits != before.AvailableMicrocredits || after.ReservedMicrocredits != before.ReservedMicrocredits {
-				t.Fatalf("stale/replay requests changed billing: %+v %+v %v", before, after, err)
 			}
 			stale.IdempotencyKey = "conversation-current-tip"
 			if next, err := s.CreateCloudAgentRun("user", stale, child.ID); err != nil || next.ParentID != child.ID {

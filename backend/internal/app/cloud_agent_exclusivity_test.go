@@ -29,10 +29,6 @@ func TestCloudAgentCanvasExclusivityAndTerminalRelease(t *testing.T) {
 			if err != nil || replayed.ID != run.ID {
 				t.Fatalf("replay created another run: %+v %v", replayed, err)
 			}
-			accountBefore, err := s.repo.CreditAccount("user")
-			if err != nil {
-				t.Fatal(err)
-			}
 			for _, state := range []struct {
 				status  string
 				cleanup bool
@@ -53,13 +49,6 @@ func TestCloudAgentCanvasExclusivityAndTerminalRelease(t *testing.T) {
 				if appErr.Retryable || appErr.Details["canvasId"] != req.CanvasID || !ok || activity.RunID != run.ID || activity.Status != state.status || activity.CleanupPending != state.cleanup {
 					t.Fatalf("rejection lost authoritative activity: %+v", appErr)
 				}
-			}
-			accountAfter, err := s.repo.CreditAccount("user")
-			if err != nil {
-				t.Fatal(err)
-			}
-			if accountAfter.AvailableMicrocredits != accountBefore.AvailableMicrocredits || accountAfter.ReservedMicrocredits != accountBefore.ReservedMicrocredits {
-				t.Fatal("rejected requests altered credits")
 			}
 			var count int64
 			if err := db.Model(&model.Task{}).Where("operation = ?", "cloud_agent").Count(&count).Error; err != nil || count != 1 {

@@ -7,13 +7,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"yingce/backend/internal/app"
 	"yingce/backend/internal/database"
 	"yingce/backend/internal/model"
 	"yingce/backend/internal/repository"
 	"yingce/backend/internal/service"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )

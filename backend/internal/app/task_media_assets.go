@@ -40,27 +40,6 @@ func (s *Service) mediaTaskProject(task *model.Task) (string, error) {
 	return project.ID, nil
 }
 
-// AudioOutputDurationMs returns the measured duration of the first persisted
-// audio output. A missing or unmeasured duration is returned as an error so
-// per-second billing can enter review instead of silently undercharging.
-func (s *Service) AudioOutputDurationMs(task model.Task) (int64, error) {
-	if capabilityFromTaskType(task.Type) != "audio" {
-		return 0, nil
-	}
-	resourceID, _ := taskOutputResource(task.ResultJSON, task.Type)
-	if resourceID == "" {
-		return 0, errors.New("音频结果缺少已保存的资源")
-	}
-	resource, err := s.repo.ResourceForUser(task.UserID, resourceID)
-	if err != nil {
-		return 0, err
-	}
-	if resource.DurationMs <= 0 {
-		return 0, errors.New("音频结果缺少有效时长")
-	}
-	return resource.DurationMs, nil
-}
-
 func generationMediaAssetID(taskID string, index int) string {
 	sum := sha256.Sum256([]byte(fmt.Sprintf("materialize:%s:%d", taskID, index)))
 	return "generation_" + hex.EncodeToString(sum[:])

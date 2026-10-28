@@ -69,19 +69,18 @@ func TestAdminProviderCatalogFiltersExpiredAndMarksUnsupported(t *testing.T) {
 	if len(models) != 3 || !models[0].Supported || !models[1].Supported || models[2].Supported || models[2].UnsupportedReason == "" {
 		t.Fatalf("models = %#v", models)
 	}
-	if models[1].PriceTiers[0].CostUnitMicrocredits != 1_200_000 {
-		t.Fatalf("video cost = %#v", models[1].PriceTiers[0])
+	if len(models[1].PriceTiers) != 1 {
+		t.Fatalf("video tiers = %#v", models[1].PriceTiers)
 	}
 }
 
-func TestInstallProviderCatalogCreatesPricedChannel(t *testing.T) {
+func TestInstallProviderCatalogCreatesChannelWithSpecTiers(t *testing.T) {
 	svc, cleanup := newProviderCatalogTestService(t)
 	defer cleanup()
 	admin := &model.User{ID: "admin", Role: model.UserRoleAdmin}
-	override := 50.0
 	channel, err := svc.InstallProviderCatalog(context.Background(), admin, "acme", ProviderCatalogInstallRequest{
-		APIKey: "sk-test", MarkupPercent: 30,
-		Models: []ProviderCatalogInstallModel{{ModelKey: "chat-a", MarkupPercent: &override}, {ModelKey: "video-a"}},
+		APIKey: "sk-test",
+		Models: []ProviderCatalogInstallModel{{ModelKey: "chat-a"}, {ModelKey: "video-a"}},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -108,15 +107,14 @@ func TestInstallProviderCatalogCreatesPricedChannel(t *testing.T) {
 		byKey[item.ModelKey] = item
 	}
 	chat := byKey["chat-a"]
-	if !chat.Enabled || !chat.PriceConfigured || chat.CatalogModelKey != "chat-a" || len(chat.PriceTiers) != 1 {
+	if !chat.Enabled || chat.CatalogModelKey != "chat-a" || len(chat.PriceTiers) != 1 {
 		t.Fatalf("chat = %#v", chat)
 	}
-	tier := chat.PriceTiers[0]
-	if tier.CostPricing.InputTokenPriceMicrocredits != 2_000_000 || tier.InputTokenPriceMicrocredits != 3_000_000 || tier.OutputTokenPriceMicrocredits != 12_000_000 || tier.CachedTokenPriceMicrocredits != 750_000 {
+	if tier := chat.PriceTiers[0]; !tier.Enabled {
 		t.Fatalf("chat tier = %#v", tier)
 	}
 	video := byKey["video-a"]
-	if len(video.PriceTiers) != 1 || video.PriceTiers[0].CostPricing.UnitPriceMicrocredits != 1_200_000 || video.PriceTiers[0].UnitPriceMicrocredits != 1_560_000 {
+	if len(video.PriceTiers) != 1 || !video.PriceTiers[0].Enabled {
 		t.Fatalf("video tiers = %#v", video.PriceTiers)
 	}
 }
@@ -135,7 +133,6 @@ func TestInstallProviderCatalogRejectsInvalidSelections(t *testing.T) {
 		{"not recommended", "acme", ProviderCatalogInstallRequest{APIKey: "k", Models: []ProviderCatalogInstallModel{{ModelKey: "other"}}}, "推荐列表"},
 		{"unsupported", "acme", ProviderCatalogInstallRequest{APIKey: "k", Models: []ProviderCatalogInstallModel{{ModelKey: "unknown-a"}}}, "不支持"},
 		{"missing key", "acme", ProviderCatalogInstallRequest{Models: []ProviderCatalogInstallModel{{ModelKey: "chat-a"}}}, "API Key"},
-		{"bad markup", "acme", ProviderCatalogInstallRequest{APIKey: "k", MarkupPercent: 2000, Models: []ProviderCatalogInstallModel{{ModelKey: "chat-a"}}}, "加价率"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -67,7 +67,7 @@ func (r *Repository) CloudAgentConversationExists(userID, conversationID string)
 var ErrCloudAgentStaleParent = errors.New("对话已有更新，请同步最新一轮后再发送")
 
 // 同一父轮的接续先取得数据库行锁，再检查最新轮次与未落检查点的预留任务。
-// 该检查和任务、积分预留同事务提交，浏览器不能用旧上下文另开收费分支。
+// 该检查和任务创建同事务提交，浏览器不能用旧上下文另开分支。
 func (r *Repository) requireCurrentCloudAgentParent(task *model.Task) error {
 	if task.Operation != "cloud_agent" || task.InputJSON == "" {
 		return nil

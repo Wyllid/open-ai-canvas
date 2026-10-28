@@ -17,7 +17,7 @@ import (
 func newRegistrationTestService(t *testing.T) (*Service, *gorm.DB) {
 	t.Helper()
 	svc, db := newPasswordResetTestService(t)
-	if err := db.AutoMigrate(&model.UserIdentity{}, &model.OAuthState{}, &model.CreditAccount{}); err != nil {
+	if err := db.AutoMigrate(&model.UserIdentity{}, &model.OAuthState{}); err != nil {
 		t.Fatal(err)
 	}
 	sqlDB, err := db.DB()
@@ -188,7 +188,7 @@ func TestLinuxDORegistrationAgreement(t *testing.T) {
 			if count, err := svc.repo.UserCount(); err != nil || count != wantUsers {
 				t.Fatalf("user count=%d want=%d err=%v", count, wantUsers, err)
 			}
-			for _, entity := range []any{&model.UserIdentity{}, &model.CreditAccount{}, &model.AuthSession{}} {
+			for _, entity := range []any{&model.UserIdentity{}, &model.AuthSession{}} {
 				var count int64
 				if err := db.Model(entity).Count(&count).Error; err != nil || count != wantRecords {
 					t.Fatalf("%T count=%d want=%d err=%v", entity, count, wantRecords, err)

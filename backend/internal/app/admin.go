@@ -24,8 +24,6 @@ type UpdateUserRequest struct {
 	Password    string           `json:"password"`
 	Role        model.UserRole   `json:"role"`
 	Status      model.UserStatus `json:"status"`
-	// IsPromoter 为空表示不修改推广人标记。
-	IsPromoter *bool `json:"isPromoter"`
 }
 
 type BulkDisableUsersRequest struct {
@@ -54,8 +52,6 @@ type AdminUserPage struct {
 
 type AdminUser struct {
 	model.User
-	AvailableMicrocredits int64 `json:"availableMicrocredits"`
-	ReservedMicrocredits  int64 `json:"reservedMicrocredits"`
 }
 
 type AdminChannelPage struct {
@@ -123,21 +119,17 @@ type PublicModelChannel struct {
 	UpdatedAt        time.Time                 `json:"updatedAt"`
 }
 
+// PublicChannelModelPrice 是渠道下可用模型的公开元数据（历史名称，已不含价格）。
 type PublicChannelModelPrice struct {
-	Model                        string                     `json:"model"`
-	DisplayName                  string                     `json:"displayName"`
-	ChannelLabel                 string                     `json:"channelLabel"`
-	Tags                         []model.ChannelModelTag    `json:"tags"`
-	Description                  string                     `json:"description"`
-	Icon                         string                     `json:"icon"`
-	Capability                   string                     `json:"capability"`
-	Protocol                     model.ChannelInterfaceType `json:"protocol"`
-	BillingMode                  string                     `json:"billingMode"`
-	UnitPriceMicrocredits        int64                      `json:"unitPriceMicrocredits"`
-	InputTokenPriceMicrocredits  int64                      `json:"inputTokenPriceMicrocredits"`
-	OutputTokenPriceMicrocredits int64                      `json:"outputTokenPriceMicrocredits"`
-	CachedTokenPriceMicrocredits int64                      `json:"cachedTokenPriceMicrocredits"`
-	CapabilityConfig             *ModelCapabilityConfig     `json:"capabilityConfig,omitempty"`
+	Model            string                     `json:"model"`
+	DisplayName      string                     `json:"displayName"`
+	ChannelLabel     string                     `json:"channelLabel"`
+	Tags             []model.ChannelModelTag    `json:"tags"`
+	Description      string                     `json:"description"`
+	Icon             string                     `json:"icon"`
+	Capability       string                     `json:"capability"`
+	Protocol         model.ChannelInterfaceType `json:"protocol"`
+	CapabilityConfig *ModelCapabilityConfig     `json:"capabilityConfig,omitempty"`
 }
 
 func channelFromRequest(req ChannelRequest, channel model.ModelChannel) (model.ModelChannel, error) {
@@ -236,15 +228,13 @@ func publicChannel(channel model.ModelChannel, admin bool, channelModels []model
 			continue
 		}
 		models = append(models, item.ModelKey)
-		if item.Enabled && item.PriceConfigured {
-			capabilityConfig, decodeErr := DecodeModelCapabilityConfig(item.CapabilityConfigJSON)
-			if decodeErr == nil && capabilityConfig != nil {
-				if normalized, normalizeErr := NormalizeModelCapabilityConfigForModel(item.Capability, string(item.Protocol), firstNonEmpty(item.ProviderModelKey, item.ModelKey), capabilityConfig); normalizeErr == nil {
-					capabilityConfig = normalized
-				}
+		capabilityConfig, decodeErr := DecodeModelCapabilityConfig(item.CapabilityConfigJSON)
+		if decodeErr == nil && capabilityConfig != nil {
+			if normalized, normalizeErr := NormalizeModelCapabilityConfigForModel(item.Capability, string(item.Protocol), firstNonEmpty(item.ProviderModelKey, item.ModelKey), capabilityConfig); normalizeErr == nil {
+				capabilityConfig = normalized
 			}
-			modelCosts = append(modelCosts, PublicChannelModelPrice{Model: item.ModelKey, DisplayName: item.DisplayName, ChannelLabel: item.ChannelLabel, Tags: item.Tags, Description: item.Description, Icon: item.Icon, Capability: item.Capability, Protocol: item.Protocol, BillingMode: item.BillingMode, UnitPriceMicrocredits: item.UnitPriceMicrocredits, InputTokenPriceMicrocredits: item.InputTokenPriceMicrocredits, OutputTokenPriceMicrocredits: item.OutputTokenPriceMicrocredits, CachedTokenPriceMicrocredits: item.CachedTokenPriceMicrocredits, CapabilityConfig: capabilityConfig})
 		}
+		modelCosts = append(modelCosts, PublicChannelModelPrice{Model: item.ModelKey, DisplayName: item.DisplayName, ChannelLabel: item.ChannelLabel, Tags: item.Tags, Description: item.Description, Icon: item.Icon, Capability: item.Capability, Protocol: item.Protocol, CapabilityConfig: capabilityConfig})
 	}
 	if len(models) == 0 {
 		_ = json.Unmarshal([]byte(channel.ModelsJSON), &models)

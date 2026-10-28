@@ -28,8 +28,8 @@ func TestCloudAgentImageIgnoresUndeclaredModelQualityBeforeApproval(t *testing.T
 	profile.Image.Quality = ImageQualityConfig{Supported: false, Default: "auto"}
 	profile.Image.Resolution = ImageResolutionConfig{Supported: true, Values: []string{"1k", "2k"}, Default: "2k"}
 	for _, row := range []any{
-		&model.ChannelModel{ID: "image-cm", ChannelID: "channel", ModelKey: "nano-banana-pro", Capability: "image", Protocol: model.ChannelInterfaceGeminiImage, CapabilityConfigJSON: mustEncodeModelCapabilityConfig(t, profile), BillingMode: "fixed_request", PriceConfigured: true, Enabled: true},
-		&model.ChannelModelPriceTier{ID: "image-tier", ChannelModelID: "image-cm", SelectorKey: "{}", SelectorJSON: "{}", BillingMode: "fixed_request", UnitPriceMicrocredits: 1, PriceConfigured: true, Enabled: true},
+		&model.ChannelModel{ID: "image-cm", ChannelID: "channel", ModelKey: "nano-banana-pro", Capability: "image", Protocol: model.ChannelInterfaceGeminiImage, CapabilityConfigJSON: mustEncodeModelCapabilityConfig(t, profile), Enabled: true},
+		&model.ChannelModelPriceTier{ID: "image-tier", ChannelModelID: "image-cm", SelectorKey: "{}", SelectorJSON: "{}", Enabled: true},
 	} {
 		if err := db.Create(row).Error; err != nil {
 			t.Fatal(err)

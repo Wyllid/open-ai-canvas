@@ -10,14 +10,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"yingce/backend/internal/auth"
 	"yingce/backend/internal/model"
 	"yingce/backend/internal/platform"
 	"yingce/backend/internal/repository"
 	"yingce/backend/internal/service"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func TestChunkAdmissionReservesBeforeBody(t *testing.T) {

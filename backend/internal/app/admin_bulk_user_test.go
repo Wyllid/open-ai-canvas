@@ -38,13 +38,6 @@ func TestCreateAdminUserCreatesActiveUserWithPasswordAndAudit(t *testing.T) {
 	if err := bcrypt.CompareHashAndPassword([]byte(created.PasswordHash), []byte("strong-password")); err != nil {
 		t.Fatalf("password hash does not match: %v", err)
 	}
-	var account model.CreditAccount
-	if err := db.First(&account, "user_id = ?", created.ID).Error; err != nil {
-		t.Fatal(err)
-	}
-	if account.AvailableMicrocredits <= 0 {
-		t.Fatalf("available credits = %d, want positive signup bonus", account.AvailableMicrocredits)
-	}
 	var audit model.AdminAuditEvent
 	if err := db.Where("action = ? AND target_id = ?", "user.create", created.ID).First(&audit).Error; err != nil {
 		t.Fatal(err)
@@ -154,7 +147,7 @@ func newBulkUserTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := db.AutoMigrate(&model.User{}, &model.AuthSession{}, &model.AdminAuditEvent{}, &model.CreditAccount{}, &model.CreditLedgerEntry{}, &model.SystemSetting{}, &model.TaskTextDelta{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}, &model.AuthSession{}, &model.AdminAuditEvent{}, &model.SystemSetting{}, &model.TaskTextDelta{}); err != nil {
 		t.Fatal(err)
 	}
 	return db

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"yingce/backend/internal/model"
-	"yingce/backend/internal/repository"
 )
 
 func TestCloudAgentTaskDiagnosticProjectsDurableExecutionFacts(t *testing.T) {
@@ -21,18 +20,11 @@ func TestCloudAgentTaskDiagnosticProjectsDurableExecutionFacts(t *testing.T) {
 	task := &model.Task{
 		ID: "task-facts", UserID: "user", ProjectID: "canvas", Type: "canvas_video", Status: model.TaskStatusFailed,
 		Operation: "cloud_agent_generate_media", AgentRunID: "run-1", GenerationID: "generation-1", ApprovalID: "approval-1",
-		BillingOrderID: "order-facts", AuthorizedChargeMicrocredits: 700, CancellationSource: model.TaskCancellationUserRequest,
+		CancellationSource:      model.TaskCancellationUserRequest,
 		CancellationRequestedAt: &now, InputJSON: `{"metadata":{"source":"cloud_agent","nodeId":"video-node"}}`,
 		ExecutionDiagnosticJSON: string(rawDiagnostic), CreatedAt: now,
 	}
-	order := &model.BillingOrder{
-		ID: "order-facts", UserID: "user", TaskID: task.ID, Status: model.BillingStatusRefunded,
-		ChargeLimitSet: true, ChargeLimitMicrocredits: 700, ReservedAmountMicrocredits: 700, RefundedAmountMicrocredits: 700,
-	}
 	if err := db.Create(task).Error; err != nil {
-		t.Fatal(err)
-	}
-	if err := db.Create(order).Error; err != nil {
 		t.Fatal(err)
 	}
 
@@ -48,9 +40,8 @@ func TestCloudAgentTaskDiagnosticProjectsDurableExecutionFacts(t *testing.T) {
 			t.Fatalf("%s = %#v, want %#v; facts=%#v", key, got, want, facts)
 		}
 	}
-	billing, ok := facts["billing"].(map[string]any)
-	if !ok || billing["orderId"] != order.ID || billing["status"] != string(model.BillingStatusRefunded) || billing["stateAvailable"] != true || billing["chargeLimitSet"] != true {
-		t.Fatalf("billing facts = %#v", facts["billing"])
+	if _, exists := facts["billing"]; exists {
+		t.Fatalf("billing facts must be gone: %#v", facts["billing"])
 	}
 	receipt, ok := facts["submissionReceipt"].(map[string]any)
 	if !ok || receipt["taskId"] != task.ID || receipt["generationId"] != task.GenerationID {
@@ -67,49 +58,5 @@ func TestRecordTaskDiagnosticDoesNotClaimUnsubmittedRequest(t *testing.T) {
 	recordTaskDiagnostic(task, "execution", "provider_execution_failed", "accepted", "new_generation_authorization", nil)
 	if task.Diagnostic == nil || !task.Diagnostic.TaskSubmitted {
 		t.Fatalf("diagnostic = %#v", task.Diagnostic)
-	}
-}
-
-func TestCloudAgentTaskDiagnosticRejectsMismatchedBillingOrderFacts(t *testing.T) {
-	_, db, _, _ := creationTestService(t)
-	order := &model.BillingOrder{ID: "other-order", UserID: "other", TaskID: "other-task", Status: model.BillingStatusSettled}
-	if err := db.Create(order).Error; err != nil {
-		t.Fatal(err)
-	}
-	task := &model.Task{ID: "task", UserID: "user", Status: model.TaskStatusQueued, BillingOrderID: order.ID, AuthorizedChargeMicrocredits: 9}
-	facts := cloudAgentTaskDiagnostic(repository.New(db), task)
-	billing := facts["billing"].(map[string]any)
-	if billing["stateAvailable"] != false || billing["status"] != nil {
-		t.Fatalf("cross-owner billing state leaked: %#v", billing)
-	}
-}
-
-func TestCloudAgentTaskDiagnosticSeparatesReservationFromActualCharge(t *testing.T) {
-	s, db, _, _ := creationTestService(t)
-	task := &model.Task{
-		ID: "task-settled", UserID: "user", ProjectID: "canvas", Status: model.TaskStatusSucceeded,
-		BillingOrderID: "order-settled", InputJSON: `{}`,
-	}
-	order := &model.BillingOrder{
-		ID: "order-settled", UserID: "user", TaskID: task.ID, Status: model.BillingStatusSettled,
-		ReservedAmountMicrocredits: 100_000, ActualAmountMicrocredits: 100_000,
-	}
-	if err := db.Create(task).Error; err != nil {
-		t.Fatal(err)
-	}
-	if err := db.Create(order).Error; err != nil {
-		t.Fatal(err)
-	}
-
-	facts := cloudAgentTaskDiagnostic(s.repo, task)
-	billing, ok := facts["billing"].(map[string]any)
-	if !ok {
-		t.Fatalf("billing facts = %#v", facts["billing"])
-	}
-	if billing["reservedAmountMicrocredits"] != float64(100_000) || billing["actualAmountMicrocredits"] != float64(100_000) {
-		t.Fatalf("microcredit facts = %#v", billing)
-	}
-	if billing["reservedCredits"] != 0.1 || billing["actualCredits"] != 0.1 || billing["chargeState"] != "settled" {
-		t.Fatalf("credit facts = %#v", billing)
 	}
 }

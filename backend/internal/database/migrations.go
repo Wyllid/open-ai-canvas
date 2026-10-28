@@ -64,14 +64,14 @@ var schemaMigrations = []migration{
 	{version: 2, name: "schema_migrations_applied_at_index", checksum: schemaMigrationAppliedAtIndexChecksum, apply: migrateSchemaV2},
 	{version: 3, name: "asset_taxonomy_candidate_identity", checksum: assetTaxonomyCandidateIdentityChecksum, apply: migrateSchemaV3},
 	{version: 4, name: "resource_upload_key", checksum: resourceUploadKeyChecksum, apply: migrateSchemaV4},
-	{version: 5, name: "payment_topup", checksum: paymentTopupChecksum, apply: migrateSchemaV5},
+	{version: 5, name: "payment_topup", checksum: paymentTopupChecksum, apply: noopRemovedCreditsMigration},
 	{version: 6, name: "resource_playback_variant", checksum: resourcePlaybackChecksum, apply: migrateSchemaV6},
 	{version: 7, name: "asset_library_folders", checksum: assetLibraryFoldersChecksum, apply: migrateSchemaV7},
 	{version: 8, name: "logical_model_active_code", checksum: logicalModelActiveCodeChecksum, apply: migrateSchemaV8},
 	{version: 9, name: "channel_presentation", checksum: "sha256:channel-presentation-v9-20260908", apply: migrateChannelPresentation},
 	{version: 10, name: "creation_runtime", checksum: creationRuntimeChecksum, apply: migrateSchemaV10},
 	{version: 11, name: "cloud_agent_runtime", checksum: "sha256:cloud-agent-runtime-v11-20260912", apply: func(tx *gorm.DB) error { return tx.AutoMigrate(&model.CloudAgentExecution{}) }},
-	{version: 12, name: "agent_token_charge_limit", checksum: "sha256:agent-token-charge-limit-v12-20260913", apply: migrateSchemaV12},
+	{version: 12, name: "agent_token_charge_limit", checksum: "sha256:agent-token-charge-limit-v12-20260913", apply: noopRemovedCreditsMigration},
 	{version: 13, name: "cloud_agent_canvas_mutation", checksum: "sha256:cloud-agent-canvas-mutation-v13-20260913", apply: func(tx *gorm.DB) error {
 		return tx.AutoMigrate(&model.CloudAgentCanvasMutation{})
 	}},
@@ -88,7 +88,7 @@ var schemaMigrations = []migration{
 	{version: 18, name: "agent_memory_settings", checksum: "sha256:agent-memory-settings-v18-20260917", apply: func(tx *gorm.DB) error {
 		return tx.AutoMigrate(&model.AgentMemorySetting{})
 	}},
-	{version: 19, name: "payment_plugin_version", checksum: "sha256:payment-plugin-version-v19-20260917", apply: migrateSchemaV19},
+	{version: 19, name: "payment_plugin_version", checksum: "sha256:payment-plugin-version-v19-20260917", apply: noopRemovedCreditsMigration},
 	{version: 20, name: "banner_announcements", checksum: "sha256:banner-announcements-v20-20260917", apply: func(tx *gorm.DB) error {
 		return tx.AutoMigrate(&model.BannerAnnouncement{})
 	}},
@@ -102,11 +102,11 @@ var schemaMigrations = []migration{
 		return tx.AutoMigrate(&model.CanvasProject{}, &model.CanvasSnapshot{}, &model.CanvasSnapshotResource{})
 	}},
 	{version: 24, name: "channel_model_label", checksum: "sha256:channel-model-label-v24", apply: migrateChannelModelLabel},
-	{version: 25, name: "video_token_formula_snapshot", checksum: "sha256:video-token-formula-snapshot-v25", apply: migrateVideoTokenFormulaSnapshot},
+	{version: 25, name: "video_token_formula_snapshot", checksum: "sha256:video-token-formula-snapshot-v25", apply: noopRemovedCreditsMigration},
 	{version: 26, name: "channel_model_description", checksum: "sha256:channel-model-description-v26", apply: migrateChannelModelDescription},
-	{version: 27, name: "channel_credit_cost", checksum: "sha256:channel-credit-cost-v27", apply: migrateChannelCreditCost},
+	{version: 27, name: "channel_credit_cost", checksum: "sha256:channel-credit-cost-v27", apply: noopRemovedCreditsMigration},
 	{version: 28, name: "agent_execution_journal", checksum: "sha256:agent-execution-journal-v28", apply: func(tx *gorm.DB) error {
-		return tx.AutoMigrate(&model.CloudAgentExecution{}, &model.CloudAgentEventRecord{}, &model.CloudAgentMessageRecord{}, &model.Task{}, &model.BillingOrder{})
+		return tx.AutoMigrate(&model.CloudAgentExecution{}, &model.CloudAgentEventRecord{}, &model.CloudAgentMessageRecord{}, &model.Task{})
 	}},
 	{version: 29, name: "agent_resource_leases", checksum: "sha256:agent-resource-leases-v29-20260919", apply: func(tx *gorm.DB) error {
 		return tx.AutoMigrate(&model.CloudAgentResourceLease{})
@@ -147,9 +147,7 @@ var schemaMigrations = []migration{
 	{version: 42, name: "cloud_agent_pi_sessions", checksum: "sha256:cloud-agent-pi-sessions-v42-20260928", apply: func(tx *gorm.DB) error {
 		return tx.AutoMigrate(&model.CloudAgentPiSession{})
 	}},
-	{version: 43, name: "topup_sale_strategies", checksum: "sha256:topup-sale-strategies-v43-20260929", apply: func(tx *gorm.DB) error {
-		return tx.AutoMigrate(&model.TopupProduct{}, &model.PaymentOrder{})
-	}},
+	{version: 43, name: "topup_sale_strategies", checksum: "sha256:topup-sale-strategies-v43-20260929", apply: noopRemovedCreditsMigration},
 	{version: 45, name: "upload_reservations", checksum: "sha256:upload-reservations-v45-20261005", apply: func(tx *gorm.DB) error {
 		return tx.AutoMigrate(&model.UploadReservation{})
 	}},
@@ -249,14 +247,13 @@ var schemaMigrations = []migration{
 	{version: 67, name: "drama_segment_production", checksum: "sha256:drama-segment-production-v67-20261026", apply: migrateDramaSegmentProduction},
 	{version: 68, name: "drama_segment_revision", checksum: "sha256:drama-segment-revision-v68-20261026", apply: migrateDramaSegmentRevision},
 	{version: 69, name: "storage_products", checksum: "sha256:storage-products-v69-20261026", apply: func(tx *gorm.DB) error {
-		// 已有商品和订单通过列默认值成为 credits 类型。
-		return tx.AutoMigrate(&model.TopupProduct{}, &model.PaymentOrder{}, &model.UserStorageGrant{}, &model.UserStorageState{})
+		return tx.AutoMigrate(&model.UserStorageGrant{}, &model.UserStorageState{})
 	}},
 	{version: 70, name: "resource_offload_jobs", checksum: "sha256:resource-offload-jobs-v70-20261026", apply: func(tx *gorm.DB) error {
 		return tx.AutoMigrate(&model.ResourceOffloadJob{})
 	}},
 	{version: 71, name: "drama_segment_mode", checksum: "sha256:drama-segment-mode-v71-20261026", apply: migrateDramaSegmentMode},
-	{version: 72, name: "referral_center", checksum: "sha256:referral-center-v72-20261027", apply: migrateReferralCenter},
+	{version: 72, name: "referral_center", checksum: "sha256:referral-center-v72-20261027", apply: noopRemovedCreditsMigration},
 	{version: 73, name: "drama_episode_source_format", checksum: "sha256:drama-episode-source-format-v73-20261027", apply: func(tx *gorm.DB) error {
 		// 旧集没有素材类型，空串按小说原文处理。
 		if tx.Migrator().HasColumn(&model.DramaEpisode{}, "SourceFormat") {
@@ -271,21 +268,6 @@ var schemaMigrations = []migration{
 		}
 		return tx.Migrator().AddColumn(&model.DramaSegment{}, "ReferenceCastIDsJSON")
 	}},
-}
-
-// migrateReferralCenter 增加推广人标记和推广码、绑定、返佣三张表；旧用户默认不是推广人。
-func migrateReferralCenter(tx *gorm.DB) error {
-	if !tx.Migrator().HasColumn(&model.User{}, "IsPromoter") {
-		if err := tx.Migrator().AddColumn(&model.User{}, "IsPromoter"); err != nil {
-			return err
-		}
-	}
-	if !tx.Migrator().HasIndex(&model.User{}, "IsPromoter") {
-		if err := tx.Migrator().CreateIndex(&model.User{}, "IsPromoter"); err != nil {
-			return err
-		}
-	}
-	return tx.AutoMigrate(&model.ReferralProfile{}, &model.ReferralBinding{}, &model.ReferralCommission{})
 }
 
 // migrateDramaSegmentMode 把旧的剧情段目标秒数改写为新的切段模式：大于 0 的是用户指定的固定时长，0 表示按模型上限，即智能。
@@ -365,42 +347,11 @@ func migrateOAuthStateAcceptedTerms(tx *gorm.DB) error {
 	return tx.Migrator().AddColumn(&model.OAuthState{}, "AcceptedTerms")
 }
 
-func migrateChannelCreditCost(tx *gorm.DB) error {
-	for _, entity := range []any{&model.ChannelModelPriceTier{}, &model.BillingOrder{}} {
-		for _, column := range []string{"cost_configured", "cost_unit_price_microcredits", "cost_input_token_price_microcredits", "cost_output_token_price_microcredits", "cost_cached_token_price_microcredits"} {
-			if !tx.Migrator().HasColumn(entity, column) {
-				if err := tx.Migrator().AddColumn(entity, column); err != nil {
-					return err
-				}
-			}
-		}
-	}
-	for _, column := range []string{"CostBillingMode", "CostQuantity", "CostVideoFormulaTokens"} {
-		if !tx.Migrator().HasColumn(&model.BillingOrder{}, column) {
-			if err := tx.Migrator().AddColumn(&model.BillingOrder{}, column); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func migrateChannelModelDescription(tx *gorm.DB) error {
 	if tx.Migrator().HasColumn(&model.ChannelModel{}, "Description") {
 		return nil
 	}
 	return tx.Migrator().AddColumn(&model.ChannelModel{}, "Description")
-}
-
-func migrateVideoTokenFormulaSnapshot(tx *gorm.DB) error {
-	for _, field := range []string{"VideoFormulaTokens", "UsageSource"} {
-		if !tx.Migrator().HasColumn(&model.BillingOrder{}, field) {
-			if err := tx.Migrator().AddColumn(&model.BillingOrder{}, field); err != nil {
-				return fmt.Errorf("增加视频 Token 结算字段 %s：%w", field, err)
-			}
-		}
-	}
-	return nil
 }
 
 func migrateChannelModelLabel(tx *gorm.DB) error {
@@ -499,6 +450,10 @@ func migrationsForDatabase(db *gorm.DB) ([]migration, error) {
 	return plan, nil
 }
 
+// noopRemovedCreditsMigration 占住已删除的积分、支付与推广迁移版本，保持已有数据库的迁移记录连续。
+// 旧库里遗留的相关表不再读写。
+func noopRemovedCreditsMigration(*gorm.DB) error { return nil }
+
 func migrateSchemaV2(tx *gorm.DB) error {
 	return tx.Exec("CREATE INDEX IF NOT EXISTS idx_schema_migrations_applied_at ON schema_migrations (applied_at)").Error
 }
@@ -556,42 +511,6 @@ func migrateSchemaV4(tx *gorm.DB) error {
 	}
 	return nil
 }
-func migrateSchemaV5(tx *gorm.DB) error {
-	if err := tx.AutoMigrate(
-		&model.CreditLedgerEntry{},
-		&model.TopupProduct{},
-		&model.PaymentProviderConfig{},
-		&model.PaymentOrder{},
-		&model.PaymentNotification{},
-		&model.PaymentReconciliationRun{},
-		&model.PaymentReconciliationItem{},
-	); err != nil {
-		return fmt.Errorf("创建积分支付与对账结构：%w", err)
-	}
-	return nil
-}
-
-func migrateSchemaV19(tx *gorm.DB) error {
-	for _, value := range []any{&model.PaymentProviderConfig{}, &model.PaymentOrder{}} {
-		if !tx.Migrator().HasTable(value) {
-			continue
-		}
-		if err := addPaymentPluginVersionColumn(tx, value); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func addPaymentPluginVersionColumn(tx *gorm.DB, value any) error {
-	if tx.Migrator().HasColumn(value, "plugin_version") {
-		return nil
-	}
-	if err := tx.Migrator().AddColumn(value, "PluginVersion"); err != nil {
-		return fmt.Errorf("增加支付插件版本列：%w", err)
-	}
-	return nil
-}
 
 func migrateSchemaV6(tx *gorm.DB) error {
 	if !tx.Migrator().HasTable(&model.Resource{}) {
@@ -643,20 +562,6 @@ func migrateSchemaV10(tx *gorm.DB) error {
 	return nil
 }
 
-// migrateSchemaV12 为 Agent 的 Token 计费增加最终扣费上限；旧账单保持 0，继续沿用既有按 usage 结算语义。
-func migrateSchemaV12(tx *gorm.DB) error {
-	if !tx.Migrator().HasTable(&model.BillingOrder{}) {
-		return nil
-	}
-	if tx.Migrator().HasColumn(&model.BillingOrder{}, "ChargeLimitMicrocredits") {
-		return nil
-	}
-	if err := tx.Migrator().AddColumn(&model.BillingOrder{}, "ChargeLimitMicrocredits"); err != nil {
-		return fmt.Errorf("增加 Agent Token 扣费上限列：%w", err)
-	}
-	return nil
-}
-
 func normalizeLegacyWorkbenchMigration(tx *gorm.DB) error {
 	var legacy schemaMigration
 	if err := tx.First(&legacy, "version = ?", 51).Error; err != nil {
@@ -699,7 +604,7 @@ func normalizeLegacyWorkbenchMigration(tx *gorm.DB) error {
 const workbenchToolsMigrationVersion int64 = 54
 
 func migrateSchemaV56(tx *gorm.DB) error {
-	if err := tx.AutoMigrate(&model.ApiCallLog{}, &model.Task{}, &model.CreditLedgerEntry{}); err != nil {
+	if err := tx.AutoMigrate(&model.ApiCallLog{}, &model.Task{}); err != nil {
 		return fmt.Errorf("迁移 SQL 性能索引：%w", err)
 	}
 	if tx.Dialector.Name() == "sqlite" {

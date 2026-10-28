@@ -2,7 +2,6 @@ package app
 
 import (
 	"log"
-	"strings"
 	"time"
 
 	"yingce/backend/internal/model"
@@ -28,46 +27,41 @@ type AnalyticsOverview struct {
 }
 
 type AnalyticsKPI struct {
-	ActiveUsers               int              `json:"activeUsers"`
-	DAU                       int              `json:"dau"`
-	WAU                       int              `json:"wau"`
-	MAU                       int              `json:"mau"`
-	GenerationTasks           int              `json:"generationTasks"`
-	UpstreamRequests          int              `json:"upstreamRequests"`
-	SuccessRate               float64          `json:"successRate"`
-	P95DurationMs             int64            `json:"p95DurationMs"`
-	CurrentQueuedTasks        int64            `json:"currentQueuedTasks"`
-	Finance                   AnalyticsFinance `json:"finance"`
-	TotalBalanceMicrocredits  int64            `json:"totalBalanceMicrocredits"`
-	TotalConsumedMicrocredits int64            `json:"totalConsumedMicrocredits"`
+	ActiveUsers        int     `json:"activeUsers"`
+	DAU                int     `json:"dau"`
+	WAU                int     `json:"wau"`
+	MAU                int     `json:"mau"`
+	GenerationTasks    int     `json:"generationTasks"`
+	UpstreamRequests   int     `json:"upstreamRequests"`
+	SuccessRate        float64 `json:"successRate"`
+	P95DurationMs      int64   `json:"p95DurationMs"`
+	CurrentQueuedTasks int64   `json:"currentQueuedTasks"`
 }
 
 type AnalyticsTrendPoint struct {
-	Day                  string  `json:"day"`
-	Tasks                int     `json:"tasks"`
-	Requests             int     `json:"requests"`
-	ActiveUsers          int     `json:"activeUsers"`
-	RequestSuccessRate   float64 `json:"requestSuccessRate"`
-	ConsumedMicrocredits int64   `json:"consumedMicrocredits"`
+	Day                string  `json:"day"`
+	Tasks              int     `json:"tasks"`
+	Requests           int     `json:"requests"`
+	ActiveUsers        int     `json:"activeUsers"`
+	RequestSuccessRate float64 `json:"requestSuccessRate"`
 }
 
 type AnalyticsModelRow struct {
-	Model              string           `json:"model"`
-	Capability         string           `json:"capability"`
-	Tasks              int              `json:"tasks"`
-	Requests           int              `json:"requests"`
-	UniqueUsers        int              `json:"uniqueUsers"`
-	TaskSuccessRate    float64          `json:"taskSuccessRate"`
-	RequestSuccessRate float64          `json:"requestSuccessRate"`
-	P50DurationMs      int64            `json:"p50DurationMs"`
-	P95DurationMs      int64            `json:"p95DurationMs"`
-	InputTokens        int64            `json:"inputTokens"`
-	OutputTokens       int64            `json:"outputTokens"`
-	CachedTokens       int64            `json:"cachedTokens"`
-	UsageAvailable     bool             `json:"usageAvailable"`
-	MediaCount         int              `json:"mediaCount"`
-	VideoSeconds       int              `json:"videoSeconds"`
-	Finance            AnalyticsFinance `json:"finance"`
+	Model              string  `json:"model"`
+	Capability         string  `json:"capability"`
+	Tasks              int     `json:"tasks"`
+	Requests           int     `json:"requests"`
+	UniqueUsers        int     `json:"uniqueUsers"`
+	TaskSuccessRate    float64 `json:"taskSuccessRate"`
+	RequestSuccessRate float64 `json:"requestSuccessRate"`
+	P50DurationMs      int64   `json:"p50DurationMs"`
+	P95DurationMs      int64   `json:"p95DurationMs"`
+	InputTokens        int64   `json:"inputTokens"`
+	OutputTokens       int64   `json:"outputTokens"`
+	CachedTokens       int64   `json:"cachedTokens"`
+	UsageAvailable     bool    `json:"usageAvailable"`
+	MediaCount         int     `json:"mediaCount"`
+	VideoSeconds       int     `json:"videoSeconds"`
 }
 
 type AnalyticsUserRow struct {
@@ -105,19 +99,6 @@ type APICallLogPage struct {
 	Total int64              `json:"total"`
 	Page  int                `json:"page"`
 	Limit int                `json:"pageSize"`
-}
-
-type ModelPricingRequest struct {
-	ChannelID              string `json:"channelId"`
-	Model                  string `json:"model"`
-	Capability             string `json:"capability"`
-	Currency               string `json:"currency"`
-	InputPerMillionMicros  int64  `json:"inputPerMillionMicros"`
-	OutputPerMillionMicros int64  `json:"outputPerMillionMicros"`
-	CachedPerMillionMicros int64  `json:"cachedPerMillionMicros"`
-	PerRequestMicros       int64  `json:"perRequestMicros"`
-	PerMediaMicros         int64  `json:"perMediaMicros"`
-	PerVideoSecondMicros   int64  `json:"perVideoSecondMicros"`
 }
 
 func (s *Service) AdminAnalytics(actor *model.User, query AnalyticsQuery) (*AnalyticsOverview, error) {
@@ -166,87 +147,13 @@ func (s *Service) AdminAnalytics(actor *model.User, query AnalyticsQuery) (*Anal
 	if err != nil {
 		return nil, err
 	}
-	totalBalance, err := s.repo.TotalCreditBalance()
-	if err != nil {
-		return nil, err
-	}
 	queued, err := s.repo.CurrentQueuedTaskCount()
 	if err != nil {
 		return nil, err
 	}
 	result := buildAnalyticsOverview(filter, tasks, rollingTasks, rollingLogs, logs, activities, users)
-	result.KPI.TotalBalanceMicrocredits = totalBalance
-	for _, log := range logs {
-		if log.BillingAmount > 0 {
-			result.KPI.TotalConsumedMicrocredits += log.BillingAmount
-		}
-	}
-	records, err := s.analyticsFinancialRecords(logs)
-	if err != nil {
-		return nil, err
-	}
-	applyAnalyticsFinance(result, records)
 	result.KPI.CurrentQueuedTasks = queued
 	return result, nil
-}
-
-func (s *Service) AdminModelPricings(actor *model.User) ([]model.ModelPricing, error) {
-	if err := s.RequireAdmin(actor); err != nil {
-		return nil, err
-	}
-	return s.repo.ModelPricings()
-}
-
-func (s *Service) SaveModelPricing(actor *model.User, id string, req ModelPricingRequest) (*model.ModelPricing, error) {
-	if err := s.RequireAdmin(actor); err != nil {
-		return nil, err
-	}
-	req.Model = strings.TrimSpace(req.Model)
-	req.Capability = normalizeCapability(req.Capability)
-	req.Currency = strings.ToUpper(strings.TrimSpace(req.Currency))
-	if req.Model == "" || req.Capability == "" {
-		return nil, BadAuthRequest("请填写模型并选择能力类型")
-	}
-	if req.Currency == "" {
-		req.Currency = "USD"
-	}
-	if len(req.Currency) > 12 || hasNegativePricing(req) {
-		return nil, BadAuthRequest("价格配置格式无效")
-	}
-	pricing := &model.ModelPricing{ID: newID(), CreatedAt: time.Now()}
-	if id != "" {
-		current, err := s.repo.ModelPricingByID(id)
-		if err != nil {
-			return nil, err
-		}
-		pricing = current
-	}
-	pricing.ChannelID = strings.TrimSpace(req.ChannelID)
-	pricing.Model = req.Model
-	pricing.Capability = req.Capability
-	pricing.Currency = req.Currency
-	pricing.InputPerMillionMicros = req.InputPerMillionMicros
-	pricing.OutputPerMillionMicros = req.OutputPerMillionMicros
-	pricing.CachedPerMillionMicros = req.CachedPerMillionMicros
-	pricing.PerRequestMicros = req.PerRequestMicros
-	pricing.PerMediaMicros = req.PerMediaMicros
-	pricing.PerVideoSecondMicros = req.PerVideoSecondMicros
-	pricing.UpdatedAt = time.Now()
-	if err := s.repo.Save(pricing); err != nil {
-		return nil, err
-	}
-	return pricing, nil
-}
-
-func (s *Service) DeleteModelPricing(actor *model.User, id string) error {
-	if err := s.RequireAdmin(actor); err != nil {
-		return err
-	}
-	return s.repo.DeleteModelPricing(id)
-}
-
-func hasNegativePricing(req ModelPricingRequest) bool {
-	return req.InputPerMillionMicros < 0 || req.OutputPerMillionMicros < 0 || req.CachedPerMillionMicros < 0 || req.PerRequestMicros < 0 || req.PerMediaMicros < 0 || req.PerVideoSecondMicros < 0
 }
 
 func (s *Service) recordActivity(userID string, event string, count int) {

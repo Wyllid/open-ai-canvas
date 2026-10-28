@@ -244,23 +244,3 @@ func (s *Service) VideoProcessingOutputDurationMs(task model.Task) (int64, bool,
 	}
 	return 0, true, errors.New("视频处理结果缺少有效输出时长")
 }
-
-// settleVideoProcessingBilling 处理按秒计费的视频处理订单；非处理任务或非按秒订单返回 handled=false。
-func (s *Service) settleVideoProcessingBilling(task model.Task, providerRequestID string) (bool, error) {
-	if task.BillingOrderID == "" {
-		return false, nil
-	}
-	billing := s.taskBilling()
-	order, err := billing.BillingOrder(task.BillingOrderID)
-	if err != nil || order == nil || order.Capability != "video" || order.BillingMode != "per_second" {
-		return false, err
-	}
-	durationMs, handled, err := s.VideoProcessingOutputDurationMs(task)
-	if !handled {
-		return false, nil
-	}
-	if err != nil {
-		return true, err
-	}
-	return true, billing.SettleBillingWithAudioDuration(task.BillingOrderID, providerRequestID, durationMs)
-}

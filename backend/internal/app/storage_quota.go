@@ -72,11 +72,11 @@ func validateStructuredReplacementQuotaWithPolicy(usage repository.UserStorageUs
 	return validateStructuredStorageQuotaWithPolicy(usage, kind, false, deltaBytes, policy)
 }
 
-func (s *Service) createTaskWithinStorageQuota(task *model.Task, billingOrder *model.BillingOrder, policy RuntimePolicySetting) error {
+func (s *Service) createTaskWithinStorageQuota(task *model.Task, policy RuntimePolicySetting) error {
 	s.storageMu.Lock()
 	err := func() error {
 		defer s.storageMu.Unlock()
-		return createTaskWithStorageQuotaRepository(s.repo, task, billingOrder, policy)
+		return createTaskWithStorageQuotaRepository(s.repo, task, policy)
 	}()
 	if err == nil {
 		s.wakeTaskDispatcher()
@@ -84,7 +84,7 @@ func (s *Service) createTaskWithinStorageQuota(task *model.Task, billingOrder *m
 	return err
 }
 
-func createTaskWithStorageQuotaRepository(repo *repository.Repository, task *model.Task, billingOrder *model.BillingOrder, policy RuntimePolicySetting) error {
+func createTaskWithStorageQuotaRepository(repo *repository.Repository, task *model.Task, policy RuntimePolicySetting) error {
 	usage, err := repo.UserStorageUsage(task.UserID)
 	if err != nil {
 		return err
@@ -92,9 +92,6 @@ func createTaskWithStorageQuotaRepository(repo *repository.Repository, task *mod
 	incomingBytes := int64(len([]byte(task.Prompt)) + len([]byte(task.InputJSON)) + len([]byte(task.Error)))
 	if err := validateTaskStorageQuotaWithPolicy(usage, incomingBytes, policy.Resource); err != nil {
 		return err
-	}
-	if billingOrder != nil {
-		return repo.CreateTaskWithCreditReservation(task, billingOrder, policy.Task.ActiveTaskLimit)
 	}
 	return repo.CreateTaskWithActiveLimit(task, policy.Task.ActiveTaskLimit)
 }

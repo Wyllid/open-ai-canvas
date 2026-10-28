@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"yingce/backend/internal/model"
 	"yingce/backend/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 func registerAuthProfileRoutes(r *gin.RouterGroup, svc *service.Service) {

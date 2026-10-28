@@ -27,8 +27,8 @@ func TestSaveAdminChannelModelCascadesUpstreamKeyToMatchingTiers(t *testing.T) {
 		Capability: "text", Protocol: string(model.ChannelInterfaceChatCompletion),
 		CapabilityConfig: DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceChatCompletion), "deepseek-v4-flash"),
 		PriceTiers: []ChannelModelPriceTierRequest{
-			{Selector: map[string]string{}, ProviderModelKey: "deepseek-v4-flash", BillingMode: "fixed_request", PriceConfigured: true, Enabled: &enabled},
-			{Selector: map[string]string{"operation": "text_generation"}, ProviderModelKey: "deepseek-v4-flash-preview", BillingMode: "fixed_request", PriceConfigured: true, Enabled: &enabled},
+			{Selector: map[string]string{}, ProviderModelKey: "deepseek-v4-flash", Enabled: &enabled},
+			{Selector: map[string]string{"operation": "text_generation"}, ProviderModelKey: "deepseek-v4-flash-preview", Enabled: &enabled},
 		},
 		Enabled: &enabled,
 	})
@@ -42,8 +42,8 @@ func TestSaveAdminChannelModelCascadesUpstreamKeyToMatchingTiers(t *testing.T) {
 		Capability: "text", Protocol: string(model.ChannelInterfaceChatCompletion),
 		CapabilityConfig: DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceChatCompletion), "deepseek-v4.1-flash"),
 		PriceTiers: []ChannelModelPriceTierRequest{
-			{Selector: map[string]string{}, ProviderModelKey: "deepseek-v4-flash", BillingMode: "fixed_request", PriceConfigured: true, Enabled: &enabled},
-			{Selector: map[string]string{"operation": "text_generation"}, ProviderModelKey: "deepseek-v4-flash-preview", BillingMode: "fixed_request", PriceConfigured: true, Enabled: &enabled},
+			{Selector: map[string]string{}, ProviderModelKey: "deepseek-v4-flash", Enabled: &enabled},
+			{Selector: map[string]string{"operation": "text_generation"}, ProviderModelKey: "deepseek-v4-flash-preview", Enabled: &enabled},
 		},
 		Enabled: &enabled,
 	})
@@ -77,7 +77,7 @@ func TestRenamedUpstreamKeyReachesSystemChannelRequests(t *testing.T) {
 		ModelKey: "deepseek-v4-flash", ProviderModelKey: "deepseek-v4-flash", DisplayName: "deepseek-v4-flash",
 		Capability: "text", Protocol: string(model.ChannelInterfaceChatCompletion),
 		CapabilityConfig: DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceChatCompletion), "deepseek-v4-flash"),
-		PriceTiers:       []ChannelModelPriceTierRequest{{ProviderModelKey: "deepseek-v4-flash", BillingMode: "fixed_request", PriceConfigured: true, Enabled: &enabled}},
+		PriceTiers:       []ChannelModelPriceTierRequest{{ProviderModelKey: "deepseek-v4-flash", Enabled: &enabled}},
 		Enabled:          &enabled,
 	})
 	if err != nil {
@@ -87,7 +87,7 @@ func TestRenamedUpstreamKeyReachesSystemChannelRequests(t *testing.T) {
 		ModelKey: "deepseek-v4.1-flash", ProviderModelKey: "deepseek-v4.1-flash", DisplayName: "deepseek-v4.1-flash",
 		Capability: "text", Protocol: string(model.ChannelInterfaceChatCompletion),
 		CapabilityConfig: DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceChatCompletion), "deepseek-v4.1-flash"),
-		PriceTiers:       []ChannelModelPriceTierRequest{{ProviderModelKey: "deepseek-v4-flash", BillingMode: "fixed_request", PriceConfigured: true, Enabled: &enabled}},
+		PriceTiers:       []ChannelModelPriceTierRequest{{ProviderModelKey: "deepseek-v4-flash", Enabled: &enabled}},
 		Enabled:          &enabled,
 	}); err != nil {
 		t.Fatalf("rename save failed: %v", err)

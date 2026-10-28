@@ -159,8 +159,8 @@ func TestCloudAgentImageApprovalEditsAreValidatedAndIdempotent(t *testing.T) {
 	capability := DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceGrokImage), "grok-image")
 	for _, key := range []string{"grok-image", "grok-image-alternative"} {
 		for _, row := range []any{
-			&model.ChannelModel{ID: key, ChannelID: "channel", ModelKey: key, DisplayName: key, Capability: "image", Protocol: model.ChannelInterfaceGrokImage, CapabilityConfigJSON: mustEncodeModelCapabilityConfig(t, capability), BillingMode: "fixed_request", PriceConfigured: true, Enabled: true},
-			&model.ChannelModelPriceTier{ID: key + "-tier", ChannelModelID: key, SelectorKey: "{}", SelectorJSON: "{}", BillingMode: "fixed_request", UnitPriceMicrocredits: 1, PriceConfigured: true, Enabled: true},
+			&model.ChannelModel{ID: key, ChannelID: "channel", ModelKey: key, DisplayName: key, Capability: "image", Protocol: model.ChannelInterfaceGrokImage, CapabilityConfigJSON: mustEncodeModelCapabilityConfig(t, capability), Enabled: true},
+			&model.ChannelModelPriceTier{ID: key + "-tier", ChannelModelID: key, SelectorKey: "{}", SelectorJSON: "{}", Enabled: true},
 		} {
 			if err := db.Create(row).Error; err != nil {
 				t.Fatal(err)
@@ -204,12 +204,12 @@ func TestCloudAgentImageApprovalEditsAreValidatedAndIdempotent(t *testing.T) {
 		t.Fatal("invalid settings consumed approval")
 	}
 	var before int64
-	db.Model(&model.BillingOrder{}).Count(&before)
+	db.Model(&model.Task{}).Count(&before)
 	if err := s.DecideCloudAgentApproval("user", run.ID, id, "approve", "", &settings); err != nil {
 		t.Fatal(err)
 	}
 	var afterFirstApproval int64
-	db.Model(&model.BillingOrder{}).Count(&afterFirstApproval)
+	db.Model(&model.Task{}).Count(&afterFirstApproval)
 	if afterFirstApproval <= before {
 		t.Fatal("approval did not submit the approved media task")
 	}
@@ -217,9 +217,9 @@ func TestCloudAgentImageApprovalEditsAreValidatedAndIdempotent(t *testing.T) {
 		t.Fatal(err)
 	}
 	var afterRetry int64
-	db.Model(&model.BillingOrder{}).Count(&afterRetry)
+	db.Model(&model.Task{}).Count(&afterRetry)
 	if afterRetry != afterFirstApproval {
-		t.Fatalf("idempotent approval created another billing order: first=%d retry=%d", afterFirstApproval, afterRetry)
+		t.Fatalf("idempotent approval created another task: first=%d retry=%d", afterFirstApproval, afterRetry)
 	}
 	changed := settings
 	changed.Size = "1:1"

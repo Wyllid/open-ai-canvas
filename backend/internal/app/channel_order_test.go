@@ -40,7 +40,7 @@ func TestVisualChannelOrderAtomicSnapshotAndPermissions(t *testing.T) {
 		t.Fatal("failed save changed order")
 	}
 	for _, id := range []string{"m1", "m2"} {
-		if err := db.Create(&model.ChannelModel{ID: id, ChannelID: "a", ModelKey: id, Enabled: true, PriceVersion: 7, CapabilityVersion: 4, UnitPriceMicrocredits: 123}).Error; err != nil {
+		if err := db.Create(&model.ChannelModel{ID: id, ChannelID: "a", ModelKey: id, Enabled: true, CapabilityVersion: 4}).Error; err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -52,7 +52,7 @@ func TestVisualChannelOrderAtomicSnapshotAndPermissions(t *testing.T) {
 	var stored []model.ChannelModel
 	db.Find(&stored)
 	for _, item := range stored {
-		if item.PriceVersion != 7 || item.CapabilityVersion != 4 || item.UnitPriceMicrocredits != 123 || !item.Enabled {
+		if item.CapabilityVersion != 4 || !item.Enabled {
 			t.Fatal("model configuration changed")
 		}
 	}

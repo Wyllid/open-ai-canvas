@@ -67,20 +67,15 @@ func TestCloudAgentUserFailureMessageHidesInternalEnglish(t *testing.T) {
 	if got := cloudAgentUserFailureMessage("run-1", readable); got != "图片生成失败：网络异常。" {
 		t.Fatalf("readable reason lost: %q", got)
 	}
-	if got := cloudAgentUserFailureMessage("run-1", fmt.Errorf("x: %w", repository.ErrInsufficientCredits)); got != "积分不足，请先充值" {
-		t.Fatalf("insufficient credits not localized: %q", got)
-	}
 }
 
 // 所有仓储层哨兵错误都必须是中文：它们会经 handler 直接返回给用户。
 func TestRepositorySentinelErrorsAreChinese(t *testing.T) {
 	for _, err := range []error{
-		repository.ErrCreationConflict, repository.ErrInsufficientCredits, repository.ErrRedeemCodeInvalid,
-		repository.ErrActiveTaskLimit, repository.ErrTaskNotRetryable, repository.ErrBillingStateConflict,
-		repository.ErrBillingUsageUnavailable, repository.ErrBillingChargeLimit, repository.ErrChannelModelInUse,
+		repository.ErrCreationConflict,
+		repository.ErrActiveTaskLimit, repository.ErrTaskNotRetryable, repository.ErrChannelModelInUse,
 		repository.ErrLogicalModelInUse, repository.ErrLogicalModelUnavailable, repository.ErrTaskStateConflict,
 		repository.ErrCanvasRevisionConflict, repository.ErrDailyUploadLimitExceeded, repository.ErrProjectHasActiveTasks,
-		repository.ErrPaymentOrderStateConflict, repository.ErrPaymentEvidenceMismatch,
 	} {
 		if !cloudAgentReadableMessage(err.Error()) {
 			t.Errorf("sentinel error is not user-readable Chinese: %q", err.Error())

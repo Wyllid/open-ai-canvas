@@ -16,12 +16,6 @@ import (
 	"yingce/backend/internal/model"
 )
 
-type AdminRedeemCodeRow struct {
-	model.RedeemCode
-	RedeemedUsername    string `json:"redeemedUsername" gorm:"column:redeemed_username"`
-	RedeemedDisplayName string `json:"redeemedDisplayName" gorm:"column:redeemed_display_name"`
-}
-
 func (r *Repository) ChannelModels(channelID string, includeDisabled bool) ([]model.ChannelModel, error) {
 	var items []model.ChannelModel
 	query := r.db.Where("channel_id = ?", channelID).Order("sort_order asc, created_at asc, id asc")
@@ -127,7 +121,6 @@ func (r *Repository) SaveChannelModelWithPriceTiers(item *model.ChannelModel, ti
 			key := channelModelPriceTierKey(*tier)
 			if existingTier, exists := existingByKey[key]; exists {
 				tier.ID = existingTier.ID
-				tier.PriceVersion = existingTier.PriceVersion + 1
 				if err := tx.Save(tier).Error; err != nil {
 					return err
 				}
@@ -188,14 +181,11 @@ func (r *Repository) attachChannelModelPriceTiers(items []*model.ChannelModel) e
 	}
 	for _, item := range items {
 		item.PriceTiers = tiersByModelID[item.ID]
-		// 兼容尚未执行价格档回填的旧数据库；正式迁移会将同一数据持久化为默认档。
-		if len(item.PriceTiers) == 0 && item.PriceConfigured {
+		// 兼容尚未执行规格档回填的旧数据库：没有规格档时按单一默认档处理。
+		if len(item.PriceTiers) == 0 {
 			item.PriceTiers = []model.ChannelModelPriceTier{{
 				ChannelModelID: item.ID, SelectorKey: "{}", SelectorJSON: "{}", Resolution: "*",
-				ProviderModelKey: item.ProviderModelKey, BillingMode: item.BillingMode,
-				UnitPriceMicrocredits: item.UnitPriceMicrocredits, InputTokenPriceMicrocredits: item.InputTokenPriceMicrocredits,
-				OutputTokenPriceMicrocredits: item.OutputTokenPriceMicrocredits, CachedTokenPriceMicrocredits: item.CachedTokenPriceMicrocredits,
-				PriceConfigured: item.PriceConfigured, Enabled: item.Enabled, PriceVersion: item.PriceVersion,
+				ProviderModelKey: item.ProviderModelKey, Enabled: item.Enabled,
 			}}
 		}
 	}
@@ -271,7 +261,7 @@ func (r *Repository) DeleteChannelModels(channelID string, ids []string, now tim
 		}
 		result := tx.Model(&model.ChannelModel{}).
 			Where("id IN ? AND channel_id = ?", ids, channelID).
-			Updates(map[string]any{"enabled": false, "price_version": gorm.Expr("price_version + 1"), "updated_at": now})
+			Updates(map[string]any{"enabled": false, "updated_at": now})
 		if result.Error != nil {
 			return result.Error
 		}

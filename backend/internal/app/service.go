@@ -15,7 +15,6 @@ import (
 	"yingce/backend/internal/canvas"
 	"yingce/backend/internal/kernel"
 	"yingce/backend/internal/model"
-	"yingce/backend/internal/payment"
 	"yingce/backend/internal/platform"
 	"yingce/backend/internal/prompts"
 	"yingce/backend/internal/providercatalog"
@@ -50,7 +49,6 @@ type Service struct {
 	storageStatusCache       map[string]storageStatusEntry
 	coordinator              *platform.Coordinator
 	platform                 *platform.Service
-	taskBillingCoordinator   *taskBillingCoordinator
 	taskTerminalCoordinator  *taskTerminalCoordinator
 	taskRouteExecutor        *taskRouteExecutor
 	taskWorkerCoordinator    *taskWorkerCoordinator
@@ -58,7 +56,6 @@ type Service struct {
 	runtimeErr               error
 	pluginRuntime            *pluginRuntime
 	pluginRuntimeErr         error
-	paymentRegistry          *payment.Registry
 	workerID                 string
 	routeCatalogMu           sync.RWMutex
 	routeCatalogRefreshMu    sync.Mutex
@@ -101,9 +98,6 @@ type Service struct {
 	approvedMediaClosed      bool
 	providerCatalogOnce      sync.Once
 	providerCatalog          *providercatalog.Source
-	creditPolicyMu           sync.RWMutex
-	creditPolicyCache        *CreditPolicy
-	creditPolicyAt           time.Time
 	modelAvailabilityMu      sync.RWMutex
 	modelAvailabilityCache   map[publicModelAvailabilityKey]*PublicModelAvailability
 	modelAvailabilityAt      time.Time
@@ -150,14 +144,7 @@ func newService(repo *repository.Repository, dataDir string) *Service {
 	canvasRealtime := canvas.NewRealtimeHub(coordinator.Redis())
 	repo = repo.WithCanvasChangeNotifier(canvasRealtime.Changed)
 	pluginRuntime, pluginRuntimeErr := newPluginRuntime(dataDir)
-	paymentRegistry, _ := payment.NewRegistry()
-	if pluginRuntime != nil {
-		if dynamic := pluginRuntime.paymentRegistrySnapshot(); dynamic != nil {
-			paymentRegistry = dynamic
-		}
-	}
-	service := &Service{repo: repo, dataDir: dataDir, activeStorageTests: make(map[string]bool), activeCancels: make(map[string]context.CancelFunc), agentConflictStreak: make(map[string]int), agentSchedulerWake: make(chan struct{}, 1), taskDispatcherWake: make(chan struct{}, 1), piRunners: make(map[string]context.CancelFunc), coordinator: coordinator, runtimeErr: err, pluginRuntime: pluginRuntime, pluginRuntimeErr: pluginRuntimeErr, paymentRegistry: paymentRegistry, workerID: newID(), routeCatalogTTL: 30 * time.Second, routeCatalogMaxStale: 5 * time.Minute, routeHealthBlocked: make(map[string]time.Time), geminiCacheLocks: make(map[string]*geminiCacheKeyLock)}
-	service.taskBillingCoordinator = newTaskBillingCoordinator(service.repo)
+	service := &Service{repo: repo, dataDir: dataDir, activeStorageTests: make(map[string]bool), activeCancels: make(map[string]context.CancelFunc), agentConflictStreak: make(map[string]int), agentSchedulerWake: make(chan struct{}, 1), taskDispatcherWake: make(chan struct{}, 1), piRunners: make(map[string]context.CancelFunc), coordinator: coordinator, runtimeErr: err, pluginRuntime: pluginRuntime, pluginRuntimeErr: pluginRuntimeErr, workerID: newID(), routeCatalogTTL: 30 * time.Second, routeCatalogMaxStale: 5 * time.Minute, routeHealthBlocked: make(map[string]time.Time), geminiCacheLocks: make(map[string]*geminiCacheKeyLock)}
 	service.taskTerminalCoordinator = newTaskTerminalCoordinator(service)
 	service.taskRouteExecutor = newTaskRouteExecutor(service)
 	service.taskWorkerCoordinator = newTaskWorkerCoordinator(service)
@@ -175,14 +162,6 @@ func newService(repo *repository.Repository, dataDir string) *Service {
 	return service
 }
 
-func (s *Service) taskBilling() *taskBillingCoordinator {
-	if s.taskBillingCoordinator != nil {
-		return s.taskBillingCoordinator
-	}
-	// 部分单元测试直接构造 Service 字面量；延迟创建保持这些测试和内部工具兼容。
-	return newTaskBillingCoordinator(s.repo)
-}
-
 func (s *Service) StartWorker() {
 	runtime := s.backgroundWorkers()
 	ctx, started := runtime.Start()
@@ -193,8 +172,6 @@ func (s *Service) StartWorker() {
 	s.startResourceDeletionWorker(ctx)
 	s.startResourceOffloadWorker()
 	s.startSkillSyncWorker(ctx)
-	s.startPaymentWorker(ctx)
-	s.startBillingAutoRefundWorker()
 	s.startDramaScheduler()
 	go s.syncAgentSessionLimit()
 	s.runWorkerLoop(func(ctx context.Context) {
@@ -264,10 +241,6 @@ func (s *Service) TasksWithOptions(userID string, options TaskListOptions) ([]Ta
 	if err != nil {
 		return nil, err
 	}
-	orders, err := s.repo.BillingOrdersByTaskIDs(userID, taskBillingTaskIDs(tasks))
-	if err != nil {
-		return nil, err
-	}
 	// Active task lists are the primary source for the canvas cancel affordance.
 	// The worker may have already logged an upstream request while the task row
 	// is waiting for its next lease update, so hydrate the list read model from
@@ -284,13 +257,9 @@ func (s *Service) TasksWithOptions(userID string, options TaskListOptions) ([]Ta
 		if strings.TrimSpace(tasks[index].ProviderRequestID) != "" {
 			continue
 		}
-		if order, ok := orders[tasks[index].ID]; ok && strings.TrimSpace(order.ProviderRequestID) != "" {
-			tasks[index].ProviderRequestID = strings.TrimSpace(order.ProviderRequestID)
-			continue
-		}
 		tasks[index].ProviderRequestID = providerRequestIDs[tasks[index].ID]
 	}
-	return taskSummariesForOutputWithBilling(tasks, orders), nil
+	return taskSummariesForOutput(tasks), nil
 }
 
 func (s *Service) Task(userID string, id string) (*model.Task, error) {
@@ -306,15 +275,8 @@ func (s *Service) hydrateTaskProviderRequestID(task *model.Task) {
 	if task == nil || task.ProviderRequestID != "" {
 		return
 	}
-	if task.BillingOrderID != "" {
-		if order, err := s.repo.BillingOrder(task.BillingOrderID); err == nil {
-			task.ProviderRequestID = strings.TrimSpace(order.ProviderRequestID)
-		}
-	}
-	if task.ProviderRequestID == "" {
-		if providerRequestID, err := s.repo.LatestProviderRequestIDForTask(task.ID); err == nil {
-			task.ProviderRequestID = providerRequestID
-		}
+	if providerRequestID, err := s.repo.LatestProviderRequestIDForTask(task.ID); err == nil {
+		task.ProviderRequestID = providerRequestID
 	}
 }
 
