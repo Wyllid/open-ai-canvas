@@ -1,0 +1,64 @@
+# Local agent over MCP
+
+Open-AI-Canvas can act as an MCP server, so a coding agent you already pay for
+(Codex, Claude Code, or any client that speaks MCP over streamable HTTP) can work
+on your canvases and dramas next to the built-in agent.
+
+## What the agent can do
+
+| Tool | Purpose |
+| --- | --- |
+| `canvas_list` | List canvases. Its `id` is the `canvasId` the other canvas tools need. |
+| `canvas_get_state`, `canvas_read_text`, `canvas_read_batch_table`, `canvas_read_storyboard`, `canvas_list_node_types` | Read a canvas. |
+| `canvas_apply_ops`, `canvas_arrange_nodes`, `canvas_create_storyboard`, `canvas_edit_storyboard`, `canvas_create_character`, `canvas_edit_batch_table` | Edit a canvas. Edits are saved and show up in an open canvas. |
+| `model_list`, `task_get` | Read the model catalog and the status of a task. |
+| `drama_list`, `drama_get`, `drama_episode_get` | Read drama productions, episodes, shots and segments. |
+| `skill_search`, `skill_read_file` | Read the skills you have added. |
+
+Media generation is not exposed. The agent prepares nodes, prompts, storyboards
+and tables, and you start generation from the canvas, the same way you approve it
+for the built-in agent. Every call acts as the local admin account
+(`CANVAS_ADMIN_USERNAME`).
+
+## Turn it on
+
+1. Create a token and put it in `.env`:
+
+   ```sh
+   echo "CANVAS_MCP_TOKEN=$(openssl rand -hex 32)" >> .env
+   ```
+
+2. Restart the backend. The endpoint is `http://localhost:<port>/api/mcp`. While
+   `CANVAS_MCP_TOKEN` is empty or shorter than 32 characters, the path answers 404.
+
+3. Export the same value in the shell your agent runs in, for example
+   `export CANVAS_MCP_TOKEN=...`.
+
+### Codex
+
+In `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.open-ai-canvas]
+url = "http://localhost:3000/api/mcp"
+bearer_token_env_var = "CANVAS_MCP_TOKEN"
+```
+
+### Claude Code
+
+```sh
+claude mcp add --transport http open-ai-canvas http://localhost:3000/api/mcp \
+  --header "Authorization: Bearer $CANVAS_MCP_TOKEN"
+```
+
+## Safety
+
+- Keep the endpoint on this machine. Do not publish it through a tunnel or a
+  public reverse proxy: the token is the only thing between the internet and your
+  admin account.
+- The token goes in the `Authorization` header only, never in a URL, a log or a
+  screenshot.
+- Requests that carry an `Origin` header are refused, so web pages cannot call
+  the endpoint from your browser.
+- Calls are limited to 240 per minute and 4 MB per request.
+- To revoke access, clear or change `CANVAS_MCP_TOKEN` and restart.
