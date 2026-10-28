@@ -71,7 +71,7 @@ export default function LoginPage() {
             <Button type="primary" htmlType="submit" size="large" block loading={submitting} icon={<ArrowRight className="size-4" />} iconPlacement="end">
                 {tr("Sign in")}
             </Button>
-            <p className="auth-scene-muted text-center text-xs leading-5">{tr("Access is managed by the server administrator.")}</p>
+            <p className="auth-scene-muted pt-1 text-center text-xs leading-5">{tr("Access is managed by the server administrator.")}</p>
         </form>
     );
 }
