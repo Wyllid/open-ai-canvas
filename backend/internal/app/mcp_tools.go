@@ -106,7 +106,7 @@ func (s *Service) MCPTools() ([]MCPTool, error) {
 			"camera":          map[string]any{"type": "string"},
 			"imagePrompt":     map[string]any{"type": "string"},
 			"videoPrompt":     map[string]any{"type": "string"},
-			"transition":      map[string]any{"type": "string", "description": "Transition into this shot, for example cut, fade or dissolve."},
+			"transition":      map[string]any{"type": "string", "enum": []string{"cut", "fadeblack", "fadewhite"}, "description": "Transition into this shot. A project-wide transition setting overrides it."},
 			"durationSeconds": map[string]any{"type": "number", "minimum": 0},
 		}, "projectId", "shotId"),
 		mcpTool(mcpDramaShotInsert, "Insert an empty shot before or after a shot, in the same beat. Fill it with drama_shot_update.", map[string]any{
