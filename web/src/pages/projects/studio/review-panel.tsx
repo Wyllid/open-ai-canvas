@@ -42,7 +42,7 @@ type Props = {
  * a shot when accepted, and an accepted change makes that segment's prompt and video stale.
  */
 export function ReviewPanel({ projectId, episodeId, review, busy, onJump }: Props) {
-    const { message } = App.useApp();
+    const { message, modal } = App.useApp();
     const invalidate = useDramaInvalidate(projectId);
     const [passes, setPasses] = useState<DramaReviewPass[]>(review?.passes?.length ? review.passes : PASSES);
     const pending = review?.status === "queued" || review?.status === "running";
@@ -64,15 +64,29 @@ export function ReviewPanel({ projectId, episodeId, review, busy, onJump }: Prop
     });
     const open = review?.findings.filter((finding) => finding.status === "open") || [];
     const closed = (review?.findings.length || 0) - open.length;
+    const startReview = () => {
+        if (!open.length) {
+            run.mutate();
+            return;
+        }
+        modal.confirm({
+            title: "Review the episode again?",
+            content: `${open.length} open finding${open.length === 1 ? "" : "s"} will be replaced by the new review.`,
+            okText: "Review again",
+            cancelText: "Keep findings",
+            onOk: () => run.mutate(),
+        });
+    };
     return (
         <section className="drama-review" aria-label="Review roles">
             <div className="drama-review-head">
                 <span className="drama-eyebrow">Review roles</span>
                 <Checkbox.Group className="drama-review-passes" value={passes} options={PASSES.map((value) => ({ value, label: PASS_LABEL[value] }))} onChange={(values) => setPasses(values as DramaReviewPass[])} disabled={pending} />
-                <Button size="small" icon={pending ? <Loader2 className="size-3.5 animate-spin" /> : <ListChecks className="size-3.5" />} disabled={busy || pending || passes.length === 0} loading={run.isPending} onClick={() => run.mutate()}>
+                <Button size="small" icon={pending ? <Loader2 className="size-3.5 animate-spin" /> : <ListChecks className="size-3.5" />} disabled={busy || pending || passes.length === 0} loading={run.isPending} onClick={startReview}>
                     {pending ? "Reviewing…" : review ? "Review again" : "Review episode"}
                 </Button>
             </div>
+            {review?.waiting ? <p className="drama-sg-note is-warn">{review.waiting}</p> : null}
             {review?.status === "failed" ? <p className="drama-sg-note is-warn">Review failed: {review.error || "no result"}</p> : null}
             {review?.status === "ready" ? <p className="drama-sg-note">{review.findings.length === 0 ? "No problems found." : `${open.length} open · ${closed} resolved`}</p> : null}
             {open.length ? (

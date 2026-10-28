@@ -344,6 +344,9 @@ func (s *Service) DramaEpisodeDetail(userID string, projectID string, episodeID 
 		}
 	}
 	detail := DramaEpisodeDetail{Episode: *episode, Shots: shots, Chapters: refs, Jobs: views, MusicCues: decodeDramaMusicCues(episode.MusicCuesJSON), Review: decodeDramaReview(episode.ReviewJSON)}
+	if review := detail.Review; review != nil && review.Status == model.DramaMediaQueued && productionRow.Status != model.DramaStatusRunning {
+		review.Waiting = "the review waits for the production to run; resume it to start the review"
+	}
 	if job, jobErr := s.repo.LatestDramaJob(project.ID, model.DramaJobScript, episode.ID); jobErr == nil {
 		view := dramaJobView(*job)
 		detail.ScriptJob = &view

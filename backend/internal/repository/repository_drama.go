@@ -637,6 +637,12 @@ func (r *Repository) UpdateDramaEpisodeMeta(episodeID string, fields map[string]
 	return r.db.Model(&model.DramaEpisode{}).Where("id = ?", episodeID).Updates(fields).Error
 }
 
+// SwapDramaEpisodeReview 仅当审阅状态仍是 previous 时写入 next；返回 false 表示期间被别处改过。
+func (r *Repository) SwapDramaEpisodeReview(episodeID, previous, next string) (bool, error) {
+	result := r.db.Model(&model.DramaEpisode{}).Where("id = ? AND review_json = ?", episodeID, previous).Updates(map[string]any{"review_json": next, "updated_at": time.Now()})
+	return result.RowsAffected == 1, result.Error
+}
+
 func (r *Repository) DramaSegments(episodeID string) ([]model.DramaSegment, error) {
 	var segments []model.DramaSegment
 	err := r.db.Where("episode_id = ?", episodeID).Order("segment_index asc").Find(&segments).Error

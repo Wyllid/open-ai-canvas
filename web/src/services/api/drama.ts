@@ -393,6 +393,8 @@ export type DramaReviewFinding = {
     problem: string;
     field?: string;
     value?: string;
+    /** The field value the fix replaces; applying is refused once the shot no longer has it. */
+    before?: string;
     status: "open" | "accepted" | "dismissed";
 };
 
@@ -403,6 +405,8 @@ export type DramaReviewState = {
     error?: string;
     reviewedAt?: string;
     findings: DramaReviewFinding[];
+    /** Set while a queued review waits for a paused production to run. */
+    waiting?: string;
 };
 
 /** Runs the review roles on an episode's shot list in one text call; nothing is changed until a finding is accepted. */

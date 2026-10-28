@@ -1,12 +1,17 @@
 package app
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
+	"gorm.io/gorm"
 	"yingce/backend/internal/model"
 	"yingce/backend/internal/production"
 )
@@ -38,8 +43,16 @@ var dramaReviewPassBrief = map[string]string{
 	DramaReviewPassSound:      "Sound: every spoken line has a speaker and fits its shot (about 2.5 words per second, or 4 Chinese characters per second); moments that need silence, music or a sound effect are noted in the action.",
 }
 
-// dramaReviewFixFields 是意见可以直接改写的镜头字段；其余问题只给文字说明。
-var dramaReviewFixFields = map[string]bool{"speaker": true, "dialogue": true, "action": true, "shotSize": true, "camera": true, "imagePrompt": true, "videoPrompt": true, "transition": true, "durationSeconds": true}
+// dramaReviewFixFieldOrder 是意见可以直接改写的镜头字段；其余问题只给文字说明。
+var dramaReviewFixFieldOrder = []string{"speaker", "dialogue", "action", "shotSize", "camera", "imagePrompt", "videoPrompt", "transition", "durationSeconds"}
+
+var dramaReviewFixFields = func() map[string]bool {
+	fields := map[string]bool{}
+	for _, field := range dramaReviewFixFieldOrder {
+		fields[field] = true
+	}
+	return fields
+}()
 
 // DramaReviewFinding 是一条审阅意见：哪个岗位、哪个镜头、什么问题，以及可选的最小修改。
 type DramaReviewFinding struct {
@@ -51,7 +64,15 @@ type DramaReviewFinding struct {
 	Problem    string `json:"problem"`
 	Field      string `json:"field,omitempty"`
 	Value      string `json:"value,omitempty"`
-	Status     string `json:"status"`
+	// Before 是这条修改要替换的字段原值；采纳时字段已不是这个值，说明镜头在审阅后被改过，不再自动覆盖。
+	Before *string `json:"before,omitempty"`
+	Status string  `json:"status"`
+}
+
+// DramaReviewShot 记录提交审阅时第 N 号镜头是谁、可改字段是什么样，意见按它对回镜头。
+type DramaReviewShot struct {
+	ID     string `json:"id"`
+	Digest string `json:"digest"`
 }
 
 // DramaReviewState 保存一集最近一次审阅：请求的岗位、进度与意见。
@@ -62,6 +83,10 @@ type DramaReviewState struct {
 	Error      string               `json:"error,omitempty"`
 	ReviewedAt string               `json:"reviewedAt,omitempty"`
 	Findings   []DramaReviewFinding `json:"findings"`
+	// Shots 是提交给文本模型的镜头顺序；审阅期间插入或删除镜头不会让意见错位。
+	Shots []DramaReviewShot `json:"shots,omitempty"`
+	// Waiting 只在读取时给出：审阅在排队但制作没有运行，调度不会接手。
+	Waiting string `json:"waiting,omitempty"`
 }
 
 type RunDramaReviewRequest struct {
@@ -155,6 +180,7 @@ func (s *Service) saveDramaReview(episodeID string, state *DramaReviewState) err
 }
 
 // ResolveDramaReviewFinding 采纳或驳回一条意见；采纳且带修改时按普通镜头编辑写入（本段提示词与视频随之过期）。
+// 镜头在审阅后被删或对应字段被改过时拒绝采纳，避免用旧意见覆盖新内容。
 func (s *Service) ResolveDramaReviewFinding(userID, projectID, episodeID, findingID string, req ResolveDramaReviewFindingRequest) (*DramaReviewState, error) {
 	project, _, err := s.dramaForUser(userID, projectID)
 	if err != nil {
@@ -164,40 +190,130 @@ func (s *Service) ResolveDramaReviewFinding(userID, projectID, episodeID, findin
 	if err != nil {
 		return nil, err
 	}
+	findingID = strings.TrimSpace(findingID)
 	state := decodeDramaReview(episode.ReviewJSON)
 	if state == nil {
 		return nil, NotFound("the episode has no review")
 	}
-	index := -1
-	for i, finding := range state.Findings {
-		if finding.ID == strings.TrimSpace(findingID) {
-			index = i
-		}
-	}
-	if index < 0 {
+	finding := state.finding(findingID)
+	if finding == nil {
 		return nil, NotFound("finding not found")
 	}
-	finding := &state.Findings[index]
 	if finding.Status != DramaFindingOpen {
 		return state, nil
 	}
-	finding.Status = DramaFindingDismissed
+	status := DramaFindingDismissed
 	if req.Accept {
-		finding.Status = DramaFindingAccepted
+		status = DramaFindingAccepted
 		if finding.Field != "" && finding.ShotID != "" {
-			patch, err := dramaFindingPatch(*finding)
-			if err != nil {
-				return nil, err
-			}
-			if _, err := s.UpdateDramaShot(userID, projectID, finding.ShotID, patch); err != nil {
+			if err := s.applyDramaFinding(userID, projectID, project.ID, *finding); err != nil {
 				return nil, err
 			}
 		}
 	}
-	if err := s.saveDramaReview(episode.ID, state); err != nil {
-		return nil, err
+	return s.updateDramaReview(project.ID, episode.ID, func(current *DramaReviewState) {
+		if target := current.finding(findingID); target != nil && target.Status == DramaFindingOpen {
+			target.Status = status
+		}
+	})
+}
+
+func (state *DramaReviewState) finding(id string) *DramaReviewFinding {
+	for i := range state.Findings {
+		if state.Findings[i].ID == id {
+			return &state.Findings[i]
+		}
 	}
-	return state, nil
+	return nil
+}
+
+func (s *Service) applyDramaFinding(userID, projectID, internalProjectID string, finding DramaReviewFinding) error {
+	shot, err := s.repo.DramaShot(internalProjectID, finding.ShotID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return BadAuthRequest("this shot was removed after the review; dismiss the finding")
+		}
+		return err
+	}
+	if finding.Before != nil && dramaShotFieldValue(*shot, finding.Field) != *finding.Before {
+		return BadAuthRequest("the shot's " + finding.Field + " changed after the review; edit it yourself or dismiss the finding")
+	}
+	patch, err := dramaFindingPatch(finding)
+	if err != nil {
+		return err
+	}
+	_, err = s.UpdateDramaShot(userID, projectID, finding.ShotID, patch)
+	return err
+}
+
+// updateDramaReview 以读-改-比较写入的方式更新审阅状态：两次并发的采纳或新开审阅不会互相覆盖。
+func (s *Service) updateDramaReview(projectID, episodeID string, mutate func(*DramaReviewState)) (*DramaReviewState, error) {
+	for attempt := 0; attempt < 5; attempt++ {
+		episode, err := s.repo.DramaEpisode(projectID, episodeID)
+		if err != nil {
+			return nil, err
+		}
+		state := decodeDramaReview(episode.ReviewJSON)
+		if state == nil {
+			return nil, NotFound("the episode has no review")
+		}
+		mutate(state)
+		payload, err := json.Marshal(state)
+		if err != nil {
+			return nil, err
+		}
+		swapped, err := s.repo.SwapDramaEpisodeReview(episode.ID, episode.ReviewJSON, string(payload))
+		if err != nil {
+			return nil, err
+		}
+		if swapped {
+			return state, nil
+		}
+	}
+	return nil, NewAppError(http.StatusConflict, "the review changed while saving; reload and try again")
+}
+
+// dramaShotFieldValue 是镜头上意见可改字段的当前值，用于判断意见是否已过时。
+func dramaShotFieldValue(shot model.DramaShot, field string) string {
+	switch field {
+	case "speaker":
+		return shot.Speaker
+	case "dialogue":
+		return shot.Dialogue
+	case "action":
+		return shot.Action
+	case "shotSize":
+		return shot.ShotSize
+	case "camera":
+		return shot.Camera
+	case "imagePrompt":
+		return shot.ImagePrompt
+	case "videoPrompt":
+		return shot.VideoPrompt
+	case "transition":
+		return shot.Transition
+	case "durationSeconds":
+		return strconv.FormatFloat(float64(shot.DurationMs)/1000, 'g', -1, 64)
+	}
+	return ""
+}
+
+// dramaShotReviewDigest 摘要镜头全部可改字段；提交与回收时不同，说明镜头在审阅期间被改过。
+func dramaShotReviewDigest(shot model.DramaShot) string {
+	hash := sha256.New()
+	for _, field := range dramaReviewFixFieldOrder {
+		hash.Write([]byte(dramaShotFieldValue(shot, field)))
+		hash.Write([]byte{0})
+	}
+	return hex.EncodeToString(hash.Sum(nil))[:16]
+}
+
+func dramaReviewShots(shots []model.DramaShot) []DramaReviewShot {
+	out := make([]DramaReviewShot, 0, len(shots))
+	for _, shot := range shots {
+		out = append(out, DramaReviewShot{ID: shot.ID, Digest: dramaShotReviewDigest(shot)})
+	}
+	return out
 }
 
 func dramaFindingPatch(finding DramaReviewFinding) (UpdateDramaShotRequest, error) {
@@ -276,7 +392,7 @@ func (r *dramaRun) submitReview(job *model.DramaJob) (*model.Task, bool, error) 
 	prompt := r.reviewPrompt(episode, shots, chapters, state.Passes)
 	task, err := r.createTask("text", "text", prompt, r.textInput(job, dramaReviewSystemPrompt))
 	if err == nil {
-		state.Status = model.DramaMediaRunning
+		state.Status, state.Shots = model.DramaMediaRunning, dramaReviewShots(shots)
 		err = r.s.saveDramaReview(episode.ID, state)
 	}
 	return task, false, err
@@ -351,7 +467,7 @@ func (r *dramaRun) applyReview(job *model.DramaJob, task *model.Task) error {
 	if err != nil {
 		return err
 	}
-	findings, err := parseDramaReviewFindings(text, shots, state.Passes)
+	findings, err := parseDramaReviewFindings(text, state.Shots, shots, state.Passes)
 	if err != nil {
 		return err
 	}
@@ -369,7 +485,9 @@ func (r *dramaRun) failReview(job *model.DramaJob, reason string) error {
 	return r.s.saveDramaReview(episode.ID, state)
 }
 
-func parseDramaReviewFindings(text string, shots []model.DramaShot, passes []string) ([]DramaReviewFinding, error) {
+// parseDramaReviewFindings 把模型意见里的镜头编号按提交时的镜头顺序（sent）对回镜头：
+// 审阅期间被删的镜头只留文字，被改过的镜头不带修改，编号显示为镜头现在的位置。
+func parseDramaReviewFindings(text string, sent []DramaReviewShot, shots []model.DramaShot, passes []string) ([]DramaReviewFinding, error) {
 	raw, err := production.ExtractJSONObject(text)
 	if err != nil {
 		return nil, fmt.Errorf("审阅结果解析失败：%w", err)
@@ -387,6 +505,13 @@ func parseDramaReviewFindings(text string, shots []model.DramaShot, passes []str
 	if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
 		return nil, errors.New("审阅结果解析失败：不是有效的 JSON")
 	}
+	if len(sent) == 0 {
+		sent = dramaReviewShots(shots)
+	}
+	currentIndex := map[string]int{}
+	for i, shot := range shots {
+		currentIndex[shot.ID] = i
+	}
 	findings := []DramaReviewFinding{}
 	for _, item := range parsed.Findings {
 		problem := strings.TrimSpace(item.Problem)
@@ -397,15 +522,20 @@ func parseDramaReviewFindings(text string, shots []model.DramaShot, passes []str
 		if finding.Severity != "high" && finding.Severity != "low" {
 			finding.Severity = "medium"
 		}
-		if item.Shot >= 1 && item.Shot <= len(shots) {
-			finding.ShotID, finding.ShotNumber = shots[item.Shot-1].ID, item.Shot
-			if dramaReviewFixFields[item.Field] {
-				var value string
-				if json.Unmarshal(item.Value, &value) != nil {
-					value = strings.Trim(string(item.Value), `"`)
-				}
-				if value = strings.TrimSpace(value); value != "" {
-					finding.Field, finding.Value = item.Field, truncateRunes(value, 4000)
+		if item.Shot >= 1 && item.Shot <= len(sent) {
+			ref := sent[item.Shot-1]
+			if index, ok := currentIndex[ref.ID]; ok {
+				shot := shots[index]
+				finding.ShotID, finding.ShotNumber = shot.ID, index+1
+				if dramaReviewFixFields[item.Field] && dramaShotReviewDigest(shot) == ref.Digest {
+					var value string
+					if json.Unmarshal(item.Value, &value) != nil {
+						value = strings.Trim(string(item.Value), `"`)
+					}
+					if value = strings.TrimSpace(value); value != "" {
+						before := dramaShotFieldValue(shot, item.Field)
+						finding.Field, finding.Value, finding.Before = item.Field, truncateRunes(value, 4000), &before
+					}
 				}
 			}
 		}
