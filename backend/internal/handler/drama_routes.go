@@ -155,6 +155,24 @@ func registerDramaRoutes(r *gin.RouterGroup, svc *service.Service) {
 		cues, err := svc.SetDramaMusic(userID, c.Param("id"), c.Param("episodeId"), req)
 		return gin.H{"cues": cues}, err
 	}))
+	r.GET("/dramas/:id/episodes/:episodeId/captions", dramaRoute(svc, 0, func(c *gin.Context, userID string) (any, error) {
+		return svc.DramaCaptions(userID, c.Param("id"), c.Param("episodeId"))
+	}))
+	r.PUT("/dramas/:id/episodes/:episodeId/captions", dramaRoute(svc, 512<<10, func(c *gin.Context, userID string) (any, error) {
+		var req service.SetDramaCaptionsRequest
+		if err := bindDramaJSON(c, &req); err != nil {
+			return nil, err
+		}
+		return svc.SetDramaCaptions(userID, c.Param("id"), c.Param("episodeId"), req)
+	}))
+	r.PUT("/dramas/:id/episodes/:episodeId/motion", dramaRoute(svc, 64<<10, func(c *gin.Context, userID string) (any, error) {
+		var req service.SetDramaMotionRequest
+		if err := bindDramaJSON(c, &req); err != nil {
+			return nil, err
+		}
+		items, err := svc.SetDramaMotion(userID, c.Param("id"), c.Param("episodeId"), req)
+		return gin.H{"items": items}, err
+	}))
 	r.POST("/dramas/:id/episodes/:episodeId/review", dramaRoute(svc, 16<<10, func(c *gin.Context, userID string) (any, error) {
 		var req service.RunDramaReviewRequest
 		if err := bindDramaJSON(c, &req); err != nil {

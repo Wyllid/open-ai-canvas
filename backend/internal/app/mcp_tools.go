@@ -74,6 +74,8 @@ const (
 	mcpDramaTakeSelect = "drama_take_select"
 	mcpDramaReviewRun  = "drama_review_run"
 	mcpDramaReviewSet  = "drama_review_resolve"
+	mcpDramaCaptions   = "drama_captions_set"
+	mcpDramaMotion     = "drama_motion_set"
 )
 
 const mcpCanvasIDDescription = "Canvas ID from canvas_list."
@@ -194,6 +196,46 @@ func (s *Service) MCPTools() ([]MCPTool, error) {
 			"findingId": map[string]any{"type": "string"},
 			"accept":    map[string]any{"type": "boolean"},
 		}, "projectId", "episodeId", "findingId", "accept"),
+		mcpTool(mcpDramaCaptions, "Change an episode's captions. By default captions are timed automatically from each shot's dialogue and the segment video lengths, with word timing estimated from character counts; they are always exported as SRT and burned into the video only when burn is true. Send cues to replace them all (for example after correcting text, or with word timings from a transcription); edited captions no longer follow script changes until reset is true. A rendered episode is marked stale and rendered again with local ffmpeg only. Current captions are under captions in drama_episode_get.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"episodeId": map[string]any{"type": "string"},
+			"burn":      map[string]any{"type": "boolean", "description": "Burn captions into the video."},
+			"style":     map[string]any{"type": "string", "enum": []string{renderCaptionPlain, renderCaptionKaraoke}, "description": "karaoke highlights word by word when burned."},
+			"reset":     map[string]any{"type": "boolean", "description": "Go back to automatic captions from the dialogue."},
+			"cues": map[string]any{"type": "array", "maxItems": dramaMaxCaptionCues, "items": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"shotId":     map[string]any{"type": "string"},
+					"startMs":    map[string]any{"type": "integer", "minimum": 0, "description": "ms from the episode start."},
+					"durationMs": map[string]any{"type": "integer", "minimum": 300, "maximum": 30000},
+					"text":       map[string]any{"type": "string", "maxLength": dramaMaxCaptionRunes},
+					"words": map[string]any{"type": "array", "description": "Optional word timings relative to the cue start; they must spell the text, otherwise they are estimated.", "items": map[string]any{
+						"type":       "object",
+						"properties": map[string]any{"text": map[string]any{"type": "string"}, "startMs": map[string]any{"type": "integer"}, "durationMs": map[string]any{"type": "integer"}},
+						"required":   []string{"text", "startMs", "durationMs"},
+					}},
+				},
+				"required": []string{"startMs", "durationMs", "text"},
+			}},
+		}, "projectId", "episodeId"),
+		mcpTool(mcpDramaMotion, "Replace the graphics burned into an episode: lowerThird items show a name or place bar (title plus optional subtitle), overlay items place an image resource such as a logo in a corner. Times are ms from the episode start. An empty list removes all graphics. A rendered episode is marked stale and rendered again with local ffmpeg only.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"episodeId": map[string]any{"type": "string"},
+			"items": map[string]any{"type": "array", "maxItems": dramaMaxMotionItems, "items": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"kind":       map[string]any{"type": "string", "enum": []string{DramaMotionLowerThird, DramaMotionOverlay}},
+					"startMs":    map[string]any{"type": "integer", "minimum": 0},
+					"durationMs": map[string]any{"type": "integer", "minimum": 500},
+					"title":      map[string]any{"type": "string", "maxLength": 40},
+					"subtitle":   map[string]any{"type": "string", "maxLength": 60},
+					"resourceId": map[string]any{"type": "string", "description": "Ready image resource id for an overlay."},
+					"position":   map[string]any{"type": "string", "enum": renderOverlayPositions},
+					"widthPct":   map[string]any{"type": "number", "minimum": 5, "maximum": 60, "description": "Overlay width as a percentage of the frame width; default 18."},
+				},
+				"required": []string{"kind", "startMs", "durationMs"},
+			}},
+		}, "projectId", "episodeId", "items"),
 	}
 	registry := cloudAgentRegistry()
 	for _, name := range append(append([]string{}, mcpCanvasTools...), mcpSkillTools...) {
@@ -418,6 +460,26 @@ func (s *Service) CallMCPTool(userID, name string, arguments json.RawMessage) (a
 			return nil, err
 		}
 		return s.ResolveDramaReviewFinding(userID, args.ProjectID, args.EpisodeID, args.FindingID, ResolveDramaReviewFindingRequest{Accept: args.Accept})
+	case mcpDramaCaptions:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			EpisodeID string `json:"episodeId"`
+			SetDramaCaptionsRequest
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID); err != nil {
+			return nil, err
+		}
+		return s.SetDramaCaptions(userID, args.ProjectID, args.EpisodeID, args.SetDramaCaptionsRequest)
+	case mcpDramaMotion:
+		var args struct {
+			ProjectID string            `json:"projectId"`
+			EpisodeID string            `json:"episodeId"`
+			Items     []DramaMotionItem `json:"items"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID); err != nil {
+			return nil, err
+		}
+		return s.SetDramaMotion(userID, args.ProjectID, args.EpisodeID, SetDramaMotionRequest{Items: args.Items})
 	}
 	if isMCPCanvasTool(name) {
 		canvasID, rest, err := splitMCPCanvasID(arguments)

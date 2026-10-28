@@ -333,6 +333,9 @@ type DramaEpisodeDetail struct {
 	MusicCues []DramaMusicCue `json:"musicCues"`
 	// Review 是最近一次审阅工序的进度与意见；从未审阅时为空。
 	Review *DramaReviewState `json:"review,omitempty"`
+	// Captions 是本集当前生效的字幕（自动或改写）与 SRT；Motion 是成片上的人名条与图片叠加。
+	Captions DramaCaptions     `json:"captions"`
+	Motion   []DramaMotionItem `json:"motion"`
 }
 
 // DramaSegmentView 是一个剧情段：视频提示词、参考图、生成方式与视频结果。

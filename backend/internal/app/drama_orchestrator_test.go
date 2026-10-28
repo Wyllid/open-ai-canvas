@@ -210,13 +210,26 @@ func TestDramaPipelineRunsNovelToFinalCutWithSampleGate(t *testing.T) {
 		t.Fatalf("pipeline not finished: %+v %v", summary, fake.byKind)
 	}
 	for _, timeline := range fake.renders {
-		if len(timeline.Clips) != 2 || len(timeline.Tracks) != 1 || timeline.Tracks[0].Muted {
+		if timeline.Tracks[0].ID != "video" || timeline.Tracks[0].Muted {
 			t.Fatalf("must concatenate segment videos with original audio: %+v", timeline)
 		}
+		videos, captions := 0, 0
 		for _, clip := range timeline.Clips {
-			if clip.Kind != "video" || clip.Volume != 1 || clip.DirectMedia == nil {
-				t.Fatalf("invalid clip: %+v", clip)
+			switch clip.TrackID {
+			case "video":
+				videos++
+				if clip.Kind != "video" || clip.Volume != 1 || clip.DirectMedia == nil {
+					t.Fatalf("invalid clip: %+v", clip)
+				}
+			case "captions":
+				captions++
+			default:
+				t.Fatalf("unexpected clip: %+v", clip)
 			}
+		}
+		// 字幕默认只导出 SRT，不烧录。
+		if videos != 2 || captions == 0 || timeline.Captions == nil || timeline.Captions.Burn {
+			t.Fatalf("want two segment videos and unburned captions: %+v", timeline)
 		}
 	}
 	requests := []CreateTaskRequest{}
