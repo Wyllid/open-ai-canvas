@@ -59,6 +59,8 @@ export type DramaStoryboardSettings = {
     dialogue: "dense" | "standard" | "sparse";
     transition: "auto" | "cut" | "fadeblack" | "fadewhite";
     transitionMs: number;
+    /** auto: chain from the previous segment's last frame only within a scene and on a cut; chain: always. */
+    continuity: "auto" | "chain";
 };
 
 /** 用户技能库里的一个技能文件，作为剧情段视频提示词的写作方法。 */

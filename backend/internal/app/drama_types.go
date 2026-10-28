@@ -370,9 +370,11 @@ type DramaSegmentRequest struct {
 	Seconds         int    `json:"seconds"`
 	MaxVideoSeconds int    `json:"maxVideoSeconds"`
 	// FirstFrame 是上一段视频的最后一帧；第一段为空。FirstFramePending 表示上一段还没生成，生成后才能提交本段。
-	FirstFrameResourceID string                  `json:"firstFrameResourceId,omitempty"`
-	FirstFramePending    bool                    `json:"firstFramePending"`
-	References           []DramaSegmentReference `json:"references"`
+	FirstFrameResourceID string `json:"firstFrameResourceId,omitempty"`
+	FirstFramePending    bool   `json:"firstFramePending"`
+	// Continuity 是本段与上一段的衔接：continuous 接上一段最后一帧，reanchor 只按参考图重新起幅。
+	Continuity string                  `json:"continuity"`
+	References []DramaSegmentReference `json:"references"`
 	// ReferenceCapacity 是本段最多随请求发送的参考图张数（已扣除首帧，并受每段上限约束）；ModelMaxImages 是视频模型声明的图片上限。
 	ReferenceCapacity int `json:"referenceCapacity"`
 	ModelMaxImages    int `json:"modelMaxImages"`

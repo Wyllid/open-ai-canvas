@@ -613,10 +613,7 @@ func (s *Service) fillDramaSegmentViews(projectID string, p *model.DramaProducti
 		if i >= len(rows) || rows[i].SegmentIndex != draft.view.Index {
 			return errors.New("剧情段记录与镜头分组不一致")
 		}
-		var previous *model.DramaSegment
-		if i > 0 {
-			previous = &rows[i-1]
-		}
+		previous := dramaChainedPrevious(settings, detail.Shots, rows, i)
 		request, _, prepareErr := s.prepareDramaSegment(settings, draft, rows[i], previous, castByID)
 		if prepareErr != nil {
 			request.Warning = prepareErr.Error()

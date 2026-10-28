@@ -6,7 +6,7 @@ export const MAX_SEGMENT_SECONDS = 60;
 export const MIN_EPISODE_SECONDS = 30;
 export const MAX_EPISODE_SECONDS = 1200;
 
-export const DEFAULT_STORYBOARD: DramaStoryboardSettings = { segmentMode: "auto", segmentSeconds: 10, segmentMinSeconds: 8, segmentMaxSeconds: 15, pacing: "standard", dialogue: "standard", transition: "auto", transitionMs: 400 };
+export const DEFAULT_STORYBOARD: DramaStoryboardSettings = { segmentMode: "auto", segmentSeconds: 10, segmentMinSeconds: 8, segmentMaxSeconds: 15, pacing: "standard", dialogue: "standard", transition: "auto", transitionMs: 400, continuity: "auto" };
 
 export const EPISODE_PRESETS = [60, 90, 120, 180, 300, 600];
 
@@ -28,6 +28,7 @@ export function normalizeStoryboard(input?: Partial<DramaStoryboardSettings>): D
         dialogue: ["dense", "sparse"].includes(value.dialogue) ? value.dialogue : "standard",
         transition: ["cut", "fadeblack", "fadewhite"].includes(value.transition) ? value.transition : "auto",
         transitionMs: clamp(Math.round(value.transitionMs || 400), 150, 1500),
+        continuity: value.continuity === "chain" ? "chain" : "auto",
     };
 }
 

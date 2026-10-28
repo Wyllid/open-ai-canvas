@@ -53,7 +53,7 @@ func dramaVideoWaitReason(settings DramaSettings, p *model.DramaProduction, e *m
 	case settings.ReviewMode == DramaReviewSample && !p.SampleApproved && e.Number != 1:
 		return "等待确认第 1 集样片"
 	}
-	if index > 0 && !dramaSegmentVideoDone(segments[index-1]) {
+	if previous := dramaChainedPrevious(settings, shots, segments, index); previous != nil && !dramaSegmentVideoDone(*previous) {
 		return "等待上一段视频生成（需要它的最后一帧）"
 	}
 	if !dramaPromptReady(segments[index]) {
@@ -114,7 +114,9 @@ func (s *Service) prepareDramaSegment(settings DramaSettings, draft dramaSegment
 	}
 	refs := []any{}
 	header := []string{}
+	request.Continuity = dramaContinuityReanchor
 	if previous != nil {
+		request.Continuity = dramaContinuityContinuous
 		request.Operation = "image_to_video"
 		request.FirstFramePending = previous.VideoStatus != model.DramaMediaReady || previous.TailFrameResourceID == ""
 		if !request.FirstFramePending {
@@ -233,8 +235,8 @@ func (r *dramaRun) submitSegmentVideo(job *model.DramaJob) (*model.Task, bool, e
 	}
 	var previous *model.DramaSegment
 	for i := range rows {
-		if rows[i].ID == segment.ID && i > 0 {
-			previous = &rows[i-1]
+		if rows[i].ID == segment.ID {
+			previous = dramaChainedPrevious(r.settings, shots, rows, i)
 		}
 	}
 	for _, draft := range buildDramaSegmentDrafts(r.settings, r.meta, shots, casts, rows) {

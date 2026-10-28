@@ -22,6 +22,9 @@ const (
 	TransitionBlack = "fadeblack"
 	TransitionWhite = "fadewhite"
 
+	ContinuityAuto  = "auto"
+	ContinuityChain = "chain"
+
 	// SegmentAuto 按剧情节拍（场景切换）切段，单段不超过视频模型单次上限。
 	SegmentAuto = "auto"
 	// SegmentFixed 每段固定 SegmentSeconds 秒，只按时长装箱。
@@ -46,6 +49,9 @@ type StoryboardSettings struct {
 	Dialogue          string `json:"dialogue"`
 	Transition        string `json:"transition"`
 	TransitionMs      int    `json:"transitionMs"`
+	// Continuity 决定段与段如何衔接：auto 只在同一场景、硬切时用上一段最后一帧作首帧，
+	// 换场景或黑场/闪白时重新锚定（按参考图生成，不等上一段）；chain 每段都接上一段最后一帧。
+	Continuity string `json:"continuity"`
 }
 
 // SegmentLimits 是切分一集剧情段时实际执行的约束（毫秒），已按视频模型单次上限收紧。
@@ -105,6 +111,9 @@ func (s StoryboardSettings) Normalized() StoryboardSettings {
 	case TransitionCut, TransitionBlack, TransitionWhite:
 	default:
 		s.Transition = TransitionAuto
+	}
+	if s.Continuity != ContinuityChain {
+		s.Continuity = ContinuityAuto
 	}
 	if s.TransitionMs <= 0 {
 		s.TransitionMs = 400
