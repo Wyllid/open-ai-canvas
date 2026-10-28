@@ -253,6 +253,8 @@ export type DramaEpisodeDetail = {
     scriptJob?: DramaJob;
     /** 原文台词与镜头台词的逐句核对；章节被多集共用或还没有镜头时不提供。 */
     dialogueCheck?: DramaDialogueCheck;
+    /** Latest run of the review roles on this episode; absent when never reviewed. */
+    review?: DramaReviewState;
 };
 
 /** missing 是没有逐字出现在镜头台词里的原文台词（被删或被改写），最多 30 句；missingCount 是总数。 */
@@ -379,6 +381,43 @@ export type CreateDramaInput = {
 };
 
 const base = (projectId: string) => `/dramas/${encodeURIComponent(projectId)}`;
+
+export type DramaReviewPass = "script" | "direction" | "camera" | "continuity" | "sound";
+
+export type DramaReviewFinding = {
+    id: string;
+    pass: DramaReviewPass;
+    shotId?: string;
+    shotNumber?: number;
+    severity: "high" | "medium" | "low";
+    problem: string;
+    field?: string;
+    value?: string;
+    /** The field value the fix replaces; applying is refused once the shot no longer has it. */
+    before?: string;
+    status: "open" | "accepted" | "dismissed";
+};
+
+export type DramaReviewState = {
+    requestId: string;
+    status: "queued" | "running" | "ready" | "failed";
+    passes: DramaReviewPass[];
+    error?: string;
+    reviewedAt?: string;
+    findings: DramaReviewFinding[];
+    /** Set while a queued review waits for a paused production to run. */
+    waiting?: string;
+};
+
+/** Runs the review roles on an episode's shot list in one text call; nothing is changed until a finding is accepted. */
+export function runDramaReview(projectId: string, episodeId: string, passes: DramaReviewPass[]) {
+    return http.post<DramaReviewState>(`${base(projectId)}/episodes/${encodeURIComponent(episodeId)}/review`, { passes });
+}
+
+/** Accepting a finding with a field change edits that shot, like any shot edit. */
+export function resolveDramaReviewFinding(projectId: string, episodeId: string, findingId: string, accept: boolean) {
+    return http.post<DramaReviewState>(`${base(projectId)}/episodes/${encodeURIComponent(episodeId)}/review/findings/${encodeURIComponent(findingId)}`, { accept });
+}
 
 export type DramaTakeVerdict = "approve" | "fix_prompt" | "new_take";
 

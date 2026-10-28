@@ -12,6 +12,7 @@ import { SourceEditModal } from "./episode-source";
 import { JobDetailModal } from "./job-detail";
 import { ShotEditor } from "./segment-dialog";
 import type { EpisodeEmpty } from "./storyboard";
+import { ReviewPanel } from "./review-panel";
 
 function storyboardSummary(value: DramaStoryboardSettings) {
     const rules = normalizeStoryboard(value);
@@ -151,6 +152,7 @@ export function ScriptView({
                         </span>
                     </div>
                     {detail.dialogueCheck ? <DialogueCheckNotice check={detail.dialogueCheck} busy={busy} onRescript={confirmRescript} /> : null}
+                    {shots.length ? <ReviewPanel key={episode.id} projectId={projectId} episodeId={episode.id} review={detail.review} busy={busy} onJump={onCurrent} /> : null}
                 </section>
 
                 {shots.length ? (

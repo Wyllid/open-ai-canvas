@@ -243,6 +243,8 @@ func (r *dramaRun) failJob(job *model.DramaJob, reason string) error {
 		_ = json.Unmarshal([]byte(job.PayloadJSON), &payload)
 		_, err := r.s.repo.UpdateDramaSegmentRevision(job.ShotID, payload.Revision, map[string]any{"video_status": model.DramaMediaFailed, "video_error": truncateRunes(reason, 500)})
 		return err
+	case model.DramaJobReview:
+		return r.failReview(job, reason)
 	}
 	return nil
 }
@@ -358,6 +360,9 @@ func (r *dramaRun) plan() error {
 			}
 			episode.Stage = model.DramaEpisodeScript
 			inFlight++
+		}
+		if r.planReview(episode) {
+			allDone = false
 		}
 		if err := r.advanceEpisode(episode, loadedStage); err != nil {
 			return err
@@ -591,6 +596,8 @@ func (r *dramaRun) applyJob(job *model.DramaJob, task *model.Task) error {
 		return r.applyRender(job, task)
 	case model.DramaJobSegmentPrompt:
 		return r.applySegmentPrompt(job, task)
+	case model.DramaJobReview:
+		return r.applyReview(job, task)
 	}
 	return nil
 }
@@ -936,6 +943,8 @@ func (r *dramaRun) submit(job *model.DramaJob) (*model.Task, bool, error) {
 		return r.submitRender(job)
 	case model.DramaJobSegmentPrompt:
 		return r.submitSegmentPrompt(job)
+	case model.DramaJobReview:
+		return r.submitReview(job)
 	}
 	return nil, true, nil
 }

@@ -57,7 +57,7 @@ func TestMCPToolsExposeOnlyPreparationTools(t *testing.T) {
 			t.Fatalf("generation tool %s must stay in the canvas", tool.Name)
 		}
 	}
-	if len(tools) != 15+len(mcpCanvasTools)+len(mcpSkillTools) {
+	if len(tools) != 17+len(mcpCanvasTools)+len(mcpSkillTools) {
 		t.Fatalf("got %d tools", len(tools))
 	}
 }
