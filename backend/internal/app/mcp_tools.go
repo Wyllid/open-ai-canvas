@@ -72,6 +72,8 @@ const (
 	mcpDramaTakeFrames = "drama_take_frames"
 	mcpDramaTakeReview = "drama_take_review"
 	mcpDramaTakeSelect = "drama_take_select"
+	mcpDramaReviewRun  = "drama_review_run"
+	mcpDramaReviewSet  = "drama_review_resolve"
 )
 
 const mcpCanvasIDDescription = "Canvas ID from canvas_list."
@@ -181,6 +183,17 @@ func (s *Service) MCPTools() ([]MCPTool, error) {
 			"projectId": map[string]any{"type": "string"},
 			"takeId":    map[string]any{"type": "string"},
 		}, "projectId", "takeId"),
+		mcpTool(mcpDramaReviewRun, "Ask the production's text model to review an episode's shot list role by role (script, direction, camera, continuity, sound) in one call. It costs one text generation and changes nothing; findings appear under review in drama_episode_get. You can also review the episode yourself and edit shots directly instead.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"episodeId": map[string]any{"type": "string"},
+			"passes":    map[string]any{"type": "array", "items": map[string]any{"type": "string", "enum": dramaReviewPassOrder}, "description": "Roles to run; empty runs all five."},
+		}, "projectId", "episodeId"),
+		mcpTool(mcpDramaReviewSet, "Accept or dismiss one review finding. Accepting a finding that carries a field change edits that shot, which makes its segment prompt and video stale.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"episodeId": map[string]any{"type": "string"},
+			"findingId": map[string]any{"type": "string"},
+			"accept":    map[string]any{"type": "boolean"},
+		}, "projectId", "episodeId", "findingId", "accept"),
 	}
 	registry := cloudAgentRegistry()
 	for _, name := range append(append([]string{}, mcpCanvasTools...), mcpSkillTools...) {
@@ -384,6 +397,27 @@ func (s *Service) CallMCPTool(userID, name string, arguments json.RawMessage) (a
 			return nil, err
 		}
 		return s.SelectDramaTake(userID, args.ProjectID, args.TakeID)
+	case mcpDramaReviewRun:
+		var args struct {
+			ProjectID string   `json:"projectId"`
+			EpisodeID string   `json:"episodeId"`
+			Passes    []string `json:"passes"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID); err != nil {
+			return nil, err
+		}
+		return s.RunDramaReview(userID, args.ProjectID, args.EpisodeID, RunDramaReviewRequest{Passes: args.Passes})
+	case mcpDramaReviewSet:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			EpisodeID string `json:"episodeId"`
+			FindingID string `json:"findingId"`
+			Accept    bool   `json:"accept"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID, &args.FindingID); err != nil {
+			return nil, err
+		}
+		return s.ResolveDramaReviewFinding(userID, args.ProjectID, args.EpisodeID, args.FindingID, ResolveDramaReviewFindingRequest{Accept: args.Accept})
 	}
 	if isMCPCanvasTool(name) {
 		canvasID, rest, err := splitMCPCanvasID(arguments)

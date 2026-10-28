@@ -29,6 +29,11 @@ Reviewing never starts generation. A new take is a recommendation the person app
 - The cast and their notes (`drama_casts`, or the character nodes).
 - For takes: the rendered segment or frames, if the session can look at images or video.
 
+## Two ways to run the passes on a drama
+
+- **Yourself:** read the episode, run the passes below, and fix text with `drama_shot_update` once the person agrees. This costs nothing beyond your own session.
+- **With the production's text model:** `drama_review_run` runs the script, direction, camera, continuity and sound roles in one text call (it costs one text generation, so ask first). Findings appear under `review` in `drama_episode_get`; accept or dismiss each with `drama_review_resolve`. Accepting a finding that carries a field change edits that shot, which makes its segment prompt and video stale.
+
 ## The passes
 
 Run each pass with its checklist. Write findings as "shot or line → problem → fix". Skip a pass only when it has nothing to look at, and say so.
