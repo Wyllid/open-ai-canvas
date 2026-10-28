@@ -124,7 +124,7 @@ func compileCloudAgentPolicies(req CloudAgentRequest, agentName string, skills [
 		"agentIdentity": map[string]string{"name": firstNonEmpty(strings.TrimSpace(agentName), defaultCanvasAppearance().AgentName)},
 		"reasoningMode": mode,
 		"budget": map[string]any{
-			"maxCredits": req.Budget.MaxCredits, "maxSteps": cloudAgentStepLimit(req),
+			"maxSteps":           cloudAgentStepLimit(req),
 			"maxGenerationTasks": req.Budget.MaxGenerationTasks, "maxVideoSeconds": req.Budget.MaxVideoSeconds,
 		},
 		"maxToolCalls": cloudAgentMaxToolCalls, "maxOutputBytes": cloudAgentMaxOutputBytes,

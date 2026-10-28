@@ -7,10 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"yingce/backend/internal/assets"
 	"yingce/backend/internal/model"
 	"yingce/backend/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 func TestNonMediaDeliveryAttachment(t *testing.T) {

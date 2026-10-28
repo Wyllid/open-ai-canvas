@@ -116,11 +116,11 @@ func (s *Service) TestAdminChannelModel(ctx context.Context, actor *model.User, 
 		input.VideoCapability = videoProfile
 	}
 
-	// 测试复用真实生成协议、运行时并发和熔断策略，但不创建用户任务或计费订单。
+	// 测试复用真实生成协议、运行时并发和熔断策略，但不创建用户任务。
 	testCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 	testCtx = context.WithValue(testCtx, providerAnalyticsKey{}, providerAnalyticsContext{
-		Service: s, Billing: s.taskBilling(), UserID: actor.ID, ChannelID: channel.ID, Capability: capability,
+		Service: s, UserID: actor.ID, ChannelID: channel.ID, Capability: capability,
 		Operation: "admin_model_test", Model: modelKey, VideoSeconds: videoSecondsValue, ProxyURL: channel.ProxyURL,
 	})
 	testCtx = withProtocolRegistry(testCtx, s.protocolRegistry())

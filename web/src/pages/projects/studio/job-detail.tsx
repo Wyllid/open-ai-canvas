@@ -6,7 +6,7 @@ import { AlertCircle, CheckCircle2, Clock3, Copy, Crosshair, Loader2, XCircle } 
 import { AppModal } from "@/components/ui/product/app-modal";
 import { getDramaJob, type DramaJob, type DramaJobAttempt, type DramaJobTask } from "@/services/api/drama";
 
-import { formatCredits, MediaThumb, useResourceMediaUrl } from "../drama-shared";
+import { MediaThumb, useResourceMediaUrl } from "../drama-shared";
 
 export const JOB_KIND_LABEL: Record<DramaJob["kind"], string> = {
     bible: "作品圣经",
@@ -118,11 +118,8 @@ export function JobDetailModal({ projectId, job, onClose, onLocate }: { projectI
                             </dd>
                         </div>
                         <div>
-                            <dt>花费</dt>
-                            <dd>
-                                {current.costMicrocredits ? `${formatCredits(current.costMicrocredits)} 积分` : "0"}
-                                <small>重试 {current.attempt} 次</small>
-                            </dd>
+                            <dt>重试</dt>
+                            <dd>{current.attempt} 次</dd>
                         </div>
                     </dl>
                     <div className="drama-jobd-body thin-scrollbar">
@@ -162,10 +159,6 @@ function AttemptCard({ attempt, index, latest }: { attempt: DramaJobAttempt; ind
                 <div>
                     <dt>模型</dt>
                     <dd title={task?.model}>{task?.modelLabel || "—"}</dd>
-                </div>
-                <div>
-                    <dt>积分</dt>
-                    <dd>{attempt.costMicrocredits ? formatCredits(attempt.costMicrocredits) : "0"}</dd>
                 </div>
                 {task
                     ? Object.entries(task.params).map(([key, value]) => (

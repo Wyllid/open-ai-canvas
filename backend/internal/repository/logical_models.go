@@ -276,115 +276,18 @@ func (r *Repository) RouteAttempts(taskID string, routeRun int) ([]model.RouteAt
 	return items, query.Order("attempt_number asc").Find(&items).Error
 }
 
-// SwitchTaskLogicalRoute 同时更新任务执行目标和账单。跟随供应价格时会原子调整预留积分，
-// 保证明确未创建上游任务后的故障切线不会沿用上一条线路的价格快照。
-func (r *Repository) SwitchTaskLogicalRoute(taskID string, expectedRouteID string, routeID string, inputJSON string, billingOrderID string, channelID string, channelModelID string, replacement *model.BillingOrder, cost model.BillingCostSnapshot) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
-		updated := tx.Model(&model.Task{}).
-			Where("id = ? AND status = ? AND route_id = ?", taskID, model.TaskStatusRunning, expectedRouteID).
-			Updates(map[string]any{"route_id": routeID, "channel_model_id": channelModelID, "input_json": inputJSON, "updated_at": time.Now()})
-		if updated.Error != nil {
-			return updated.Error
-		}
-		if updated.RowsAffected != 1 {
-			return ErrTaskStateConflict
-		}
-		if billingOrderID == "" {
-			return nil
-		}
-		var order model.BillingOrder
-		if err := tx.First(&order, "id = ? AND task_id = ? AND status IN ?", billingOrderID, taskID, []model.BillingStatus{model.BillingStatusReserved, model.BillingStatusRunning}).Error; err != nil {
-			return err
-		}
-		now := time.Now()
-		updates := map[string]any{"channel_id": channelID, "channel_model_id": channelModelID, "updated_at": now}
-		updates["cost_configured"] = cost.CostPricing.Configured
-		updates["cost_unit_price_microcredits"] = cost.CostPricing.UnitPriceMicrocredits
-		updates["cost_input_token_price_microcredits"] = cost.CostPricing.InputTokenPriceMicrocredits
-		updates["cost_output_token_price_microcredits"] = cost.CostPricing.OutputTokenPriceMicrocredits
-		updates["cost_cached_token_price_microcredits"] = cost.CostPricing.CachedTokenPriceMicrocredits
-		updates["cost_billing_mode"] = cost.CostBillingMode
-		updates["cost_quantity"] = cost.CostQuantity
-		updates["cost_video_formula_tokens"] = cost.CostVideoFormulaTokens
-		if replacement != nil {
-			if replacement.UserID != order.UserID || replacement.TaskID != taskID || replacement.AmountMicrocredits <= 0 {
-				return ErrBillingStateConflict
-			}
-			// The new supplier price cannot expand the user's original authorization.
-			// Keep the existing cap; replacement is a price snapshot, not a new grant.
-			if err := validateBillingChargeLimit(order, replacement.AmountMicrocredits); err != nil {
-				return err
-			}
-			reserved := order.ReservedAmountMicrocredits
-			if reserved <= 0 {
-				reserved = order.AmountMicrocredits
-			}
-			delta := replacement.AmountMicrocredits - reserved
-			accountUpdates := map[string]any{"version": gorm.Expr("version + 1"), "updated_at": now}
-			accountQuery := tx.Model(&model.CreditAccount{}).Where("user_id = ?", order.UserID)
-			if delta > 0 {
-				accountQuery = accountQuery.Where("available_microcredits >= ?", delta)
-				accountUpdates["available_microcredits"] = gorm.Expr("available_microcredits - ?", delta)
-				accountUpdates["reserved_microcredits"] = gorm.Expr("reserved_microcredits + ?", delta)
-			} else if delta < 0 {
-				release := -delta
-				accountQuery = accountQuery.Where("reserved_microcredits >= ?", release)
-				accountUpdates["available_microcredits"] = gorm.Expr("available_microcredits + ?", release)
-				accountUpdates["reserved_microcredits"] = gorm.Expr("reserved_microcredits - ?", release)
-			}
-			if delta != 0 {
-				accountUpdated := accountQuery.Updates(accountUpdates)
-				if accountUpdated.Error != nil {
-					return accountUpdated.Error
-				}
-				if accountUpdated.RowsAffected != 1 {
-					if delta > 0 {
-						return ErrInsufficientCredits
-					}
-					return errors.New("reserved credit balance is inconsistent")
-				}
-				var account model.CreditAccount
-				if err := tx.First(&account, "user_id = ?", order.UserID).Error; err != nil {
-					return err
-				}
-				entryType := model.CreditLedgerReserve
-				if delta < 0 {
-					entryType = model.CreditLedgerRefund
-				}
-				if err := tx.Create(&model.CreditLedgerEntry{
-					ID: newRepositoryID(), UserID: order.UserID, Type: entryType,
-					AvailableDeltaMicrocredits: -delta, ReservedDeltaMicrocredits: delta,
-					AvailableAfterMicrocredits: account.AvailableMicrocredits, ReservedAfterMicrocredits: account.ReservedMicrocredits,
-					BillingOrderID: order.ID, Model: order.Model, ChannelID: channelID, Scene: order.Scene,
-					Note: "备用供应线路价格调整",
-				}).Error; err != nil {
-					return err
-				}
-			}
-			updates["billing_mode"] = replacement.BillingMode
-			updates["price_version"] = replacement.PriceVersion
-			updates["price_tier_id"] = replacement.PriceTierID
-			updates["price_tier_version"] = replacement.PriceTierVersion
-			updates["unit_price_microcredits"] = replacement.UnitPriceMicrocredits
-			updates["multiplier_basis_points"] = replacement.MultiplierBasisPoints
-			updates["quantity"] = replacement.Quantity
-			updates["amount_microcredits"] = replacement.AmountMicrocredits
-			updates["reserved_amount_microcredits"] = replacement.AmountMicrocredits
-			updates["input_token_price_microcredits"] = replacement.InputTokenPriceMicrocredits
-			updates["output_token_price_microcredits"] = replacement.OutputTokenPriceMicrocredits
-			updates["cached_token_price_microcredits"] = replacement.CachedTokenPriceMicrocredits
-		}
-		billingUpdated := tx.Model(&model.BillingOrder{}).
-			Where("id = ? AND task_id = ? AND status IN ?", billingOrderID, taskID, []model.BillingStatus{model.BillingStatusReserved, model.BillingStatusRunning}).
-			Updates(updates)
-		if billingUpdated.Error != nil {
-			return billingUpdated.Error
-		}
-		if billingUpdated.RowsAffected != 1 {
-			return ErrBillingStateConflict
-		}
-		return nil
-	})
+// SwitchTaskLogicalRoute 在确认上游未创建任务后，把任务切到下一条线路。
+func (r *Repository) SwitchTaskLogicalRoute(taskID string, expectedRouteID string, routeID string, inputJSON string, channelModelID string) error {
+	updated := r.db.Model(&model.Task{}).
+		Where("id = ? AND status = ? AND route_id = ?", taskID, model.TaskStatusRunning, expectedRouteID).
+		Updates(map[string]any{"route_id": routeID, "channel_model_id": channelModelID, "input_json": inputJSON, "updated_at": time.Now()})
+	if updated.Error != nil {
+		return updated.Error
+	}
+	if updated.RowsAffected != 1 {
+		return ErrTaskStateConflict
+	}
+	return nil
 }
 
 func (r *Repository) SaveLogicalModelBundle(item *model.LogicalModel, revision *model.LogicalModelRevision, routes []model.LogicalModelRoute, creating bool) error {
@@ -395,22 +298,16 @@ func (r *Repository) SaveLogicalModelBundle(item *model.LogicalModel, revision *
 			}
 		} else {
 			result := tx.Model(&model.LogicalModel{}).Where("id = ?", item.ID).Updates(map[string]any{
-				"code":                      item.Code,
-				"name":                      item.Name,
-				"icon":                      item.Icon,
-				"description":               item.Description,
-				"capability":                item.Capability,
-				"enabled":                   item.Enabled,
-				"sort_order":                item.SortOrder,
-				"source_channel_model_id":   item.SourceChannelModelID,
-				"price_policy":              item.PricePolicy,
-				"billing_mode":              item.BillingMode,
-				"unit_price_microcredits":   item.UnitPriceMicrocredits,
-				"input_price_microcredits":  item.InputPriceMicrocredits,
-				"output_price_microcredits": item.OutputPriceMicrocredits,
-				"cached_price_microcredits": item.CachedPriceMicrocredits,
-				"legacy_model_ids_json":     item.LegacyModelIDsJSON,
-				"updated_at":                item.UpdatedAt,
+				"code":                    item.Code,
+				"name":                    item.Name,
+				"icon":                    item.Icon,
+				"description":             item.Description,
+				"capability":              item.Capability,
+				"enabled":                 item.Enabled,
+				"sort_order":              item.SortOrder,
+				"source_channel_model_id": item.SourceChannelModelID,
+				"legacy_model_ids_json":   item.LegacyModelIDsJSON,
+				"updated_at":              item.UpdatedAt,
 			})
 			if result.Error != nil {
 				return result.Error

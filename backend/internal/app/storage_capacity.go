@@ -5,7 +5,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -268,13 +267,4 @@ func (s *Service) AdminRevokeUserStorageGrant(actor *model.User, grantID string,
 		return nil, err
 	}
 	return grant, nil
-}
-
-// afterStorageOrderGranted 让本实例的只读判定立即看到新容量；其它实例依赖短 TTL。
-func (s *Service) afterStorageOrderGranted(order *model.PaymentOrder) {
-	if order == nil || order.ProductKind != model.TopupProductKindStorage || order.Status != model.PaymentOrderCredited {
-		return
-	}
-	s.invalidateStorageStatus(order.UserID)
-	slog.Info("storage grant applied", "user", order.UserID, "order", order.ID, "bytes", order.StorageBytes, "days", order.StorageDurationDays)
 }

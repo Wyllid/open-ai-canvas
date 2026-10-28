@@ -6,16 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
-	"yingce/backend/internal/payment"
 	"yingce/backend/internal/protocol"
 )
 
@@ -72,13 +69,12 @@ type pluginRecord struct {
 }
 
 type pluginRuntime struct {
-	mu              sync.RWMutex
-	mutationMu      sync.Mutex
-	registryPath    string
-	packageDir      string
-	plugins         map[string]pluginRecord
-	registry        *protocol.Registry
-	paymentRegistry *payment.Registry
+	mu           sync.RWMutex
+	mutationMu   sync.Mutex
+	registryPath string
+	packageDir   string
+	plugins      map[string]pluginRecord
+	registry     *protocol.Registry
 }
 
 type pluginRegistryRecord struct {
@@ -180,23 +176,13 @@ func (c *pluginRuntime) bootstrapBuiltInPlugins() error {
 		if record.InstalledAt.IsZero() {
 			record.InstalledAt = now
 		}
-		source := PluginOriginOfficial
-		if _, systemPayment := systemPaymentPolicies[id]; systemPayment {
-			source = PluginOriginSystem
-		}
-		record.ID, record.Raw, record.Source, record.FileName = id, manifestData, source, entry.Name()
+		record.ID, record.Raw, record.Source, record.FileName = id, manifestData, PluginOriginOfficial, entry.Name()
 		record.PackagePath, record.PackageSHA256, record.UpdatedAt = packageName, hash, now
 		byID[id] = record
 	}
-	bundledManifests := append(bundledWorkflowPluginManifests(), bundledPaymentPluginManifests()...)
-	bundledManifests = append(bundledManifests, bundledSMSPluginManifests()...)
+	bundledManifests := append(bundledWorkflowPluginManifests(), bundledSMSPluginManifests()...)
 	for _, bundled := range bundledManifests {
 		builtInIDs[bundled.Metadata.ID] = struct{}{}
-		if existing, exists := byID[bundled.Metadata.ID]; exists && existing.PackagePath != "" && isSystemPaymentPluginID(bundled.Metadata.ID) {
-			// An official package is the executable source of truth. The bundled
-			// manifest remains only as a fallback when the package is unavailable.
-			continue
-		}
 		data, err := json.Marshal(bundled)
 		if err != nil {
 			return fmt.Errorf("encode built-in plugin %s: %w", bundled.Metadata.ID, err)
@@ -218,9 +204,6 @@ func (c *pluginRuntime) bootstrapBuiltInPlugins() error {
 			record.InstalledAt = now
 		}
 		source := PluginOriginOfficial
-		if _, systemPayment := systemPaymentPolicies[bundled.Metadata.ID]; systemPayment {
-			source = PluginOriginSystem
-		}
 		if isSystemSMSPluginID(bundled.Metadata.ID) {
 			source = PluginOriginSystem
 		}
@@ -294,11 +277,6 @@ func inspectOfficialPluginPackage(path string) (officialPluginPackage, error) {
 	result := officialPluginPackage{path: path, data: data, hash: pluginHash(data), info: pkg}
 	officialPluginPackageCache.Store(key, result)
 	return result, nil
-}
-
-func isSystemPaymentPluginID(id string) bool {
-	_, ok := systemPaymentPolicies[strings.TrimSpace(id)]
-	return ok
 }
 
 func isBuiltInPluginSource(source string) bool {
@@ -447,250 +425,8 @@ func (c *pluginRuntime) reload() error {
 	}
 	c.plugins = plugins
 	c.registry = registry
-	// Payment adapters are loaded exclusively from validated plugin packages.
-	// An empty registry is intentional when the official package is unavailable;
-	// payment writes must fail closed instead of silently using host code.
-	basePayment, registryErr := payment.NewRegistry()
-	if registryErr != nil {
-		return registryErr
-	}
-	dynamicPayments := make([]payment.Provider, 0)
-	for id, record := range plugins {
-		if (record.Source != PluginOriginUploaded && record.Source != PluginOriginOfficial && record.Source != PluginOriginSystem) || !record.Metadata.Enabled || record.Status != "enabled" {
-			continue
-		}
-		var manifest protocol.Manifest
-		if err := json.Unmarshal(record.Raw, &manifest); err != nil || len(manifest.Contributes.PaymentProviders) == 0 {
-			continue
-		}
-		if strings.TrimSpace(manifest.Runtime.Backend) != "rpc" {
-			record.Status = "invalid"
-			record.Error = "wasm 支付运行时尚未启用"
-			plugins[id] = record
-			continue
-		}
-		packageData, readErr := os.ReadFile(filepath.Join(c.packageDir, filepath.Base(record.PackagePath)))
-		if readErr != nil {
-			record.Status = "invalid"
-			record.Error = "支付插件包文件不存在"
-			plugins[id] = record
-			continue
-		}
-		packageSHA256 := pluginHash(packageData)
-		if expected := strings.TrimSpace(record.PackageSHA256); expected != "" && !strings.EqualFold(expected, packageSHA256) {
-			record.Status = "invalid"
-			record.Error = "支付插件包完整性校验失败"
-			plugins[id] = record
-			continue
-		}
-		record.PackageSHA256 = packageSHA256
-		record.SHA256 = packageSHA256
-		plugins[id] = record
-		runtimeDir, materializeErr := materializePaymentBackendFromPackage(c.packageDir, packageSHA256, manifest.Runtime.BackendEntry, packageData)
-		if materializeErr != nil {
-			record.Status = "invalid"
-			record.Error = materializeErr.Error()
-			plugins[id] = record
-			continue
-		}
-		for _, contribution := range manifest.Contributes.PaymentProviders {
-			provider, providerErr := payment.NewRPCProvider(payment.DescriptorFromManifest(manifest, contribution), runtimeDir, manifest.Runtime.BackendEntry)
-			if providerErr != nil {
-				record.Status = "invalid"
-				record.Error = providerErr.Error()
-				continue
-			}
-			dynamicPayments = append(dynamicPayments, provider)
-		}
-	}
-	dynamicIDs := make(map[string]struct{}, len(dynamicPayments))
-	for _, provider := range dynamicPayments {
-		dynamicIDs[provider.Descriptor().ID] = struct{}{}
-	}
-	baseProviders := make([]payment.Provider, 0)
-	for _, provider := range basePayment.Providers() {
-		if _, replaced := dynamicIDs[provider.Descriptor().ID]; !replaced {
-			baseProviders = append(baseProviders, provider)
-		}
-	}
-	providers := append(baseProviders, dynamicPayments...)
-	c.paymentRegistry, err = payment.NewRegistry(providers...)
-	if err != nil {
-		return err
-	}
 	c.plugins = plugins
 	return nil
-}
-
-// materializePaymentBackendFromPackage 先按摘要检查运行目录是否已就绪，只有需要落盘时
-// 才完整解析插件包。摘要已由调用方对原始字节校验，就绪标记与摘要一一对应，
-// 因此跳过解析不会放过被篡改的包。
-func materializePaymentBackendFromPackage(packageDir, hash, backendEntry string, packageData []byte) (string, error) {
-	digest := strings.ToLower(strings.TrimSpace(hash))
-	root := filepath.Join(packageDir, "runtime", digest)
-	if len(digest) == sha256.Size*2 && paymentRuntimeReady(root, digest, strings.TrimSpace(backendEntry)) {
-		return root, nil
-	}
-	if len(digest) == sha256.Size*2 && linkReadyPaymentRuntime(packageDir, digest, strings.TrimSpace(backendEntry)) {
-		return root, nil
-	}
-	defer func() { rememberPaymentRuntime(digest, root, strings.TrimSpace(backendEntry)) }()
-	// 只解压本机平台能执行的文件：官方包内含 7 个平台的可执行文件，
-	// 其余平台的产物永远不会被 ResolveRPCBackendPath 选中，解压只是浪费 IO。
-	entry := strings.TrimSpace(backendEntry)
-	hostCandidates := make(map[string]struct{})
-	for _, candidate := range protocol.PaymentRPCBackendCandidates(entry, runtime.GOOS, runtime.GOARCH) {
-		hostCandidates[candidate] = struct{}{}
-	}
-	pkg, err := protocol.ParsePluginPackageFiles(packageData, func(name string) bool {
-		if !strings.HasPrefix(name, "backend/") {
-			return false
-		}
-		if _, host := hostCandidates[name]; host {
-			return true
-		}
-		return !protocol.IsPaymentRPCBackendArtifact(entry, name)
-	})
-	if err != nil {
-		return "", err
-	}
-	return materializePaymentBackend(packageDir, hash, pkg)
-}
-
-// readyPaymentRuntimes 记录本进程内已就绪的支付插件运行目录（摘要 -> 目录）。
-// 同一摘要的运行目录内容完全相同，新的数据目录可以直接硬链接复用，
-// 避免每次重新解压约 6MB 的可执行文件。生产环境只有一个数据目录，这里不会命中。
-var readyPaymentRuntimes sync.Map // digest -> root
-
-func rememberPaymentRuntime(digest, root, backendEntry string) {
-	if paymentRuntimeReady(root, digest, backendEntry) {
-		readyPaymentRuntimes.Store(digest, root)
-	}
-}
-
-// linkReadyPaymentRuntime 把本进程已就绪的同摘要运行目录硬链接到 packageDir。
-// 源目录必须仍然通过就绪校验；任何一步失败都返回 false，由调用方走完整解压。
-func linkReadyPaymentRuntime(packageDir, digest, backendEntry string) bool {
-	cached, ok := readyPaymentRuntimes.Load(digest)
-	if !ok {
-		return false
-	}
-	source := cached.(string)
-	root := filepath.Join(packageDir, "runtime", digest)
-	if source == root || !paymentRuntimeReady(source, digest, backendEntry) {
-		return false
-	}
-	runtimeRoot := filepath.Join(packageDir, "runtime")
-	if err := os.MkdirAll(runtimeRoot, 0o700); err != nil {
-		return false
-	}
-	temporaryRoot, err := os.MkdirTemp(runtimeRoot, ".payment-runtime-")
-	if err != nil {
-		return false
-	}
-	defer os.RemoveAll(temporaryRoot)
-	linkErr := filepath.WalkDir(source, func(path string, entry fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		rel, err := filepath.Rel(source, path)
-		if err != nil {
-			return err
-		}
-		target := filepath.Join(temporaryRoot, rel)
-		if entry.IsDir() {
-			return os.MkdirAll(target, 0o700)
-		}
-		if !entry.Type().IsRegular() {
-			return fmt.Errorf("unexpected runtime entry %q", rel)
-		}
-		return os.Link(path, target)
-	})
-	if linkErr != nil || os.Rename(temporaryRoot, root) != nil {
-		return false
-	}
-	return paymentRuntimeReady(root, digest, backendEntry)
-}
-
-func materializePaymentBackend(packageDir, hash string, pkg protocol.PluginPackage) (string, error) {
-	digest := strings.ToLower(strings.TrimSpace(hash))
-	if len(digest) != sha256.Size*2 {
-		return "", errors.New("支付插件包摘要无效")
-	}
-	if _, err := hex.DecodeString(digest); err != nil {
-		return "", errors.New("支付插件包摘要无效")
-	}
-
-	runtimeRoot := filepath.Join(packageDir, "runtime")
-	root := filepath.Join(runtimeRoot, digest)
-	backendEntry := strings.TrimSpace(pkg.Manifest.Runtime.BackendEntry)
-	if paymentRuntimeReady(root, digest, backendEntry) {
-		return root, nil
-	}
-	if err := os.MkdirAll(runtimeRoot, 0o700); err != nil {
-		return "", fmt.Errorf("创建支付插件运行目录失败：%w", err)
-	}
-	temporaryRoot, err := os.MkdirTemp(runtimeRoot, ".payment-runtime-")
-	if err != nil {
-		return "", fmt.Errorf("创建支付插件临时运行目录失败：%w", err)
-	}
-	defer os.RemoveAll(temporaryRoot)
-
-	for name, content := range pkg.Files {
-		// content 为 nil 表示该条目按需未解压（见 ParsePluginPackageFiles），不能写成空文件。
-		if content == nil || !strings.HasPrefix(name, "backend/") || strings.HasSuffix(name, "/") {
-			continue
-		}
-		target := filepath.Join(temporaryRoot, filepath.FromSlash(name))
-		if err := os.MkdirAll(filepath.Dir(target), 0o700); err != nil {
-			return "", err
-		}
-		if err := os.WriteFile(target, content, 0o700); err != nil {
-			return "", fmt.Errorf("写入支付插件运行文件失败：%w", err)
-		}
-	}
-	if err := os.WriteFile(filepath.Join(temporaryRoot, paymentRuntimeReadyFile), []byte(digest+"\n"), 0o600); err != nil {
-		return "", fmt.Errorf("写入支付插件运行状态失败：%w", err)
-	}
-	if err := os.Rename(temporaryRoot, root); err != nil {
-		if paymentRuntimeReady(root, digest, backendEntry) {
-			return root, nil
-		}
-		// Digest directories are immutable once ready. An unmarked directory can
-		// only be residue from an interrupted extraction and is safe to replace.
-		if removeErr := os.RemoveAll(root); removeErr != nil {
-			return "", fmt.Errorf("清理未完成的支付插件运行目录失败：%w", removeErr)
-		}
-		if renameErr := os.Rename(temporaryRoot, root); renameErr != nil {
-			return "", fmt.Errorf("发布支付插件运行目录失败：%w", renameErr)
-		}
-	}
-	return root, nil
-}
-
-func paymentRuntimeReady(root, digest, backendEntry string) bool {
-	ready, err := os.ReadFile(filepath.Join(root, paymentRuntimeReadyFile))
-	if err != nil || strings.TrimSpace(string(ready)) != digest {
-		return false
-	}
-	return protocol.HasAnyPaymentRPCBackend(backendEntry, paymentRuntimeBackendFiles(root))
-}
-
-func paymentRuntimeBackendFiles(root string) map[string][]byte {
-	files := map[string][]byte{}
-	backendRoot := filepath.Join(root, "backend")
-	_ = filepath.WalkDir(backendRoot, func(path string, entry fs.DirEntry, err error) error {
-		if err != nil || entry.IsDir() {
-			return err
-		}
-		rel, relErr := filepath.Rel(root, path)
-		if relErr != nil {
-			return nil
-		}
-		files[filepath.ToSlash(rel)] = []byte{1}
-		return nil
-	})
-	return files
 }
 
 func (c *pluginRuntime) list() []PluginView {
@@ -708,12 +444,6 @@ func (c *pluginRuntime) registrySnapshot() *protocol.Registry {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.registry
-}
-
-func (c *pluginRuntime) paymentRegistrySnapshot() *payment.Registry {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.paymentRegistry
 }
 
 func (c *pluginRuntime) install(data []byte, fileName string) (PluginView, error) {
@@ -738,7 +468,7 @@ func (c *pluginRuntime) install(data []byte, fileName string) (PluginView, error
 	c.mu.RLock()
 	existing, exists := c.plugins[manifest.Metadata.ID]
 	c.mu.RUnlock()
-	if exists && isBuiltInPluginSource(existing.Source) && !isPaymentPluginManifest(manifest) {
+	if exists && isBuiltInPluginSource(existing.Source) {
 		return PluginView{}, fmt.Errorf("内置插件 %q 不能通过上传覆盖", manifest.Metadata.ID)
 	}
 	manifest.Metadata.Enabled = !exists || existing.Metadata.Enabled
@@ -793,11 +523,6 @@ func (c *pluginRuntime) install(data []byte, fileName string) (PluginView, error
 		}
 	}
 	return PluginView{}, errors.New("插件保存后未加载")
-}
-
-func isPaymentPluginManifest(manifest protocol.Manifest) bool {
-	backend := strings.TrimSpace(manifest.Runtime.Backend)
-	return len(manifest.Contributes.PaymentProviders) > 0 && (backend == "rpc" || backend == "wasm")
 }
 
 func (c *pluginRuntime) setEnabled(id string, enabled bool) (PluginView, error) {

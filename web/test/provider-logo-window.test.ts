@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { createModelLogoResolver } from "../src/lib/model-logo-id";
-import { formatWindow, promotionExpiry } from "../src/pages/admin/channels/provider-catalog-pricing";
+import { formatWindow, promotionExpiry } from "../src/pages/admin/channels/provider-catalog-helpers";
 
 test("logo IDs resolve irrespective of case without changing stored IDs", () => {
     const resolve = createModelLogoResolver(["Minimax", "OpenAI"]);

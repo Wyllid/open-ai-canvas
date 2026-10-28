@@ -1,16 +1,13 @@
 import { memo, useEffect, useState } from "react";
-import { CheckCircle2, ChevronDown, ChevronUp, Clock3, Coins, LoaderCircle, MoreHorizontal, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, Clock3, LoaderCircle, MoreHorizontal, XCircle } from "lucide-react";
 import { Dropdown, type MenuProps } from "antd";
 
-import { formatCredits } from "@/constant/credits";
 import { canCancelGenerationTask, formatTaskKind, generationTaskShowsProgress, generationTaskStageLabel, generationTaskStatusLabel } from "@/lib/generation-task-display";
 import type { GenerationTask } from "@/services/api/task-center";
-import { useUserStore } from "@/stores/use-user-store";
 import { progressFillStyle } from "@/lib/progress-fill";
 
-// 任务列表项：任务面板与历史面板共用；进度、时长、计费与取消菜单都在这里渲染。
+// 任务列表项：任务面板与历史面板共用；进度、时长与取消菜单都在这里渲染。
 export const TaskListItem = memo(function TaskListItem({ task, onCancelTask }: { task: GenerationTask; onCancelTask?: (task: GenerationTask) => void }) {
-    const creditsEnabled = useUserStore((state) => state.features.creditsEnabled);
     const [expanded, setExpanded] = useState(false);
     const [now, setNow] = useState(() => Date.now());
 
@@ -25,7 +22,6 @@ export const TaskListItem = memo(function TaskListItem({ task, onCancelTask }: {
     const startedAt = task.startedAt || task.createdAt;
     const elapsedMs = Math.max(0, (task.completedAt ? parseTime(task.completedAt) : now) - parseTime(startedAt));
     const durationLabel = `${task.status === "queued" ? "已等待" : "已运行"} ${formatDuration(elapsedMs)}`;
-    const billingLabel = task.billing ? `${({ reserved: "冻结", running: "处理中", settled: "已结算", refunded: "已退还", uncertain: "待核对" } as const)[task.billing.status]} ${formatCredits(task.billing.amountMicrocredits)} 积分` : "";
     const isActive = task.status === "queued" || task.status === "running";
     const statusColor = task.status === "running" ? "var(--primary)" : task.status === "succeeded" ? "var(--success, #16a34a)" : task.status === "failed" ? "var(--danger, #dc2626)" : "color-mix(in srgb, var(--foreground) 40%, transparent)";
 
@@ -66,7 +62,6 @@ export const TaskListItem = memo(function TaskListItem({ task, onCancelTask }: {
                     <span className="mt-2 flex min-w-0 items-center gap-1 text-[var(--fs-label)] leading-3 text-foreground/40">
                         <Clock3 className="size-2.5 shrink-0" />
                         <span className="truncate">{durationLabel}</span>
-                        {creditsEnabled && billingLabel ? <span className="truncate">· {billingLabel}</span> : null}
                         <span className="mt-0.5 block truncate text-[var(--fs-label)] leading-3 text-foreground/45" title={generationTaskStageLabel(task)}>
                             {generationTaskStageLabel(task)}
                         </span>
@@ -91,15 +86,6 @@ export const TaskListItem = memo(function TaskListItem({ task, onCancelTask }: {
                         <div className="mt-1">
                             <span className="block">提示词</span>
                             <span className="mt-0.5 block line-clamp-2 text-foreground/60">{task.prompt}</span>
-                        </div>
-                    ) : null}
-                    {creditsEnabled && task.billing ? (
-                        <div className="mt-1 flex items-center justify-between gap-2">
-                            <span className="inline-flex items-center gap-1">
-                                <Coins className="size-2.5" />
-                                计费
-                            </span>
-                            <span className="text-foreground/70">{billingLabel}</span>
                         </div>
                     ) : null}
                 </div>

@@ -95,24 +95,6 @@ func registerAdminUserRoutes(r *gin.RouterGroup, svc *service.Service) {
 		}
 		ok(c, result)
 	})
-	r.GET("/admin/users/:id/ledger", func(c *gin.Context) {
-		user, err := currentUser(c, svc)
-		if err != nil {
-			failService(c, err)
-			return
-		}
-		page, limit, err := parsePaginationQuery(c, 20)
-		if err != nil {
-			fail(c, http.StatusBadRequest, err)
-			return
-		}
-		result, err := svc.AdminUserLedger(user, c.Param("id"), c.Query("type"), page, limit)
-		if err != nil {
-			failService(c, err)
-			return
-		}
-		ok(c, result)
-	})
 	r.GET("/admin/users/:id/tasks", func(c *gin.Context) {
 		user, err := currentUser(c, svc)
 		if err != nil {

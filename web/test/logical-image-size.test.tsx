@@ -5,7 +5,7 @@ import { IMAGE_RATIOS, imagePresetForRatio, imageSizeConfigWithPresets, imageTie
 import { defaultImageCapabilityConfig } from "../src/lib/model-capabilities";
 import { projectLogicalCapability } from "../src/lib/user-session";
 import { capabilitySpecFromChannelModel, mergeCapabilitySpecs } from "../src/pages/admin/logical-models/model-routing-capabilities";
-import type { ChannelModel } from "../src/services/api/wallet";
+import type { ChannelModel } from "../src/services/api/channel-models";
 
 function channelModelWithPresets(): ChannelModel {
     const profile = defaultImageCapabilityConfig("gemini-image", "test");

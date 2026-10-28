@@ -8,7 +8,7 @@ import (
 	"yingce/backend/internal/workbench"
 )
 
-func TestCreateWorkbenchVideoTaskUsesReferenceModeAndPrice(t *testing.T) {
+func TestCreateWorkbenchVideoTaskUsesReferenceModeAndSpecTier(t *testing.T) {
 	s, db, _, _ := creationTestService(t)
 	profile := DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceMiniMaxVideo), "MiniMax-H3")
 	profile.Video.Operations = []string{"text_to_video", "image_to_video", "reference_to_video", "audio_to_video"}
@@ -22,8 +22,8 @@ func TestCreateWorkbenchVideoTaskUsesReferenceModeAndPrice(t *testing.T) {
 	for _, record := range []any{
 		&model.SystemSetting{Key: featureAvailabilitySettingKey, ValueJSON: `{"videoWorkbenchEnabled":true}`},
 		&model.ChannelModel{ID: "video-model", ChannelID: "channel", ModelKey: "MiniMax-H3", Capability: "video", Protocol: model.ChannelInterfaceMiniMaxVideo, Enabled: true, CapabilityConfigJSON: string(capabilityJSON)},
-		&model.ChannelModelPriceTier{ID: "video-text-price", ChannelModelID: "video-model", SelectorKey: `{"operation":"text_to_video"}`, SelectorJSON: `{"operation":"text_to_video"}`, BillingMode: "fixed_request", UnitPriceMicrocredits: 10, PriceConfigured: true, Enabled: true},
-		&model.ChannelModelPriceTier{ID: "video-image-price", ChannelModelID: "video-model", SelectorKey: `{"operation":"image_to_video"}`, SelectorJSON: `{"operation":"image_to_video"}`, BillingMode: "fixed_request", UnitPriceMicrocredits: 20, PriceConfigured: true, Enabled: true},
+		&model.ChannelModelPriceTier{ID: "video-text-price", ChannelModelID: "video-model", SelectorKey: `{"operation":"text_to_video"}`, SelectorJSON: `{"operation":"text_to_video"}`, Enabled: true},
+		&model.ChannelModelPriceTier{ID: "video-image-price", ChannelModelID: "video-model", SelectorKey: `{"operation":"image_to_video"}`, SelectorJSON: `{"operation":"image_to_video"}`, Enabled: true},
 		&model.Resource{ID: "video-image", UserID: "user", Kind: "image", Status: model.ResourceStatusReady},
 	} {
 		if err := db.Create(record).Error; err != nil {
@@ -89,9 +89,8 @@ func TestCreateWorkbenchVideoTaskUsesReferenceModeAndPrice(t *testing.T) {
 					t.Fatalf("provider images = %+v, want role %q", providerRequest.Images, wantRole)
 				}
 			}
-			var order model.BillingOrder
-			if err := db.First(&order, "id = ?", task.BillingOrderID).Error; err != nil || order.PriceTierID != tc.price {
-				t.Fatalf("billing price = %q, error = %v, want %q", order.PriceTierID, err, tc.price)
+			if execution.Config.PriceTierID != tc.price {
+				t.Fatalf("spec tier = %q, want %q", execution.Config.PriceTierID, tc.price)
 			}
 		})
 	}
@@ -107,9 +106,6 @@ func TestCreateWorkbenchVideoTaskUsesReferenceModeAndPrice(t *testing.T) {
 	var count int64
 	if err := db.Model(&model.Task{}).Count(&count).Error; err != nil || count != 3 {
 		t.Fatalf("task count = %d, error = %v; rejected input must not create a task", count, err)
-	}
-	if err := db.Model(&model.BillingOrder{}).Count(&count).Error; err != nil || count != 3 {
-		t.Fatalf("order count = %d, error = %v; rejected input must not create a billing order", count, err)
 	}
 }
 

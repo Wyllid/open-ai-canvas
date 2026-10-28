@@ -486,7 +486,6 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                             value={settings.model}
                             capability="image"
                             variant="creation"
-                            showSelectedPrice={false}
                             showConfiguredModelName
                             onChange={(model) => setSettings((previous) => ({ ...previous, ...defaultImageParamsForModel(previous, model), imageModel: model, model }))}
                         />

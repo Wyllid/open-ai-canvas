@@ -2,13 +2,14 @@ package repository
 
 import (
 	"fmt"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"path/filepath"
 	"sync"
 	"testing"
 	"time"
 	"yingce/backend/internal/model"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func TestRevokeAuthSessionConcurrentWritesSingleLogout(t *testing.T) {

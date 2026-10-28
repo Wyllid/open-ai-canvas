@@ -5,22 +5,20 @@ import "time"
 type UserStorageGrantSource string
 
 const (
-	UserStorageGrantSourcePayment UserStorageGrantSource = "payment"
-	UserStorageGrantSourceAdmin   UserStorageGrantSource = "admin"
+	UserStorageGrantSourceAdmin UserStorageGrantSource = "admin"
 )
 
 // UserStorageGrant 是一笔独立的账号文件容量扩容。有效容量 = 全局基础容量 + 未撤销且未过期记录之和；
 // 到期不需要后台任务，查询时按 expires_at 过滤。
 type UserStorageGrant struct {
-	ID             string                 `json:"id" gorm:"primaryKey;size:36"`
-	UserID         string                 `json:"userId" gorm:"size:36;not null;index:idx_user_storage_grant_active,priority:1"`
-	Source         UserStorageGrantSource `json:"source" gorm:"size:24;not null;index"`
-	PaymentOrderID string                 `json:"paymentOrderId,omitempty" gorm:"size:36;index"`
-	ProductID      string                 `json:"productId,omitempty" gorm:"size:36;index"`
-	ProductName    string                 `json:"productName,omitempty" gorm:"size:120"`
-	Bytes          int64                  `json:"bytes" gorm:"not null"`
-	DurationDays   int                    `json:"durationDays" gorm:"not null;default:0"`
-	StartsAt       time.Time              `json:"startsAt"`
+	ID           string                 `json:"id" gorm:"primaryKey;size:36"`
+	UserID       string                 `json:"userId" gorm:"size:36;not null;index:idx_user_storage_grant_active,priority:1"`
+	Source       UserStorageGrantSource `json:"source" gorm:"size:24;not null;index"`
+	ProductID    string                 `json:"productId,omitempty" gorm:"size:36;index"`
+	ProductName  string                 `json:"productName,omitempty" gorm:"size:120"`
+	Bytes        int64                  `json:"bytes" gorm:"not null"`
+	DurationDays int                    `json:"durationDays" gorm:"not null;default:0"`
+	StartsAt     time.Time              `json:"startsAt"`
 	// ExpiresAt 为空表示永久有效。
 	ExpiresAt    *time.Time `json:"expiresAt,omitempty" gorm:"index:idx_user_storage_grant_active,priority:2"`
 	RevokedAt    *time.Time `json:"revokedAt,omitempty" gorm:"index"`

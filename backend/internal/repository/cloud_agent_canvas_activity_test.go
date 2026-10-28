@@ -10,12 +10,13 @@ import (
 	"testing"
 	"time"
 
+	"yingce/backend/internal/database"
+	"yingce/backend/internal/model"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"yingce/backend/internal/database"
-	"yingce/backend/internal/model"
 )
 
 func TestCanvasAgentActivityIndexed(t *testing.T) {

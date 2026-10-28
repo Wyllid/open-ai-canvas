@@ -186,11 +186,7 @@ func TestAutoDLScreenSpecSystemSaveCatalogAndExecutionIgnoreClientOverride(t *te
 	enabled := true
 	priceTiers := make([]ChannelModelPriceTierRequest, 0, 6)
 	for _, resolution := range autoDLProfile(t, false).Video.Resolutions {
-		sale, cost := int64(6), int64(3)
-		if resolution[:4] == "768p" {
-			sale, cost = 8, 4
-		}
-		priceTiers = append(priceTiers, ChannelModelPriceTierRequest{Resolution: resolution, BillingMode: "per_second", UnitPriceMicrocredits: sale * CreditScale, CostPricing: model.CreditCostPricing{Configured: true, UnitPriceMicrocredits: cost * CreditScale}, PriceConfigured: true, Enabled: &enabled})
+		priceTiers = append(priceTiers, ChannelModelPriceTierRequest{Resolution: resolution, Enabled: &enabled})
 	}
 	for _, subset := range []bool{true, false} {
 		profile := autoDLProfile(t, subset)
@@ -229,8 +225,8 @@ func TestAutoDLScreenSpecSystemSaveCatalogAndExecutionIgnoreClientOverride(t *te
 				t.Fatal(err)
 			}
 			config := priced["config"].(map[string]any)
-			if config["priceTierId"] != tier.ID || config["vquality"] != tier.Resolution || tier.BillingMode != "per_second" || tier.UnitPriceMicrocredits != tier.CostPricing.UnitPriceMicrocredits*2 {
-				t.Fatalf("resolution and price diverged: %#v, %#v", config, tier)
+			if config["priceTierId"] != tier.ID || config["vquality"] != tier.Resolution {
+				t.Fatalf("resolution and spec tier diverged: %#v, %#v", config, tier)
 			}
 		}
 		data, _ := json.Marshal(public.CapabilityConfig)

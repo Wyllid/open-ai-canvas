@@ -73,7 +73,7 @@ func TestSaveAdminChannelModelPersistsAndPublishesIcon(t *testing.T) {
 	saved, err := svc.SaveAdminChannelModel(admin, channel.ID, "", ChannelModelRequest{
 		ModelKey: "gpt-test", DisplayName: "GPT Test", Icon: "OpenAI", Capability: "text", Protocol: string(model.ChannelInterfaceChatCompletion),
 		CapabilityConfig: DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceChatCompletion), "gpt-test"),
-		PriceTiers:       []ChannelModelPriceTierRequest{{BillingMode: "fixed_request", PriceConfigured: true, Enabled: &enabled}}, Enabled: &enabled,
+		PriceTiers:       []ChannelModelPriceTierRequest{{Enabled: &enabled}}, Enabled: &enabled,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -116,14 +116,11 @@ func TestSanitizeChannelModelRejectsCorruptCapabilityConfig(t *testing.T) {
 func TestSanitizeChannelModelAvailabilityRequiresValidPriceTier(t *testing.T) {
 	svc := &Service{}
 	channelModel := &model.ChannelModel{
-		ID:                    "image-model",
-		ModelKey:              "image-model",
-		Capability:            "image",
-		Protocol:              model.ChannelInterfaceOpenAIImage,
-		CapabilityConfigJSON:  mustEncodeModelCapabilityConfig(t, DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceOpenAIImage), "image-model")),
-		PriceConfigured:       true,
-		BillingMode:           "fixed_request",
-		UnitPriceMicrocredits: 10,
+		ID:                   "image-model",
+		ModelKey:             "image-model",
+		Capability:           "image",
+		Protocol:             model.ChannelInterfaceOpenAIImage,
+		CapabilityConfigJSON: mustEncodeModelCapabilityConfig(t, DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceOpenAIImage), "image-model")),
 	}
 
 	public, err := svc.sanitizeChannelModel(channelModel)
@@ -135,8 +132,8 @@ func TestSanitizeChannelModelAvailabilityRequiresValidPriceTier(t *testing.T) {
 	}
 
 	channelModel.PriceTiers = []model.ChannelModelPriceTier{{
-		ID: "tier-1", BillingMode: "fixed_request", UnitPriceMicrocredits: 10,
-		Enabled: true, PriceConfigured: true,
+		ID:      "tier-1",
+		Enabled: true,
 	}}
 	public, err = svc.sanitizeChannelModel(channelModel)
 	if err != nil {

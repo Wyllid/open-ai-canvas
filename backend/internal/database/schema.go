@@ -49,23 +49,8 @@ func Models() []any {
 		&model.LogicalModelRoute{},
 		&model.RouteAttempt{},
 		&model.ApiCallLog{},
-		&model.ModelPricing{},
-		&model.CreditAccount{},
-		&model.CreditLedgerEntry{},
-		&model.ReferralProfile{},
-		&model.ReferralBinding{},
-		&model.ReferralCommission{},
-		&model.BillingOrder{},
-		&model.TopupProduct{},
-		&model.PaymentProviderConfig{},
-		&model.PaymentOrder{},
-		&model.PaymentNotification{},
-		&model.PaymentReconciliationRun{},
-		&model.PaymentReconciliationItem{},
 		&model.UserStorageGrant{},
 		&model.UserStorageState{},
-		&model.RedeemBatch{},
-		&model.RedeemCode{},
 		&model.AdminAuditEvent{},
 		&model.UserDailyActivity{},
 		&model.SystemSetting{},
@@ -300,25 +285,14 @@ func backfillChannelModelPriceTiers(db *gorm.DB) error {
 		if count > 0 {
 			continue
 		}
-		priceVersion := channelModel.PriceVersion
-		if priceVersion < 1 {
-			priceVersion = 1
-		}
 		digest := sha256.Sum256([]byte(channelModel.ID))
 		tier := model.ChannelModelPriceTier{
-			ID:                           fmt.Sprintf("PTIER-%x", digest[:15]),
-			ChannelModelID:               channelModel.ID,
-			Resolution:                   "*",
-			VideoSeconds:                 0,
-			ProviderModelKey:             channelModel.ProviderModelKey,
-			BillingMode:                  channelModel.BillingMode,
-			UnitPriceMicrocredits:        channelModel.UnitPriceMicrocredits,
-			InputTokenPriceMicrocredits:  channelModel.InputTokenPriceMicrocredits,
-			OutputTokenPriceMicrocredits: channelModel.OutputTokenPriceMicrocredits,
-			CachedTokenPriceMicrocredits: channelModel.CachedTokenPriceMicrocredits,
-			PriceConfigured:              channelModel.PriceConfigured,
-			Enabled:                      channelModel.Enabled,
-			PriceVersion:                 priceVersion,
+			ID:               fmt.Sprintf("PTIER-%x", digest[:15]),
+			ChannelModelID:   channelModel.ID,
+			Resolution:       "*",
+			VideoSeconds:     0,
+			ProviderModelKey: channelModel.ProviderModelKey,
+			Enabled:          channelModel.Enabled,
 		}
 		if err := db.Create(&tier).Error; err != nil {
 			return fmt.Errorf("回填渠道模型 %s 默认价格档：%w", channelModel.ID, err)

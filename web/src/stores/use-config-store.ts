@@ -18,7 +18,7 @@ import {
     CHANNEL_MODEL_SEPARATOR,
     uniqueModelOptions,
     encodeChannelModel,
-    hasSystemModelPrice,
+    hasSystemModelSpec,
     isChannelModelValue,
     modelDisplayName,
     modelIcon,
@@ -28,7 +28,7 @@ import { normalizeRawModelName } from "./config-model-options";
 
 export { CHANNEL_MODEL_SEPARATOR, normalizeRawModelName, uniqueModelOptions } from "./config-model-options";
 export { mergeWorkflowFieldMappings, normalizeRunningHubCapability, normalizeRunningHubWorkflowKind, normalizeWorkflowFieldMappings, type WorkflowFieldMapping } from "./config-workflow-fields";
-export { decodeChannelModel, encodeChannelModel, hasSystemModelPrice, isChannelModelValue, modelDisplayName, modelIcon, modelOptionLabel, modelOptionName, modelOptionsFromChannels, normalizeModelOptionValue } from "./config-model-options";
+export { decodeChannelModel, encodeChannelModel, hasSystemModelSpec, isChannelModelValue, modelDisplayName, modelIcon, modelOptionLabel, modelOptionName, modelOptionsFromChannels, normalizeModelOptionValue } from "./config-model-options";
 
 export type ApiCallFormat = "openai" | "gemini" | "claude";
 export type ChannelInterfaceType = ModelProtocol;
@@ -100,12 +100,6 @@ export type ModelChannel = {
         icon?: string;
         capability: ModelCapability;
         protocol?: ModelProtocol;
-        pricePolicy?: "channel" | "unified";
-        billingMode: "fixed_request" | "per_second" | "token";
-        unitPriceMicrocredits: number;
-        inputTokenPriceMicrocredits?: number;
-        outputTokenPriceMicrocredits?: number;
-        cachedTokenPriceMicrocredits?: number;
         capabilityConfig?: ModelCapabilityConfig;
         logicalModelId?: string;
         logicalCapabilitySpec?: CapabilitySpec;

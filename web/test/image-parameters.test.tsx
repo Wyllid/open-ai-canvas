@@ -10,7 +10,7 @@ import { capabilitySpecFromChannelModel, mergeCapabilitySpecs, normalizeCapabili
 import { defaultPriceTier, skuSelectorFromForm } from "../src/pages/admin/components/channel-model-price-tier-form";
 import { prepareBackendGenerationTask } from "../src/services/api/generation-task";
 import { defaultConfig, createModelChannel, encodeChannelModel } from "../src/stores/use-config-store";
-import type { ChannelModel } from "../src/services/api/wallet";
+import type { ChannelModel } from "../src/services/api/channel-models";
 import { specFromConfig, generationSpecMetadata, synchronizeGenerationSpec } from "../src/lib/canvas/generation-contract";
 import type { CanvasNodeData } from "../src/types/canvas";
 

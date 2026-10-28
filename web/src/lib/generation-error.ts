@@ -1,6 +1,6 @@
 export const CONTENT_MODERATION_ERROR_CODE = "sensitive_words_detected";
 
-export const CONTENT_MODERATION_MESSAGE = "内容审核未通过，本次平台积分未扣除或已退还。请修改提示词后重新生成。";
+export const CONTENT_MODERATION_MESSAGE = "内容审核未通过，请修改提示词后重新生成。";
 
 const UPSTREAM_LINK_PLACEHOLDER = "[链接已隐藏]";
 const UPSTREAM_HOST_PLACEHOLDER = "[地址已隐藏]";
@@ -16,14 +16,14 @@ const MODEL_PARAMETER_ERROR_MESSAGE = "当前模型不支持这组参数或参�
 const MODEL_SERVICE_ERROR_MESSAGE = "模型服务处理失败，请稍后重试或换用其他模型。";
 
 const REASON_MESSAGES: Record<string, string> = {
-    model_price_not_configured: "当前模型暂未配置价格，请换用其他模型或联系管理员。",
+    model_price_not_configured: "当前模型暂未配置可用规格，请换用其他模型或联系管理员。",
     model_route_unavailable: "当前模型暂时没有可用渠道，请稍后重试或换用其他模型。",
     provider_request_failed: MODEL_SERVICE_ERROR_MESSAGE,
     model_catalog_mismatch: "模型配置已更新，请重新选择模型后再试。",
     invalid_model_selection: "模型选择无效，请重新选择模型后再试。",
-    quota_exceeded: "积分或额度不足，请充值后再试。",
-    storage_capacity_exceeded: "账号存储空间不足，请清理素材或购买存储空间后再试。",
-    storage_read_only: "账号已超出存储容量且宽限期已结束，当前为只读状态。请删除素材或购买存储空间。",
+    quota_exceeded: "额度不足或已达上限，请稍后再试或联系管理员。",
+    storage_capacity_exceeded: "账号存储空间不足，请清理素材或联系管理员扩容后再试。",
+    storage_read_only: "账号已超出存储容量且宽限期已结束，当前为只读状态。请删除素材或联系管理员扩容。",
     rate_limited: "请求过于频繁，请稍后再试。",
     timeout: "模型服务响应超时，请稍后再试。",
     bad_gateway: "模型服务暂时不可用，请稍后再试。",
@@ -36,7 +36,7 @@ const REASON_MESSAGES: Record<string, string> = {
     internal: "系统暂时无法完成生成，请稍后再试。",
 };
 
-// 用户可见文案（画布失败原因、积分流水备注）不能出现上游地址；
+// 用户可见文案（画布失败原因、任务记录）不能出现上游地址；
 // 与后端 redactUpstreamAddress 保持同一套占位符。
 export function redactUpstreamAddress(value: string) {
     if (!value.trim()) return value;

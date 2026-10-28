@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"net/url"
 	"regexp"
 	"sort"
@@ -22,9 +21,6 @@ const (
 	MaxRecommendedModels = 5
 	MaxProviders         = 200
 	MaxCatalogBytes      = 2 << 20
-	// 1 元 = 1 积分；积分以 microcredits 存储。
-	MicrocreditsPerYuan = 1_000_000
-	MaxMarkupPercent    = 1000
 )
 
 var (
@@ -93,15 +89,10 @@ type Model struct {
 	PriceTiers       []PriceTier     `json:"priceTiers"`
 }
 
-// PriceTier 的金额均为人民币元。按次/按秒用 Cost，token 用每百万 token 单价。
+// PriceTier 是目录推荐的规格档（历史名称）。目录里的价格字段会被忽略，本版本不计费。
 type PriceTier struct {
 	Selector         map[string]string `json:"selector,omitempty"`
-	BillingMode      string            `json:"billingMode"`
 	ProviderModelKey string            `json:"providerModelKey,omitempty"`
-	Cost             float64           `json:"cost,omitempty"`
-	InputPerMillion  float64           `json:"inputPerMillion,omitempty"`
-	OutputPerMillion float64           `json:"outputPerMillion,omitempty"`
-	CachedPerMillion float64           `json:"cachedPerMillion,omitempty"`
 }
 
 // Parse 解码并校验目录。单个服务商或模型无效时丢弃该条并记入 warnings，
@@ -263,18 +254,6 @@ func normalizeModel(m Model) (Model, error) {
 	}
 	for index := range m.PriceTiers {
 		tier := &m.PriceTiers[index]
-		tier.BillingMode = strings.TrimSpace(tier.BillingMode)
-		if tier.BillingMode == "" {
-			tier.BillingMode = "fixed_request"
-		}
-		if tier.BillingMode != "fixed_request" && tier.BillingMode != "per_second" && tier.BillingMode != "token" {
-			return m, errors.New("billingMode 只能是 fixed_request、per_second、token")
-		}
-		for _, value := range []float64{tier.Cost, tier.InputPerMillion, tier.OutputPerMillion, tier.CachedPerMillion} {
-			if math.IsNaN(value) || math.IsInf(value, 0) || value < 0 || value > 1_000_000 {
-				return m, errors.New("价格必须在 0 到 1000000 元之间")
-			}
-		}
 		tier.ProviderModelKey = strings.TrimPrefix(strings.TrimSpace(tier.ProviderModelKey), "models/")
 	}
 	return m, nil

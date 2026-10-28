@@ -99,7 +99,7 @@ func TestDeclarativeTextStreaming(t *testing.T) {
 				switch scenario {
 				case "http_524":
 					var upstream providerHTTPError
-					if !errors.As(err, &upstream) || upstream.StatusCode != 524 || !billingFailureUncertain(err) {
+					if !errors.As(err, &upstream) || upstream.StatusCode != 524 || !submissionFailureUncertain(err) {
 						t.Fatalf("524 must remain an uncertain failure: %v", err)
 					}
 				case "cancel":

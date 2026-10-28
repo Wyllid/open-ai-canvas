@@ -4,7 +4,7 @@ import { MessageSquarePlus } from "lucide-react";
 import { useUserFeedbackEnabled } from "@/lib/plugins/builtin/user-feedback";
 import { FeedbackModal } from "./feedback-modal";
 
-/** 顶栏固定反馈入口：与积分胶囊同一行，不再悬浮遮挡页面内容。 */
+/** 顶栏固定反馈入口：位于顶栏操作区，不再悬浮遮挡页面内容。 */
 export function TopbarFeedbackButton() {
     const enabled = useUserFeedbackEnabled();
     const [open, setOpen] = useState(false);

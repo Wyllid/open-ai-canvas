@@ -47,9 +47,6 @@ func (s *Service) EnsureLocalAdmin(creds LocalAdminCredentials) (*model.User, er
 		if err := s.repo.CreateRegisteredUser(user); err != nil {
 			return nil, err
 		}
-		if err := s.host.EnsureSignupBonus(user.ID); err != nil {
-			return nil, err
-		}
 		return user, nil
 	}
 	if err != nil {

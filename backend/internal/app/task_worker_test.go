@@ -80,8 +80,8 @@ func TestTaskDeadlineRenewalAndTerminalFencing(t *testing.T) {
 			if (err != nil) != lost {
 				t.Fatalf("renew lost=%v: %v", lost, err)
 			}
-			billing, replay := &taskTerminalBillingStub{}, &taskTerminalReplayStub{}
-			terminal := newTaskTerminalCoordinatorForTest(repo, billing, replay, &taskTerminalLoggerStub{}, &taskTerminalOutputStub{})
+			replay := &taskTerminalReplayStub{}
+			terminal := newTaskTerminalCoordinatorForTest(repo, replay, &taskTerminalLoggerStub{}, &taskTerminalOutputStub{}, nil)
 			err = terminal.handleExecutionFailure(task, ctx.Err(), false, false)
 			stored, readErr := repo.Task(task.ID)
 			if readErr != nil {
@@ -91,7 +91,7 @@ func TestTaskDeadlineRenewalAndTerminalFencing(t *testing.T) {
 				if !errors.Is(err, repository.ErrTaskStateConflict) || stored.Status != model.TaskStatusRunning || stored.LeaseOwner != "worker-b" {
 					t.Fatalf("stale terminal write: %v %#v", err, stored)
 				}
-				if len(billing.refund)+len(billing.uncertain)+len(replay.statuses) != 0 {
+				if len(replay.statuses) != 0 {
 					t.Fatal("stale worker emitted terminal side effects")
 				}
 			} else {

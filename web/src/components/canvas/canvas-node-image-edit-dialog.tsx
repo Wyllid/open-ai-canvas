@@ -55,7 +55,6 @@ export function CanvasNodeImageEditDialog({
                             value={generationConfig.imageModel || generationConfig.model}
                             capability="image"
                             fullWidth
-                            showSelectedPrice={false}
                             onChange={(model) => setGenerationConfig((current) => ({ ...current, model, imageModel: model, ...defaultImageParamsForModel(current, model) }))}
                         />
                     </div>

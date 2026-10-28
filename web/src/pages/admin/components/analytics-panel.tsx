@@ -4,13 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 
 import type { ColumnsType } from "antd/es/table";
 import dayjs, { type Dayjs } from "dayjs";
-import { AlertTriangle, BarChart3, CircleDollarSign, Clock3, Gauge, RefreshCw, UsersRound, Workflow } from "lucide-react";
+import { AlertTriangle, BarChart3, Clock3, Gauge, RefreshCw, UsersRound, Workflow } from "lucide-react";
 import { Area, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
 import { useSearchParams } from "react-router";
 
 import { ListToolbar, PaginationBar, AdminDataTable, AdminExportButton, AdminFilterChip, AdminStatusBadge, AdminTableEmpty, type AdminStatusTone } from "./admin-ui";
 import { exportAdminAnalytics, getAdminAnalytics, listAdminUsers, type AdminReferenceData, type AdminAnalytics, type AnalyticsFilters } from "@/services/api/auth";
-import { analyticsFinanceColumns, formatCredits, formatFinanceCost, formatFinanceMargin } from "./analytics-finance";
 import { formatCountDelta, formatNumber, formatRateDelta } from "./analytics-trend-delta";
 import { Select } from "@/components/ui/base/select";
 
@@ -149,7 +148,6 @@ export default function AnalyticsPanel({ users, channels }: Props) {
         { title: "P50 / P95", width: 145, render: (_, row) => `${formatDuration(row.p50DurationMs)} / ${formatDuration(row.p95DurationMs)}` },
         { title: "Token（入 / 出 / 缓存）", width: 190, render: (_, row) => (row.usageAvailable ? `${formatNumber(row.inputTokens)} / ${formatNumber(row.outputTokens)} / ${formatNumber(row.cachedTokens)}` : "--") },
         { title: "媒体 / 视频秒", width: 125, render: (_, row) => `${row.mediaCount} / ${row.videoSeconds}` },
-        ...analyticsFinanceColumns,
     ];
 
     const userColumns: ColumnsType<AdminAnalytics["users"][number]> = [
@@ -188,8 +186,6 @@ export default function AnalyticsPanel({ users, channels }: Props) {
     const failureRows = data?.failures || [];
     const failureTotal = failureRows.reduce((sum, item) => sum + item.count, 0);
     const topFailure = failureRows.reduce<AdminAnalytics["failures"][number] | undefined>((current, item) => (!current || item.count > current.count ? item : current), undefined);
-    const finance = data?.kpi.finance;
-    const financeUnavailable = data !== null && (!finance || modelRows.some((row) => !row.finance));
     const trendHasData = trendMetric === "volume" ? trend.some((item) => item.tasks > 0 || item.requests > 0) : trendMetric === "quality" ? trend.some((item) => item.requests > 0) : trend.some((item) => item.activeUsers > 0);
     const trendTitle = trendMetric === "volume" ? "任务与请求趋势" : trendMetric === "quality" ? "请求质量趋势" : "用户活跃趋势";
     const pageRows = <T,>(rows: T[], page: number) => rows.slice((page - 1) * analyticsPageSize, page * analyticsPageSize);
@@ -277,8 +273,6 @@ export default function AnalyticsPanel({ users, channels }: Props) {
                     ))}
                 </div>
             </ListToolbar>
-
-            {financeUnavailable && <Alert type="warning" showIcon title="后端未返回完整财务统计，缺失金额显示为 --。请确认后端已更新并重启后刷新。" />}
             {loadError && (
                 <Alert
                     type="error"
@@ -301,8 +295,6 @@ export default function AnalyticsPanel({ users, channels }: Props) {
                     trend={formatCountDelta(currentTrend?.activeUsers, previousTrend?.activeUsers)}
                     detail={data ? `日 ${formatNumber(data.kpi.dau)} · 周 ${formatNumber(data.kpi.wau)} · 月 ${formatNumber(data.kpi.mau)}` : undefined}
                 />
-                <AnalyticsHealthCard icon={<CircleDollarSign className="size-4" />} label="用户总余额" value={data ? formatCredits(data.kpi.totalBalanceMicrocredits ?? 0) : "--"} detail="当前所有用户可用积分余额" />
-                <AnalyticsHealthCard icon={<CircleDollarSign className="size-4" />} label="范围消耗" value={data ? formatCredits(data.kpi.totalConsumedMicrocredits ?? 0) : "--"} detail="筛选范围内已计费调用" />
                 <AnalyticsHealthCard
                     icon={<Workflow className="size-4" />}
                     label="生成任务"
@@ -320,32 +312,6 @@ export default function AnalyticsPanel({ users, channels }: Props) {
                 />
                 <AnalyticsHealthCard icon={<Clock3 className="size-4" />} label="P95 请求耗时" value={data && data.kpi.upstreamRequests > 0 ? formatDuration(data.kpi.p95DurationMs) : "--"} detail="筛选范围内的上游请求" />
                 <AnalyticsHealthCard icon={<Workflow className="size-4" />} label="当前排队" value={data ? formatNumber(data.kpi.currentQueuedTasks) : "--"} detail="实时快照 · 非历史累计" tone={data?.kpi.currentQueuedTasks ? "warning" : "neutral"} />
-                <AnalyticsHealthCard
-                    icon={<CircleDollarSign className="size-4" />}
-                    label="费用统计（积分）"
-                    value={
-                        finance ? (
-                            <dl className="admin-analytics-finance-values">
-                                <div>
-                                    <dt>收入</dt>
-                                    <dd>{formatCredits(finance.revenueMicrocredits)}</dd>
-                                </div>
-                                <div>
-                                    <dt>成本</dt>
-                                    <dd>{formatFinanceCost(finance)}</dd>
-                                </div>
-                                <div>
-                                    <dt>利润</dt>
-                                    <dd>{formatCredits(finance.profitMicrocredits)}</dd>
-                                </div>
-                            </dl>
-                        ) : (
-                            "--"
-                        )
-                    }
-                    detail={finance ? `已结算 ${finance.settledOrders} 笔 · 利润率 ${formatFinanceMargin(finance.profitMargin)}` : undefined}
-                    tone={finance && (finance.costedOrders < finance.settledOrders || (finance.profitMicrocredits ?? 0) < 0) ? "warning" : "neutral"}
-                />
             </section>
 
             <div className="admin-analytics-overview-grid">
@@ -423,22 +389,6 @@ export default function AnalyticsPanel({ users, channels }: Props) {
                             value={data ? formatNumber(data.kpi.currentQueuedTasks) : "--"}
                             description={!data ? "数据尚未就绪" : data.kpi.currentQueuedTasks ? "存在等待执行的生成任务" : "没有排队中的生成任务"}
                             tone={!data ? "neutral" : data.kpi.currentQueuedTasks ? "warning" : "success"}
-                        />
-                        <AnalyticsAttentionItem
-                            icon={<CircleDollarSign className="size-4" />}
-                            label="成本覆盖订单"
-                            value={finance ? `${finance.costedOrders}/${finance.settledOrders}` : "--"}
-                            description={
-                                !finance
-                                    ? "财务统计尚未返回"
-                                    : finance.settledOrders
-                                      ? finance.costedOrders === finance.settledOrders
-                                          ? "已结算订单成本完整"
-                                          : `${finance.settledOrders - finance.costedOrders} 笔缺少成本快照或有效用量`
-                                      : "当前范围暂无已结算订单"
-                            }
-                            tone={finance && finance.costedOrders < finance.settledOrders ? "warning" : "neutral"}
-                            onClick={() => openAnalysis("models")}
                         />
                     </div>
                 </aside>

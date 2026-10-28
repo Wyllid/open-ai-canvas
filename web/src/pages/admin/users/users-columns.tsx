@@ -1,7 +1,6 @@
 import type { ColumnsType } from "antd/es/table";
 import { Eye, Pencil, Power } from "lucide-react";
 
-import { formatCredits } from "@/constant/credits";
 import { IdentityProviderBadge } from "@/components/layout/identity-provider-badge";
 import { AdminRowActions, AdminStatusBadge } from "../components/admin-ui";
 import type { AdminUser } from "@/services/api/auth";
@@ -45,14 +44,6 @@ export function createUserColumns({
         },
         { key: "email", title: "邮箱", dataIndex: "email", align: "center", render: (email) => email || <span className="text-foreground/40">未填写</span> },
         {
-            key: "credits",
-            title: "当前积分",
-            dataIndex: "availableMicrocredits",
-            width: 130,
-            align: "center",
-            render: (value, user) => <span className="tabular-nums" title={`冻结积分：${formatCredits(user.reservedMicrocredits)}`}>{formatCredits(value)}</span>,
-        },
-        {
             key: "role",
             title: "角色",
             dataIndex: "role",
@@ -61,7 +52,6 @@ export function createUserColumns({
             render: (role, user) => (
                 <span className="inline-flex flex-wrap items-center justify-center gap-1">
                     <AdminStatusBadge label={role === "admin" ? "管理员" : "普通用户"} tone={role === "admin" ? "info" : "neutral"} />
-                    {user.isPromoter ? <AdminStatusBadge label="推广人" tone="success" /> : null}
                 </span>
             ),
         },

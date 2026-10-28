@@ -675,7 +675,6 @@ func TestCloudAgentVisionBatchKeepsToolResultsContiguousEndToEnd(t *testing.T) {
 	}
 
 	req := agentTestRequest()
-	req.Budget.MaxCredits = 10
 	root, err := s.CreateCloudAgentRun("user", req, "")
 	if err != nil {
 		t.Fatal(err)

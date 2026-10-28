@@ -56,14 +56,10 @@ type ProviderCatalogModel struct {
 	PriceTiers        []ProviderCatalogPriceTier `json:"priceTiers"`
 }
 
-// ProviderCatalogPriceTier 的成本已按 1 元 = 1 积分换算为 microcredits。
+// ProviderCatalogPriceTier 是目录推荐的规格档（历史名称，已不含价格）。
 type ProviderCatalogPriceTier struct {
-	Selector               map[string]string `json:"selector,omitempty"`
-	BillingMode            string            `json:"billingMode"`
-	CostUnitMicrocredits   int64             `json:"costUnitMicrocredits"`
-	CostInputMicrocredits  int64             `json:"costInputMicrocredits"`
-	CostOutputMicrocredits int64             `json:"costOutputMicrocredits"`
-	CostCachedMicrocredits int64             `json:"costCachedMicrocredits"`
+	Selector         map[string]string `json:"selector,omitempty"`
+	ProviderModelKey string            `json:"providerModelKey,omitempty"`
 }
 
 type ProviderCatalogVerifyRequest struct {
@@ -77,16 +73,14 @@ type ProviderCatalogVerifyResult struct {
 }
 
 type ProviderCatalogInstallModel struct {
-	ModelKey      string   `json:"modelKey"`
-	MarkupPercent *float64 `json:"markupPercent"`
+	ModelKey string `json:"modelKey"`
 }
 
 type ProviderCatalogInstallRequest struct {
-	Name          string                        `json:"name"`
-	APIKey        string                        `json:"apiKey"`
-	MarkupPercent float64                       `json:"markupPercent"`
-	Models        []ProviderCatalogInstallModel `json:"models"`
-	Enabled       *bool                         `json:"enabled"`
+	Name    string                        `json:"name"`
+	APIKey  string                        `json:"apiKey"`
+	Models  []ProviderCatalogInstallModel `json:"models"`
+	Enabled *bool                         `json:"enabled"`
 }
 
 func catalogProviderForAdmin(channel model.ModelChannel, admin bool) string {
@@ -162,12 +156,7 @@ func (s *Service) providerCatalogItem(provider providercatalog.Provider, install
 			view.Supported = true
 		}
 		for _, tier := range entry.PriceTiers {
-			price := providercatalog.PriceFor(entry.Capability, tier, 0)
-			view.PriceTiers = append(view.PriceTiers, ProviderCatalogPriceTier{
-				Selector: tier.Selector, BillingMode: tier.BillingMode,
-				CostUnitMicrocredits: price.CostUnit, CostInputMicrocredits: price.CostInput,
-				CostOutputMicrocredits: price.CostOutput, CostCachedMicrocredits: price.CostCached,
-			})
+			view.PriceTiers = append(view.PriceTiers, ProviderCatalogPriceTier{Selector: tier.Selector, ProviderModelKey: tier.ProviderModelKey})
 		}
 		item.Models = append(item.Models, view)
 	}
@@ -243,10 +232,6 @@ func (s *Service) InstallProviderCatalog(ctx context.Context, actor *model.User,
 	if apiKey == "" {
 		return nil, BadAuthRequest("请填写 API Key")
 	}
-	defaultMarkup, err := providercatalog.MarkupBasisPoints(req.MarkupPercent)
-	if err != nil {
-		return nil, BadAuthRequest(err.Error())
-	}
 	byKey := make(map[string]providercatalog.Model, len(provider.Models))
 	for _, entry := range provider.Models {
 		byKey[entry.ModelKey] = entry
@@ -284,13 +269,7 @@ func (s *Service) InstallProviderCatalog(ctx context.Context, actor *model.User,
 			continue
 		}
 		seen[entry.ModelKey] = true
-		markup := defaultMarkup
-		if choice.MarkupPercent != nil {
-			if markup, err = providercatalog.MarkupBasisPoints(*choice.MarkupPercent); err != nil {
-				return nil, BadAuthRequest(entry.DisplayName + "：" + err.Error())
-			}
-		}
-		item, tiers, buildErr := s.buildCatalogChannelModel(&channel, entry, markup, len(channelModels))
+		item, tiers, buildErr := s.buildCatalogChannelModel(&channel, entry, len(channelModels))
 		if buildErr != nil {
 			return nil, prefixAppError(entry.DisplayName, buildErr)
 		}
@@ -316,7 +295,7 @@ func (s *Service) InstallProviderCatalog(ctx context.Context, actor *model.User,
 	return &public, nil
 }
 
-func (s *Service) buildCatalogChannelModel(channel *model.ModelChannel, entry providercatalog.Model, markup int64, sortOrder int) (model.ChannelModel, []model.ChannelModelPriceTier, error) {
+func (s *Service) buildCatalogChannelModel(channel *model.ModelChannel, entry providercatalog.Model, sortOrder int) (model.ChannelModel, []model.ChannelModelPriceTier, error) {
 	protocolID, reason := s.catalogModelProtocol(entry)
 	if reason != "" {
 		return model.ChannelModel{}, nil, BadAuthRequest(reason)
@@ -331,13 +310,9 @@ func (s *Service) buildCatalogChannelModel(channel *model.ModelChannel, entry pr
 	}
 	req := ChannelModelRequest{CapabilityConfig: normalized}
 	for _, tier := range entry.PriceTiers {
-		price := providercatalog.PriceFor(entry.Capability, tier, markup)
 		enabled := true
 		req.PriceTiers = append(req.PriceTiers, ChannelModelPriceTierRequest{
-			CostPricing: model.CreditCostPricing{Configured: true, UnitPriceMicrocredits: price.CostUnit, InputTokenPriceMicrocredits: price.CostInput, OutputTokenPriceMicrocredits: price.CostOutput, CachedTokenPriceMicrocredits: price.CostCached},
-			Selector:    tier.Selector, ProviderModelKey: tier.ProviderModelKey, BillingMode: tier.BillingMode,
-			UnitPriceMicrocredits: price.SaleUnit, InputTokenPriceMicrocredits: price.SaleInput, OutputTokenPriceMicrocredits: price.SaleOutput, CachedTokenPriceMicrocredits: price.SaleCached,
-			PriceConfigured: true, Enabled: &enabled,
+			Selector: tier.Selector, ProviderModelKey: tier.ProviderModelKey, Enabled: &enabled,
 		})
 	}
 	protocolType := model.ChannelInterfaceType(protocolID)
@@ -374,7 +349,7 @@ func (s *Service) buildCatalogChannelModel(channel *model.ModelChannel, entry pr
 	item := model.ChannelModel{
 		ID: modelID, ChannelID: channel.ID, ModelKey: entry.ModelKey, ProviderModelKey: entry.ProviderModelKey,
 		DisplayName: entry.DisplayName, ChannelLabel: entry.ChannelLabel, Tags: tags, Description: entry.Description, Icon: entry.Icon,
-		SortOrder: sortOrder, Capability: entry.Capability, Protocol: protocolType, Enabled: true, PriceVersion: 1,
+		SortOrder: sortOrder, Capability: entry.Capability, Protocol: protocolType, Enabled: true,
 		CapabilityConfigJSON: capabilityJSON, CatalogModelKey: entry.ModelKey,
 	}
 	if capabilityJSON != "" {
@@ -383,7 +358,6 @@ func (s *Service) buildCatalogChannelModel(channel *model.ModelChannel, entry pr
 	for index := range tiers {
 		tiers[index].ChannelModelID = item.ID
 	}
-	s.applyChannelModelPriceTierSummary(&item, tiers)
 	return item, tiers, nil
 }
 

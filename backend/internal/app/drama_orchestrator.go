@@ -29,8 +29,6 @@ const (
 	dramaPlanBatchRunes    = 30000
 	dramaPlanBatchChapters = 12
 	dramaBibleSampleRunes  = 40000
-	dramaBudgetPauseReason = "已达到预算上限，提高预算后可继续"
-	dramaCreditsReason     = "积分不足，充值后点击继续制作"
 )
 
 var dramaWake = struct {
@@ -196,11 +194,7 @@ func (r *dramaRun) syncRunningJob(job *model.DramaJob) error {
 	}
 	switch task.Status {
 	case model.TaskStatusSucceeded:
-		job.CostMicrocredits = r.taskCost(task)
-		if !dramaAttemptRecorded(job, task.ID) {
-			r.production.SpentMicrocredits += job.CostMicrocredits
-		}
-		recordDramaAttempt(job, task.ID, string(task.Status), "", job.CostMicrocredits)
+		recordDramaAttempt(job, task.ID, string(task.Status), "")
 		if applyErr := r.applyJob(job, task); applyErr != nil {
 			return r.failJob(job, "结果处理失败（保留原任务，重试不重复生成）："+applyErr.Error())
 		}
@@ -208,25 +202,10 @@ func (r *dramaRun) syncRunningJob(job *model.DramaJob) error {
 		job.Status, job.FinishedAt, job.Error = model.DramaJobSucceeded, &now, ""
 		return r.s.repo.SaveDramaJob(job)
 	case model.TaskStatusFailed, model.TaskStatusCancelled:
-		job.CostMicrocredits = r.taskCost(task)
-		if !dramaAttemptRecorded(job, task.ID) {
-			r.production.SpentMicrocredits += job.CostMicrocredits
-		}
-		recordDramaAttempt(job, task.ID, string(task.Status), firstNonEmpty(task.Error, "生成失败"), job.CostMicrocredits)
+		recordDramaAttempt(job, task.ID, string(task.Status), firstNonEmpty(task.Error, "生成失败"))
 		return r.failJob(job, firstNonEmpty(task.Error, "生成失败"))
 	}
 	return nil
-}
-
-func (r *dramaRun) taskCost(task *model.Task) int64 {
-	if task.BillingOrderID == "" {
-		return 0
-	}
-	order, err := r.s.repo.BillingOrder(task.BillingOrderID)
-	if err != nil || order == nil || order.Status == model.BillingStatusRefunded {
-		return 0
-	}
-	return order.AmountMicrocredits
 }
 
 // failJob 让失败落到具体镜头或设定上，进入“待处理”而不是卡住整条流水线。
@@ -269,7 +248,7 @@ func (r *dramaRun) failJob(job *model.DramaJob, reason string) error {
 }
 
 // recordDramaAttempt 追加一次提交记录；最多保留最近 20 次，供队列详情回看历次请求。
-func recordDramaAttempt(job *model.DramaJob, taskID, status, reason string, cost int64) {
+func recordDramaAttempt(job *model.DramaJob, taskID, status, reason string) {
 	var attempts []DramaJobAttempt
 	_ = json.Unmarshal([]byte(job.AttemptsJSON), &attempts)
 	if taskID != "" {
@@ -279,7 +258,7 @@ func recordDramaAttempt(job *model.DramaJob, taskID, status, reason string, cost
 			}
 		}
 	}
-	attempts = append(attempts, DramaJobAttempt{TaskID: taskID, Status: status, Error: truncateRunes(reason, 500), CostMicrocredits: cost, At: time.Now().Format(time.RFC3339)})
+	attempts = append(attempts, DramaJobAttempt{TaskID: taskID, Status: status, Error: truncateRunes(reason, 500), At: time.Now().Format(time.RFC3339)})
 	if len(attempts) > 20 {
 		attempts = attempts[len(attempts)-20:]
 	}
@@ -540,10 +519,6 @@ func (r *dramaRun) dispatch() error {
 		if capacity <= 0 {
 			return nil
 		}
-		if r.production.BudgetMicrocredits > 0 && r.production.SpentMicrocredits >= r.production.BudgetMicrocredits {
-			r.production.Status, r.production.PauseReason = model.DramaStatusPaused, dramaBudgetPauseReason
-			return nil
-		}
 		job := &queued[i]
 		task, skip, err := r.submit(job)
 		if err != nil {
@@ -551,13 +526,10 @@ func (r *dramaRun) dispatch() error {
 			switch {
 			case strings.Contains(message, "同时排队或运行的任务最多"):
 				return nil
-			case strings.Contains(message, "积分不足"):
-				r.production.Status, r.production.PauseReason = model.DramaStatusPaused, dramaCreditsReason
-				return nil
 			case strings.Contains(message, "维护"):
 				return nil
 			}
-			recordDramaAttempt(job, "", "rejected", message, 0)
+			recordDramaAttempt(job, "", "rejected", message)
 			if failErr := r.failJob(job, message); failErr != nil {
 				return failErr
 			}

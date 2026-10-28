@@ -18,7 +18,7 @@ func TestMetasoCatalogBuild(t *testing.T) {
 	}
 	svc, _ := newChannelModelTestService(t)
 	entry := catalog.Providers[0].Models[0]
-	item, tiers, err := svc.buildCatalogChannelModel(&model.ModelChannel{ID: "test"}, entry, 3000, 0)
+	item, tiers, err := svc.buildCatalogChannelModel(&model.ModelChannel{ID: "test"}, entry, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,8 +28,8 @@ func TestMetasoCatalogBuild(t *testing.T) {
 	if len(tiers) != 3 {
 		t.Fatalf("tiers: %d", len(tiers))
 	}
-	for i, cost := range []int64{75000, 90000, 180000} {
-		if tiers[i].CostPricing.UnitPriceMicrocredits != cost || tiers[i].BillingMode != "per_second" {
+	for i := range tiers {
+		if !tiers[i].Enabled || tiers[i].ProviderModelKey == "" {
 			t.Fatalf("tier: %#v", tiers[i])
 		}
 	}

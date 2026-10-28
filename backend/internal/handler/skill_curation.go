@@ -2,10 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"yingce/backend/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 func registerSkillCurationRoutes(r *gin.RouterGroup, svc *service.Service) {

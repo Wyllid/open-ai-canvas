@@ -190,7 +190,7 @@ func TestImageParametersLegacyChannelUsesLiveContractForRouteAndBilling(t *testi
 	}
 	svc.routeCatalogTTL = time.Hour
 	svc.routeCatalog = &routeCatalogSnapshot{LoadedAt: time.Now(), Models: map[string]cachedLogicalModel{
-		"logical": {Model: model.LogicalModel{ID: "logical", Capability: "image", PricePolicy: "channel"}, ProductSpec: spec, Defaults: imageParameterDefaults(spec.ImageParameters), Routes: []cachedLogicalRoute{
+		"logical": {Model: model.LogicalModel{ID: "logical", Capability: "image"}, ProductSpec: spec, Defaults: imageParameterDefaults(spec.ImageParameters), Routes: []cachedLogicalRoute{
 			{Route: model.LogicalModelRoute{ID: "route", Enabled: true, Weight: 1}, CapabilitySpec: spec, ChannelModel: *stored},
 		}},
 	}}
@@ -207,16 +207,8 @@ func TestImageParametersLegacyChannelUsesLiveContractForRouteAndBilling(t *testi
 	if parameters["imageResolution"] != "2k" || parameters["quality"] != nil || config["quality"] != "" {
 		t.Fatalf("execution projection = %#v", config)
 	}
-	tier, err := svc.channelModelPriceTierForBilling(*stored, "resolution", "image", routed.Intent)
-	if err != nil || tier == nil || tier.ID != routed.PriceTier.ID {
-		t.Fatalf("billing projection = %#v, %v", tier, err)
-	}
-	quote, err := svc.QuoteLogicalModel("logical", ModelRequestIntent{Capability: "image", Options: map[string]any{"imageResolution": "2k"}})
-	if err != nil || quote == nil || quote.AmountMicrocredits != tier.UnitPriceMicrocredits {
-		t.Fatalf("quote drift: %#v, %v", quote, err)
-	}
-	if _, err := svc.channelModelPriceTierForBilling(*stored, "resolution", "image", ModelRequestIntent{Capability: "image", Options: map[string]any{"imageResolution": "4k"}}); err == nil {
-		t.Fatal("mismatched billing parameters accepted")
+	if routed.PriceTier == nil || channelModelPriceTierForIntent(*stored, routed.Intent) == nil {
+		t.Fatalf("spec tier projection lost: %#v", routed.PriceTier)
 	}
 }
 

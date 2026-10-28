@@ -68,29 +68,16 @@ export function modelOptionsFromChannels(channels: ModelChannel[]) {
             channel.models
                 .map(normalizeRawModelName)
                 .filter(Boolean)
-                .filter((model) => channel.scope !== "system" || hasSystemModelPrice(channel, model))
+                .filter((model) => channel.scope !== "system" || hasSystemModelSpec(channel, model))
                 .map((model) => encodeChannelModel(channel.id, model)),
         ),
     );
 }
 
-export function hasSystemModelPrice(channel: ModelChannel, model: string) {
+export function hasSystemModelSpec(channel: ModelChannel, model: string) {
     if (channel.scope !== "system") return true;
-    // 价格字段已由后端按“非负数”校验；0 表示免费模型，不能在目录重建时被过滤。
-    const configured = (value: number | undefined) => typeof value === "number" && Number.isFinite(value) && value >= 0;
-    return (
-        channel.modelCosts?.some((item) => {
-            if (item.model !== model) return false;
-            const tiers = item.logicalPriceTiers || [];
-            if (tiers.length) {
-                return tiers.some((tier) => (tier.billingMode === "token" ? [tier.inputTokenPriceMicrocredits, tier.outputTokenPriceMicrocredits, tier.cachedTokenPriceMicrocredits].every(configured) : configured(tier.unitPriceMicrocredits)));
-            }
-            if (item.billingMode === "token") {
-                return [item.inputTokenPriceMicrocredits, item.outputTokenPriceMicrocredits, item.cachedTokenPriceMicrocredits].every(configured);
-            }
-            return configured(item.unitPriceMicrocredits);
-        }) === true
-    );
+    // 系统模型必须出现在目录里；规格档由后端保证至少有一个默认 "*" 档。
+    return channel.modelCosts?.some((item) => item.model === model) === true;
 }
 
 export function normalizeModelOptionValue(value: unknown, channels: ModelChannel[]) {

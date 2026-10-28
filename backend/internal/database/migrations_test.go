@@ -112,9 +112,6 @@ func TestMigrateSchemaRecordsAndValidatesVersion(t *testing.T) {
 	if !db.Migrator().HasTable(&model.AgentMemorySetting{}) {
 		t.Fatal("schema migration v18 did not create agent memory settings")
 	}
-	if !db.Migrator().HasColumn(&model.PaymentProviderConfig{}, "plugin_version") || !db.Migrator().HasColumn(&model.PaymentOrder{}, "plugin_version") {
-		t.Fatal("schema migration v19 did not add payment plugin version columns")
-	}
 	if !db.Migrator().HasTable(&model.BannerAnnouncement{}) {
 		t.Fatal("schema migration v20 did not create banner announcements")
 	}
@@ -167,7 +164,6 @@ func TestMigrateSchemaV56UpgradesProviderCatalogV55(t *testing.T) {
 		{&model.ApiCallLog{}, "idx_api_logs_user_created"},
 		{&model.Task{}, "idx_tasks_created_epoch"},
 		{&model.Task{}, "idx_tasks_user_project_created"},
-		{&model.CreditLedgerEntry{}, "idx_credit_ledger_user_type"},
 	} {
 		if err := db.Migrator().DropIndex(item.entity, item.index); err != nil {
 			t.Fatal(err)
@@ -205,7 +201,6 @@ func TestMigrateSchemaV56UpgradesProviderCatalogV55(t *testing.T) {
 	}{
 		{&model.ApiCallLog{}, "idx_api_logs_user_created"},
 		{&model.Task{}, "idx_tasks_user_project_created"},
-		{&model.CreditLedgerEntry{}, "idx_credit_ledger_user_type"},
 	} {
 		if !db.Migrator().HasIndex(item.entity, item.index) {
 			t.Fatalf("v56 did not restore %s", item.index)
@@ -422,38 +417,6 @@ func TestMigrateSchemaV18UpgradesExistingDatabase(t *testing.T) {
 	}
 }
 
-func TestMigrateSchemaV19AddsPaymentPluginVersion(t *testing.T) {
-	db, err := Open(Config{Driver: "sqlite", DSN: "file:migration-payment-plugin-version-v19?mode=memory&cache=shared"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateSchema(db); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.Migrator().DropColumn(&model.PaymentProviderConfig{}, "PluginVersion"); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.Migrator().DropColumn(&model.PaymentOrder{}, "PluginVersion"); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.Where("version = ?", 19).Delete(&schemaMigration{}).Error; err != nil {
-		t.Fatal(err)
-	}
-	if err := MigrateSchema(db); err != nil {
-		t.Fatalf("upgrade from v18: %v", err)
-	}
-	if !db.Migrator().HasColumn(&model.PaymentProviderConfig{}, "plugin_version") {
-		t.Fatal("v19 upgrade did not add payment_provider_configs.plugin_version")
-	}
-	if !db.Migrator().HasColumn(&model.PaymentOrder{}, "plugin_version") {
-		t.Fatal("v19 upgrade did not add payment_orders.plugin_version")
-	}
-	status, err := ReadSchemaStatus(db)
-	if err != nil || !status.Ready || status.Current != CurrentSchemaVersion {
-		t.Fatalf("unexpected upgraded schema status: %+v, %v", status, err)
-	}
-}
-
 func TestMigrateSchemaV20UpgradesExistingDatabaseWithBannerAnnouncements(t *testing.T) {
 	db, err := Open(Config{Driver: "sqlite", DSN: "file:migration-banner-announcements-v20?mode=memory&cache=shared"})
 	if err != nil {
@@ -627,22 +590,6 @@ func TestMigrateSchemaV8AllowsReusingArchivedLogicalModelCode(t *testing.T) {
 	}
 }
 
-func TestMigrateSchemaV12AddsAgentTokenChargeLimit(t *testing.T) {
-	db, err := Open(Config{Driver: "sqlite", DSN: "file:migration-agent-token-charge-limit?mode=memory&cache=shared"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := db.Exec(`CREATE TABLE billing_orders (id text PRIMARY KEY)`).Error; err != nil {
-		t.Fatal(err)
-	}
-	if err := migrateSchemaV12(db); err != nil {
-		t.Fatal(err)
-	}
-	if !db.Migrator().HasColumn(&model.BillingOrder{}, "ChargeLimitMicrocredits") {
-		t.Fatal("migration v12 did not add Agent token charge limit")
-	}
-}
-
 func TestMigrateSchemaRejectsChecksumMismatch(t *testing.T) {
 	db, err := Open(Config{Driver: "sqlite", DSN: "file:migration-checksum?mode=memory&cache=shared"})
 	if err != nil {
@@ -703,7 +650,7 @@ func TestMigrateSchemaV4AddsResourceUploadKeyToExistingSchema(t *testing.T) {
 	if err := db.Exec(`CREATE TABLE resources (id TEXT PRIMARY KEY, user_id TEXT NOT NULL)`).Error; err != nil {
 		t.Fatal(err)
 	}
-	if err := db.AutoMigrate(&model.ModelChannel{}, &model.ChannelModel{}, &model.ChannelModelPriceTier{}, &model.BillingOrder{}, &model.OAuthState{}); err != nil {
+	if err := db.AutoMigrate(&model.ModelChannel{}, &model.ChannelModel{}, &model.ChannelModelPriceTier{}, &model.OAuthState{}); err != nil {
 		t.Fatal(err)
 	}
 	if err := db.AutoMigrate(&schemaMigration{}); err != nil {
@@ -747,7 +694,7 @@ func TestMigrateSchemaRepairsLegacyAssetFoldersMigrationOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := db.AutoMigrate(&model.Resource{}, &model.Asset{}, &model.AssetFolder{}, &model.ModelChannel{}, &model.ChannelModel{}, &model.ChannelModelPriceTier{}, &model.BillingOrder{}, &model.OAuthState{}); err != nil {
+	if err := db.AutoMigrate(&model.Resource{}, &model.Asset{}, &model.AssetFolder{}, &model.ModelChannel{}, &model.ChannelModel{}, &model.ChannelModelPriceTier{}, &model.OAuthState{}); err != nil {
 		t.Fatal(err)
 	}
 	if err := db.AutoMigrate(&schemaMigration{}); err != nil {

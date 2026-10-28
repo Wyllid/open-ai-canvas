@@ -7,8 +7,9 @@ import (
 	stdlog "log"
 	"time"
 
-	"gorm.io/gorm"
 	"yingce/backend/internal/model"
+
+	"gorm.io/gorm"
 )
 
 func (s *Service) LogAPICall(log model.ApiCallLog) error {
@@ -20,14 +21,6 @@ func (s *Service) LogAPICall(log model.ApiCallLog) error {
 	}
 	if log.StartedAt.IsZero() {
 		log.StartedAt = log.CreatedAt.Add(-time.Duration(log.DurationMs) * time.Millisecond)
-	}
-	s.estimateCallCost(&log)
-	if log.BillingOrderID != "" && log.ProviderRequestID != "" {
-		if err := s.repo.UpdateBillingProviderRequestID(log.BillingOrderID, log.ProviderRequestID); err != nil {
-			// 账单关联是请求日志的辅助状态，不能因为关联更新失败而丢失
-			// 已经发生的上游调用记录。后续由任务/账单对账流程补偿关联。
-			stdlog.Printf("provider billing request id update failed: billing_order_id=%s provider_request_id=%s error=%v", log.BillingOrderID, log.ProviderRequestID, err)
-		}
 	}
 	if log.TaskID != "" && (log.RequestKind == "create" || log.RequestKind == "poll" || log.RequestKind == "cancel") {
 		stage := log.RequestKind

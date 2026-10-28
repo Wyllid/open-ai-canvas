@@ -69,15 +69,12 @@ func TestCloudAgentMediaSpecRepairIsBoundedAndNeverSubmits(t *testing.T) {
 			t.Fatal("mismatched spec reached approval or submission")
 		}
 	}
-	var tasks, orders int64
+	var tasks int64
 	if err := db.Model(&model.Task{}).Where("type IN ?", []string{"canvas_image", "canvas_video"}).Count(&tasks).Error; err != nil {
 		t.Fatal(err)
 	}
-	if err := db.Model(&model.BillingOrder{}).Where("capability IN ?", []string{"image", "video"}).Count(&orders).Error; err != nil {
-		t.Fatal(err)
-	}
-	if tasks != 0 || orders != 0 {
-		t.Fatalf("failed admission created paid work: tasks=%d orders=%d", tasks, orders)
+	if tasks != 0 {
+		t.Fatalf("failed admission created work: tasks=%d", tasks)
 	}
 }
 

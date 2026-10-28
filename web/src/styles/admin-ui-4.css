@@ -23,45 +23,17 @@
     opacity: 0.64;
 }
 
-.admin-credit-account-summary {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1px;
-    margin: -4px 0 18px;
-    overflow: hidden;
-    border: 1px solid var(--admin-divider);
-    border-radius: 8px;
-    background: var(--admin-divider);
-}
-
-.admin-credit-account-summary > div {
-    background: var(--admin-layer-2);
-    padding: 11px 12px;
-}
-
-.admin-credit-account-summary dt,
 .admin-operation-confirmation-grid dt {
     color: var(--admin-text-muted);
     font-size: 11px;
     line-height: 1.4;
 }
 
-.admin-credit-account-summary dd,
 .admin-operation-confirmation-grid dd {
     margin-top: 5px;
     color: var(--admin-text-primary);
     font-size: 13px;
     font-weight: 600;
-    line-height: 1.5;
-}
-
-.admin-credit-account-summary.is-unavailable {
-    display: block;
-    border-style: dashed;
-    background: var(--admin-layer-2);
-    padding: 12px;
-    color: var(--admin-text-muted);
-    font-size: 11px;
     line-height: 1.5;
 }
 
@@ -255,33 +227,6 @@
     color: var(--admin-text-muted);
     font-size: 12px;
     line-height: 16px;
-}
-
-.admin-analytics-finance-values {
-    display: grid;
-    gap: 2px;
-    margin: 0;
-    font-size: 14px;
-    letter-spacing: 0;
-    line-height: 1.4;
-    white-space: normal;
-}
-
-.admin-analytics-finance-values > div {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 12px;
-}
-
-.admin-analytics-finance-values dt {
-    color: var(--admin-text-muted);
-    font-weight: 400;
-}
-
-.admin-analytics-finance-values dd {
-    margin: 0;
-    text-align: right;
-    overflow-wrap: anywhere;
 }
 
 .admin-analytics-overview-grid {

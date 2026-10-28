@@ -18,7 +18,7 @@ func TestChannelModelDirectoryDefaultsAndCustomNames(t *testing.T) {
 	request := ChannelModelRequest{
 		ModelKey: "product", ProviderModelKey: "upstream", Capability: "text", Protocol: string(model.ChannelInterfaceChatCompletion),
 		CapabilityConfig: DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceChatCompletion), "upstream"),
-		PriceTiers:       []ChannelModelPriceTierRequest{{BillingMode: "fixed_request", PriceConfigured: true, Enabled: &enabled}},
+		PriceTiers:       []ChannelModelPriceTierRequest{{Enabled: &enabled}},
 		Enabled:          &enabled,
 	}
 	saved, err := svc.SaveAdminChannelModel(admin, channel.ID, "", request)

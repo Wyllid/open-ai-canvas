@@ -7,7 +7,6 @@ import { getActiveUserScope } from "@/lib/user-scope";
 export type { BackendEnvelope } from "@/services/api/request";
 
 export type TaskStatus = "queued" | "running" | "succeeded" | "failed" | "cancelled";
-export type TaskBillingStatus = "reserved" | "running" | "settled" | "refunded" | "uncertain";
 export type ProviderCancelStatus = "requested" | "confirmed" | "uncertain";
 export type GenerationTaskResultState = "NOT_AVAILABLE" | "PENDING_MATERIALIZATION" | "MATERIALIZING" | "READY" | "FAILED_RETRYABLE" | "FAILED_PERMANENT";
 export type GenerationTaskOutput = {
@@ -57,10 +56,6 @@ export type GenerationTask = {
     completedAt?: string;
     createdAt: string;
     updatedAt: string;
-    billing?: {
-        amountMicrocredits: number;
-        status: TaskBillingStatus;
-    };
     clientContext?: {
         conversationId?: string;
         messageId?: string;
@@ -82,7 +77,6 @@ export type ProviderTaskQueryResult = {
     task: GenerationTask;
     providerStatus: string;
     recovered: boolean;
-    billingSettled: boolean;
 };
 
 export type TaskTextDelta = {
@@ -131,8 +125,6 @@ export function createGenerationTask(input: CreateTaskInput) {
     return http.post<GenerationTask>("/tasks", input).then((task) => {
         recordDiagnosticEvent({ level: "info", category: "task", message: "任务已创建", taskId: task.id, projectId: task.projectId });
         notifyCanvasTaskCreated(task);
-        // 创建任务时积分已被预占，不能等任务结束后才刷新可用余额。
-        window.dispatchEvent(new CustomEvent("wallet:updated"));
         return task;
     });
 }
@@ -336,7 +328,6 @@ export function recoverGenerationTaskMedia(id: string) {
 export function cancelGenerationTask(id: string) {
     return http.post<GenerationTask>(`/tasks/${encodeURIComponent(id)}/cancel`).then((task) => {
         window.dispatchEvent(new CustomEvent("canvas:task-cancelled", { detail: { task } }));
-        window.dispatchEvent(new CustomEvent("wallet:updated"));
         return task;
     });
 }
@@ -434,12 +425,8 @@ export async function waitForGenerationTask(id: string, options?: WaitForGenerat
                 await delay(intervalMs, options?.signal);
                 continue;
             }
-            if (task.status === "succeeded") {
-                window.dispatchEvent(new CustomEvent("wallet:updated"));
-                return task;
-            }
+            if (task.status === "succeeded") return task;
             if (task.status === "failed" || task.status === "cancelled") {
-                window.dispatchEvent(new CustomEvent("wallet:updated"));
                 throw new Error(task.error ? generationErrorMessage(task.error) : `任务${task.status === "cancelled" ? "已取消" : "失败"}`);
             }
             await delay(intervalMs, options?.signal);
@@ -534,7 +521,6 @@ async function waitForGenerationTaskTextEvents(id: string, options: WaitForGener
             if (terminalReceived) {
                 const completed = await queryGenerationTask(id, { signal: options.signal });
                 options.onTaskUpdate?.(completed);
-                window.dispatchEvent(new CustomEvent("wallet:updated"));
                 if (completed.status === "succeeded") return completed;
                 if (completed.status === "failed" || completed.status === "cancelled") {
                     throw new TaskTextStreamFatalError(completed.error ? generationErrorMessage(completed.error) : `任务${completed.status === "cancelled" ? "已取消" : "失败"}`);

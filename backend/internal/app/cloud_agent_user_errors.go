@@ -17,7 +17,7 @@ import (
 // 其余可读的供应商原因原样保留，而不是统一成"生成失败"。
 
 const (
-	taskErrorModerationMessage = "内容审核未通过，本次平台积分未扣除或已退还。请修改提示词后重新生成。"
+	taskErrorModerationMessage = "内容审核未通过，本次未生成结果。请修改提示词后重新生成。"
 	taskErrorDefaultMessage    = "生成失败，请稍后重试。"
 	taskErrorNetworkMessage    = "网络异常。"
 	// 上游已返回 5xx：链路是通的，故障在模型服务一侧，不能说成网络异常。

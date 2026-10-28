@@ -42,9 +42,8 @@ func TestAgentApprovalLargeCanvasEvent(t *testing.T) {
 			for _, row := range []any{
 				&model.CanvasProject{ID: "agent-canvas", UserID: "user", PayloadJSON: string(raw)},
 				&model.ModelChannel{ID: "channel", Scope: model.ChannelScopeSystem, Name: "测试", Enabled: true},
-				&model.ChannelModel{ID: "cm", ChannelID: "channel", ModelKey: "text-test", Capability: "text", Protocol: model.ChannelInterfaceChatCompletion, CapabilityConfigJSON: profile, BillingMode: "fixed_request", UnitPriceMicrocredits: 100, PriceConfigured: true, Enabled: true},
-				&model.ChannelModelPriceTier{ID: "tier", ChannelModelID: "cm", SelectorKey: "{}", SelectorJSON: "{}", BillingMode: "fixed_request", UnitPriceMicrocredits: 100, PriceConfigured: true, Enabled: true},
-				&model.CreditAccount{UserID: "user", AvailableMicrocredits: 10000},
+				&model.ChannelModel{ID: "cm", ChannelID: "channel", ModelKey: "text-test", Capability: "text", Protocol: model.ChannelInterfaceChatCompletion, CapabilityConfigJSON: profile, Enabled: true},
+				&model.ChannelModelPriceTier{ID: "tier", ChannelModelID: "cm", SelectorKey: "{}", SelectorJSON: "{}", Enabled: true},
 			} {
 				if err := db.Create(row).Error; err != nil {
 					t.Fatal(err)

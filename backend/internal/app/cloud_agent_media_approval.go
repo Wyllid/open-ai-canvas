@@ -120,7 +120,7 @@ func (s *Service) updateCloudAgentMediaApproval(repo *repository.Repository, run
 	if err != nil {
 		return err
 	}
-	prepared, err := prepareCloudAgentMediaApproval(repo, run.UserID, doc, plan, req, task, preparation.Order)
+	prepared, err := prepareCloudAgentMediaApproval(repo, run.UserID, doc, plan, req, task)
 	if err != nil {
 		return err
 	}

@@ -54,11 +54,8 @@ func (w *taskLifecycleCoordinator) retryTask(userID string, id string) (*model.T
 	if task.ProviderCancelStatus == model.ProviderCancelStatusRequested {
 		return nil, BadAuthRequest("上游取消状态仍在确认中，请确认费用结果后再重试")
 	}
-	if err := s.taskBilling().CheckRetryEligibility(task.BillingOrderID); err != nil {
-		if errors.Is(err, errTaskBillingReview) {
-			return nil, BadAuthRequest("上一次调用费用仍在核对中，处理完成前不能重复提交")
-		}
-		return nil, err
+	if err := checkTaskRetryEligibility(task); err != nil {
+		return nil, BadAuthRequest("上一次提交在上游的结果不明确，请先查询上游结果，不能重复提交")
 	}
 	if isContentModerationFailure(task.Error) {
 		return nil, BadAuthRequest(contentModerationRetryMessage)
@@ -67,18 +64,14 @@ func (w *taskLifecycleCoordinator) retryTask(userID string, id string) (*model.T
 	if err != nil {
 		return nil, err
 	}
-	var billingInput map[string]any
-	if err := json.Unmarshal([]byte(decryptedInput), &billingInput); err != nil {
+	var retryInput map[string]any
+	if err := json.Unmarshal([]byte(decryptedInput), &retryInput); err != nil {
 		return nil, err
 	}
-	if err := s.prepareLogicalTaskRetry(task, billingInput); err != nil {
+	if err := s.prepareLogicalTaskRetry(task, retryInput); err != nil {
 		return nil, err
 	}
-	if err := s.requireCustomChannelsForTaskInput(billingInput); err != nil {
-		return nil, err
-	}
-	billingOrder, err := s.taskBillingOrder(userID, task, billingInput)
-	if err != nil {
+	if err := s.requireCustomChannelsForTaskInput(retryInput); err != nil {
 		return nil, err
 	}
 	policy, err := s.RuntimePolicy()
@@ -88,10 +81,7 @@ func (w *taskLifecycleCoordinator) retryTask(userID string, id string) (*model.T
 	if err := s.ensureTaskProjectActive(userID, task.ProjectID); err != nil {
 		return nil, err
 	}
-	task, err = s.repo.RetryTaskWithBilling(userID, task, billingOrder, policy.Task.ActiveTaskLimit)
-	if errors.Is(err, repository.ErrInsufficientCredits) {
-		return nil, BadAuthRequest("积分不足，请先使用兑换码充值")
-	}
+	task, err = s.repo.RetryTask(userID, task, policy.Task.ActiveTaskLimit)
 	if errors.Is(err, repository.ErrActiveTaskLimit) {
 		return nil, BadAuthRequest(fmt.Sprintf("同时排队或运行的任务最多 %d 个，请等待已有任务完成", policy.Task.ActiveTaskLimit))
 	}
@@ -193,17 +183,12 @@ func (w *taskLifecycleCoordinator) cancelTaskWithIntent(_ context.Context, userI
 			}
 			cancel()
 		}
-	} else {
-		var billingErr error
-		if originalStatus == model.TaskStatusQueued {
-			billingErr = s.taskBilling().RefundBilling(task.BillingOrderID, "任务取消且尚未开始执行；来源："+intent.Source)
-		} else {
-			// running 任务可能已经发起上游调用但尚未把 request ID 写回，不能
-			// 直接退款后放任上游继续生成，先冻结为待核对更安全。
-			billingErr = s.taskBilling().MarkBillingUncertain(task.BillingOrderID, "取消时上游请求 ID 尚未确认，费用待核对；来源："+intent.Source)
-		}
-		if billingErr != nil {
-			_ = s.log(task.UserID, task.ID, "error", "取消任务后处理积分失败，已保留人工核对线索", billingErr.Error())
+	} else if originalStatus != model.TaskStatusQueued {
+		// running 任务可能已经发起上游调用但尚未把 request ID 写回，记为待核对，
+		// 避免用户直接重试后在上游重复生成。
+		markTaskSubmissionReview(task)
+		if err := s.repo.UpdateTaskExecutionDiagnostic(task.UserID, task.ID, task.ExecutionDiagnosticJSON); err != nil {
+			_ = s.log(task.UserID, task.ID, "error", "记录取消任务的上游核对状态失败", err.Error())
 		}
 	}
 

@@ -226,8 +226,8 @@ func TestCloudAgentExplicitUnsupportedQualityIsNeverDropped(t *testing.T) {
 	profile := DefaultModelCapabilityConfigForModel(string(model.ChannelInterfaceGeminiImage), "nano-banana-pro")
 	profile.Image.Quality = ImageQualityConfig{Supported: false, Default: "auto"}
 	for _, row := range []any{
-		&model.ChannelModel{ID: "no-quality-model", ChannelID: "channel", ModelKey: "nano-banana-pro", Capability: "image", Protocol: model.ChannelInterfaceGeminiImage, CapabilityConfigJSON: mustEncodeModelCapabilityConfig(t, profile), BillingMode: "fixed_request", PriceConfigured: true, Enabled: true},
-		&model.ChannelModelPriceTier{ID: "no-quality-tier", ChannelModelID: "no-quality-model", SelectorKey: "{}", SelectorJSON: "{}", BillingMode: "fixed_request", UnitPriceMicrocredits: 1, PriceConfigured: true, Enabled: true},
+		&model.ChannelModel{ID: "no-quality-model", ChannelID: "channel", ModelKey: "nano-banana-pro", Capability: "image", Protocol: model.ChannelInterfaceGeminiImage, CapabilityConfigJSON: mustEncodeModelCapabilityConfig(t, profile), Enabled: true},
+		&model.ChannelModelPriceTier{ID: "no-quality-tier", ChannelModelID: "no-quality-model", SelectorKey: "{}", SelectorJSON: "{}", Enabled: true},
 	} {
 		if err := db.Create(row).Error; err != nil {
 			t.Fatal(err)

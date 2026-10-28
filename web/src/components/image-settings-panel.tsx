@@ -48,7 +48,7 @@ type ImageSettingsPanelProps = {
     className?: string;
     maxCount?: number;
     quickCount?: number;
-    /** 局部编辑等场景需要先允许选择参数，由后端负责最终计费校验。 */
+    /** 局部编辑等场景需要先允许选择参数，由后端负责最终参数校验。 */
     bypassPriceGuard?: boolean;
 };
 

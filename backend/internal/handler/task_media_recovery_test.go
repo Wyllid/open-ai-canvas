@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,6 +10,8 @@ import (
 	"yingce/backend/internal/model"
 	"yingce/backend/internal/repository"
 	"yingce/backend/internal/service"
+
+	"github.com/gin-gonic/gin"
 )
 
 func TestTaskMediaRecoveryHTTPAuthenticationAndOwnership(t *testing.T) {

@@ -8,17 +8,18 @@ import (
 	"testing"
 	"time"
 
+	"yingce/backend/internal/auth"
+	"yingce/backend/internal/database"
+	"yingce/backend/internal/model"
+	"yingce/backend/internal/repository"
+	"yingce/backend/internal/service"
+
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"yingce/backend/internal/auth"
-	"yingce/backend/internal/database"
-	"yingce/backend/internal/model"
-	"yingce/backend/internal/repository"
-	"yingce/backend/internal/service"
 )
 
 func TestCanvasRealtimeHTTPAuthorizationBroadcastAndInvalidation(t *testing.T) {

@@ -216,8 +216,6 @@ function AgentMemoryCompactCard({ compact = false, onApplied }: { compact?: bool
                         capability="text"
                         variant="creation"
                         fullWidth
-                        showSelectedPrice
-                        showOptionPrices
                         className="!h-9 !min-h-9 !border-0 !bg-transparent !shadow-none"
                         placeholder="选择压缩用的文本模型"
                         onChange={(value) => {

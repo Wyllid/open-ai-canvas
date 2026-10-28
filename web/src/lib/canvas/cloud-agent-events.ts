@@ -64,7 +64,6 @@ export function applyAgentEvent(
                       cleanupPending: Boolean(payload.cleanupPending),
                       failureMessage: String(payload.failureMessage || ""),
                       skills: payload.skills as AgentRun["skills"],
-                      spentCredits: Number(payload.spentCredits || 0),
                       step: Number(payload.step || 0),
                       approval: snapshotApproval,
                   }
@@ -90,7 +89,7 @@ export function applyAgentEvent(
                 appendUniqueMessage(current, {
                     id: event.eventId,
                     role: "system",
-                    text: text || "你已在画布节点上直接提交了生成，本次审批已自动关闭；Agent 不会重复提交或扣费。",
+                    text: text || "你已在画布节点上直接提交了生成，本次审批已自动关闭；Agent 不会重复提交。",
                 }),
             );
             return;

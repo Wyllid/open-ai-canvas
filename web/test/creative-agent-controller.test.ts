@@ -92,7 +92,7 @@ describe("创作控制器恢复", () => {
         h.api.approve = async () => { throw new Error("不应重新批准已提交任务"); };
         h.api.refreshQuote = async () => { throw new Error("不应刷新已提交任务报价"); };
         h.api.execute = async (_id, input) => { expect(input.submissionId).toBe("a"); return completed; };
-        try { await h.controller.load("run"); await h.controller.approvePayment(); expect(h.view().state.media[0].status).toBe("ready"); expect(h.view().quote).toBeUndefined(); expect(h.counters().prepares).toBe(0); }
+        try { await h.controller.load("run"); await h.controller.approveGeneration(); expect(h.view().state.media[0].status).toBe("ready"); expect(h.view().quote).toBeUndefined(); expect(h.counters().prepares).toBe(0); }
         finally { h.controller.dispose(); }
     });
     test("更新过期报价替换分析关联并等待新批准，不执行模型", async () => {
@@ -119,7 +119,7 @@ describe("创作控制器恢复", () => {
         h.api.execute = async () => { expect(approved).toBe(true); executed++; return completed; };
         try {
             await h.controller.load("run"); expect(executed).toBe(0);
-            await h.controller.approvePayment();
+            await h.controller.approveGeneration();
             expect(executed).toBe(1); expect(h.view().run?.status).toBe("waiting_answer");
             expect(h.view().state.questions?.questions).toHaveLength(1);
             expect(h.view().state.proposal).toBeUndefined(); expect(h.counters().commits).toBe(0);

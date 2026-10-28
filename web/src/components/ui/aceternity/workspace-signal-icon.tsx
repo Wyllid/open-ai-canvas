@@ -2,7 +2,7 @@ import { motion, useReducedMotion } from "motion/react";
 
 import { cn } from "@/lib/utils";
 
-export type WorkspaceSignalIconVariant = "home" | "canvas" | "projects" | "assets" | "skills" | "tasks" | "wallet" | "settings" | "empty" | "error" | "loading";
+export type WorkspaceSignalIconVariant = "home" | "canvas" | "projects" | "assets" | "skills" | "tasks" | "settings" | "empty" | "error" | "loading";
 
 /**
  * 页面空态、加载与错误的统一图标：单色低饱和线条 + 一个强调点（主色；错误为危险色）。
@@ -47,7 +47,6 @@ function signalPath(variant: WorkspaceSignalIconVariant) {
     if (variant === "assets") return "M11 14H37V34H11V14ZM15 29L21 23L26 28L30 24L36 31";
     if (variant === "skills") return "M24 10L27 19L36 22L27 26L24 36L21 26L12 22L21 19L24 10Z";
     if (variant === "tasks") return "M12 16H30M12 24H25M12 32H22M31 29L34 32L39 25";
-    if (variant === "wallet") return "M12 17H36V34H12V17ZM12 21H36M29 27H34";
     if (variant === "settings") return "M12 16H36M12 24H36M12 32H36M19 13V19M29 21V27M23 29V35";
     if (variant === "error") return "M24 11L38 36H10L24 11ZM24 19V27M24 32V32.5";
     if (variant === "loading") return "M34 17A13 13 0 1 0 36 28M34 17V10M34 17H27";
@@ -61,7 +60,6 @@ function signalDot(variant: WorkspaceSignalIconVariant): [number, number] {
     if (variant === "assets") return [30, 20];
     if (variant === "skills") return [35, 13];
     if (variant === "tasks") return [38, 25];
-    if (variant === "wallet") return [31, 27];
     if (variant === "settings") return [29, 24];
     if (variant === "error") return [24, 32];
     if (variant === "loading") return [34, 11];

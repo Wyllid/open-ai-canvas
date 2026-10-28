@@ -7,16 +7,12 @@ import { SegmentedControl } from "@/components/ui/base/segmented-control";
 import {
     listVideoEnhanceModels,
     videoEnhanceProfile,
-    videoEnhanceQuoteRequest,
     videoEnhanceResolutionShortEdge,
     videoEnhanceSourceError,
     type VideoEnhanceBitrateLevel,
     type VideoEnhanceParams,
 } from "@/lib/canvas/canvas-video-enhance";
-import { modelQuoteDescription } from "@/lib/model-pricing";
-import { quoteModel, type LogicalModelQuote } from "@/services/api/logical-models";
 import { modelDisplayName, type AiConfig } from "@/stores/use-config-store";
-import { useUserStore } from "@/stores/use-user-store";
 import type { CanvasNodeData } from "@/types/canvas";
 
 type Props = {
@@ -39,7 +35,6 @@ export function CanvasVideoEnhanceDialog(props: Props) {
 }
 
 function EnhanceEditor({ node, config, onClose, onConfirm }: Props) {
-    const creditsEnabled = useUserStore((state) => state.features.creditsEnabled);
     const models = useMemo(() => listVideoEnhanceModels(config), [config]);
     const [model, setModel] = useState(models[0] || "");
     const profile = useMemo(() => videoEnhanceProfile(config, model), [config, model]);
@@ -58,7 +53,6 @@ function EnhanceEditor({ node, config, onClose, onConfirm }: Props) {
     const [bitrateLevel, setBitrateLevel] = useState<VideoEnhanceBitrateLevel>("medium");
     const [advancedOpen, setAdvancedOpen] = useState(false);
     const [bitrate, setBitrate] = useState<number | null>(null);
-    const [quote, setQuote] = useState<LogicalModelQuote | null>(null);
 
     useEffect(() => {
         setResolution(defaultResolution);
@@ -75,30 +69,10 @@ function EnhanceEditor({ node, config, onClose, onConfirm }: Props) {
         ...(bitrate ? { bitrate } : { bitrateLevel }),
     };
     const ready = Boolean(model && resolution && !sourceError && (!userSelectFps || fps));
-    const quoteRequest = ready ? videoEnhanceQuoteRequest(config, params, node.metadata?.durationMs) : undefined;
-    const quoteKey = JSON.stringify(quoteRequest || null);
-
-    useEffect(() => {
-        if (!creditsEnabled || !quoteRequest) {
-            setQuote(null);
-            return;
-        }
-        const controller = new AbortController();
-        setQuote(null);
-        quoteModel(quoteRequest, controller.signal)
-            .then(({ quote: next }) => setQuote(next))
-            .catch(() => {
-                if (!controller.signal.aborted) setQuote(null);
-            });
-        return () => controller.abort();
-        // quoteKey 是请求的完整序列化，避免对象引用变化重复报价。
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [creditsEnabled, quoteKey]);
 
     const seconds = node.metadata?.durationMs ? Math.ceil(node.metadata.durationMs / 1000) : 0;
     const width = node.metadata?.naturalWidth;
     const height = node.metadata?.naturalHeight;
-    const quoteText = creditsEnabled && quote ? modelQuoteDescription(quote) : "";
 
     return (
         <AppModal
@@ -112,9 +86,7 @@ function EnhanceEditor({ node, config, onClose, onConfirm }: Props) {
             onOk={() => ready && onConfirm(params)}
             footer={(_, { OkBtn, CancelBtn }) => (
                 <div className="flex items-center justify-between gap-3">
-                    <span className="min-w-0 text-left text-xs text-muted-foreground" title={quote?.billingMode === "per_second" ? "按源视频时长预扣，完成后按实际输出时长结算，多退少补" : undefined}>
-                        {quoteText || (creditsEnabled && ready ? "正在计算积分…" : "")}
-                    </span>
+                    <span />
                     <div className="flex shrink-0 gap-2">
                         <CancelBtn />
                         <OkBtn />

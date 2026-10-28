@@ -22,9 +22,9 @@ export async function submitStoryboardTask(request: CreateTaskInput, options: {
         signal.throwIfAborted();
         if (connectionError) throw connectionError;
         assertCurrent();
-        if (Date.parse(submission.quote.expiresAt) <= Date.now()) throw new Error("分镜报价已过期，请重新发起拆镜并确认最新费用");
+        if (Date.parse(submission.quote.expiresAt) <= Date.now()) throw new Error("分镜确认已过期，请重新发起拆镜并确认");
         const approved = await api.approve(run.id, { ...guard, submissionIds: [submission.id] }, signal);
-        if (!approved.submissions.some((item) => item.id === submission.id && item.approvedAt)) throw new Error("费用确认回执不完整，尚未提交拆镜任务");
+        if (!approved.submissions.some((item) => item.id === submission.id && item.approvedAt)) throw new Error("确认回执不完整，尚未提交拆镜任务");
         signal.throwIfAborted();
         assertCurrent();
         return await api.execute(run.id, { ...guard, submissionId: submission.id }, signal);

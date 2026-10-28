@@ -4,9 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"yingce/backend/internal/model"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"yingce/backend/internal/model"
 )
 
 func TestTasksWithWorkbenchKindRequiresMatchingTaskType(t *testing.T) {

@@ -130,10 +130,6 @@ func TestMediaRecoveryDownloadFailureResumesSameTaskAfterRestart(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("duplicate assets: %d", count)
 	}
-	db.Model(&model.BillingOrder{}).Count(&count)
-	if count != 0 {
-		t.Fatal("recovery created a billing order")
-	}
 	files, err := os.ReadDir(filepath.Join(s.dataDir, "media-staging"))
 	if err != nil || len(files) != 0 {
 		t.Fatalf("staging not cleaned: %v %v", files, err)
@@ -319,18 +315,13 @@ func TestMediaRecoveryTerminalStagesLimitsAndPublicList(t *testing.T) {
 	}
 }
 
-func TestMediaRecoveryManualGuardsDoNotChangeBilling(t *testing.T) {
-	for _, name := range []string{"refunded", "wrong-owner", "limit", "cooldown", "deleted-project"} {
+func TestMediaRecoveryManualGuardsRejectRecovery(t *testing.T) {
+	for _, name := range []string{"limit", "cooldown", "deleted-project"} {
 		t.Run(name, func(t *testing.T) {
 			s, db := newMediaRecoveryTestService(t)
 			task := seedMediaTask(t, db, providerConfig{})
 			checkpoint := &mediaCheckpoint{Mode: "image", StartedAt: time.Now(), Items: []mediaCheckpointItem{{Reference: protocol.MediaReference{URL: "https://example.test/result"}}}}
-			order := model.BillingOrder{ID: newID(), TaskID: task.ID, UserID: task.UserID, IdempotencyKey: newID(), Status: model.BillingStatusUncertain, ReservedAmountMicrocredits: 100}
 			switch name {
-			case "refunded":
-				order.Status = model.BillingStatusRefunded
-			case "wrong-owner":
-				order.UserID = "another-user"
 			case "limit":
 				checkpoint.ManualAttempts = 3
 			case "cooldown":
@@ -338,13 +329,10 @@ func TestMediaRecoveryManualGuardsDoNotChangeBilling(t *testing.T) {
 			case "deleted-project":
 				task.ProjectID = "deleted-project"
 			}
-			if err := db.Create(&order).Error; err != nil {
-				t.Fatal(err)
-			}
 			if err := s.saveMediaCheckpoint(task, checkpoint, "upload"); err != nil {
 				t.Fatal(err)
 			}
-			if err := db.Model(task).Updates(map[string]any{"status": model.TaskStatusFailed, "lease_owner": "", "lease_expires_at": nil, "billing_order_id": order.ID, "project_id": task.ProjectID}).Error; err != nil {
+			if err := db.Model(task).Updates(map[string]any{"status": model.TaskStatusFailed, "lease_owner": "", "lease_expires_at": nil, "project_id": task.ProjectID}).Error; err != nil {
 				t.Fatal(err)
 			}
 			if _, err := s.RecoverTaskMedia(task.UserID, task.ID); err == nil {
@@ -353,10 +341,6 @@ func TestMediaRecoveryManualGuardsDoNotChangeBilling(t *testing.T) {
 			saved, _ := s.repo.Task(task.ID)
 			if saved.Status != model.TaskStatusFailed {
 				t.Fatal("guard changed task")
-			}
-			unchanged, err := s.repo.BillingOrder(order.ID)
-			if err != nil || unchanged.Status != order.Status || unchanged.ReservedAmountMicrocredits != 100 {
-				t.Fatalf("billing changed: %+v %v", unchanged, err)
 			}
 		})
 	}

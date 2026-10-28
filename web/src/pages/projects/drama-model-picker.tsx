@@ -21,7 +21,6 @@ export function DramaModelPicker({
     onChange,
     placeholder,
     size = "md",
-    showPrice = true,
     className,
 }: {
     capability: DramaCapability;
@@ -29,7 +28,6 @@ export function DramaModelPicker({
     onChange: (choice: DramaModelChoice) => void;
     placeholder?: string;
     size?: "sm" | "md";
-    showPrice?: boolean;
     className?: string;
 }) {
     const config = useEffectiveConfig();
@@ -66,8 +64,6 @@ export function DramaModelPicker({
             capability={capability}
             variant="creation"
             fullWidth
-            showSelectedPrice={showPrice}
-            showOptionPrices
             modelDisabledReason={modelDisabledReason}
             className={cn("drama-model-picker", size === "sm" && "is-sm", className)}
             placeholder={current ? placeholder || "选择模型" : value?.label || placeholder || "选择模型"}

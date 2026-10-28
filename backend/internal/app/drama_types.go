@@ -15,7 +15,6 @@ type DramaModelChoice struct {
 	ChannelID      string `json:"channelId,omitempty"`
 	ModelKey       string `json:"modelKey,omitempty"`
 	Label          string `json:"label,omitempty"`
-	PriceLabel     string `json:"priceLabel,omitempty"`
 }
 
 func (c DramaModelChoice) Empty() bool {
@@ -144,11 +143,10 @@ const (
 )
 
 type CreateDramaRequest struct {
-	Name               string              `json:"name"`
-	Chapters           []DramaChapterInput `json:"chapters"`
-	Settings           DramaSettings       `json:"settings"`
-	BudgetMicrocredits int64               `json:"budgetMicrocredits"`
-	Start              bool                `json:"start"`
+	Name     string              `json:"name"`
+	Chapters []DramaChapterInput `json:"chapters"`
+	Settings DramaSettings       `json:"settings"`
+	Start    bool                `json:"start"`
 	// SourceFormat 是素材类型：novel 小说、script 剧本、storyboard 分镜；剧本与分镜总是每章一集。
 	SourceFormat string `json:"sourceFormat"`
 	EpisodeMode  string `json:"episodeMode"`
@@ -191,25 +189,22 @@ type DramaDialogueCheck struct {
 }
 
 type UpdateDramaSettingsRequest struct {
-	Settings           *DramaSettings `json:"settings"`
-	BudgetMicrocredits *int64         `json:"budgetMicrocredits"`
+	Settings *DramaSettings `json:"settings"`
 }
 
 type DramaProductionView struct {
-	Status             string        `json:"status"`
-	Stage              string        `json:"stage"`
-	PauseReason        string        `json:"pauseReason"`
-	Settings           DramaSettings `json:"settings"`
-	BudgetMicrocredits int64         `json:"budgetMicrocredits"`
-	SpentMicrocredits  int64         `json:"spentMicrocredits"`
-	PlanDone           bool          `json:"planDone"`
-	PlanCursor         int           `json:"planCursor"`
-	SampleApproved     bool          `json:"sampleApproved"`
-	AssetsReleased     bool          `json:"assetsReleased"`
-	Logline            string        `json:"logline"`
-	Tone               string        `json:"tone"`
-	ChapterCount       int           `json:"chapterCount"`
-	WordCount          int           `json:"wordCount"`
+	Status         string        `json:"status"`
+	Stage          string        `json:"stage"`
+	PauseReason    string        `json:"pauseReason"`
+	Settings       DramaSettings `json:"settings"`
+	PlanDone       bool          `json:"planDone"`
+	PlanCursor     int           `json:"planCursor"`
+	SampleApproved bool          `json:"sampleApproved"`
+	AssetsReleased bool          `json:"assetsReleased"`
+	Logline        string        `json:"logline"`
+	Tone           string        `json:"tone"`
+	ChapterCount   int           `json:"chapterCount"`
+	WordCount      int           `json:"wordCount"`
 }
 
 // DramaEpisodeStats 按剧情段统计进度：视频提示词写好几段、视频生成几段、失败几段。
@@ -254,29 +249,27 @@ type DramaInboxItem struct {
 }
 
 type DramaJobView struct {
-	ID               string `json:"id"`
-	Kind             string `json:"kind"`
-	Status           string `json:"status"`
-	Label            string `json:"label"`
-	Error            string `json:"error,omitempty"`
-	EpisodeID        string `json:"episodeId,omitempty"`
-	ShotID           string `json:"shotId,omitempty"`
-	TaskID           string `json:"taskId,omitempty"`
-	CostMicrocredits int64  `json:"costMicrocredits"`
-	Attempt          int    `json:"attempt"`
-	CreatedAt        string `json:"createdAt"`
-	StartedAt        string `json:"startedAt,omitempty"`
-	FinishedAt       string `json:"finishedAt,omitempty"`
-	UpdatedAt        string `json:"updatedAt"`
+	ID         string `json:"id"`
+	Kind       string `json:"kind"`
+	Status     string `json:"status"`
+	Label      string `json:"label"`
+	Error      string `json:"error,omitempty"`
+	EpisodeID  string `json:"episodeId,omitempty"`
+	ShotID     string `json:"shotId,omitempty"`
+	TaskID     string `json:"taskId,omitempty"`
+	Attempt    int    `json:"attempt"`
+	CreatedAt  string `json:"createdAt"`
+	StartedAt  string `json:"startedAt,omitempty"`
+	FinishedAt string `json:"finishedAt,omitempty"`
+	UpdatedAt  string `json:"updatedAt"`
 }
 
 // DramaJobAttempt 是工作的一次提交记录；status 为任务状态，或 rejected（提交时被准入拒绝）。
 type DramaJobAttempt struct {
-	TaskID           string `json:"taskId,omitempty"`
-	Status           string `json:"status"`
-	Error            string `json:"error,omitempty"`
-	CostMicrocredits int64  `json:"costMicrocredits"`
-	At               string `json:"at"`
+	TaskID string `json:"taskId,omitempty"`
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
+	At     string `json:"at"`
 }
 
 // DramaJobTaskView 是队列详情里展示的任务快照：只暴露请求参数白名单，不回显渠道配置。
@@ -441,18 +434,16 @@ type DramaListItem struct {
 	DoneCount       int64         `json:"doneCount"`
 	CoverResourceID string        `json:"coverResourceId,omitempty"`
 	// CoverResourceIDs 是前几张角色参考图，卡片拼成封面；CoverResourceID 保留第一张。
-	CoverResourceIDs  []string `json:"coverResourceIds,omitempty"`
-	AspectRatio       string   `json:"aspectRatio"`
-	StyleName         string   `json:"styleName,omitempty"`
-	SpentMicrocredits int64    `json:"spentMicrocredits"`
-	UpdatedAt         string   `json:"updatedAt"`
+	CoverResourceIDs []string `json:"coverResourceIds,omitempty"`
+	AspectRatio      string   `json:"aspectRatio"`
+	StyleName        string   `json:"styleName,omitempty"`
+	UpdatedAt        string   `json:"updatedAt"`
 }
 
 type DramaModelOption struct {
 	Choice     DramaModelChoice `json:"choice"`
 	Capability string           `json:"capability"`
 	Label      string           `json:"label"`
-	PriceLabel string           `json:"priceLabel"`
 	// MaxVideoSeconds 仅视频模型：单次最长生成秒数，0 表示未声明。
 	MaxVideoSeconds int `json:"maxVideoSeconds,omitempty"`
 }
@@ -479,17 +470,13 @@ type DramaEstimateRequest struct {
 
 // DramaEstimate 的 Videos 是剧情段数（一段一次视频调用），Images 是参考图数。
 type DramaEstimate struct {
-	Episodes          int    `json:"episodes"`
-	Shots             int    `json:"shots"`
-	Images            int    `json:"images"`
-	Videos            int    `json:"videos"`
-	TextCalls         int    `json:"textCalls"`
-	MinMicrocredits   int64  `json:"minMicrocredits"`
-	MaxMicrocredits   int64  `json:"maxMicrocredits"`
-	SampleMicrocredit int64  `json:"sampleMicrocredits"`
-	Priced            bool   `json:"priced"`
-	Note              string `json:"note"`
-	DurationMinutes   int    `json:"durationMinutes"`
+	Episodes        int    `json:"episodes"`
+	Shots           int    `json:"shots"`
+	Images          int    `json:"images"`
+	Videos          int    `json:"videos"`
+	TextCalls       int    `json:"textCalls"`
+	Note            string `json:"note"`
+	DurationMinutes int    `json:"durationMinutes"`
 }
 
 // ReleaseDramaMediaRequest 在手动模式下放行生成：assets 只放行参考图，episodes 放行指定集，all 放行全部。

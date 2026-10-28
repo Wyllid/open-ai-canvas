@@ -35,45 +35,12 @@ type cloudAgentTaskFacts struct {
 	CancellationSource string                       `json:"cancellationSource,omitempty"`
 	CancellationAt     *time.Time                   `json:"cancellationRequestedAt,omitempty"`
 	SubmissionReceipt  *cloudAgentSubmissionReceipt `json:"submissionReceipt,omitempty"`
-	Billing            *cloudAgentTaskBillingFacts  `json:"billing,omitempty"`
 }
 
 type cloudAgentSubmissionReceipt struct {
 	TaskID       string    `json:"taskId"`
 	GenerationID string    `json:"generationId,omitempty"`
 	RecordedAt   time.Time `json:"recordedAt"`
-}
-
-type cloudAgentTaskBillingFacts struct {
-	OrderID                      string              `json:"orderId"`
-	Status                       model.BillingStatus `json:"status,omitempty"`
-	AuthorizedChargeMicrocredits int64               `json:"authorizedChargeMicrocredits"`
-	ChargeLimitSet               bool                `json:"chargeLimitSet"`
-	ChargeLimitMicrocredits      int64               `json:"chargeLimitMicrocredits"`
-	ReservedAmountMicrocredits   int64               `json:"reservedAmountMicrocredits,omitempty"`
-	ActualAmountMicrocredits     int64               `json:"actualAmountMicrocredits,omitempty"`
-	RefundedAmountMicrocredits   int64               `json:"refundedAmountMicrocredits,omitempty"`
-	ReservedCredits              float64             `json:"reservedCredits"`
-	ActualCredits                float64             `json:"actualCredits"`
-	RefundedCredits              float64             `json:"refundedCredits"`
-	ChargeState                  string              `json:"chargeState"`
-	ChargeSummary                string              `json:"chargeSummary"`
-	StateAvailable               bool                `json:"stateAvailable"`
-}
-
-func cloudAgentChargeState(status model.BillingStatus) (string, string) {
-	switch status {
-	case model.BillingStatusSettled:
-		return "settled", "已结算，实际扣费以 actualCredits 为准"
-	case model.BillingStatusRefunded:
-		return "refunded", "已退款，本次不计入已消费"
-	case model.BillingStatusReserved, model.BillingStatusRunning:
-		return "pending", "仅预授权/执行中，尚未确认实际扣费"
-	case model.BillingStatusUncertain:
-		return "uncertain", "扣费状态待确认，不得称为已扣费"
-	default:
-		return "unknown", "扣费状态未知，不得称为已扣费"
-	}
 }
 
 func cloudAgentTaskDiagnostic(repo *repository.Repository, task *model.Task) map[string]any {
@@ -105,26 +72,6 @@ func cloudAgentTaskDiagnostic(repo *repository.Repository, task *model.Task) map
 		facts.WritebackError = diagnostic.WritebackMessage
 	} else if task.Status == model.TaskStatusFailed || task.Status == model.TaskStatusCancelled {
 		facts.Error = cloudAgentSafeMediaTaskError(task)
-	}
-	if task.BillingOrderID != "" {
-		facts.Billing = &cloudAgentTaskBillingFacts{
-			OrderID: task.BillingOrderID, AuthorizedChargeMicrocredits: task.AuthorizedChargeMicrocredits,
-		}
-		if repo != nil {
-			if order, err := repo.BillingOrder(task.BillingOrderID); err == nil && order.UserID == task.UserID && (order.TaskID == "" || order.TaskID == task.ID) {
-				facts.Billing.Status = order.Status
-				facts.Billing.ChargeLimitSet = order.ChargeLimitSet
-				facts.Billing.ChargeLimitMicrocredits = order.ChargeLimitMicrocredits
-				facts.Billing.ReservedAmountMicrocredits = order.ReservedAmountMicrocredits
-				facts.Billing.ActualAmountMicrocredits = order.ActualAmountMicrocredits
-				facts.Billing.RefundedAmountMicrocredits = order.RefundedAmountMicrocredits
-				facts.Billing.ReservedCredits = float64(order.ReservedAmountMicrocredits) / float64(CreditScale)
-				facts.Billing.ActualCredits = float64(order.ActualAmountMicrocredits) / float64(CreditScale)
-				facts.Billing.RefundedCredits = float64(order.RefundedAmountMicrocredits) / float64(CreditScale)
-				facts.Billing.ChargeState, facts.Billing.ChargeSummary = cloudAgentChargeState(order.Status)
-				facts.Billing.StateAvailable = true
-			}
-		}
 	}
 	raw, err := json.Marshal(facts)
 	if err != nil {

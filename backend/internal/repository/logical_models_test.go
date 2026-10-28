@@ -11,44 +11,32 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestSwitchTaskLogicalRouteUpdatesCostWithoutChangingUnifiedSales(t *testing.T) {
+func TestSwitchTaskLogicalRouteRequiresExpectedRoute(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := db.AutoMigrate(&model.Task{}, &model.BillingOrder{}); err != nil {
+	if err := db.AutoMigrate(&model.Task{}); err != nil {
 		t.Fatal(err)
 	}
 	task := model.Task{ID: "task", UserID: "user", Status: model.TaskStatusRunning, RouteID: "old-route"}
-	order := model.BillingOrder{ID: "order", TaskID: task.ID, UserID: task.UserID, Status: model.BillingStatusRunning, ChannelID: "old-channel", AmountMicrocredits: 900_000, ReservedAmountMicrocredits: 900_000, UnitPriceMicrocredits: 900_000,
-		BillingCostSnapshot: model.BillingCostSnapshot{CostPricing: model.CreditCostPricing{Configured: true, UnitPriceMicrocredits: 500_000}, CostBillingMode: "fixed_request", CostQuantity: 1}}
 	if err := db.Create(&task).Error; err != nil {
 		t.Fatal(err)
 	}
-	if err := db.Create(&order).Error; err != nil {
-		t.Fatal(err)
-	}
 	repo := New(db)
-	cost := model.BillingCostSnapshot{CostPricing: model.CreditCostPricing{Configured: true, UnitPriceMicrocredits: 123_456}, CostBillingMode: "per_second", CostQuantity: 15}
-	if err := repo.SwitchTaskLogicalRoute(task.ID, "old-route", "new-route", "{}", order.ID, "new-channel", "new-model", nil, cost); err != nil {
+	if err := repo.SwitchTaskLogicalRoute(task.ID, "old-route", "new-route", "{}", "new-model"); err != nil {
 		t.Fatal(err)
 	}
-	var saved model.BillingOrder
-	if err := db.First(&saved, "id = ?", order.ID).Error; err != nil {
+	var saved model.Task
+	if err := db.First(&saved, "id = ?", task.ID).Error; err != nil {
 		t.Fatal(err)
 	}
-	if saved.BillingCostSnapshot != cost || saved.ChannelID != "new-channel" || saved.AmountMicrocredits != 900_000 || saved.ReservedAmountMicrocredits != 900_000 || saved.UnitPriceMicrocredits != 900_000 {
-		t.Fatalf("wrong route snapshot: %#v", saved)
+	if saved.RouteID != "new-route" || saved.ChannelModelID != "new-model" {
+		t.Fatalf("route not switched: %#v", saved)
 	}
-	// A route without configured costs must clear the previous route's snapshot.
-	if err := repo.SwitchTaskLogicalRoute(task.ID, "new-route", "unknown-cost-route", "{}", order.ID, "third-channel", "third-model", nil, model.BillingCostSnapshot{}); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.First(&saved, "id = ?", order.ID).Error; err != nil {
-		t.Fatal(err)
-	}
-	if saved.BillingCostSnapshot != (model.BillingCostSnapshot{}) || saved.AmountMicrocredits != 900_000 {
-		t.Fatalf("stale cost after route switch: %#v", saved)
+	// A stale caller that still expects the old route must not overwrite the switch.
+	if err := repo.SwitchTaskLogicalRoute(task.ID, "old-route", "third-route", "{}", "third-model"); err == nil {
+		t.Fatal("stale route switch accepted")
 	}
 }
 
@@ -62,7 +50,7 @@ func TestSaveLogicalModelBundleAllocatesMonotonicRevisionSequence(t *testing.T) 
 	}
 	repo := New(db)
 
-	item := &model.LogicalModel{ID: "LMODEL_1", Code: "demo", Name: "Demo", Capability: "text", Enabled: true, PricePolicy: "unified", BillingMode: "fixed_request", CreatedAt: time.Now(), UpdatedAt: time.Now()}
+	item := &model.LogicalModel{ID: "LMODEL_1", Code: "demo", Name: "Demo", Capability: "text", Enabled: true, CreatedAt: time.Now(), UpdatedAt: time.Now()}
 	first := &model.LogicalModelRevision{ID: "REVISION_1", LogicalModelID: item.ID, CapabilitySpecJSON: `{"version":1,"capability":"text"}`, DefaultOptionsJSON: `{}`, CreatedAt: time.Now()}
 	if err := repo.SaveLogicalModelBundle(item, first, nil, true); err != nil {
 		t.Fatal(err)
@@ -101,7 +89,7 @@ func TestArchiveLogicalModelPreservesPublishedHistory(t *testing.T) {
 	}
 	repo := New(db)
 
-	item := &model.LogicalModel{ID: "LMODEL_DELETE", Code: "delete-demo", Name: "Delete Demo", Capability: "text", Enabled: true, PricePolicy: "unified", BillingMode: "fixed_request", CreatedAt: time.Now(), UpdatedAt: time.Now()}
+	item := &model.LogicalModel{ID: "LMODEL_DELETE", Code: "delete-demo", Name: "Delete Demo", Capability: "text", Enabled: true, CreatedAt: time.Now(), UpdatedAt: time.Now()}
 	revision := &model.LogicalModelRevision{ID: "REVISION_DELETE", LogicalModelID: item.ID, CapabilitySpecJSON: `{"version":1,"capability":"text"}`, DefaultOptionsJSON: `{}`, CreatedAt: time.Now()}
 	routes := []model.LogicalModelRoute{{ID: "ROUTE_DELETE", ChannelModelID: "CMODEL_DELETE", Enabled: true, Weight: 1, CreatedAt: time.Now(), UpdatedAt: time.Now()}}
 	if err := repo.SaveLogicalModelBundle(item, revision, routes, true); err != nil {
@@ -131,7 +119,7 @@ func TestArchiveLogicalModelPreservesPublishedHistory(t *testing.T) {
 		}
 	}
 
-	replacement := &model.LogicalModel{ID: "LMODEL_REPLACEMENT", Code: item.Code, Name: "Replacement", Capability: "text", Enabled: true, PricePolicy: "unified", BillingMode: "fixed_request", CreatedAt: time.Now(), UpdatedAt: time.Now()}
+	replacement := &model.LogicalModel{ID: "LMODEL_REPLACEMENT", Code: item.Code, Name: "Replacement", Capability: "text", Enabled: true, CreatedAt: time.Now(), UpdatedAt: time.Now()}
 	replacementRevision := &model.LogicalModelRevision{ID: "REVISION_REPLACEMENT", LogicalModelID: replacement.ID, CapabilitySpecJSON: `{"version":1,"capability":"text"}`, DefaultOptionsJSON: `{}`, CreatedAt: time.Now()}
 	if err := repo.SaveLogicalModelBundle(replacement, replacementRevision, nil, true); err != nil {
 		t.Fatalf("reusing archived logical model code: %v", err)

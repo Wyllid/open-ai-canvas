@@ -17,19 +17,13 @@ import (
 var logicalModelCodePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]{1,79}$`)
 
 type LogicalModelRequest struct {
-	Code                    string `json:"code"`
-	Name                    string `json:"name"`
-	Icon                    string `json:"icon"`
-	Description             string `json:"description"`
-	Capability              string `json:"capability"`
-	Enabled                 bool   `json:"enabled"`
-	SortOrder               int    `json:"sortOrder"`
-	PricePolicy             string `json:"pricePolicy"`
-	BillingMode             string `json:"billingMode"`
-	UnitPriceMicrocredits   int64  `json:"unitPriceMicrocredits"`
-	InputPriceMicrocredits  int64  `json:"inputPriceMicrocredits"`
-	OutputPriceMicrocredits int64  `json:"outputPriceMicrocredits"`
-	CachedPriceMicrocredits int64  `json:"cachedPriceMicrocredits"`
+	Code        string `json:"code"`
+	Name        string `json:"name"`
+	Icon        string `json:"icon"`
+	Description string `json:"description"`
+	Capability  string `json:"capability"`
+	Enabled     bool   `json:"enabled"`
+	SortOrder   int    `json:"sortOrder"`
 	// LegacyModelIDs 只用于将用户本地保存的旧目录选择迁移到当前模型家族，
 	// 不能用它重写任务、账单或路由尝试中的不可变快照。
 	LegacyModelIDs []string              `json:"legacyModelIds"`
@@ -48,42 +42,28 @@ type LogicalRouteRequest struct {
 }
 
 type PublicLogicalModel struct {
-	ID                      string                        `json:"id"`
-	Code                    string                        `json:"code"`
-	Name                    string                        `json:"name"`
-	Icon                    string                        `json:"icon"`
-	Description             string                        `json:"description"`
-	Capability              string                        `json:"capability"`
-	SortOrder               int                           `json:"sortOrder"`
-	PricePolicy             string                        `json:"pricePolicy"`
-	PricingMode             string                        `json:"pricingMode"`
-	DisplayPrice            *int64                        `json:"displayPrice,omitempty"`
-	PriceLabel              string                        `json:"priceLabel"`
-	BillingMode             string                        `json:"billingMode"`
-	UnitPriceMicrocredits   int64                         `json:"unitPriceMicrocredits"`
-	InputPriceMicrocredits  int64                         `json:"inputPriceMicrocredits"`
-	OutputPriceMicrocredits int64                         `json:"outputPriceMicrocredits"`
-	CachedPriceMicrocredits int64                         `json:"cachedPriceMicrocredits"`
-	PriceTiers              []PublicLogicalModelPriceTier `json:"priceTiers"`
-	LegacyModelIDs          []string                      `json:"legacyModelIds"`
-	CapabilitySpec          CapabilitySpec                `json:"capabilitySpec"`
+	ID             string                        `json:"id"`
+	Code           string                        `json:"code"`
+	Name           string                        `json:"name"`
+	Icon           string                        `json:"icon"`
+	Description    string                        `json:"description"`
+	Capability     string                        `json:"capability"`
+	SortOrder      int                           `json:"sortOrder"`
+	PriceTiers     []PublicLogicalModelPriceTier `json:"priceTiers"`
+	LegacyModelIDs []string                      `json:"legacyModelIds"`
+	CapabilitySpec CapabilitySpec                `json:"capabilitySpec"`
 	// CapabilityProfiles 是创作端可见的匿名能力组合，不暴露其背后的供应线路关系。
 	CapabilityProfiles []CapabilitySpec `json:"capabilityProfiles"`
 	DefaultOptions     map[string]any   `json:"defaultOptions"`
 	Available          bool             `json:"available"`
 }
 
-// PublicLogicalModelPriceTier 是创作端用于约束规格选择和展示当前报价的安全投影，
+// PublicLogicalModelPriceTier 是创作端用于约束规格选择的安全投影（历史名称，已不含价格），
 // 不暴露供应渠道、上游模型 ID 或内部路由信息。
 type PublicLogicalModelPriceTier struct {
-	Selector                     map[string]string `json:"selector"`
-	Resolution                   string            `json:"resolution"`
-	VideoSeconds                 int               `json:"videoSeconds"`
-	BillingMode                  string            `json:"billingMode"`
-	UnitPriceMicrocredits        int64             `json:"unitPriceMicrocredits"`
-	InputTokenPriceMicrocredits  int64             `json:"inputTokenPriceMicrocredits"`
-	OutputTokenPriceMicrocredits int64             `json:"outputTokenPriceMicrocredits"`
-	CachedTokenPriceMicrocredits int64             `json:"cachedTokenPriceMicrocredits"`
+	Selector     map[string]string `json:"selector"`
+	Resolution   string            `json:"resolution"`
+	VideoSeconds int               `json:"videoSeconds"`
 }
 
 type AdminLogicalRoute struct {
@@ -106,7 +86,6 @@ type AdminLogicalModel struct {
 	ActiveRevisionID   string              `json:"activeRevisionId"`
 	RevisionVersion    int                 `json:"revisionVersion"`
 	ConfigurationError string              `json:"configurationError,omitempty"`
-	AvailabilityError  string              `json:"availabilityError,omitempty"`
 	Routes             []AdminLogicalRoute `json:"routes"`
 }
 
@@ -198,8 +177,7 @@ func (s *Service) buildAdminLogicalModel(item model.LogicalModel, graph *reposit
 		if structurallyAvailable {
 			projectionRoutes = append(projectionRoutes, cachedLogicalRoute{Route: route, CapabilitySpec: capabilitySpec, ChannelModel: channelModel})
 		}
-		billingAvailable := item.PricePolicy != "unified" || item.BillingMode != "token" || supportsTokenBilling(item.Capability, channelModel.Protocol)
-		available := structurallyAvailable && billingAvailable && (item.PricePolicy != "channel" || channelModel.PriceConfigured)
+		available := structurallyAvailable
 		admin.Routes = append(admin.Routes, AdminLogicalRoute{ID: route.ID, ChannelModelID: channelModel.ID, ChannelID: channelModel.ChannelID, ChannelModelKey: channelModel.ModelKey, ChannelModelName: channelModel.DisplayName, Enabled: route.Enabled, Priority: route.Priority, Weight: route.Weight, Available: available, structurallyAvailable: structurallyAvailable, CapabilitySpec: capabilitySpec})
 	}
 	routeSpecs := make([]CapabilitySpec, 0, len(admin.Routes))
@@ -216,37 +194,15 @@ func (s *Service) buildAdminLogicalModel(item model.LogicalModel, graph *reposit
 	admin.CapabilitySpec = productSpec
 	admin.DefaultOptions = defaults
 	structuralRouteSpecs := structuralAdminRouteSpecs(admin.Routes)
-	settlementRouteSpecs := settlementReadyAdminRouteSpecs(admin.Routes)
 	admin.ConfigurationError = logicalModelConfigurationError(productSpec, structuralRouteSpecs)
-	admin.AvailabilityError = logicalModelAvailabilityError(item.PricePolicy, productSpec, structuralRouteSpecs, settlementRouteSpecs)
-	admin.Available = len(settlementRouteSpecs) > 0 && admin.ConfigurationError == "" && admin.AvailabilityError == ""
+	admin.Available = len(structuralRouteSpecs) > 0 && admin.ConfigurationError == ""
 	return &admin, nil
-}
-
-func countAvailableAdminRoutes(routes []AdminLogicalRoute) int {
-	count := 0
-	for _, route := range routes {
-		if route.Available {
-			count++
-		}
-	}
-	return count
 }
 
 func structuralAdminRouteSpecs(routes []AdminLogicalRoute) []CapabilitySpec {
 	result := make([]CapabilitySpec, 0, len(routes))
 	for _, route := range routes {
 		if route.structurallyAvailable {
-			result = append(result, route.CapabilitySpec)
-		}
-	}
-	return result
-}
-
-func settlementReadyAdminRouteSpecs(routes []AdminLogicalRoute) []CapabilitySpec {
-	result := make([]CapabilitySpec, 0, countAvailableAdminRoutes(routes))
-	for _, route := range routes {
-		if route.Available {
 			result = append(result, route.CapabilitySpec)
 		}
 	}
@@ -281,19 +237,6 @@ func logicalModelConfigurationError(product CapabilitySpec, routeSpecs []Capabil
 		return ""
 	}
 	return "供应线路已无法完整覆盖创作端能力，请调整线路或能力范围"
-}
-
-func logicalModelAvailabilityError(pricePolicy string, product CapabilitySpec, structuralRouteSpecs, settlementRouteSpecs []CapabilitySpec) string {
-	if pricePolicy != "channel" || len(structuralRouteSpecs) == 0 {
-		return ""
-	}
-	if len(settlementRouteSpecs) == 0 {
-		return "供应线路尚未配置可结算价格，请先完善渠道模型价格"
-	}
-	if !logicalModelCapabilityCovered(product, settlementRouteSpecs) {
-		return "部分创作端能力只能由未配置价格的渠道模型承接，请完善对应价格"
-	}
-	return ""
 }
 
 func (s *Service) SaveAdminLogicalModel(actor *model.User, id string, req LogicalModelRequest) (*AdminLogicalModel, error) {
@@ -398,10 +341,7 @@ func (s *Service) logicalModelBundle(actor *model.User, id string, req LogicalMo
 			req.DefaultOptions = derivedDefaults
 			req.Routes = []LogicalRouteRequest{{ChannelModelID: source.ID, Enabled: true, Priority: 100, Weight: 100}}
 		}
-		req.PricePolicy = "channel"
-		req.BillingMode = "fixed_request"
-		req.UnitPriceMicrocredits, req.InputPriceMicrocredits, req.OutputPriceMicrocredits, req.CachedPriceMicrocredits = 0, 0, 0, 0
-		// 未完成定价的系统模型仅在后台目录保留同步记录，不能暴露到创作端。
+		// 没有启用规格档的系统模型仅在后台目录保留同步记录，不能暴露到创作端。
 		if strings.TrimSpace(id) == "" {
 			req.Enabled = source.Enabled && channelModelHasActivePriceTier(*source)
 		}
@@ -419,28 +359,6 @@ func (s *Service) logicalModelBundle(actor *model.User, id string, req LogicalMo
 		return nil, nil, nil, false, err
 	}
 	req.DefaultOptions = normalizedDefaults
-	if req.UnitPriceMicrocredits < 0 || req.InputPriceMicrocredits < 0 || req.OutputPriceMicrocredits < 0 || req.CachedPriceMicrocredits < 0 {
-		return nil, nil, nil, false, BadAuthRequest("用户价格不能为负数")
-	}
-	pricePolicy := strings.TrimSpace(req.PricePolicy)
-	if pricePolicy != "channel" && pricePolicy != "unified" {
-		return nil, nil, nil, false, BadAuthRequest("请选择跟随供应价格或统一定价")
-	}
-	billingMode := strings.TrimSpace(req.BillingMode)
-	if pricePolicy == "channel" {
-		billingMode = "fixed_request"
-		req.UnitPriceMicrocredits, req.InputPriceMicrocredits, req.OutputPriceMicrocredits, req.CachedPriceMicrocredits = 0, 0, 0, 0
-	} else if billingMode != "fixed_request" && billingMode != "per_second" && billingMode != "token" {
-		return nil, nil, nil, false, BadAuthRequest("前台模型计费方式仅支持按次、按秒或 Token")
-	}
-	if pricePolicy == "unified" && billingMode == "per_second" && capability != "video" && capability != "audio" {
-		return nil, nil, nil, false, BadAuthRequest("只有视频或音频前台模型可以按秒计费")
-	}
-	if pricePolicy == "unified" && billingMode == "token" {
-		if err := validateTokenPrices(capability, req.InputPriceMicrocredits, req.OutputPriceMicrocredits, req.CachedPriceMicrocredits); err != nil {
-			return nil, nil, nil, false, err
-		}
-	}
 	creating := strings.TrimSpace(id) == ""
 	var item *model.LogicalModel
 	if creating {
@@ -462,8 +380,7 @@ func (s *Service) logicalModelBundle(actor *model.User, id string, req LogicalMo
 	if sourceChannelModelID != "" {
 		item.SourceChannelModelID = sourceChannelModelID
 	}
-	item.Enabled, item.SortOrder, item.PricePolicy, item.BillingMode = req.Enabled, req.SortOrder, pricePolicy, billingMode
-	item.UnitPriceMicrocredits, item.InputPriceMicrocredits, item.OutputPriceMicrocredits, item.CachedPriceMicrocredits = req.UnitPriceMicrocredits, req.InputPriceMicrocredits, req.OutputPriceMicrocredits, req.CachedPriceMicrocredits
+	item.Enabled, item.SortOrder = req.Enabled, req.SortOrder
 	if req.LegacyModelIDs != nil {
 		legacyJSON, marshalErr := json.Marshal(normalizeLegacyModelIDs(req.LegacyModelIDs))
 		if marshalErr != nil {
@@ -488,8 +405,6 @@ func (s *Service) logicalModelBundle(actor *model.User, id string, req LogicalMo
 	routes := make([]model.LogicalModelRoute, 0, len(req.Routes))
 	seenChannelModels := make(map[string]bool, len(req.Routes))
 	structuralRouteSpecs := make([]CapabilitySpec, 0, len(req.Routes))
-	settlementRouteSpecs := make([]CapabilitySpec, 0, len(req.Routes))
-	enabledRouteProtocols := make([]model.ChannelInterfaceType, 0, len(req.Routes))
 	for _, input := range req.Routes {
 		channelModelID := strings.TrimSpace(input.ChannelModelID)
 		if channelModelID == "" || seenChannelModels[channelModelID] {
@@ -507,9 +422,6 @@ func (s *Service) logicalModelBundle(actor *model.User, id string, req LogicalMo
 		if normalizeCapability(capabilitySpec.Capability) != capability {
 			return nil, nil, nil, false, BadAuthRequest("供应线路能力类型与前台模型不一致")
 		}
-		if input.Enabled {
-			enabledRouteProtocols = append(enabledRouteProtocols, channelModel.Protocol)
-		}
 		if req.Enabled && input.Enabled && input.Weight <= 0 {
 			return nil, nil, nil, false, BadAuthRequest("启用供应线路的同级权重必须大于 0")
 		}
@@ -521,20 +433,12 @@ func (s *Service) logicalModelBundle(actor *model.User, id string, req LogicalMo
 		}
 		if req.Enabled && input.Enabled && channelModel.Enabled {
 			structuralRouteSpecs = append(structuralRouteSpecs, capabilitySpec)
-			if pricePolicy != "channel" || channelModel.PriceConfigured {
-				settlementRouteSpecs = append(settlementRouteSpecs, capabilitySpec)
-			}
 		}
 		routeID, idErr := s.repo.NextPrefixedID("ROUTE")
 		if idErr != nil {
 			return nil, nil, nil, false, idErr
 		}
 		routes = append(routes, model.LogicalModelRoute{ID: routeID, ChannelModelID: channelModel.ID, Enabled: input.Enabled, Priority: input.Priority, Weight: input.Weight, CreatedAt: time.Now(), UpdatedAt: time.Now()})
-	}
-	if pricePolicy == "unified" && billingMode == "token" {
-		if !supportsLogicalModelTokenBilling(capability, enabledRouteProtocols) {
-			return nil, nil, nil, false, BadAuthRequest("Token 计费仅支持文本和视频前台模型")
-		}
 	}
 	if capability == "image" && len(structuralRouteSpecs) > 0 {
 		// Rebuild labels, types and pricing eligibility from current routes. The
@@ -560,26 +464,8 @@ func (s *Service) logicalModelBundle(actor *model.User, id string, req LogicalMo
 		if err := validateProductSpecWithinRoutes(req.CapabilitySpec, structuralRouteSpecs); err != nil {
 			return nil, nil, nil, false, err
 		}
-		if availabilityError := logicalModelAvailabilityError(pricePolicy, req.CapabilitySpec, structuralRouteSpecs, settlementRouteSpecs); availabilityError != "" {
-			return nil, nil, nil, false, BadAuthRequest(availabilityError)
-		}
 	}
 	return item, revision, routes, creating, nil
-}
-
-func supportsLogicalModelTokenBilling(capability string, enabledRouteProtocols []model.ChannelInterfaceType) bool {
-	if capability == "text" {
-		return true
-	}
-	if capability != "video" || len(enabledRouteProtocols) == 0 {
-		return false
-	}
-	for _, protocol := range enabledRouteProtocols {
-		if !supportsTokenBilling(capability, protocol) {
-			return false
-		}
-	}
-	return true
 }
 
 func normalizeLogicalDefaults(spec CapabilitySpec, defaults map[string]any) (map[string]any, error) {
@@ -641,15 +527,15 @@ func channelModelCapabilitySpec(channelModel model.ChannelModel, registries ...*
 	return capabilitySpecWithPriceTiers(spec, channelModel), nil
 }
 
-// capabilitySpecWithPriceTiers 只让创作端选择已经启用且可结算的规格。规格组合最终仍由
-// 路由时的精确价格档匹配保证，避免独立枚举无法表达“分辨率 × 时长”非笛卡尔组合的问题。
+// capabilitySpecWithPriceTiers 只让创作端选择已经启用的规格。规格组合最终仍由
+// 路由时的精确规格档匹配保证，避免独立枚举无法表达“分辨率 × 时长”非笛卡尔组合的问题。
 func capabilitySpecWithPriceTiers(spec CapabilitySpec, channelModel model.ChannelModel) CapabilitySpec {
 	if normalizeCapability(spec.Capability) != "video" || len(channelModel.PriceTiers) == 0 {
 		return spec
 	}
 	tiers := make([]model.ChannelModelPriceTier, 0, len(channelModel.PriceTiers))
 	for _, tier := range channelModel.PriceTiers {
-		if tier.Enabled && tier.PriceConfigured {
+		if tier.Enabled {
 			tiers = append(tiers, tier)
 		}
 	}
@@ -745,10 +631,10 @@ func channelModelDefaultOptions(channelModel model.ChannelModel, spec Capability
 			}
 		}
 	}
-	// 当渠道默认规格没有价格档时，优先选择第一个可结算档，确保初始选择可直接生成。
+	// 当渠道默认规格没有规格档时，优先选择第一个启用档，确保初始选择可直接生成。
 	if normalizeCapability(channelModel.Capability) == "video" && channelModelPriceTierForIntent(channelModel, ModelRequestIntent{Capability: "video", Options: defaults}) == nil {
 		for _, tier := range channelModel.PriceTiers {
-			if !tier.Enabled || !tier.PriceConfigured {
+			if !tier.Enabled {
 				continue
 			}
 			if tier.Resolution != "*" {
@@ -780,57 +666,3 @@ func (s *Service) SimulateLogicalModelRoute(actor *model.User, id string, intent
 }
 
 func logicalModelNotFound(err error) bool { return errors.Is(err, gorm.ErrRecordNotFound) }
-
-// computeModelPriceDisplay 计算模型的价格展示信息
-// 返回：pricingMode, displayPrice, priceLabel
-func computeModelPriceDisplay(model model.LogicalModel, priceTiers []PublicLogicalModelPriceTier) (string, *int64, string) {
-	if model.PricePolicy == "channel" {
-		// 跟随渠道价格
-		if len(priceTiers) == 0 {
-			return "provider", nil, "未配置"
-		}
-		// 检查是否所有价格档都相同
-		if len(priceTiers) == 1 {
-			tier := priceTiers[0]
-			price := getTierDisplayPrice(tier)
-			if price > 0 {
-				return "provider", &price, ""
-			}
-		}
-		// 多个价格档或价格为0，显示"按渠道规格计费"
-		return "provider", nil, "按渠道规格计费"
-	}
-
-	// 统一定价模式
-	if model.BillingMode == "fixed_request" && model.UnitPriceMicrocredits > 0 {
-		price := model.UnitPriceMicrocredits
-		return "unified", &price, ""
-	}
-	if model.BillingMode == "per_second" && model.UnitPriceMicrocredits > 0 {
-		price := model.UnitPriceMicrocredits
-		return "unified", &price, "按秒"
-	}
-	if model.BillingMode == "token" {
-		// Token 计费显示输入/输出价格
-		if model.InputPriceMicrocredits > 0 || model.OutputPriceMicrocredits > 0 {
-			return "unified", nil, "按 Token"
-		}
-	}
-
-	return "unified", nil, "未配置"
-}
-
-// getTierDisplayPrice 获取价格档的展示价格
-func getTierDisplayPrice(tier PublicLogicalModelPriceTier) int64 {
-	if tier.BillingMode == "fixed_request" || tier.BillingMode == "per_second" {
-		return tier.UnitPriceMicrocredits
-	}
-	// Token 计费返回输出价格（如果有）
-	if tier.OutputTokenPriceMicrocredits > 0 {
-		return tier.OutputTokenPriceMicrocredits
-	}
-	if tier.InputTokenPriceMicrocredits > 0 {
-		return tier.InputTokenPriceMicrocredits
-	}
-	return 0
-}

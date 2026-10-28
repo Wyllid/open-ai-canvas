@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"yingce/backend/internal/model"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"yingce/backend/internal/model"
 )
 
 func TestGmailMailboxRegistrationConcurrent(t *testing.T) {
@@ -99,7 +100,7 @@ func TestGmailMailboxVerificationEntryPoints(t *testing.T) {
 			}
 			sqlDB, _ := db.DB()
 			t.Cleanup(func() { _ = sqlDB.Close() })
-			if err := db.AutoMigrate(&model.User{}, &model.AuthVerification{}, &model.UserIdentity{}, &model.CreditAccount{}); err != nil {
+			if err := db.AutoMigrate(&model.User{}, &model.AuthVerification{}, &model.UserIdentity{}); err != nil {
 				t.Fatal(err)
 			}
 			r := New(db)

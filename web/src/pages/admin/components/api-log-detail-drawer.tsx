@@ -2,11 +2,10 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Alert, App, Button, Drawer, Input, Skeleton, Tabs, Typography } from "antd";
 import { AdminEmpty, AdminStatusBadge } from "@/pages/admin/components/admin-ui";
 import { Activity, Clipboard, HardDriveUpload, Link2, RefreshCw, Save, Video } from "lucide-react";
-import { formatCredits } from "@/constant/credits";
 import { getAdminApiLog, queryAdminApiLogTask, recoverAdminApiLogTaskMedia, recoverAdminApiLogVideoByURL, type ApiCallLog } from "@/services/api/auth";
 
 export function ApiLogDetailDrawer({ logId, onClose, onLogUpdated }: { logId: string | null; onClose: () => void; onLogUpdated?: (log: ApiCallLog) => void }) {
-    const { message, modal } = App.useApp();
+    const { message } = App.useApp();
     const [log, setLog] = useState<ApiCallLog | null>(null);
     const [loading, setLoading] = useState(false);
     const [querying, setQuerying] = useState(false);
@@ -50,11 +49,10 @@ export function ApiLogDetailDrawer({ logId, onClose, onLogUpdated }: { logId: st
             const result = await queryAdminApiLogTask(log.id, providerRequestId.trim() || undefined);
             await refresh(log.id);
             if (result.recovered) {
-                window.dispatchEvent(new CustomEvent("wallet:updated"));
-                setResultText(result.billingSettled ? "查询成功，视频已转存并完成结算。" : "视频已转存，计费状态待核对。");
+                setResultText("查询成功，视频已转存。");
                 message.success("视频任务恢复成功");
             } else {
-                setResultText(`上游仍在生成中${result.providerStatus ? `（${result.providerStatus}）` : ""}，暂不扣费。`);
+                setResultText(`上游仍在生成中${result.providerStatus ? `（${result.providerStatus}）` : ""}。`);
             }
         } catch (error) {
             setResultText(error instanceof Error ? error.message : "查询上游任务失败");
@@ -68,10 +66,9 @@ export function ApiLogDetailDrawer({ logId, onClose, onLogUpdated }: { logId: st
         setQuerying(true);
         setResultText("");
         try {
-            const result = await recoverAdminApiLogVideoByURL(log.id, videoURL.trim(), providerRequestId.trim() || undefined);
+            await recoverAdminApiLogVideoByURL(log.id, videoURL.trim(), providerRequestId.trim() || undefined);
             await refresh(log.id);
-            window.dispatchEvent(new CustomEvent("wallet:updated"));
-            setResultText(result.billingSettled ? "视频已转存并完成结算。" : "视频已转存，计费状态待核对。");
+            setResultText("视频已转存。");
             message.success("视频转存成功");
         } catch (error) {
             setResultText(error instanceof Error ? error.message : "视频转存失败");
@@ -80,12 +77,12 @@ export function ApiLogDetailDrawer({ logId, onClose, onLogUpdated }: { logId: st
         }
     };
 
-    const runMediaRecovery = async (refundedBilling?: "charge" | "waive") => {
+    const runMediaRecovery = async () => {
         if (!log) return;
         setQuerying(true);
         setResultText("");
         try {
-            await recoverAdminApiLogTaskMedia(log.id, refundedBilling);
+            await recoverAdminApiLogTaskMedia(log.id);
             await refresh(log.id);
             setResultText("已重新排队保存作品。对象存储仍不可用时会先保存到服务器，稍后自动同步。");
             message.success("已重新排队保存作品");
@@ -94,24 +91,6 @@ export function ApiLogDetailDrawer({ logId, onClose, onLogUpdated }: { logId: st
         } finally {
             setQuerying(false);
         }
-    };
-
-    const confirmMediaRecovery = (refundedBilling?: "charge" | "waive") => {
-        if (!log) return;
-        if (!refundedBilling) {
-            void runMediaRecovery();
-            return;
-        }
-        const charge = refundedBilling === "charge";
-        modal.confirm({
-            title: charge ? "恢复作品并补扣积分？" : "恢复作品并免除扣费？",
-            content: charge
-                ? `原订单已退回 ${formatCredits(log.billingAmountMicrocredits)} 积分。作品保存成功后会从用户可用余额补扣，余额不足时会变为负数。`
-                : "原订单保持已退回状态，作品保存成功后不再扣费。",
-            okText: charge ? "恢复并补扣" : "恢复，不扣费",
-            cancelText: "取消",
-            onOk: () => runMediaRecovery(refundedBilling),
-        });
     };
 
     const title = log ? (
@@ -130,7 +109,7 @@ export function ApiLogDetailDrawer({ logId, onClose, onLogUpdated }: { logId: st
 
     return (
         <Drawer title={title} open={Boolean(logId)} onClose={onClose} size="min(1120px, 66vw)" destroyOnHidden className="api-log-detail-drawer-panel" rootClassName="admin-drawer api-log-detail-drawer">
-            {loading ? <Skeleton active paragraph={{ rows: 10 }} /> : log ? <LogDetail log={log} providerRequestId={providerRequestId} videoURL={videoURL} resultText={resultText} querying={querying} onProviderRequestIdChange={setProviderRequestId} onVideoURLChange={setVideoURL} onQuery={runQuery} onRecoverURL={runURLRecovery} onRecoverMedia={confirmMediaRecovery} /> : <AdminEmpty size="compact" title="没有请求详情" />}
+            {loading ? <Skeleton active paragraph={{ rows: 10 }} /> : log ? <LogDetail log={log} providerRequestId={providerRequestId} videoURL={videoURL} resultText={resultText} querying={querying} onProviderRequestIdChange={setProviderRequestId} onVideoURLChange={setVideoURL} onQuery={runQuery} onRecoverURL={runURLRecovery} onRecoverMedia={() => void runMediaRecovery()} /> : <AdminEmpty size="compact" title="没有请求详情" />}
         </Drawer>
     );
 }
@@ -145,12 +124,11 @@ type LogDetailProps = {
     onVideoURLChange: (value: string) => void;
     onQuery: () => void;
     onRecoverURL: () => void;
-    onRecoverMedia: (refundedBilling?: "charge" | "waive") => void;
+    onRecoverMedia: () => void;
 };
 
 function LogDetail({ log, providerRequestId, videoURL, resultText, querying, onProviderRequestIdChange, onVideoURLChange, onQuery, onRecoverURL, onRecoverMedia }: LogDetailProps) {
     const mediaRecoverable = log.taskStatus === "failed" && Boolean(log.mediaStage) && log.mediaStage !== "completed";
-    const refunded = log.billingStatus === "refunded";
     const providerStatus = log.providerStatus?.toLowerCase();
     const processing = ["queued", "pending", "processing", "running", "in_progress"].includes(providerStatus || "");
     const failed = log.status === "failed" || ["failed", "cancelled", "expired"].includes(providerStatus || "");
@@ -172,7 +150,6 @@ function LogDetail({ log, providerRequestId, videoURL, resultText, querying, onP
                     <InfoItem label="模型 / 渠道" value={`${log.model || "未识别模型"} / ${log.channelName || "未记录渠道"}`} />
                     <InfoItem label="用户" value={log.userDisplayName || log.userAccount || "未知用户"} detail={log.userAccount ? `@${log.userAccount}` : undefined} />
                     <InfoItem label="任务状态" value={mediaDeliveryText(log)} />
-                    <InfoItem label="计费" value={billingText(log)} />
                     <InfoItem label="请求 ID" value={<CopyValue value={log.id} />} />
                     <InfoItem label="任务 ID" value={log.taskId ? <CopyValue value={log.taskId} /> : "未记录"} />
                     <InfoItem label="供应商任务 ID" value={log.providerRequestId ? <CopyValue value={log.providerRequestId} /> : "未记录"} />
@@ -207,16 +184,9 @@ function LogDetail({ log, providerRequestId, videoURL, resultText, querying, onP
                         <div className="api-log-recovery-row">
                             <div className="api-log-recovery-label">
                                 <span>重新保存作品</span>
-                                <small>{refunded ? "原订单已退回，请选择恢复后是否补扣" : "保存成功后按原订单结算"}</small>
+                                <small>重新保存已生成的作品</small>
                             </div>
-                            {refunded ? (
-                                <>
-                                    <Button icon={<Save className="size-3.5" />} loading={querying} onClick={() => onRecoverMedia("waive")}>恢复，不扣费</Button>
-                                    <Button type="primary" icon={<Save className="size-3.5" />} loading={querying} onClick={() => onRecoverMedia("charge")}>恢复并补扣</Button>
-                                </>
-                            ) : (
-                                <Button type="primary" icon={<Save className="size-3.5" />} loading={querying} onClick={() => onRecoverMedia()}>重新保存</Button>
-                            )}
+                            <Button type="primary" icon={<Save className="size-3.5" />} loading={querying} onClick={() => onRecoverMedia()}>重新保存</Button>
                         </div>
                         {resultText ? <Alert className="api-log-recovery-result" type={resultText.includes("失败") || resultText.includes("错误") || resultText.includes("请") ? "error" : "success"} showIcon message={resultText} /> : null}
                     </div>
@@ -304,13 +274,6 @@ function PayloadPanel({ value, empty }: { value?: string; empty: string }) {
             <pre className="api-log-payload">{value}</pre>
         </div>
     );
-}
-
-function billingText(log: ApiCallLog) {
-    if (!log.billable) return "不计费";
-    if (!log.billingAvailable) return "未扣积分";
-    const labels = { settled: "已结算", refunded: "已退回", uncertain: "待核对", running: "运行中", reserved: "已预授权" } as const;
-    return `${formatCredits(log.billingAmountMicrocredits)} 积分 · ${labels[log.billingStatus || "reserved"]}`;
 }
 
 function mediaDeliveryText(log: ApiCallLog) {

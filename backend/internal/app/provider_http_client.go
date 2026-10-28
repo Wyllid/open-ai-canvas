@@ -428,7 +428,7 @@ func recordProviderRequest(req *http.Request, startedAt time.Time, statusCode in
 		apiFormat = "gemini"
 	}
 	callLog := model.ApiCallLog{
-		UserID: metadata.UserID, TraceID: metadata.TraceID, RequestID: metadata.RequestID, ChannelID: metadata.ChannelID, TaskID: metadata.TaskID, BillingOrderID: metadata.BillingOrderID,
+		UserID: metadata.UserID, TraceID: metadata.TraceID, RequestID: metadata.RequestID, ChannelID: metadata.ChannelID, TaskID: metadata.TaskID,
 		Source: "backend-task", Capability: metadata.Capability, Operation: metadata.Operation,
 		RequestKind: requestKind, Billable: providerRequestIsBillable(req.Method, requestKind),
 		APIFormat: apiFormat, Method: req.Method, Path: req.URL.Path, Model: metadata.Model,
@@ -436,9 +436,7 @@ func recordProviderRequest(req *http.Request, startedAt time.Time, statusCode in
 		ErrorCode: errorCode, Error: errorText, ConcurrencyLimit: metadata.ConcurrencyLimit, UpstreamURL: req.URL.Scheme + "://" + req.URL.Host + req.URL.Path,
 		ProviderRequestID: metadata.ProviderRequestID, RequestContentType: req.Header.Get("Content-Type"), RequestBody: requestPayloadForLog(req), ResponseBody: SanitizeAPICallPayload(responseBody, ""),
 	}
-	channelSlotFailure := false
 	if code, message := ChannelSlotFailureDetails(requestErr); code != "" {
-		channelSlotFailure = true
 		callLog.ErrorCode = code
 		callLog.Error = message
 	}
@@ -455,12 +453,8 @@ func recordProviderRequest(req *http.Request, startedAt time.Time, statusCode in
 	metadata.Service.EnrichAPICallLog(&callLog, responseBody)
 	callLog.Error = withUserVisibleLogError(requestErr, callLog.Error)
 	if err := metadata.Service.LogAPICall(callLog); err != nil {
-		if !channelSlotFailure && metadata.Billing != nil {
-			if uncertainErr := metadata.Billing.MarkBillingUncertain(metadata.BillingOrderID, "上游调用日志写入失败，费用状态待核对"); uncertainErr != nil {
-				// 这里无法把日志落库错误返回给已完成的 HTTP 请求，只能把计费边界失败写入进程日志，交给待核对审计继续处理。
-				log.Printf("provider billing uncertainty update failed: task_id=%s billing_order_id=%s error=%v", metadata.TaskID, metadata.BillingOrderID, uncertainErr)
-			}
-		}
+		// 日志落库失败无法回传给已完成的 HTTP 请求；任务终态会因调用结果未知而进入提交待核对。
+		log.Printf("provider api call log write failed: task_id=%s error=%v", metadata.TaskID, err)
 	}
 }
 

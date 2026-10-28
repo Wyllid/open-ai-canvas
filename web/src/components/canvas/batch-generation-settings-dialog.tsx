@@ -58,7 +58,7 @@ export function BatchGenerationSettingsDialog({ open, config, rowCount, concurre
             <div className="flex flex-col gap-4 py-2">
                 <div className="rounded-lg bg-black/5 px-3 py-2 text-sm dark:bg-white/[0.04]">
                     共 <span className="font-semibold">{rowCount}</span> 个任务（每行 1 张） · 并发上限 <span className="font-semibold">{concurrency}</span>
-                    <div className="mt-1 text-xs opacity-75">确认后将提交生成任务，可能消耗积分或产生外部模型费用。</div>
+                    <div className="mt-1 text-xs opacity-75">确认后将提交生成任务，并调用所选模型。</div>
                 </div>
 
                 <div className="space-y-2">
@@ -68,7 +68,6 @@ export function BatchGenerationSettingsDialog({ open, config, rowCount, concurre
                         value={imageModel}
                         capability="image"
                         fullWidth
-                        showSelectedPrice={false}
                         onChange={handleModelChange}
                     />
                 </div>

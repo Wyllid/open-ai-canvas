@@ -81,20 +81,6 @@ func (s *Service) cloudAgentExecutionOutput(task *model.Task, initial cloudAgent
 		skill.Files = nil
 		out.Skills = append(out.Skills, skill)
 	}
-	orders, err := s.repo.BillingOrdersByTaskIDs(task.UserID, state.TaskIDs)
-	if err != nil {
-		return nil, err
-	}
-	for _, order := range orders {
-		// AmountMicrocredits is the reservation/quote, not necessarily the amount
-		// finally charged. A run can reserve 100000 microcredits and settle at
-		// 100000 microcredits (= 0.1 credits), or be refunded altogether. Never
-		// expose the reservation as spend, otherwise the Agent claims a charge
-		// that did not happen and budget/usage copy diverges from billing.
-		if order.Status == model.BillingStatusSettled {
-			out.SpentCredits += float64(order.ActualAmountMicrocredits) / float64(CreditScale)
-		}
-	}
 	return out, nil
 }
 

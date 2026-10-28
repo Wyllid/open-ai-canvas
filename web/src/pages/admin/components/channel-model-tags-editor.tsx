@@ -7,7 +7,7 @@ import { Select } from "@/components/ui/base/select";
 export function ChannelModelTagsEditor() {
     const form = Form.useFormInstance();
     const tags: ModelTag[] = Form.useWatch("tags", form) || [];
-    return <Form.Item label="展示标签" extra="最多 5 个，每个 12 字；展示在用户的二级渠道选项中，不改变实际计费。">
+    return <Form.Item label="展示标签" extra="最多 5 个，每个 12 字；展示在用户的二级渠道选项中，不改变实际路由。">
         <Form.List name="tags" rules={[{ validator: async (_, value: ModelTag[] = []) => {
             if (value.length > 5) throw new Error("最多添加 5 个标签");
             const texts = value.map((tag) => tag?.text?.trim()).filter(Boolean);

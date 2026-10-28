@@ -5,7 +5,7 @@ import { RotateCcw } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { CapabilityImageSize, CapabilitySpec, OptionConstraint } from "@/services/api/logical-models";
-import type { ChannelModel } from "@/services/api/wallet";
+import type { ChannelModel } from "@/services/api/channel-models";
 import { STANDARD_IMAGE_SIZE_VALUES } from "@/lib/model-capabilities";
 import { imageSizePresets } from "@/lib/image-size-presets";
 import { Select } from "@/components/ui/base/select";

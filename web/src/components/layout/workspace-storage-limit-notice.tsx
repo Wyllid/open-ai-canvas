@@ -5,14 +5,14 @@ import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 
 import { accountFileStorageUsageQueryKey } from "@/lib/account-storage-usage";
-import { openStoragePurchase, STORAGE_LIMIT_REASONS } from "@/lib/workspace-storage";
+import { STORAGE_LIMIT_REASONS } from "@/lib/workspace-storage";
 import { apiClient } from "@/services/api/request";
 
 const NOTICE_KEY = "workspace-storage-limit";
 const NOTICE_INTERVAL_MS = 20_000;
 
 /**
- * 任一业务请求因容量不足或只读被拒时，刷新用量并给出“清理素材 / 购买空间”入口。
+ * 任一业务请求因容量不足或只读被拒时，刷新用量并给出“清理素材”入口。
  * 只补充提醒，调用方原有的错误处理和提示保持不变。
  */
 export function WorkspaceStorageLimitNotice() {
@@ -33,7 +33,7 @@ export function WorkspaceStorageLimitNotice() {
                     notification.warning({
                         key: NOTICE_KEY,
                         title: readOnly ? "账号已进入只读状态" : "账号存储空间不足",
-                        description: readOnly ? "已超出容量且宽限期已结束。删除素材腾出空间或购买存储空间后即可恢复编辑。" : "已暂停上传和生成。可以清理素材，或购买更多存储空间。",
+                        description: readOnly ? "已超出容量且宽限期已结束。删除素材腾出空间或请管理员调整容量后即可恢复编辑。" : "已暂停上传和生成。可以清理素材，或请管理员调整容量。",
                         actions: (
                             <span style={{ display: "inline-flex", gap: "var(--space-2, 8px)" }}>
                                 <Button
@@ -44,16 +44,6 @@ export function WorkspaceStorageLimitNotice() {
                                     }}
                                 >
                                     清理素材
-                                </Button>
-                                <Button
-                                    size="small"
-                                    type="primary"
-                                    onClick={() => {
-                                        notification.destroy(NOTICE_KEY);
-                                        openStoragePurchase();
-                                    }}
-                                >
-                                    购买空间
                                 </Button>
                             </span>
                         ),

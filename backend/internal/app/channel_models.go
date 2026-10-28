@@ -13,45 +13,32 @@ import (
 )
 
 type ChannelModelRequest struct {
-	ModelKey                     string                         `json:"modelKey"`
-	ProviderModelKey             string                         `json:"providerModelKey"`
-	DisplayName                  string                         `json:"displayName"`
-	ChannelLabel                 string                         `json:"channelLabel"`
-	Tags                         []model.ChannelModelTag        `json:"tags"`
-	Description                  string                         `json:"description"`
-	Icon                         string                         `json:"icon"`
-	Capability                   string                         `json:"capability"`
-	Protocol                     string                         `json:"protocol"`
-	BillingMode                  string                         `json:"billingMode"`
-	UnitPriceMicrocredits        int64                          `json:"unitPriceMicrocredits"`
-	InputTokenPriceMicrocredits  int64                          `json:"inputTokenPriceMicrocredits"`
-	OutputTokenPriceMicrocredits int64                          `json:"outputTokenPriceMicrocredits"`
-	CachedTokenPriceMicrocredits int64                          `json:"cachedTokenPriceMicrocredits"`
-	PriceConfigured              bool                           `json:"priceConfigured"`
-	Enabled                      *bool                          `json:"enabled"`
-	CapabilityConfig             *ModelCapabilityConfig         `json:"capabilityConfig"`
-	PriceTiers                   []ChannelModelPriceTierRequest `json:"priceTiers"`
+	ModelKey         string                         `json:"modelKey"`
+	ProviderModelKey string                         `json:"providerModelKey"`
+	DisplayName      string                         `json:"displayName"`
+	ChannelLabel     string                         `json:"channelLabel"`
+	Tags             []model.ChannelModelTag        `json:"tags"`
+	Description      string                         `json:"description"`
+	Icon             string                         `json:"icon"`
+	Capability       string                         `json:"capability"`
+	Protocol         string                         `json:"protocol"`
+	Enabled          *bool                          `json:"enabled"`
+	CapabilityConfig *ModelCapabilityConfig         `json:"capabilityConfig"`
+	PriceTiers       []ChannelModelPriceTierRequest `json:"priceTiers"`
 }
 
 const maxAdminChannelModelBatchDeleteCount = 100
 
-// ChannelModelPriceTierRequest 是系统渠道内某个规格的上游 SKU 与结算价格。
+// ChannelModelPriceTierRequest 是系统渠道内某个规格的上游 SKU（历史名称，已不含价格）。
 // Resolution="*"、VideoSeconds=0 分别表示任意分辨率和任意时长。
 type ChannelModelPriceTierRequest struct {
-	CostPricing model.CreditCostPricing `json:"costPricing"`
 	// Selector 是 SKU 的规范匹配条件。支持 operation、quality、size、vquality、videoSeconds、imageCount、videoGenerateAudio；
-	// operation 可区分文生/图生/视频生，避免同一分辨率下错误复用价格。
-	Selector                     map[string]string `json:"selector"`
-	Resolution                   string            `json:"resolution"`
-	VideoSeconds                 int               `json:"videoSeconds"`
-	ProviderModelKey             string            `json:"providerModelKey"`
-	BillingMode                  string            `json:"billingMode"`
-	UnitPriceMicrocredits        int64             `json:"unitPriceMicrocredits"`
-	InputTokenPriceMicrocredits  int64             `json:"inputTokenPriceMicrocredits"`
-	OutputTokenPriceMicrocredits int64             `json:"outputTokenPriceMicrocredits"`
-	CachedTokenPriceMicrocredits int64             `json:"cachedTokenPriceMicrocredits"`
-	PriceConfigured              bool              `json:"priceConfigured"`
-	Enabled                      *bool             `json:"enabled"`
+	// operation 可区分文生/图生/视频生，避免同一分辨率下错误复用 SKU。
+	Selector         map[string]string `json:"selector"`
+	Resolution       string            `json:"resolution"`
+	VideoSeconds     int               `json:"videoSeconds"`
+	ProviderModelKey string            `json:"providerModelKey"`
+	Enabled          *bool             `json:"enabled"`
 }
 
 // AdminChannelModelFetchResult 是管理员从上游拉目录后的汇总：models 为去重后的标识，added 为本次新建条数。
@@ -189,7 +176,7 @@ func (s *Service) SaveAdminChannelModel(actor *model.User, channelID string, id 
 	if err != nil {
 		return nil, err
 	}
-	item := &model.ChannelModel{ID: modelID, ChannelID: channelID, Enabled: true, PriceVersion: 1}
+	item := &model.ChannelModel{ID: modelID, ChannelID: channelID, Enabled: true}
 	previousProviderModelKey := ""
 	if id != "" {
 		item, err = s.repo.ChannelModelByID(channelID, id)
@@ -197,7 +184,6 @@ func (s *Service) SaveAdminChannelModel(actor *model.User, channelID string, id 
 			return nil, err
 		}
 		previousProviderModelKey = strings.TrimPrefix(strings.TrimSpace(item.ProviderModelKey), "models/")
-		item.PriceVersion++
 	}
 	// 模型级上游键重命名时，与旧值相同的档位键属于“跟随模型默认”的隐式固化，必须级联跟随；
 	// 否则任务请求会继续把旧上游键发给供应商。管理员显式配置的其他上游 SKU 不受影响。
@@ -220,7 +206,6 @@ func (s *Service) SaveAdminChannelModel(actor *model.User, channelID string, id 
 	item.Icon = strings.TrimSpace(req.Icon)
 	item.Capability = capability
 	item.Protocol = protocol
-	s.applyChannelModelPriceTierSummary(item, tiers)
 	if capability == "text" || capability == "image" || capability == "video" {
 		capabilityConfig, normalizeErr := NormalizeModelCapabilityConfigForModel(capability, string(protocol), providerModelKey, req.CapabilityConfig, s.protocolRegistry())
 		if normalizeErr != nil {
@@ -391,7 +376,7 @@ func (s *Service) syncInitialChannelModels(channel *model.ModelChannel, names []
 		if idErr != nil {
 			return idErr
 		}
-		item := model.ChannelModel{ID: modelID, ChannelID: channel.ID, ModelKey: name, ProviderModelKey: name, DisplayName: "未分类", BillingMode: "fixed_request", Enabled: false, PriceConfigured: false, UnitPriceMicrocredits: 0, PriceVersion: 1}
+		item := model.ChannelModel{ID: modelID, ChannelID: channel.ID, ModelKey: name, ProviderModelKey: name, DisplayName: "未分类", Enabled: false}
 		if err := s.repo.SaveChannelModel(&item); err != nil {
 			return err
 		}
@@ -401,7 +386,6 @@ func (s *Service) syncInitialChannelModels(channel *model.ModelChannel, names []
 			changed := existing[index].Enabled
 			existing[index].Enabled = false
 			if changed {
-				existing[index].PriceVersion++
 				if err := s.repo.SaveChannelModel(&existing[index]); err != nil {
 					return err
 				}

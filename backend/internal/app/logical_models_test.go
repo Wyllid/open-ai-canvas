@@ -156,8 +156,8 @@ func TestVideoResolutionAliasesAcrossProductAndPricedRoutes(t *testing.T) {
 	}
 	route := capabilitySpecWithPriceTiers(product, model.ChannelModel{
 		PriceTiers: []model.ChannelModelPriceTier{
-			{Resolution: "768P", Enabled: true, PriceConfigured: true},
-			{Resolution: "2K", Enabled: true, PriceConfigured: true},
+			{Resolution: "768P", Enabled: true},
+			{Resolution: "2K", Enabled: true},
 		},
 	})
 	if err := validateProductSpecWithinRoutes(product, []CapabilitySpec{route}); err != nil {
@@ -245,42 +245,6 @@ func TestLogicalModelConfigurationErrorAfterRouteCoverageShrinks(t *testing.T) {
 	}
 	if message := logicalModelConfigurationError(product, complete[:1]); !strings.Contains(message, "无法完整覆盖") {
 		t.Fatalf("shrunk route coverage error = %q", message)
-	}
-}
-
-func TestLogicalModelAvailabilityErrorRequiresSettlementReadyCoverage(t *testing.T) {
-	product := CapabilitySpec{Version: 1, Capability: "image", Inputs: map[string]InputConstraint{"image": {Min: 0, Max: 9}}}
-	structural := []CapabilitySpec{
-		{Version: 1, Capability: "image", Inputs: map[string]InputConstraint{"image": {Min: 0, Max: 4}}},
-		{Version: 1, Capability: "image", Inputs: map[string]InputConstraint{"image": {Min: 5, Max: 9}}},
-	}
-
-	if message := logicalModelAvailabilityError("channel", product, structural, nil); !strings.Contains(message, "可结算价格") {
-		t.Fatalf("missing settlement route error = %q", message)
-	}
-	if message := logicalModelAvailabilityError("channel", product, structural, structural[:1]); !strings.Contains(message, "部分创作端能力") {
-		t.Fatalf("partial settlement coverage error = %q", message)
-	}
-	if message := logicalModelAvailabilityError("channel", product, structural, structural); message != "" {
-		t.Fatalf("complete settlement coverage error = %q", message)
-	}
-	if message := logicalModelAvailabilityError("unified", product, structural, nil); message != "" {
-		t.Fatalf("unified pricing unexpectedly required channel prices: %q", message)
-	}
-}
-
-func TestSupportsLogicalModelTokenBillingForArkVideoRoutes(t *testing.T) {
-	if !supportsLogicalModelTokenBilling("text", nil) {
-		t.Fatal("text logical models should support Token billing")
-	}
-	if !supportsLogicalModelTokenBilling("video", []model.ChannelInterfaceType{model.ChannelInterfaceVolcengineArkVideo}) {
-		t.Fatal("Ark video-only routes should support Token billing")
-	}
-	if supportsLogicalModelTokenBilling("video", nil) {
-		t.Fatal("video logical models without an enabled route must not support Token billing")
-	}
-	if !supportsLogicalModelTokenBilling("video", []model.ChannelInterfaceType{model.ChannelInterfaceVolcengineArkVideo, model.ChannelInterfaceNewAPIVideo}) {
-		t.Fatal("all video protocols must support Token billing")
 	}
 }
 

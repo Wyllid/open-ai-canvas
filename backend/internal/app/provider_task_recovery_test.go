@@ -29,34 +29,6 @@ func TestProviderTaskRecoveryContextSurvivesClientCancellation(t *testing.T) {
 	}
 }
 
-func TestSettleRecoveredBillingIsIdempotent(t *testing.T) {
-	tests := []struct {
-		name        string
-		status      model.BillingStatus
-		wantSettle  int
-		wantRestore int
-	}{
-		{name: "settled", status: model.BillingStatusSettled},
-		{name: "running", status: model.BillingStatusRunning, wantSettle: 1},
-		{name: "refunded", status: model.BillingStatusRefunded, wantRestore: 1},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			repo := &taskBillingRepositoryStub{order: &model.BillingOrder{Status: tt.status}}
-			svc := &Service{taskBillingCoordinator: newTaskBillingCoordinator(repo)}
-			if err := svc.settleRecoveredBilling(&model.Task{BillingOrderID: "order-1"}, "provider-1"); err != nil {
-				t.Fatalf("settleRecoveredBilling() error = %v", err)
-			}
-			if got := len(repo.settleCalls); got != tt.wantSettle {
-				t.Fatalf("settle calls = %d, want %d", got, tt.wantSettle)
-			}
-			if got := len(repo.restoreCalls); got != tt.wantRestore {
-				t.Fatalf("restore calls = %d, want %d", got, tt.wantRestore)
-			}
-		})
-	}
-}
-
 func TestDownloadRemoteResourceEnforcesVideoImportBounds(t *testing.T) {
 	t.Setenv("CANVAS_ALLOW_PRIVATE_UPSTREAMS", "true")
 	t.Setenv("HTTP_PROXY", "")

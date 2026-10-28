@@ -50,7 +50,7 @@ export function generationTaskStatusLabel(task: GenerationTaskDisplayTarget) {
 }
 
 export function generationTaskStageLabel(task: GenerationTaskDisplayTarget) {
-    if (isGenerationTaskSubmissionUncertain(task)) return "为避免重复扣费，未自动重试";
+    if (isGenerationTaskSubmissionUncertain(task)) return "为避免重复提交，未自动重试";
     switch (task.stage) {
         case "queued":
         case "等待队列调度":

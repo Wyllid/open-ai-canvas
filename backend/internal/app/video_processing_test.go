@@ -90,8 +90,8 @@ func TestValidateVideoProcessingSourceSize(t *testing.T) {
 
 func TestFPSBandSelectsVideoPriceTier(t *testing.T) {
 	channelModel := model.ChannelModel{PriceTiers: []model.ChannelModelPriceTier{
-		{ID: "1080-le30", SelectorJSON: `{"vquality":"1080p","fpsBand":"le30"}`, BillingMode: "per_second", Enabled: true, PriceConfigured: true},
-		{ID: "1080-le60", SelectorJSON: `{"vquality":"1080p","fpsBand":"le60"}`, BillingMode: "per_second", Enabled: true, PriceConfigured: true},
+		{ID: "1080-le30", SelectorJSON: `{"vquality":"1080p","fpsBand":"le30"}`, Enabled: true},
+		{ID: "1080-le60", SelectorJSON: `{"vquality":"1080p","fpsBand":"le60"}`, Enabled: true},
 	}}
 	intent := ModelRequestIntent{Capability: "video", Inputs: map[string]int{"video": 1}, Options: map[string]any{"vquality": "1080p", "fpsBand": "le60", "videoSeconds": 5}}
 	tier := channelModelPriceTierForIntent(channelModel, intent)

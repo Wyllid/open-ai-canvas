@@ -11,7 +11,6 @@ import (
 
 type AdminUserDetail struct {
 	User             model.User                  `json:"user"`
-	Account          model.CreditAccount         `json:"account"`
 	Counts           repository.AdminUserCounts  `json:"counts"`
 	StorageUsage     repository.UserStorageUsage `json:"storageUsage"`
 	StoredFileBytes  int64                       `json:"storedFileBytes"`
@@ -69,10 +68,6 @@ func (s *Service) AdminUserDetail(actor *model.User, userID string) (*AdminUserD
 	if err != nil {
 		return nil, err
 	}
-	account, err := s.repo.CreditAccount(user.ID)
-	if err != nil {
-		return nil, err
-	}
 	counts, err := s.repo.AdminUserCounts(user.ID)
 	if err != nil {
 		return nil, err
@@ -98,34 +93,10 @@ func (s *Service) AdminUserDetail(actor *model.User, userID string) (*AdminUserD
 		return nil, err
 	}
 	return &AdminUserDetail{
-		User: *user, Account: *account, Counts: counts, StorageUsage: usage,
+		User: *user, Counts: counts, StorageUsage: usage,
 		StoredFileBytes: storedFileBytes, DailyUploadBytes: dailyUploadBytes, Quota: policy.Resource,
 		StorageCapacity: *capacity,
 	}, nil
-}
-
-func (s *Service) AdminUserLedger(actor *model.User, userID string, entryType string, page int, limit int) (*WalletSummary, error) {
-	if err := s.RequireAdmin(actor); err != nil {
-		return nil, err
-	}
-	if _, err := s.repo.User(userID); err != nil {
-		return nil, err
-	}
-	page, limit = normalizeAdminPage(page, limit)
-	account, err := s.repo.CreditAccount(userID)
-	if err != nil {
-		return nil, err
-	}
-	entries, total, err := s.repo.CreditLedger(userID, entryType, limit, (page-1)*limit)
-	if err != nil {
-		return nil, err
-	}
-	for index := range entries {
-		if strings.TrimSpace(entries[index].Note) != "" {
-			entries[index].Note = userFacingTaskError(entries[index].Note)
-		}
-	}
-	return &WalletSummary{Account: *account, Entries: entries, Total: total, Page: page, Limit: limit}, nil
 }
 
 func (s *Service) AdminUserTasks(actor *model.User, userID string, page int, limit int) (*AdminTaskPage, error) {

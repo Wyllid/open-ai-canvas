@@ -12,8 +12,6 @@ const (
 
 type (
 	BindProjectAssetImageRequest           = app.BindProjectAssetImageRequest
-	PaymentOrderQuery                      = app.PaymentOrderQuery
-	PaymentReconciliationQuery             = app.PaymentReconciliationQuery
 	CloudAgentRequest                      = app.CloudAgentRequest
 	CloudAgentRunViewOptions               = app.CloudAgentRunViewOptions
 	CloudAgentMediaSettings                = app.CloudAgentMediaSettings
@@ -49,17 +47,10 @@ type (
 	AdminChannelModelTestResult            = app.AdminChannelModelTestResult
 	AdminChannelPage                       = app.AdminChannelPage
 	AdminChannelReference                  = app.AdminChannelReference
-	AdminCreditAdjustmentRequest           = app.AdminCreditAdjustmentRequest
 	AdminListQuery                         = app.AdminListQuery
 	AdminLogicalModel                      = app.AdminLogicalModel
 	AdminLogicalRoute                      = app.AdminLogicalRoute
-	AdminPaymentOrderPage                  = app.AdminPaymentOrderPage
-	AdminPaymentProviderView               = app.AdminPaymentProviderView
-	AdminPaymentReconciliationItemPage     = app.AdminPaymentReconciliationItemPage
-	AdminPaymentReconciliationPage         = app.AdminPaymentReconciliationPage
 	AdminPluginStateView                   = app.AdminPluginStateView
-	AdminRedeemCodeDetail                  = app.AdminRedeemCodeDetail
-	AdminRedeemCodePage                    = app.AdminRedeemCodePage
 	AdminReferenceData                     = app.AdminReferenceData
 	AdminResourceDeleteBlocked             = app.AdminResourceDeleteBlocked
 	AdminResourceDeleteRequest             = app.AdminResourceDeleteRequest
@@ -98,7 +89,6 @@ type (
 	AuthError                              = app.AuthError
 	AuthSessionResult                      = app.AuthSessionResult
 	AuthUser                               = app.AuthUser
-	BillingOrderPage                       = app.BillingOrderPage
 	BindCharacterVoiceRequest              = app.BindCharacterVoiceRequest
 	BulkDisableUsersRequest                = app.BulkDisableUsersRequest
 	BulkDisableUsersResult                 = app.BulkDisableUsersResult
@@ -117,8 +107,6 @@ type (
 	ChannelModelCatalogOptions             = app.ChannelModelCatalogOptions
 	ChannelModelPriceTierRequest           = app.ChannelModelPriceTierRequest
 	ChannelModelRequest                    = app.ChannelModelRequest
-	ChannelModelRepriceRequest             = app.ChannelModelRepriceRequest
-	ChannelModelQuoteRequest               = app.ChannelModelQuoteRequest
 	ChannelModelSortRequest                = app.ChannelModelSortRequest
 	ChannelModelsRequest                   = app.ChannelModelsRequest
 	ChannelOrderItem                       = app.ChannelOrderItem
@@ -141,15 +129,12 @@ type (
 	CreateAssetCandidatesRequest           = app.CreateAssetCandidatesRequest
 	CreateAssetFolderRequest               = app.CreateAssetFolderRequest
 	CreateAssetVersionRequest              = app.CreateAssetVersionRequest
-	CreatePaymentOrderRequest              = app.CreatePaymentOrderRequest
 	CreateCharacterRequest                 = app.CreateCharacterRequest
 	CreateProjectAssetFolderRequest        = app.CreateProjectAssetFolderRequest
 	CreateProjectCharacterRequest          = app.CreateProjectCharacterRequest
 	CreateProjectRequest                   = app.CreateProjectRequest
 	CreateProjectShotRequest               = app.CreateProjectShotRequest
 	CreateProjectUnitRequest               = app.CreateProjectUnitRequest
-	CreateRedeemBatchRequest               = app.CreateRedeemBatchRequest
-	CreateRedeemBatchResult                = app.CreateRedeemBatchResult
 	CreateTaskRequest                      = app.CreateTaskRequest
 	CreationCanvasOp                       = app.CreationCanvasOp
 	CreationDetail                         = app.CreationDetail
@@ -158,8 +143,6 @@ type (
 	CreationRequest                        = app.CreationRequest
 	CreationRunOutput                      = app.CreationRunOutput
 	CreationSubmissionOutput               = app.CreationSubmissionOutput
-	CreditPolicy                           = app.CreditPolicy
-	BillingAutoRefundSetting               = app.BillingAutoRefundSetting
 	DiagnosticBundle                       = app.DiagnosticBundle
 	DiagnosticClientEvent                  = app.DiagnosticClientEvent
 	DiagnosticExportRequest                = app.DiagnosticExportRequest
@@ -197,7 +180,6 @@ type (
 	LinkShotAssetRequest                   = app.LinkShotAssetRequest
 	LinuxDOCallbackResult                  = app.LinuxDOCallbackResult
 	LinuxDOSettingRequest                  = app.LinuxDOSettingRequest
-	LogicalModelQuote                      = app.LogicalModelQuote
 	LogicalModelRequest                    = app.LogicalModelRequest
 	LogicalRouteRequest                    = app.LogicalRouteRequest
 	LoginRequest                           = app.LoginRequest
@@ -206,7 +188,6 @@ type (
 	ModelCatalogSource                     = app.ModelCatalogSource
 	ModelError                             = app.ModelError
 	ModelErrorCode                         = app.ModelErrorCode
-	ModelPricingRequest                    = app.ModelPricingRequest
 	ModelRequestIntent                     = app.ModelRequestIntent
 	MoveUserAssetsRequest                  = app.MoveUserAssetsRequest
 	OSSConnectionTestResult                = app.OSSConnectionTestResult
@@ -215,9 +196,6 @@ type (
 	OutboundHeader                         = app.OutboundHeader
 	ParameterSupport                       = app.ParameterSupport
 	PasswordResetRequest                   = app.PasswordResetRequest
-	PaymentCheckoutView                    = app.PaymentCheckoutView
-	PaymentOrderView                       = app.PaymentOrderView
-	PaymentProviderView                    = app.PaymentProviderView
 	PluginManagementView                   = app.PluginManagementView
 	PluginManifestView                     = app.PluginManifestView
 	PluginProviderCatalogItem              = app.PluginProviderCatalogItem
@@ -253,7 +231,6 @@ type (
 	PublicChannelModel                     = app.PublicChannelModel
 	PublicChannelModelPrice                = app.PublicChannelModelPrice
 	PublicChannelModelPriceTier            = app.PublicChannelModelPriceTier
-	PublicCreditPolicy                     = app.PublicCreditPolicy
 	PublicDrawingEngineSetting             = app.PublicDrawingEngineSetting
 	PublicEmailSetting                     = app.PublicEmailSetting
 	PublicFeatureAvailability              = app.PublicFeatureAvailability
@@ -269,7 +246,6 @@ type (
 	PublicRegistrationSetting              = app.PublicRegistrationSetting
 	PublicRuntimeLimits                    = app.PublicRuntimeLimits
 	PublicRuntimePolicySetting             = app.PublicRuntimePolicySetting
-	RedeemBatchPage                        = app.RedeemBatchPage
 	RegisterRequest                        = app.RegisterRequest
 	RegisterTaskOutputRequest              = app.RegisterTaskOutputRequest
 	RegistrationSettingRequest             = app.RegistrationSettingRequest
@@ -277,10 +253,6 @@ type (
 	ReplaceCharacterRepresentationsRequest = app.ReplaceCharacterRepresentationsRequest
 	ReplaceProjectUnitShotInput            = app.ReplaceProjectUnitShotInput
 	ReplaceProjectUnitShotsRequest         = app.ReplaceProjectUnitShotsRequest
-	ResolveBillingBatchFailure             = app.ResolveBillingBatchFailure
-	ResolveBillingBatchRequest             = app.ResolveBillingBatchRequest
-	ResolveBillingBatchResult              = app.ResolveBillingBatchResult
-	ResolveBillingRequest                  = app.ResolveBillingRequest
 	ResourceDelivery                       = app.ResourceDelivery
 	ResourceAccessOptions                  = app.ResourceAccessOptions
 	ResourceAccessRequest                  = app.ResourceAccessRequest
@@ -291,7 +263,6 @@ type (
 	RouteSimulationCandidate               = app.RouteSimulationCandidate
 	RouteSimulationResult                  = app.RouteSimulationResult
 	RoutedModel                            = app.RoutedModel
-	RunPaymentReconciliationRequest        = app.RunPaymentReconciliationRequest
 	RunningHubWorkflowFetchRequest         = app.RunningHubWorkflowFetchRequest
 	RuntimePolicySetting                   = app.RuntimePolicySetting
 	RuntimeRequestPolicy                   = app.RuntimeRequestPolicy
@@ -342,7 +313,6 @@ type (
 	TapNowImportIssue                      = app.TapNowImportIssue
 	TapNowImportMetadata                   = app.TapNowImportMetadata
 	TapNowImportWarning                    = app.TapNowImportWarning
-	TaskBillingSummary                     = app.TaskBillingSummary
 	TaskClientContext                      = app.TaskClientContext
 	TaskListOptions                        = app.TaskListOptions
 	TaskSummary                            = app.TaskSummary
@@ -352,12 +322,10 @@ type (
 	TimelineRenderCreateRequest            = app.TimelineRenderCreateRequest
 	TimelineTranscriptionCreateRequest     = app.TimelineTranscriptionCreateRequest
 	RevokeStorageGrantRequest              = app.RevokeStorageGrantRequest
-	TopupProductRequest                    = app.TopupProductRequest
 	UpdateAnnouncementRequest              = app.UpdateAnnouncementRequest
 	UpdateBannerAnnouncementRequest        = app.UpdateBannerAnnouncementRequest
 	UpdateAssetFolderRequest               = app.UpdateAssetFolderRequest
 	UpdateManager                          = app.UpdateManager
-	UpdatePaymentProviderConfigRequest     = app.UpdatePaymentProviderConfigRequest
 	UpdateProjectAssetFolderRequest        = app.UpdateProjectAssetFolderRequest
 	UpdateProjectAssetRequest              = app.UpdateProjectAssetRequest
 	UpdateProjectCharacterRequest          = app.UpdateProjectCharacterRequest
@@ -382,7 +350,6 @@ type (
 	VideoDurationConfig                    = app.VideoDurationConfig
 	VideoReferenceConfig                   = app.VideoReferenceConfig
 	VoiceProfileSummary                    = app.VoiceProfileSummary
-	WalletSummary                          = app.WalletSummary
 	WorkflowField                          = app.WorkflowField
 )
 

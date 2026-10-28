@@ -22,7 +22,7 @@ func agentPixelImageFixture(t *testing.T) (*Service, *gorm.DB, cloudAgentMediaAr
 	profile.Image.Quality = ImageQualityConfig{Supported: false, Default: "auto"}
 	profile.Image.Resolution = ImageResolutionConfig{Supported: false, Default: "auto"}
 	for _, row := range []any{
-		&model.ChannelModel{ID: "pixel-cm", ChannelID: "channel", ModelKey: "pixel-image", Capability: "image", Protocol: model.ChannelInterfaceVolcengineArkImage, CapabilityConfigJSON: mustEncodeModelCapabilityConfig(t, profile), BillingMode: "fixed_request", PriceConfigured: true, Enabled: true},
+		&model.ChannelModel{ID: "pixel-cm", ChannelID: "channel", ModelKey: "pixel-image", Capability: "image", Protocol: model.ChannelInterfaceVolcengineArkImage, CapabilityConfigJSON: mustEncodeModelCapabilityConfig(t, profile), Enabled: true},
 	} {
 		if err := db.Create(row).Error; err != nil {
 			t.Fatal(err)
@@ -30,8 +30,7 @@ func agentPixelImageFixture(t *testing.T) (*Service, *gorm.DB, cloudAgentMediaAr
 	}
 	for _, preset := range presets {
 		selector := fmt.Sprintf(`{"size":%q}`, preset.Size)
-		price := map[string]int64{"1k": 100, "1.5k": 150, "2k": 200}[preset.Tier]
-		if err := db.Create(&model.ChannelModelPriceTier{ID: "pixel-" + preset.Size, ChannelModelID: "pixel-cm", SelectorKey: selector, SelectorJSON: selector, BillingMode: "fixed_request", UnitPriceMicrocredits: price, PriceConfigured: true, Enabled: true}).Error; err != nil {
+		if err := db.Create(&model.ChannelModelPriceTier{ID: "pixel-" + preset.Size, ChannelModelID: "pixel-cm", SelectorKey: selector, SelectorJSON: selector, Enabled: true}).Error; err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -134,9 +133,6 @@ func TestCloudAgentPixelImageReferenceReachesApproval(t *testing.T) {
 			if plan.Args.Size != tc.want {
 				t.Fatalf("wrong admitted size: %q", plan.Args.Size)
 			}
-			if state.Approval.Prepared.Quote.AmountMicrocredits != tc.price || state.Approval.Prepared.Quote.PriceTierID != "pixel-"+tc.want {
-				t.Fatalf("wrong preset quote: %+v", state.Approval.Prepared.Quote)
-			}
 			approvalID := state.Approval.ID
 			approveAgentMediaDraft(t, s, run.ID)
 			if err := s.DecideCloudAgentApproval("user", run.ID, approvalID, "approve", ""); err != nil {
@@ -230,7 +226,7 @@ func TestCloudAgentPixelImageUsesEffectiveResolution(t *testing.T) {
 					}
 					for _, row := range []any{
 						&model.SystemSetting{Key: featureAvailabilitySettingKey, ValueJSON: `{"frontendModelsEnabled":true}`},
-						&model.LogicalModel{ID: "logical-pixel", Code: "logical-pixel", Name: "Pixel test", Capability: "image", Enabled: true, ActiveRevisionID: "pixel-revision", PricePolicy: "channel", BillingMode: "fixed_request"},
+						&model.LogicalModel{ID: "logical-pixel", Code: "logical-pixel", Name: "Pixel test", Capability: "image", Enabled: true, ActiveRevisionID: "pixel-revision"},
 						&model.LogicalModelRevision{ID: "pixel-revision", LogicalModelID: "logical-pixel", Version: 1, CapabilitySpecJSON: string(raw), DefaultOptionsJSON: `{"imageResolution":"2k"}`},
 						&model.LogicalModelRoute{ID: "pixel-route", LogicalModelRevisionID: "pixel-revision", ChannelModelID: "pixel-cm", Enabled: true, Weight: 1},
 					} {
@@ -290,7 +286,7 @@ func TestCloudAgentImageApprovalAcceptsTierSelectorForRatioPresets(t *testing.T)
 			if err := db.Where("channel_model_id = ?", "pixel-cm").Delete(&model.ChannelModelPriceTier{}).Error; err != nil {
 				t.Fatal(err)
 			}
-			if err := db.Create(&model.ChannelModelPriceTier{ID: "ratio-any", ChannelModelID: "pixel-cm", SelectorKey: "{}", SelectorJSON: "{}", BillingMode: "fixed_request", UnitPriceMicrocredits: 100, PriceConfigured: true, Enabled: true}).Error; err != nil {
+			if err := db.Create(&model.ChannelModelPriceTier{ID: "ratio-any", ChannelModelID: "pixel-cm", SelectorKey: "{}", SelectorJSON: "{}", Enabled: true}).Error; err != nil {
 				t.Fatal(err)
 			}
 			a.Size = "16:9"

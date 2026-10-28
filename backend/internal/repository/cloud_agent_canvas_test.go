@@ -7,10 +7,11 @@ import (
 	"sync"
 	"testing"
 
+	"yingce/backend/internal/model"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"yingce/backend/internal/model"
 )
 
 func TestCanvasAgentAdmissionAcrossConnections(t *testing.T) {

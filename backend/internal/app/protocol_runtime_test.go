@@ -45,7 +45,7 @@ func TestPluginViewIncludesDocumentationForEveryOfficialProtocol(t *testing.T) {
 		}
 		packageIDs[pkg.Manifest.Metadata.ID] = true
 	}
-	for _, manifest := range append(bundledPaymentPluginManifests(), bundledSMSPluginManifests()...) {
+	for _, manifest := range bundledSMSPluginManifests() {
 		if !packageIDs[manifest.Metadata.ID] {
 			bundledCount++
 		}
@@ -68,9 +68,6 @@ func TestPluginViewIncludesDocumentationForEveryOfficialProtocol(t *testing.T) {
 			continue
 		}
 		expectedSource := PluginOriginOfficial
-		if isSystemPaymentPluginID(plugin.Manifest.ID) {
-			expectedSource = PluginOriginSystem
-		}
 		if plugin.Source != expectedSource {
 			t.Errorf("plugin %q source = %q, want %s", plugin.Manifest.ID, plugin.Source, expectedSource)
 		}
