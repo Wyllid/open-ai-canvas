@@ -16,7 +16,7 @@ func newLocalAdminTestService(t *testing.T) (*Service, *repository.Repository) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := db.AutoMigrate(&model.User{}, &model.AuthSession{}, &model.UserIdentity{}, &model.LoginLog{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}, &model.AuthSession{}, &model.UserIdentity{}, &model.LoginLog{}, &model.SystemSetting{}); err != nil {
 		t.Fatal(err)
 	}
 	repo := repository.New(db)
@@ -95,5 +95,47 @@ func TestEnsureLocalAdminPromotesExistingUser(t *testing.T) {
 	stored, _ := repo.User(user.ID)
 	if stored.Role != model.UserRoleAdmin || stored.Status != model.UserStatusActive {
 		t.Fatalf("stored user = %#v", stored)
+	}
+}
+
+func TestEnsureLocalAdminRetiresTheOldAccountAfterARename(t *testing.T) {
+	svc, repo := newLocalAdminTestService(t)
+	old, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "admin", Password: "admin"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	session, err := svc.Login(LoginRequest{Username: "admin", Password: "admin"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	renamed, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "owner", Password: "a-long-new-secret"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if renamed.ID == old.ID {
+		t.Fatal("a new username is a new account")
+	}
+	if _, err := svc.Login(LoginRequest{Username: "admin", Password: "admin"}); err == nil {
+		t.Fatal("the old default admin still signs in after the rename")
+	}
+	if _, err := svc.CurrentUser(session.Session); err == nil {
+		t.Fatal("the old admin's session is still valid after the rename")
+	}
+	stored, err := repo.User(old.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stored.Role == model.UserRoleAdmin || stored.Status != model.UserStatusDisabled {
+		t.Fatalf("old admin = %#v", stored)
+	}
+	if _, err := svc.Login(LoginRequest{Username: "owner", Password: "a-long-new-secret"}); err != nil {
+		t.Fatal(err)
+	}
+	// Restarting with the same settings leaves the new admin alone.
+	if _, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "owner", Password: "a-long-new-secret"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Login(LoginRequest{Username: "owner", Password: "a-long-new-secret"}); err != nil {
+		t.Fatal(err)
 	}
 }

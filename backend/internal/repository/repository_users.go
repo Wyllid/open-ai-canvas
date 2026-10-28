@@ -191,8 +191,9 @@ func (r *Repository) DeleteExpiredEmailVerificationCodes(now time.Time) error {
 	return r.db.Delete(&model.EmailVerificationCode{}, "expires_at <= ? OR used_at IS NOT NULL", now).Error
 }
 
-// SyncLocalAdmin writes the single local admin account's credentials, role and status.
-// When the password hash changes, existing sessions are revoked in the same transaction.
+// SyncLocalAdmin writes a local admin account's credentials, role and status: the current
+// admin on start, or a retired one after a rename. With revokeSessions, the account's
+// sessions are revoked in the same transaction.
 func (r *Repository) SyncLocalAdmin(user *model.User, revokeSessions bool) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&model.User{}).Where("id = ?", user.ID).Updates(map[string]any{

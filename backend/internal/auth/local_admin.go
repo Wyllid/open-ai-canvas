@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 	"time"
@@ -17,9 +18,66 @@ type LocalAdminCredentials struct {
 	Password string
 }
 
+// localAdminSettingKey remembers which account is the local admin, so renaming
+// CANVAS_ADMIN_USERNAME retires the old account instead of leaving it signed in.
+const localAdminSettingKey = "local_admin"
+
+type localAdminBinding struct {
+	UserID string `json:"userId"`
+}
+
 // EnsureLocalAdmin creates the admin account on first start and keeps its password,
-// role and status in sync with the environment on every later start.
+// role and status in sync with the environment on every later start. When the
+// configured username changes, the previous local admin is disabled and signed out.
 func (s *Service) EnsureLocalAdmin(creds LocalAdminCredentials) (*model.User, error) {
+	user, err := s.ensureLocalAdminAccount(creds)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.retirePreviousLocalAdmin(user); err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *Service) retirePreviousLocalAdmin(user *model.User) error {
+	setting, err := s.repo.SystemSettingOptional(localAdminSettingKey)
+	if err != nil {
+		return err
+	}
+	var binding localAdminBinding
+	if setting != nil {
+		_ = json.Unmarshal([]byte(setting.ValueJSON), &binding)
+	}
+	if binding.UserID == user.ID {
+		return nil
+	}
+	if binding.UserID != "" {
+		previous, err := s.repo.User(binding.UserID)
+		switch {
+		case errors.Is(err, gorm.ErrRecordNotFound):
+		case err != nil:
+			return err
+		case previous.Role == model.UserRoleAdmin || previous.Status == model.UserStatusActive:
+			previous.Role, previous.Status, previous.UpdatedAt = model.UserRoleUser, model.UserStatusDisabled, time.Now()
+			if err := s.repo.SyncLocalAdmin(previous, true); err != nil {
+				return err
+			}
+		}
+	}
+	encoded, err := json.Marshal(localAdminBinding{UserID: user.ID})
+	if err != nil {
+		return err
+	}
+	now := time.Now()
+	next := &model.SystemSetting{Key: localAdminSettingKey, ValueJSON: string(encoded), UpdatedBy: user.ID, CreatedAt: now, UpdatedAt: now}
+	if setting != nil {
+		next.CreatedAt = setting.CreatedAt
+	}
+	return s.repo.SaveSystemSetting(next)
+}
+
+func (s *Service) ensureLocalAdminAccount(creds LocalAdminCredentials) (*model.User, error) {
 	username := NormalizeUsername(creds.Username)
 	if username == "" {
 		return nil, errors.New("local admin username is empty")
