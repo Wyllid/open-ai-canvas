@@ -155,6 +155,18 @@ func registerDramaRoutes(r *gin.RouterGroup, svc *service.Service) {
 		cues, err := svc.SetDramaMusic(userID, c.Param("id"), c.Param("episodeId"), req)
 		return gin.H{"cues": cues}, err
 	}))
+	r.POST("/dramas/:id/takes/:takeId/select", dramaRoute(svc, 0, func(c *gin.Context, userID string) (any, error) {
+		return svc.SelectDramaTake(userID, c.Param("id"), c.Param("takeId"))
+	}))
+	r.PUT("/dramas/:id/takes/:takeId/review", dramaRoute(svc, 32<<10, func(c *gin.Context, userID string) (any, error) {
+		var req service.DramaTakeReview
+		if err := bindDramaJSON(c, &req); err != nil {
+			return nil, err
+		}
+		req.Reviewer = "person"
+		review, err := svc.ReviewDramaTake(userID, c.Param("id"), c.Param("takeId"), req)
+		return gin.H{"review": review}, err
+	}))
 	r.POST("/dramas/:id/episodes/:episodeId/approve", dramaRoute(svc, 0, func(c *gin.Context, userID string) (any, error) {
 		return svc.ApproveDramaEpisode(userID, c.Param("id"), c.Param("episodeId"))
 	}))

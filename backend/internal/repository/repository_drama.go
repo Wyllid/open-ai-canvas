@@ -269,6 +269,28 @@ func (r *Repository) CreateDramaTake(take *model.DramaTake) error {
 	})
 }
 
+// DramaTakesForOwners 返回这些产物的全部版本，新版本在前。
+func (r *Repository) DramaTakesForOwners(ownerIDs []string, kind string) ([]model.DramaTake, error) {
+	var takes []model.DramaTake
+	if len(ownerIDs) == 0 {
+		return takes, nil
+	}
+	err := r.db.Where("owner_id IN ? AND kind = ?", ownerIDs, kind).Order("version desc").Find(&takes).Error
+	return takes, err
+}
+
+func (r *Repository) DramaTake(projectID string, id string) (*model.DramaTake, error) {
+	var take model.DramaTake
+	if err := r.db.First(&take, "id = ? AND project_id = ?", id, projectID).Error; err != nil {
+		return nil, err
+	}
+	return &take, nil
+}
+
+func (r *Repository) UpdateDramaTakeReview(id string, reviewJSON string) error {
+	return r.db.Model(&model.DramaTake{}).Where("id = ?", id).Update("review_json", reviewJSON).Error
+}
+
 func (r *Repository) DramaJobsByStatus(projectID string, statuses ...string) ([]model.DramaJob, error) {
 	var jobs []model.DramaJob
 	err := r.db.Where("project_id = ? AND status IN ?", projectID, statuses).Order("priority desc, created_at asc").Find(&jobs).Error

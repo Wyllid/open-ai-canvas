@@ -5,12 +5,13 @@ import { ArrowUp, ChevronLeft, ChevronRight, Copy, Loader2, Play, RotateCcw, Spa
 
 import { AppModal } from "@/components/ui/product/app-modal";
 import { TRANSITION_LABEL } from "@/lib/drama/storyboard";
-import type { DramaCast, DramaEpisodeDetail, DramaModelChoice, DramaSegment, DramaShot, DramaShotPatch, DramaTransition } from "@/services/api/drama";
+import type { DramaCast, DramaEpisodeDetail, DramaModelChoice, DramaSegment, DramaShot, DramaShotPatch, DramaTake, DramaTransition } from "@/services/api/drama";
 import { dramaChoiceKey } from "@/lib/drama/model-choice";
 
 import { DramaModelPicker } from "../drama-model-picker";
 
 import { CAST_KIND_LABEL, mediaBusy, MediaThumb } from "../drama-shared";
+import { SegmentTakes, type TakeReviewInput } from "./segment-takes";
 import { promptReady, referenceMissingReason, secondsLabel, SegmentInputs, SegmentStatus, SegmentVideo, videoWaitLabel } from "./segment-parts";
 
 const SHOT_SIZES = ["特写", "近景", "中景", "全景", "远景"];
@@ -43,6 +44,8 @@ type Props = {
     onGenerate: (segment: DramaSegment, model?: DramaModelChoice) => void;
     reprocessing: boolean;
     onReprocess: (segment: DramaSegment) => void;
+    onSelectTake: (take: DramaTake) => void;
+    onReviewTake: (take: DramaTake, review: TakeReviewInput) => void;
     defaultVideoModel: DramaModelChoice;
     onOpenCast: (castId: string) => void;
 };
@@ -69,6 +72,8 @@ export function SegmentDialog({
     onWritePrompt,
     onGenerate,
     onReprocess,
+    onSelectTake,
+    onReviewTake,
     onOpenCast,
 }: Props) {
     const segments = detail?.segments || [];
@@ -136,6 +141,7 @@ export function SegmentDialog({
                                     <span>{segment.videoWait}</span>
                                 </div>
                             ) : null}
+                            <SegmentTakes key={`takes-${segment.id}`} segment={segment} aspectRatio={aspectRatio} busy={busy} onSelect={onSelectTake} onReview={onReviewTake} />
                             <SegmentGenerate key={segment.id} segment={segment} busy={busy} defaultVideoModel={defaultVideoModel} onGenerate={(model) => onGenerate(segment, model)} />
                             <section className="drama-sd-block">
                                 <div className="drama-sd-label">

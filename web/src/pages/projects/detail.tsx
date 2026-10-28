@@ -6,7 +6,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { WorkspacePage } from "@/components/layout/workspace-page";
 import { WorkspaceErrorState, WorkspaceLoadingState } from "@/components/layout/workspace-state";
-import { approveDramaEpisode, deleteDramaShot, generateDramaSegments, insertDramaShot, pauseDrama, reprocessDramaSegmentVideo, regenerateDramaCast, releaseDramaMedia, renameDramaEpisode, rescriptDramaEpisode, retryFailedDrama, startDrama, updateDramaSegment, updateDramaSegmentReferences, writeDramaSegmentPrompts, updateDramaShot, type DramaInboxItem, type DramaJob, type DramaModelChoice, type DramaSegment, type DramaShot, type DramaShotPatch } from "@/services/api/drama";
+import { approveDramaEpisode, deleteDramaShot, generateDramaSegments, insertDramaShot, pauseDrama, reprocessDramaSegmentVideo, regenerateDramaCast, reviewDramaTake, selectDramaTake, releaseDramaMedia, renameDramaEpisode, rescriptDramaEpisode, retryFailedDrama, startDrama, updateDramaSegment, updateDramaSegmentReferences, writeDramaSegmentPrompts, updateDramaShot, type DramaInboxItem, type DramaJob, type DramaModelChoice, type DramaSegment, type DramaShot, type DramaShotPatch, type DramaTake } from "@/services/api/drama";
 
 import { formatCount, formatDuration, sourceFormatOf, StagePips, STAGE_LABEL, STATUS_LABEL } from "./drama-shared";
 import { CastPanel, InboxPanel, SettingsPanel } from "./studio/panels";
@@ -15,6 +15,7 @@ import { AddEpisodeModal } from "./studio/episode-source";
 import { FinalView } from "./studio/final-view";
 import { StudioGenesis } from "./studio/genesis";
 import { SegmentDialog } from "./studio/segment-dialog";
+import type { TakeReviewInput } from "./studio/segment-takes";
 import { QueueBar } from "./studio/queue-bar";
 import { ScriptView } from "./studio/script-view";
 import { Storyboard, type EpisodeEmpty } from "./studio/storyboard";
@@ -136,6 +137,20 @@ export default function DramaStudioPage() {
         onSuccess: (_, segmentIndex) => { invalidate(episodeId); message.success(`正在重新处理第 ${segmentIndex + 1} 段视频`); },
         onError: (error) => { invalidate(episodeId); errorMessage(error, "重新处理失败"); },
     });
+    const selectTake = useMutation({
+        mutationFn: (take: DramaTake) => selectDramaTake(projectId, take.id),
+        onSuccess: (result, take) => {
+            invalidate(episodeId);
+            if (result.warning) message.warning(result.warning, 8);
+            else message.success(result.changed ? `Take ${take.version} is in the cut; the episode will be rendered again` : `Take ${take.version} is already in the cut`);
+        },
+        onError: (error) => { invalidate(episodeId); errorMessage(error, "Could not pick the take"); },
+    });
+    const reviewTake = useMutation({
+        mutationFn: ({ take, review }: { take: DramaTake; review: TakeReviewInput }) => reviewDramaTake(projectId, take.id, review),
+        onSuccess: (_, { take }) => { invalidate(episodeId); message.success(`Review of take ${take.version} saved`); },
+        onError: (error) => errorMessage(error, "Could not save the review"),
+    });
     const rescript = useMutation({
         mutationFn: () => rescriptDramaEpisode(projectId, episodeId),
         onSuccess: () => { invalidate(episodeId); setParams({ shot: null, segment: null }); message.success(running ? "正在重新改编本集" : "已继续制作，正在重新改编本集"); },
@@ -183,7 +198,7 @@ export default function DramaStudioPage() {
         onSuccess: () => { invalidate(episodeId); setRenaming(false); },
         onError: (error) => errorMessage(error, "重命名失败"),
     });
-    const busy = approve.isPending || rescript.isPending || generateSegments.isPending || release.isPending || insertShot.isPending || removeShot.isPending || saveReferences.isPending;
+    const busy = approve.isPending || rescript.isPending || generateSegments.isPending || release.isPending || insertShot.isPending || removeShot.isPending || saveReferences.isPending || selectTake.isPending || reviewTake.isPending;
 
     const openInbox = (item: DramaInboxItem) => {
         if (item.castId) { openView("cast", { cast: item.castId }); return; }
@@ -374,6 +389,8 @@ export default function DramaStudioPage() {
                             onGenerate={(segment, videoModel) => generateSegments.mutate({ segments: [segment.index], videoModel })}
                             reprocessing={reprocessSegment.isPending}
                             onReprocess={(segment) => reprocessSegment.mutate(segment.index)}
+                            onSelectTake={(take) => selectTake.mutate(take)}
+                            onReviewTake={(take, review) => reviewTake.mutate({ take, review })}
                             defaultVideoModel={production.settings.models.video}
                             onOpenCast={(id) => openView("cast", { cast: id, segment: null, shot: null })}
                         />

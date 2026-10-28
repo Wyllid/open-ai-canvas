@@ -588,6 +588,9 @@ func (s *Service) fillDramaSegmentViews(projectID string, p *model.DramaProducti
 		return err
 	}
 	detail.Segments = buildDramaSegmentViews(settings, parseDramaBibleMeta(p.BibleJSON), detail.Shots, castByID, rows)
+	if err := s.attachDramaTakes(detail.Segments); err != nil {
+		return err
+	}
 	jobs, err := s.repo.RecentDramaSegmentJobs(projectID, detail.Episode.ID)
 	if err != nil {
 		return err

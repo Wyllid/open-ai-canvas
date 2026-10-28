@@ -18,6 +18,7 @@ type (
 	UpdateDramaChapterRequest    = app.UpdateDramaChapterRequest
 	UpdateDramaEpisodeRequest    = app.UpdateDramaEpisodeRequest
 	SetDramaMusicRequest         = app.SetDramaMusicRequest
+	DramaTakeReview              = app.DramaTakeReview
 	InsertDramaShotRequest       = app.InsertDramaShotRequest
 	SetDramaCastImageRequest     = app.SetDramaCastImageRequest
 )
