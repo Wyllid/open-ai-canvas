@@ -36,8 +36,8 @@ RUN npm ci --omit=dev --ignore-scripts
 
 FROM node:22.19-alpine
 
-# ffmpeg/ffprobe：短剧抽取剧情段视频最后一帧、时间线合成成片与视频播放转码。
-RUN apk add --no-cache ca-certificates tzdata wget ffmpeg \
+# ffmpeg/ffprobe：短剧抽取剧情段视频最后一帧、时间线合成成片与视频播放转码；文泉驿正黑供 libass 烧录中日韩字幕。
+RUN apk add --no-cache ca-certificates tzdata wget ffmpeg font-wqy-zenhei \
     && addgroup -S app \
     && adduser -S app -G app
 

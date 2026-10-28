@@ -94,10 +94,14 @@ export function referenceMissingReason(segment: DramaSegment, cast: DramaCast | 
 
 export function SegmentInputs({ segment, castById, compact = false, frameOnly = false, onOpenCast }: { segment: DramaSegment; castById: Map<string, DramaCast>; compact?: boolean; frameOnly?: boolean; onOpenCast?: (id: string) => void }) {
     const { request } = segment;
-    const first = segment.index === 0 && !request.firstFrameResourceId && !request.firstFramePending;
+    const picked = Boolean(segment.startFrameResourceId);
+    const first = !picked && segment.index === 0 && !request.firstFrameResourceId && !request.firstFramePending;
     return (
         <div className={`drama-sg-inputs ${compact ? "is-compact" : ""}`}>
-            <Tooltip title={tr("首帧：{0}", first ? tr("开场段，按提示词与参考图生成") : request.firstFrameResourceId ? tr("第 {0} 段视频最后一帧", segment.index) : tr("等第 {0} 段视频生成后取最后一帧", segment.index))} mouseEnterDelay={0.3}>
+            <Tooltip
+                title={tr("首帧：{0}", picked ? tr("已为本段选定首帧") : first ? tr("开场段，按提示词与参考图生成") : request.firstFrameResourceId ? tr("第 {0} 段视频最后一帧", segment.index) : tr("等第 {0} 段视频生成后取最后一帧", segment.index))}
+                mouseEnterDelay={0.3}
+            >
                 <div className="drama-sg-input is-frame">
                     <span className="drama-sg-thumb is-frame">
                         {request.firstFrameResourceId ? <MediaThumb resourceId={request.firstFrameResourceId} alt={tr("上一段最后一帧")} /> : <span className="drama-sg-thumb-empty">{first ? tr("开场") : tr("等待")}</span>}
@@ -106,7 +110,7 @@ export function SegmentInputs({ segment, castById, compact = false, frameOnly = 
                     {compact ? null : (
                         <span className="drama-sg-input-text">
                             <b>{tr("首帧")}</b>
-                            <small>{first ? tr("开场段，按提示词生成") : request.firstFrameResourceId ? tr("第 {0} 段最后一帧", segment.index) : tr("等第 {0} 段视频生成", segment.index)}</small>
+                            <small>{picked ? tr("已选定首帧") : first ? tr("开场段，按提示词生成") : request.firstFrameResourceId ? tr("第 {0} 段最后一帧", segment.index) : tr("等第 {0} 段视频生成", segment.index)}</small>
                         </span>
                     )}
                 </div>

@@ -255,6 +255,56 @@ export type DramaEpisodeDetail = {
     dialogueCheck?: DramaDialogueCheck;
     /** Latest run of the review roles on this episode; absent when never reviewed. */
     review?: DramaReviewState;
+    /** Captions in effect (automatic from the dialogue, or edited) and their SRT. */
+    captions?: DramaCaptions;
+    /** Lower thirds and image overlays burned into the final video. */
+    motion?: DramaMotionItem[];
+    /** Latest upscale of the final video; absent when never upscaled. */
+    enhance?: DramaEnhanceState;
+};
+
+export type DramaEnhanceState = {
+    taskId: string;
+    sourceResourceId: string;
+    model: DramaModelChoice;
+    resolution: string;
+    fps?: number;
+    status: "queued" | "running" | "succeeded" | "failed";
+    resourceId?: string;
+    error?: string;
+    createdAt: string;
+    /** The final video was rendered again after this upscale. */
+    outdated?: boolean;
+};
+export type DramaEnhanceRequest = { model: DramaModelChoice; resolution: string; fps?: number; confirm: true };
+
+export type DramaCaptionStyle = "plain" | "karaoke";
+/** Word timing is relative to the start of its caption. */
+export type DramaCaptionWord = { text: string; startMs: number; durationMs: number };
+export type DramaCaptionCue = { shotId?: string; startMs: number; durationMs: number; text: string; words: DramaCaptionWord[] };
+export type DramaCaptions = {
+    burn: boolean;
+    style: DramaCaptionStyle;
+    /** Edited captions no longer follow script changes until reset. */
+    edited: boolean;
+    /** Word timing is estimated from character counts, not recognized from the audio. */
+    estimatedTiming: boolean;
+    outdated?: string[];
+    cues: DramaCaptionCue[];
+    srt: string;
+};
+export type DramaCaptionsUpdate = { burn?: boolean; style?: DramaCaptionStyle; cues?: DramaCaptionCue[]; reset?: boolean };
+
+export type DramaOverlayPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right" | "center";
+export type DramaMotionItem = {
+    kind: "lowerThird" | "overlay";
+    startMs: number;
+    durationMs: number;
+    title?: string;
+    subtitle?: string;
+    resourceId?: string;
+    position?: DramaOverlayPosition;
+    widthPct?: number;
 };
 
 /** missing 是没有逐字出现在镜头台词里的原文台词（被删或被改写），最多 30 句；missingCount 是总数。 */
@@ -278,6 +328,8 @@ export type DramaSegment = {
     videoStatus: DramaMediaStatus;
     videoResourceId?: string;
     tailFrameResourceId?: string;
+    /** Image the segment video starts from (a previs render or keyframe); replaces the previous segment's last frame. */
+    startFrameResourceId?: string;
     videoError?: string;
     /** 视频已生成，只是后处理（如抽尾帧）失败；可重新处理已有视频，不重新生成。 */
     videoReprocessable?: boolean;
@@ -412,6 +464,25 @@ export type DramaReviewState = {
 /** Runs the review roles on an episode's shot list in one text call; nothing is changed until a finding is accepted. */
 export function runDramaReview(projectId: string, episodeId: string, passes: DramaReviewPass[]) {
     return http.post<DramaReviewState>(`${base(projectId)}/episodes/${encodeURIComponent(episodeId)}/review`, { passes });
+}
+
+/** Captions and graphics only re-render the episode with local ffmpeg; nothing is generated. */
+export function setDramaCaptions(projectId: string, episodeId: string, update: DramaCaptionsUpdate) {
+    return http.put<DramaCaptions>(`${base(projectId)}/episodes/${encodeURIComponent(episodeId)}/captions`, update);
+}
+
+/** Paid: upscales the current final video with a video enhance model. Only call after the person confirms. */
+export function enhanceDramaFinal(projectId: string, episodeId: string, request: DramaEnhanceRequest) {
+    return http.post<DramaEnhanceState>(`${base(projectId)}/episodes/${encodeURIComponent(episodeId)}/enhance`, request);
+}
+
+/** Start the segment's video from this image (a previs render or a refined keyframe); an empty id clears it. */
+export function setDramaSegmentStartFrame(projectId: string, episodeId: string, index: number, resourceId: string) {
+    return http.patch<{ saved: boolean }>(`${base(projectId)}/episodes/${encodeURIComponent(episodeId)}/segments/${index}`, { startFrameResourceId: resourceId });
+}
+
+export function setDramaMotion(projectId: string, episodeId: string, items: DramaMotionItem[]) {
+    return http.put<{ items: DramaMotionItem[] }>(`${base(projectId)}/episodes/${encodeURIComponent(episodeId)}/motion`, { items });
 }
 
 /** Accepting a finding with a field change edits that shot, like any shot edit. */

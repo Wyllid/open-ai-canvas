@@ -6,10 +6,15 @@ import { Download, Film } from "lucide-react";
 import type { DramaEpisodeDetail } from "@/services/api/drama";
 
 import { aspectRatioValue, downloadResource, formatDuration, MediaThumb, STAGE_LABEL, useResourceMediaUrl } from "../drama-shared";
+import { FinalUpscale } from "./final-upscale";
+import { PostProduction } from "./post-production";
 import { secondsLabel } from "./segment-parts";
 
-/** 成片：各剧情段视频按顺序拼接，保留视频模型生成的对白与音效。片段条可跳到对应段并打开该段详情。 */
-export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title: string; detail: DramaEpisodeDetail; aspectRatio: string; onOpenSegment: (index: number) => void }) {
+/**
+ * Final video: segment videos in order with the dialogue and sound the video model generated, plus music,
+ * captions and graphics. The filmstrip jumps to a segment and opens its details.
+ */
+export function FinalView({ projectId, title, detail, aspectRatio, onOpenSegment }: { projectId: string; title: string; detail: DramaEpisodeDetail; aspectRatio: string; onOpenSegment: (index: number) => void }) {
     const { episode, segments } = detail;
     const { message } = App.useApp();
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -19,9 +24,10 @@ export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title
         starts.push(cursor);
         return cursor + (segment.request.seconds || segment.durationMs / 1000);
     }, 0);
+    const fileName = `${title}-episode-${episode.number}`;
     const download = () => {
         if (!episode.finalResourceId) return;
-        void downloadResource(episode.finalResourceId, tr("{0}-第{1}集.mp4", title, episode.number)).catch((error) => message.error(error instanceof Error ? error.message : tr("下载失败")));
+        void downloadResource(episode.finalResourceId, `${fileName}.mp4`).catch((error) => message.error(error instanceof Error ? error.message : tr("下载失败")));
     };
     return (
         <div className="drama-finalv">
@@ -67,6 +73,8 @@ export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title
                 <Button icon={<Download className="size-4" />} disabled={!episode.finalResourceId} onClick={download}>
                     {tr("下载成片")}
                 </Button>
+                <PostProduction projectId={projectId} episodeId={episode.id} fileName={fileName} captions={detail.captions} motion={detail.motion} />
+                <FinalUpscale projectId={projectId} episode={episode} enhance={detail.enhance} fileName={fileName} />
             </aside>
         </div>
     );

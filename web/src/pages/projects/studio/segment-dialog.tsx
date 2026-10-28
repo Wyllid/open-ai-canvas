@@ -12,6 +12,7 @@ import { dramaChoiceKey } from "@/lib/drama/model-choice";
 import { DramaModelPicker } from "../drama-model-picker";
 
 import { CAST_KIND_LABEL, mediaBusy, MediaThumb } from "../drama-shared";
+import { SegmentStartFrame } from "./segment-start-frame";
 import { SegmentTakes, type TakeReviewInput } from "./segment-takes";
 import { promptReady, referenceMissingReason, secondsLabel, SegmentInputs, SegmentStatus, SegmentVideo, videoWaitLabel } from "./segment-parts";
 
@@ -151,6 +152,7 @@ export function SegmentDialog({
                                     </small>
                                 </div>
                                 <SegmentInputs segment={segment} castById={castById} onOpenCast={onOpenCast} frameOnly />
+                                <SegmentStartFrame projectId={detail.episode.projectId} episodeId={detail.episode.id} segment={segment} busy={busy} />
                                 <ReferenceEditor segment={segment} castById={castById} busy={busy} onChange={(ids) => onSaveReferences(segment, ids)} onOpenCast={onOpenCast} />
                                 {segment.request.warning ? <p className="drama-sg-note is-warn">{segment.request.warning}</p> : null}
                             </section>

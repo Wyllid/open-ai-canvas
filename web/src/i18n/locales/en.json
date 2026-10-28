@@ -770,7 +770,6 @@
     "{0}-{1} / 共 {2} {3}": "{0}-{1} of {2} {3}",
     "{0}-声音样本.{1}": "{0}-voice-sample.{1}",
     "{0}-录制": "{0}-recording",
-    "{0}-第{1}集.mp4": "{0}-episode-{1}.mp4",
     "{0}/2 生效": "{0}/2 active",
     "{0}/7 开放": "{0}/7 open",
     "{0}/{1} · 失败 {2}": "{0}/{1} · {2} failed",
@@ -11933,5 +11932,7 @@
     "技能草稿": "Skill draft",
     "短剧大纲": "Short drama outline",
     "章节角色、场景与道具提取": "Chapter characters, scenes and props extraction",
-    "角色卡提取": "Character card extraction"
+    "角色卡提取": "Character card extraction",
+    "已为本段选定首帧": "Start frame picked for this segment",
+    "已选定首帧": "Picked start frame"
 }

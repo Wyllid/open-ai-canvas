@@ -74,6 +74,10 @@ const (
 	mcpDramaTakeSelect = "drama_take_select"
 	mcpDramaReviewRun  = "drama_review_run"
 	mcpDramaReviewSet  = "drama_review_resolve"
+	mcpDramaCaptions   = "drama_captions_set"
+	mcpDramaMotion     = "drama_motion_set"
+	mcpDramaStartFrame = "drama_segment_start_frame"
+	mcpDramaEnhance    = "drama_final_enhance"
 )
 
 const mcpCanvasIDDescription = "Canvas ID from canvas_list."
@@ -194,6 +198,61 @@ func (s *Service) MCPTools() ([]MCPTool, error) {
 			"findingId": map[string]any{"type": "string"},
 			"accept":    map[string]any{"type": "boolean"},
 		}, "projectId", "episodeId", "findingId", "accept"),
+		mcpTool(mcpDramaCaptions, "Change an episode's captions. By default captions are timed automatically from each shot's dialogue and the segment video lengths, with word timing estimated from character counts; they are always exported as SRT and burned into the video only when burn is true. Send cues to replace them all (for example after correcting text, or with word timings from a transcription); edited captions no longer follow script changes until reset is true. A rendered episode is marked stale and rendered again with local ffmpeg only. Current captions are under captions in drama_episode_get.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"episodeId": map[string]any{"type": "string"},
+			"burn":      map[string]any{"type": "boolean", "description": "Burn captions into the video."},
+			"style":     map[string]any{"type": "string", "enum": []string{renderCaptionPlain, renderCaptionKaraoke}, "description": "karaoke highlights word by word when burned."},
+			"reset":     map[string]any{"type": "boolean", "description": "Go back to automatic captions from the dialogue."},
+			"cues": map[string]any{"type": "array", "maxItems": dramaMaxCaptionCues, "items": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"shotId":     map[string]any{"type": "string"},
+					"startMs":    map[string]any{"type": "integer", "minimum": 0, "description": "ms from the episode start."},
+					"durationMs": map[string]any{"type": "integer", "minimum": 300, "maximum": 30000},
+					"text":       map[string]any{"type": "string", "maxLength": dramaMaxCaptionRunes},
+					"words": map[string]any{"type": "array", "description": "Optional word timings relative to the cue start; they must spell the text, otherwise they are estimated.", "items": map[string]any{
+						"type":       "object",
+						"properties": map[string]any{"text": map[string]any{"type": "string"}, "startMs": map[string]any{"type": "integer"}, "durationMs": map[string]any{"type": "integer"}},
+						"required":   []string{"text", "startMs", "durationMs"},
+					}},
+				},
+				"required": []string{"startMs", "durationMs", "text"},
+			}},
+		}, "projectId", "episodeId"),
+		mcpTool(mcpDramaMotion, "Replace the graphics burned into an episode: lowerThird items show a name or place bar (title plus optional subtitle), overlay items place an image resource such as a logo in a corner. Times are ms from the episode start. An empty list removes all graphics. A rendered episode is marked stale and rendered again with local ffmpeg only.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"episodeId": map[string]any{"type": "string"},
+			"items": map[string]any{"type": "array", "maxItems": dramaMaxMotionItems, "items": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"kind":       map[string]any{"type": "string", "enum": []string{DramaMotionLowerThird, DramaMotionOverlay}},
+					"startMs":    map[string]any{"type": "integer", "minimum": 0},
+					"durationMs": map[string]any{"type": "integer", "minimum": 500},
+					"title":      map[string]any{"type": "string", "maxLength": 40},
+					"subtitle":   map[string]any{"type": "string", "maxLength": 60},
+					"resourceId": map[string]any{"type": "string", "description": "Ready image resource id for an overlay."},
+					"position":   map[string]any{"type": "string", "enum": renderOverlayPositions},
+					"widthPct":   map[string]any{"type": "number", "minimum": 5, "maximum": 60, "description": "Overlay width as a percentage of the frame width; default 18."},
+				},
+				"required": []string{"kind", "startMs", "durationMs"},
+			}},
+		}, "projectId", "episodeId", "items"),
+		mcpTool(mcpDramaStartFrame, "Set the image a segment's video starts from, such as a previs render or a refined keyframe (any ready image resource); an empty resourceId clears it. A segment with a start frame no longer continues from the previous segment's last frame. Its prompt and video become stale; nothing is generated until the segment video is requested.", map[string]any{
+			"projectId":    map[string]any{"type": "string"},
+			"episodeId":    map[string]any{"type": "string"},
+			"segmentIndex": map[string]any{"type": "integer", "minimum": 0, "description": "The segment's index from drama_episode_get."},
+			"resourceId":   map[string]any{"type": "string"},
+		}, "projectId", "episodeId", "segmentIndex", "resourceId"),
+		mcpTool(mcpDramaEnhance, "Upscale (and optionally interpolate) an episode's current final video with a video enhance model from model_list. It is a paid generation billed by the video length: only call it after the person has explicitly agreed, and pass confirm: true. The result is kept next to the final video under enhance in drama_episode_get.", map[string]any{
+			"projectId":  map[string]any{"type": "string"},
+			"episodeId":  map[string]any{"type": "string"},
+			"channelId":  map[string]any{"type": "string"},
+			"modelKey":   map[string]any{"type": "string"},
+			"resolution": map[string]any{"type": "string", "description": "Output resolution offered by the model, such as 1080p, 2k or 4k."},
+			"fps":        map[string]any{"type": "integer", "description": "Output frame rate, only for models that let you choose it; omit to keep the source rate."},
+			"confirm":    map[string]any{"type": "boolean"},
+		}, "projectId", "episodeId", "channelId", "modelKey", "resolution", "confirm"),
 	}
 	registry := cloudAgentRegistry()
 	for _, name := range append(append([]string{}, mcpCanvasTools...), mcpSkillTools...) {
@@ -418,6 +477,57 @@ func (s *Service) CallMCPTool(userID, name string, arguments json.RawMessage) (a
 			return nil, err
 		}
 		return s.ResolveDramaReviewFinding(userID, args.ProjectID, args.EpisodeID, args.FindingID, ResolveDramaReviewFindingRequest{Accept: args.Accept})
+	case mcpDramaCaptions:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			EpisodeID string `json:"episodeId"`
+			SetDramaCaptionsRequest
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID); err != nil {
+			return nil, err
+		}
+		return s.SetDramaCaptions(userID, args.ProjectID, args.EpisodeID, args.SetDramaCaptionsRequest)
+	case mcpDramaMotion:
+		var args struct {
+			ProjectID string            `json:"projectId"`
+			EpisodeID string            `json:"episodeId"`
+			Items     []DramaMotionItem `json:"items"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID); err != nil {
+			return nil, err
+		}
+		return s.SetDramaMotion(userID, args.ProjectID, args.EpisodeID, SetDramaMotionRequest{Items: args.Items})
+	case mcpDramaStartFrame:
+		var args struct {
+			ProjectID    string `json:"projectId"`
+			EpisodeID    string `json:"episodeId"`
+			SegmentIndex int    `json:"segmentIndex"`
+			ResourceID   string `json:"resourceId"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID); err != nil {
+			return nil, err
+		}
+		if args.SegmentIndex < 0 {
+			return nil, BadAuthRequest("segmentIndex cannot be negative")
+		}
+		if err := s.UpdateDramaSegment(userID, args.ProjectID, args.EpisodeID, args.SegmentIndex, UpdateDramaSegmentRequest{StartFrameResourceID: &args.ResourceID}); err != nil {
+			return nil, err
+		}
+		return map[string]any{"saved": true}, nil
+	case mcpDramaEnhance:
+		var args struct {
+			ProjectID  string `json:"projectId"`
+			EpisodeID  string `json:"episodeId"`
+			ChannelID  string `json:"channelId"`
+			ModelKey   string `json:"modelKey"`
+			Resolution string `json:"resolution"`
+			FPS        int    `json:"fps"`
+			Confirm    bool   `json:"confirm"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.EpisodeID); err != nil {
+			return nil, err
+		}
+		return s.EnhanceDramaFinal(userID, args.ProjectID, args.EpisodeID, DramaEnhanceRequest{Model: DramaModelChoice{ChannelID: args.ChannelID, ModelKey: args.ModelKey}, Resolution: args.Resolution, FPS: args.FPS, Confirm: args.Confirm})
 	}
 	if isMCPCanvasTool(name) {
 		canvasID, rest, err := splitMCPCanvasID(arguments)

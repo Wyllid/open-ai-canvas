@@ -143,14 +143,14 @@ export default function DramaStudioPage() {
         onSuccess: (result, take) => {
             invalidate(episodeId);
             if (result.warning) message.warning(result.warning, 8);
-            else message.success(result.changed ? `Take ${take.version} is in the cut; the episode will be rendered again` : `Take ${take.version} is already in the cut`);
+            else message.success(result.changed ? tr("Take {0} is in the cut; the episode will be rendered again", take.version) : tr("Take {0} is already in the cut", take.version));
         },
-        onError: (error) => { invalidate(episodeId); errorMessage(error, "Could not pick the take"); },
+        onError: (error) => { invalidate(episodeId); errorMessage(error, tr("Could not pick the take")); },
     });
     const reviewTake = useMutation({
         mutationFn: ({ take, review }: { take: DramaTake; review: TakeReviewInput }) => reviewDramaTake(projectId, take.id, review),
-        onSuccess: (_, { take }) => { invalidate(episodeId); message.success(`Review of take ${take.version} saved`); },
-        onError: (error) => errorMessage(error, "Could not save the review"),
+        onSuccess: (_, { take }) => { invalidate(episodeId); message.success(tr("Review of take {0} saved", take.version)); },
+        onError: (error) => errorMessage(error, tr("Could not save the review")),
     });
     const rescript = useMutation({
         mutationFn: () => rescriptDramaEpisode(projectId, episodeId),
@@ -369,7 +369,7 @@ export default function DramaStudioPage() {
                                         empty={episodeEmpty}
                                     />
                                 ) : (
-                                    <FinalView title={summary.project.name} detail={detail} aspectRatio={aspectRatio} onOpenSegment={(index) => setParams({ tab: null, segment: String(index), shot: null })} />
+                                    <FinalView projectId={projectId} title={summary.project.name} detail={detail} aspectRatio={aspectRatio} onOpenSegment={(index) => setParams({ tab: null, segment: String(index), shot: null })} />
                                 )}
                             </div>
                         </main>

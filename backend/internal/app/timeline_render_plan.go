@@ -9,7 +9,8 @@ import (
 // 时间线渲染：把前端 TimelineProject 快照（tracks/clips 平铺，见
 // web/src/types/timeline.ts TimelineProject v2）展开为可执行的 ffmpeg 步骤。
 // 与前端 timeline-to-ffmpeg.ts 保持同一数据流：trim（按 sourceStartMs 裁切）
-// → 空隙补黑场静音 → concat。字幕不烧录（依赖 libass），单独产出 SRT。
+// → 空隙补黑场静音 → concat → 图片叠加层 → ASS 字幕与标题（libass）。字幕始终另出一份 SRT，
+// 只有 captions.burn 为 true 时才烧进画面；lowerThird 标题条总是烧录。
 //
 // 输入布局统一为「每个片段两个输入：视频源 + 音频源」，空隙展开为独立
 // 黑场片段，因此第 i 个片段的视频输入为 2i、音频输入为 2i+1。
@@ -34,7 +35,42 @@ type renderClip struct {
 		Kind       string `json:"kind"`
 		StorageKey string `json:"storageKey"`
 	} `json:"directMedia"`
+	// Words 是字幕片段的逐词时间（相对片段起点），用于卡拉 OK 逐词高亮；为空时整句同时出现。
+	Words []renderWord `json:"words,omitempty"`
+	// Graphic 为 lowerThird 的 text 片段烧录为标题条（人名条 / 地点条），Subtext 是第二行；
+	// 其他 text 片段不由服务端渲染。
+	Graphic string `json:"graphic,omitempty"`
+	Subtext string `json:"subtext,omitempty"`
+	// KenBurns 只对图片片段有效：in / out 推拉，left / right 横移。
+	KenBurns string `json:"kenBurns,omitempty"`
+	// Overlay 非空的图片片段叠加在画面上（台标、角标），不占主序列。
+	Overlay *renderOverlay `json:"overlay,omitempty"`
 }
+
+type renderWord struct {
+	Text       string `json:"text"`
+	StartMs    int64  `json:"startMs"`
+	DurationMs int64  `json:"durationMs"`
+}
+
+// renderOverlay 是图片叠加层的位置：Position 为九宫格角落或 center，WidthPct 是相对画面宽度的百分比。
+type renderOverlay struct {
+	Position string  `json:"position"`
+	WidthPct float64 `json:"widthPct"`
+}
+
+// renderCaptions 控制字幕是否烧录与样式；SRT 不受影响，总是单独产出。
+type renderCaptions struct {
+	Burn  bool   `json:"burn"`
+	Style string `json:"style,omitempty"`
+}
+
+const renderGraphicLowerThird = "lowerThird"
+
+const (
+	renderCaptionPlain   = "plain"
+	renderCaptionKaraoke = "karaoke"
+)
 
 type renderTrack struct {
 	ID      string `json:"id"`
@@ -57,6 +93,8 @@ type renderProject struct {
 	Height int `json:"height,omitempty"`
 	// LoudnessLUFS 非 0 时对总线做 loudnorm 响度归一（例如 -14 适合线上视频）；0 保持原响度。
 	LoudnessLUFS float64 `json:"loudnessLufs,omitempty"`
+	// Captions 为空时字幕只导出 SRT，不烧录。
+	Captions *renderCaptions `json:"captions,omitempty"`
 }
 
 type renderSource struct {
@@ -84,11 +122,15 @@ type renderPlan struct {
 	Segments []renderSegment
 	// AudioOverlays 是音频轨上的独立片段（配音、音乐），在主序列拼接后按 startMs 混入。
 	AudioOverlays []renderSegment
+	// VideoOverlays 是叠加在主画面上的图片（台标、角标），按时间段显示。
+	VideoOverlays []renderSegment
 	SubtitleSRT   string
-	HasMedia      bool
-	Width         int
-	Height        int
-	LoudnessLUFS  float64
+	// ASS 非空时写入工作目录的 renderASSFile，并在最后一步用 ass 滤镜烧录。
+	ASS          string
+	HasMedia     bool
+	Width        int
+	Height       int
+	LoudnessLUFS float64
 }
 
 // buildRenderPlan 挑选可见视频/图片轨片段按 startMs 排序，并把片段之间的
@@ -104,8 +146,15 @@ func buildRenderPlan(project renderProject) renderPlan {
 	}
 	clips := make([]renderClip, 0, len(project.Clips))
 	overlays := make([]renderSegment, 0)
+	pictures := make([]renderSegment, 0)
 	for _, clip := range project.Clips {
 		if !visible[clip.TrackID] || clip.DurationMs <= 0 {
+			continue
+		}
+		if clip.Kind == "image" && clip.Overlay != nil {
+			if _, ok := mediaResourceID(clip); ok {
+				pictures = append(pictures, renderSegment{Kind: "overlay", DurationMs: clip.DurationMs, Clip: clip})
+			}
 			continue
 		}
 		if clip.Kind == "audio" {
@@ -133,7 +182,8 @@ func buildRenderPlan(project renderProject) renderPlan {
 		return clips[i].StartMs < clips[j].StartMs
 	})
 
-	plan := renderPlan{SubtitleSRT: buildRenderSubtitleSRT(project), AudioOverlays: overlays, Width: renderWidth, Height: renderHeight}
+	sort.SliceStable(pictures, func(i, j int) bool { return pictures[i].Clip.StartMs < pictures[j].Clip.StartMs })
+	plan := renderPlan{SubtitleSRT: buildRenderSubtitleSRT(project), AudioOverlays: overlays, VideoOverlays: pictures, Width: renderWidth, Height: renderHeight}
 	if project.LoudnessLUFS >= renderMinLoudnessLUFS && project.LoudnessLUFS <= renderMaxLoudnessLUFS {
 		plan.LoudnessLUFS = project.LoudnessLUFS
 	}
@@ -149,6 +199,8 @@ func buildRenderPlan(project renderProject) renderPlan {
 		plan.Segments = append(plan.Segments, renderSegment{Kind: clip.Kind, DurationMs: clip.DurationMs, Clip: clip})
 		cursor = clip.StartMs + clip.DurationMs
 	}
+	width, height := plan.size()
+	plan.ASS = buildRenderASS(project, visible, width, height)
 	for _, seg := range plan.Segments {
 		if _, ok := mediaResourceID(seg.Clip); ok {
 			plan.HasMedia = true
@@ -231,6 +283,9 @@ func buildRenderFFmpegArgs(plan renderPlan, target string) []string {
 		switch {
 		case seg.Kind == "gap" || seg.Source == nil:
 			args = append(args, "-f", "lavfi", "-t", seconds, "-i", black, "-f", "lavfi", "-t", seconds, "-i", silence)
+		case seg.Kind == "image" && renderKenBurnsMove(seg.Clip.KenBurns) != "":
+			// zoompan 从单帧输出整段帧数，不能再用 -loop。
+			args = append(args, "-i", seg.Source.Path, "-f", "lavfi", "-t", seconds, "-i", silence)
 		case seg.Kind == "image":
 			args = append(args, "-loop", "1", "-t", seconds, "-i", seg.Source.Path, "-f", "lavfi", "-t", seconds, "-i", silence)
 		default:
@@ -255,6 +310,15 @@ func buildRenderFFmpegArgs(plan renderPlan, target string) []string {
 		args = append(args, "-t", fmt.Sprintf("%.3f", float64(overlay.DurationMs)/1000), "-i", overlay.Source.Path)
 		overlays = append(overlays, overlay)
 	}
+	pictureBase := overlayBase + len(overlays)
+	pictures := make([]renderSegment, 0, len(plan.VideoOverlays))
+	for _, picture := range plan.VideoOverlays {
+		if picture.Source == nil {
+			continue
+		}
+		args = append(args, "-loop", "1", "-t", fmt.Sprintf("%.3f", float64(picture.DurationMs)/1000), "-i", picture.Source.Path)
+		pictures = append(pictures, picture)
+	}
 
 	filters := make([]string, 0, len(plan.Segments)*2+len(overlays)+2)
 	labels := make([]string, 0, len(plan.Segments)*2)
@@ -263,7 +327,13 @@ func buildRenderFFmpegArgs(plan renderPlan, target string) []string {
 		videoLabel, audioLabel := fmt.Sprintf("v%d", i), fmt.Sprintf("a%d", i)
 		duration := float64(seg.DurationMs) / 1000
 		// tpad 用最后一帧补足短于片段时长的素材，trim 再裁到精确时长，保证音画时间轴对齐。
-		filters = append(filters, fmt.Sprintf("[%d:v]fps=%d,%s,setsar=1,tpad=stop_mode=clone:stop_duration=%.3f,trim=duration=%.3f,setpts=PTS-STARTPTS%s[%s]", videoIn, renderFPS, scale, duration, duration, renderFadeFilters(seg.Clip, duration), videoLabel))
+		frame := scale
+		if seg.Kind == "image" && seg.Source != nil {
+			if move := renderKenBurnsFilter(seg.Clip.KenBurns, width, height, seg.DurationMs); move != "" {
+				frame = move
+			}
+		}
+		filters = append(filters, fmt.Sprintf("[%d:v]fps=%d,%s,setsar=1,tpad=stop_mode=clone:stop_duration=%.3f,trim=duration=%.3f,setpts=PTS-STARTPTS%s[%s]", videoIn, renderFPS, frame, duration, duration, renderFadeFilters(seg.Clip, duration), videoLabel))
 		silent := seg.Source != nil && seg.Kind != "image" && (!seg.Source.HasAudio || seg.Clip.Volume < 0)
 		if silent {
 			silentLabel := fmt.Sprintf("silent%d", i)
@@ -283,7 +353,8 @@ func buildRenderFFmpegArgs(plan renderPlan, target string) []string {
 	for _, label := range labels {
 		fmt.Fprintf(&concatInputs, "[%s]", label)
 	}
-	filters = append(filters, fmt.Sprintf("%sconcat=n=%d:v=1:a=1[vout][abase]", concatInputs.String(), len(plan.Segments)))
+	filters = append(filters, fmt.Sprintf("%sconcat=n=%d:v=1:a=1[vseq][abase]", concatInputs.String(), len(plan.Segments)))
+	filters = append(filters, renderPictureFilters(plan, pictures, pictureBase)...)
 	filters = append(filters, renderAudioMixFilters(plan, overlays, overlayBase)...)
 	args = append(args,
 		"-filter_complex", strings.Join(filters, ";"),

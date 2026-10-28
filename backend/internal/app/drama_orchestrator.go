@@ -1242,7 +1242,7 @@ func dramaRenderSize(aspect string) (int, int) {
 	return 1080, 1920
 }
 
-// buildDramaTimeline 把一集镜头装配为时间线：视频轨静音，配音轨按镜头起点对齐，字幕单独输出。
+// buildDramaTimeline 把一集剧情段视频按顺序装配为时间线，保留视频模型生成的声音；配乐、字幕与图形另外叠加。
 func buildDramaTimeline(settings DramaSettings, segments []model.DramaSegment, shots []model.DramaShot) (renderProject, error) {
 	aspect := settings.AspectRatio
 	fadeIn, fadeOut := dramaBoundaryFades(settings, shots, segments)
@@ -1293,6 +1293,8 @@ func (r *dramaRun) submitRender(job *model.DramaJob) (*model.Task, bool, error) 
 		return nil, false, err
 	}
 	timeline = withDramaMusic(timeline, decodeDramaMusicCues(episode.MusicCuesJSON))
+	timeline = withDramaCaptions(timeline, episode, segments, shots)
+	timeline = withDramaMotion(timeline, decodeDramaMotion(episode.MotionJSON))
 	job.PayloadJSON = encodeDramaRevision(episode.Revision)
 	return r.s.createDramaRenderTask(r.project, timeline)
 }
