@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { Alert, App, Button, Input, Modal, Segmented } from "antd";
 import { IconButton } from "@/pages/admin/ui/controls";
 import type { ColumnsType } from "antd/es/table";
@@ -69,7 +70,7 @@ export default function LogsPage() {
             })
             .catch((error) => {
                 if (sequence !== requestSequence.current) return;
-                const text = error instanceof Error ? error.message : "读取请求明细失败";
+                const text = error instanceof Error ? error.message : tr("读取请求明细失败");
                 setLoadError(text);
                 message.error(text);
             })
@@ -78,46 +79,46 @@ export default function LogsPage() {
     }, [debouncedKeyword, status, recordType, capability, page, pageSize, retry]);
 
     const fullColumns: ColumnsType<ApiCallLog> = [
-        { title: "时间", width: 168, render: (_, log) => <button type="button" className="admin-log-detail-link" aria-label={`查看请求 ${log.id} 详情`} onClick={() => setDetailLogId(log.id)}>{formatTime(log.startedAt || log.createdAt)}</button> },
+        { title: tr("时间"), width: 168, render: (_, log) => <button type="button" className="admin-log-detail-link" aria-label={tr("查看请求 {0} 详情", log.id)} onClick={() => setDetailLogId(log.id)}>{formatTime(log.startedAt || log.createdAt)}</button> },
         {
-            title: "用户",
+            title: tr("用户"),
             width: 180,
             render: (_, log) => (
                 <div className="min-w-0">
-                    <div className="truncate font-medium text-foreground/85">{log.userDisplayName || log.userAccount || "未知用户"}</div>
-                    <div className="truncate text-xs text-foreground/45">{log.userAccount ? `@${log.userAccount}` : "账号未记录"}</div>
+                    <div className="truncate font-medium text-foreground/85">{log.userDisplayName || log.userAccount || tr("未知用户")}</div>
+                    <div className="truncate text-xs text-foreground/45">{log.userAccount ? `@${log.userAccount}` : tr("账号未记录")}</div>
                 </div>
             ),
         },
         {
-            title: "渠道 / 模型",
+            title: tr("渠道 / 模型"),
             width: 230,
             render: (_, log) => (
                 <div className="min-w-0">
-                    <div className="truncate text-foreground/78">{log.channelName || "未记录渠道"}</div>
+                    <div className="truncate text-foreground/78">{log.channelName || tr("未记录渠道")}</div>
                     <div className="truncate text-xs text-foreground/45" title={log.model}>
-                        {log.model || "未识别模型"}
+                        {log.model || tr("未识别模型")}
                     </div>
                 </div>
             ),
         },
-        { title: "能力", dataIndex: "capability", width: 88, render: capabilityText },
-        { title: "结果", width: 118, render: (_, log) => <MediaResult log={log} onPreview={(url, kind) => setMediaPreview({ url, kind, title: `${capabilityText(log.capability)}结果` })} /> },
-        { title: "请求阶段 / 状态", width: 160, render: (_, log) => <CallStatus log={log} /> },
+        { title: tr("能力"), dataIndex: "capability", width: 88, render: capabilityText },
+        { title: tr("结果"), width: 118, render: (_, log) => <MediaResult log={log} onPreview={(url, kind) => setMediaPreview({ url, kind, title: tr("{0}结果", capabilityText(log.capability)) })} /> },
+        { title: tr("请求阶段 / 状态"), width: 160, render: (_, log) => <CallStatus log={log} /> },
         {
-            title: "错误信息",
+            title: tr("错误信息"),
             width: 260,
             render: (_, log) =>
                 log.status === "failed" || log.error || log.errorCode ? (
                     <div className="min-w-0" title={[log.errorCode, log.error].filter(Boolean).join(" · ")}>
-                        <div className="truncate text-xs font-medium text-red-500">{log.errorCode || `HTTP ${log.statusCode || "失败"}`}</div>
-                        <div className="line-clamp-2 text-xs leading-5 text-foreground/55">{log.error || "上游未返回错误详情"}</div>
+                        <div className="truncate text-xs font-medium text-red-500">{log.errorCode || `HTTP ${log.statusCode || tr("失败")}`}</div>
+                        <div className="line-clamp-2 text-xs leading-5 text-foreground/55">{log.error || tr("上游未返回错误详情")}</div>
                     </div>
                 ) : (
                     <span className="text-foreground/30">--</span>
                 ),
         },
-        { title: "耗时", dataIndex: "durationMs", width: 112, render: (value) => <span className="tabular-nums">{formatDuration(value)}</span> },
+        { title: tr("耗时"), dataIndex: "durationMs", width: 112, render: (value) => <span className="tabular-nums">{formatDuration(value)}</span> },
         {
             title: "Tokens",
             width: 166,
@@ -125,109 +126,109 @@ export default function LogsPage() {
                 log.usageAvailable ? (
                     <div className="space-y-0.5 text-xs tabular-nums">
                         <div>
-                            <span className="text-foreground/40">输入</span> {log.inputTokens.toLocaleString()}
+                            <span className="text-foreground/40">{tr("输入")}</span> {log.inputTokens.toLocaleString()}
                         </div>
                         <div>
-                            <span className="text-foreground/40">输出</span> {log.outputTokens.toLocaleString()}
+                            <span className="text-foreground/40">{tr("输出")}</span> {log.outputTokens.toLocaleString()}
                         </div>
                         {log.cachedTokens > 0 ? (
                             <div>
-                                <span className="text-foreground/40">缓存</span> {log.cachedTokens.toLocaleString()}
+                                <span className="text-foreground/40">{tr("缓存")}</span> {log.cachedTokens.toLocaleString()}
                             </div>
                         ) : null}
                     </div>
                 ) : (
-                    <span className="text-foreground/35">未返回</span>
+                    <span className="text-foreground/35">{tr("未返回")}</span>
                 ),
         },
     ];
 
     const identityColumns: ColumnsType<ApiCallLog> = [
-        { title: "时间 / 详情", key: "time", width: 142, render: (_, log) => <button type="button" className="admin-log-detail-link" title={formatTime(log.startedAt || log.createdAt)} aria-label={`查看请求 ${log.id} 详情`} onClick={() => setDetailLogId(log.id)}>{formatCompactTime(log.startedAt || log.createdAt)}</button> },
-        { title: "状态", key: "status", width: 88, render: (_, log) => <AdminStatusBadge {...logStatus(log)} /> },
-        { title: "模型", dataIndex: "model", width: 170, ellipsis: true, render: (value) => value || "未识别模型" },
-        { title: "渠道", dataIndex: "channelName", width: 116, ellipsis: true, render: (value) => value || "未记录渠道" },
-        { title: "用户", key: "user", width: 110, ellipsis: true, render: (_, log) => <span title={[log.userDisplayName, log.userAccount].filter(Boolean).join(" · ")}>{log.userDisplayName || log.userAccount || "未知用户"}</span> },
+        { title: tr("时间 / 详情"), key: "time", width: 142, render: (_, log) => <button type="button" className="admin-log-detail-link" title={formatTime(log.startedAt || log.createdAt)} aria-label={tr("查看请求 {0} 详情", log.id)} onClick={() => setDetailLogId(log.id)}>{formatCompactTime(log.startedAt || log.createdAt)}</button> },
+        { title: tr("状态"), key: "status", width: 88, render: (_, log) => <AdminStatusBadge {...logStatus(log)} /> },
+        { title: tr("模型"), dataIndex: "model", width: 170, ellipsis: true, render: (value) => value || tr("未识别模型") },
+        { title: tr("渠道"), dataIndex: "channelName", width: 116, ellipsis: true, render: (value) => value || tr("未记录渠道") },
+        { title: tr("用户"), key: "user", width: 110, ellipsis: true, render: (_, log) => <span title={[log.userDisplayName, log.userAccount].filter(Boolean).join(" · ")}>{log.userDisplayName || log.userAccount || tr("未知用户")}</span> },
     ];
     const compactColumns: ColumnsType<ApiCallLog> = view === "usage" ? [
         ...identityColumns,
-        { title: "耗时", dataIndex: "durationMs", align: "right", width: 90, render: formatDuration },
-        { title: "Tokens 入 / 出", key: "usage", width: 142, render: (_, log) => log.usageAvailable ? `${log.inputTokens.toLocaleString()} / ${log.outputTokens.toLocaleString()}` : "未返回" },
+        { title: tr("耗时"), dataIndex: "durationMs", align: "right", width: 90, render: formatDuration },
+        { title: tr("Tokens 入 / 出"), key: "usage", width: 142, render: (_, log) => log.usageAvailable ? `${log.inputTokens.toLocaleString()} / ${log.outputTokens.toLocaleString()}` : tr("未返回") },
     ] : [
         ...identityColumns,
-        { title: "阶段", key: "kind", width: 90, render: (_, log) => requestKindText(log.requestKind) },
-        { title: "耗时", dataIndex: "durationMs", align: "right", width: 90, render: formatDuration },
-        { title: "错误摘要", key: "error", ellipsis: true, render: (_, log) => <span className={logStatus(log).tone === "error" ? "admin-log-error" : undefined} title={[log.errorCode, log.error].filter(Boolean).join(" · ")}>{[log.errorCode, log.error].filter(Boolean).join(" · ") || (logStatus(log).tone === "error" ? `HTTP ${log.statusCode || "失败"} · 未返回详情` : "—")}</span> },
+        { title: tr("阶段"), key: "kind", width: 90, render: (_, log) => requestKindText(log.requestKind) },
+        { title: tr("耗时"), dataIndex: "durationMs", align: "right", width: 90, render: formatDuration },
+        { title: tr("错误摘要"), key: "error", ellipsis: true, render: (_, log) => <span className={logStatus(log).tone === "error" ? "admin-log-error" : undefined} title={[log.errorCode, log.error].filter(Boolean).join(" · ")}>{[log.errorCode, log.error].filter(Boolean).join(" · ") || (logStatus(log).tone === "error" ? tr("HTTP {0} · 未返回详情", log.statusCode || tr("失败")) : "—")}</span> },
     ];
     const baseColumns = view === "all" ? fullColumns : compactColumns;
-    const columns: ColumnsType<ApiCallLog> = [...baseColumns, { title: "操作", key: "actions", width: 126, fixed: "right", render: (_, log) => log.capability === "video" ? <Button type="link" size="small" icon={<RefreshCw className="size-3.5" />} onClick={() => setDetailLogId(log.id)}>恢复任务</Button> : <span className="text-foreground/30">--</span> }];
+    const columns: ColumnsType<ApiCallLog> = [...baseColumns, { title: tr("操作"), key: "actions", width: 126, fixed: "right", render: (_, log) => log.capability === "video" ? <Button type="link" size="small" icon={<RefreshCw className="size-3.5" />} onClick={() => setDetailLogId(log.id)}>{tr("恢复任务")}</Button> : <span className="text-foreground/30">--</span> }];
 
     const runBatchRecovery = async () => {
         const selectedLogs = logs.filter((log) => selectedIds.includes(log.id));
         const videoIds = selectedLogs.filter((log) => log.capability === "video").map((log) => log.id);
         const skipped = selectedIds.length - videoIds.length;
-        if (videoIds.length === 0) { message.info("所选记录中没有视频任务可恢复"); return; }
+        if (videoIds.length === 0) { message.info(tr("所选记录中没有视频任务可恢复")); return; }
         setBatchRecovering(true);
         try {
             const result = await batchRecoverAdminApiLogs(videoIds);
             const totalSkipped = skipped + result.skipped;
-            Modal.info({ title: "批量恢复处理结果", width: 560, content: <div className="max-h-[50vh] space-y-2 overflow-auto"><div className="mb-3">成功 {result.success} 条，失败 {result.failed} 条，跳过 {totalSkipped} 条</div>{result.items.map((item) => <div key={item.logId} className="rounded border border-border/70 px-3 py-2 text-xs"><div className="font-mono">{item.logId}</div><div>{item.recovered ? "成功" : item.error?.startsWith("跳过") ? item.error : item.providerStatus ? `仍在生成中（${item.providerStatus}）` : `失败：${item.error || "未恢复"}`}</div></div>)}</div> });
+            Modal.info({ title: tr("批量恢复处理结果"), width: 560, content: <div className="max-h-[50vh] space-y-2 overflow-auto"><div className="mb-3">{tr("成功 {0} 条，失败 {1} 条，跳过 {2} 条", result.success, result.failed, totalSkipped)}</div>{result.items.map((item) => <div key={item.logId} className="rounded border border-border/70 px-3 py-2 text-xs"><div className="font-mono">{item.logId}</div><div>{item.recovered ? tr("成功") : item.error?.startsWith(tr("跳过")) ? item.error : item.providerStatus ? tr("仍在生成中（{0}）", item.providerStatus) : tr("失败：{0}", item.error || tr("未恢复"))}</div></div>)}</div> });
             setRetry((value) => value + 1);
-        } catch (error) { message.error(error instanceof Error ? error.message : "批量恢复失败"); }
+        } catch (error) { message.error(error instanceof Error ? error.message : tr("批量恢复失败")); }
         finally { setBatchRecovering(false); }
     };
 
     return (
         <AdminPageFrame
-            title="请求明细"
-            description="模型生成与结果下载记录"
+            title={tr("请求明细")}
+            description={tr("模型生成与结果下载记录")}
             actions={
                 <>
-                <Button icon={<RefreshCw className="size-4" />} loading={loading} onClick={() => { setLoading(true); setRetry((value) => value + 1); }}>刷新列表</Button>
+                <Button icon={<RefreshCw className="size-4" />} loading={loading} onClick={() => { setLoading(true); setRetry((value) => value + 1); }}>{tr("刷新列表")}</Button>
                 <AdminExportButton
                     exportFile={() => exportAdminApiLogs({ recordType, capability: capability === "all" ? undefined : capability, keyword: debouncedKeyword || undefined, status: status === "all" ? undefined : status })}
-                    fileName={() => `请求明细-${new Date().toISOString().slice(0, 10)}.csv`}
-                    label="导出当前筛选"
-                    successMessage="已按当前筛选导出请求明细"
-                    errorMessage="导出请求明细失败"
+                    fileName={() => tr("请求明细-{0}.csv", new Date().toISOString().slice(0, 10))}
+                    label={tr("导出当前筛选")}
+                    successMessage={tr("已按当前筛选导出请求明细")}
+                    errorMessage={tr("导出请求明细失败")}
                 />
                 </>
             }
         >
-            {loadError ? <Alert type="error" showIcon title="请求明细读取失败" description={loadError} action={<Button size="small" onClick={() => setRetry((value) => value + 1)}>重试</Button>} /> : null}
+            {loadError ? <Alert type="error" showIcon title={tr("请求明细读取失败")} description={loadError} action={<Button size="small" onClick={() => setRetry((value) => value + 1)}>{tr("重试")}</Button>} /> : null}
             <AdminDataTable
                 className={view === "all" ? "admin-logs-full" : "admin-logs-compact"}
-                trailing={<Segmented aria-label="请求明细视图" value={view} onChange={(value) => updateUrl({ view: value })} options={[{ label: "排障", value: "troubleshoot" }, { label: "用量", value: "usage" }, { label: "全部字段", value: "all" }]} />}
+                trailing={<Segmented aria-label={tr("请求明细视图")} value={view} onChange={(value) => updateUrl({ view: value })} options={[{ label: tr("排障"), value: "troubleshoot" }, { label: tr("用量"), value: "usage" }, { label: tr("全部字段"), value: "all" }]} />}
                 toolbar={
                     <AdminSearchInput
                         allowClear
                         className="app-list-search"
                         prefix={<Search className="size-4 text-foreground/40" />}
                         value={keyword}
-                        placeholder="搜索用户、渠道、模型、路径或请求号"
+                        placeholder={tr("搜索用户、渠道、模型、路径或请求号")}
                         onValueChange={(value) => updateUrl({ filter: value, page: 1 }, true)}
                     />
                 }
                 toolbarActiveFilters={
                     <>
-                        {keyword ? <AdminFilterChip label={`搜索：${keyword}`} onRemove={() => updateUrl({ filter: "", page: 1 })} /> : null}
-                        {status !== "all" ? <AdminFilterChip label={`结果：${status === "succeeded" ? "成功" : "失败"}`} onRemove={() => updateUrl({ status: "all", page: 1 })} /> : null}
-                        {capability !== "all" ? <AdminFilterChip label={`能力：${capabilityText(capability)}`} onRemove={() => updateUrl({ capability: "all", page: 1 })} /> : null}
+                        {keyword ? <AdminFilterChip label={tr("搜索：{0}", keyword)} onRemove={() => updateUrl({ filter: "", page: 1 })} /> : null}
+                        {status !== "all" ? <AdminFilterChip label={tr("结果：{0}", status === "succeeded" ? tr("成功") : tr("失败"))} onRemove={() => updateUrl({ status: "all", page: 1 })} /> : null}
+                        {capability !== "all" ? <AdminFilterChip label={tr("能力：{0}", capabilityText(capability))} onRemove={() => updateUrl({ capability: "all", page: 1 })} /> : null}
                     </>
                 }
                 toolbarFilters={
                     <>
-                    <Select aria-label="明细类型" className="w-32" value={recordType} onChange={(value) => updateUrl({ recordType: value, page: 1 })} options={[{ label: "仅请求", value: "request" }, { label: "仅下载", value: "download" }, { label: "全部明细", value: "all" }]} />
-                    <Select aria-label="能力类型" className="w-28" value={capability} onChange={(value) => updateUrl({ capability: value, page: 1 })} options={[{ label: "全部能力", value: "all" }, { label: "文本", value: "text" }, { label: "图片", value: "image" }, { label: "视频", value: "video" }, { label: "音频", value: "audio" }]} />
+                    <Select aria-label={tr("明细类型")} className="w-32" value={recordType} onChange={(value) => updateUrl({ recordType: value, page: 1 })} options={[{ label: tr("仅请求"), value: "request" }, { label: tr("仅下载"), value: "download" }, { label: tr("全部明细"), value: "all" }]} />
+                    <Select aria-label={tr("能力类型")} className="w-28" value={capability} onChange={(value) => updateUrl({ capability: value, page: 1 })} options={[{ label: tr("全部能力"), value: "all" }, { label: tr("文本"), value: "text" }, { label: tr("图片"), value: "image" }, { label: tr("视频"), value: "video" }, { label: tr("音频"), value: "audio" }]} />
                     <Select
-                        aria-label="请求结果"
+                        aria-label={tr("请求结果")}
                         className="w-32"
                         value={status}
                         onChange={(value) => updateUrl({ status: value, page: 1 })}
                         options={[
-                            { label: "全部结果", value: "all" },
-                            { label: "成功", value: "succeeded" },
-                            { label: "失败", value: "failed" },
+                            { label: tr("全部结果"), value: "all" },
+                            { label: tr("成功"), value: "succeeded" },
+                            { label: tr("失败"), value: "failed" },
                         ]}
                     />
                     </>
@@ -236,15 +237,15 @@ export default function LogsPage() {
                 onReset={() => updateUrl({ filter: "", status: "all", recordType: "request", capability: "all", page: 1 })}
                 batchActions={
                     <AdminBatchBar count={selectedIds.length} onClear={() => setSelectedIds([])}>
-                        <Button size="small" icon={<RefreshCw className="size-3.5" />} loading={batchRecovering} onClick={() => void runBatchRecovery()}>批量恢复</Button>
+                        <Button size="small" icon={<RefreshCw className="size-3.5" />} loading={batchRecovering} onClick={() => void runBatchRecovery()}>{tr("批量恢复")}</Button>
                         <AdminExportButton
                             type="primary"
                             size="small"
                             exportFile={() => exportAdminApiLogs({ recordType, ids: selectedIds })}
-                            fileName={() => `请求明细-已选${selectedIds.length}条.csv`}
-                            label="导出已选"
-                            successMessage={`已导出选中的 ${selectedIds.length} 条请求明细`}
-                            errorMessage="导出请求明细失败"
+                            fileName={() => tr("请求明细-已选{0}条.csv", selectedIds.length)}
+                            label={tr("导出已选")}
+                            successMessage={tr("已导出选中的 {0} 条请求明细", selectedIds.length)}
+                            errorMessage={tr("导出请求明细失败")}
                         />
                     </AdminBatchBar>
                 }
@@ -268,19 +269,19 @@ export default function LogsPage() {
                     pagination: false,
                     scroll: { x: view === "all" ? 1901 : view === "usage" ? 1246 : 1186 },
                 }}
-                empty={loadError ? <span role="status">数据暂不可用，请重试</span> : <AdminTableEmpty filtered={hasFilters} />}
+                empty={loadError ? <span role="status">{tr("数据暂不可用，请重试")}</span> : <AdminTableEmpty filtered={hasFilters} />}
                 footer={<PaginationBar alwaysShow current={page} pageSize={pageSize} total={total} onChange={(nextPage, nextSize) => updateUrl({ page: nextSize !== pageSize ? 1 : nextPage, pageSize: nextSize })} />}
             />
             <ApiLogDetailDrawer logId={detailLogId} onClose={() => setDetailLogId(null)} onLogUpdated={(next) => setLogs((items) => items.map((item) => (item.id === next.id ? next : item)))} />
             <Modal
-                title={mediaPreview?.title || "媒体预览"}
+                title={mediaPreview?.title || tr("媒体预览")}
                 open={Boolean(mediaPreview)}
                 width={880}
                 onCancel={() => setMediaPreview(null)}
                 footer={
                     mediaPreview ? (
                         <Button icon={<Download className="size-4" />} onClick={() => downloadMedia(mediaPreview.url, mediaPreview.kind)}>
-                            下载原文件
+                            {tr("下载原文件")}
                         </Button>
                     ) : null
                 }
@@ -314,23 +315,23 @@ function normalizeStatus(value: string | null): "all" | "succeeded" | "failed" {
     return value === "succeeded" || value === "failed" ? value : "all";
 }
 function formatTime(value?: string) {
-    return value ? new Date(value).toLocaleString("zh-CN", { hour12: false }) : "--";
+    return value ? new Date(value).toLocaleString(currentLocale(), { hour12: false }) : "--";
 }
 function formatCompactTime(value: string) {
     if (!value) return "--";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "--";
-    return date.toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+    return date.toLocaleString(currentLocale(), { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 }
 function capabilityText(value: string) {
-    return ({ text: "文本", image: "图片", video: "视频", audio: "音频" } as Record<string, string>)[value] || "未知";
+    return ({ text: tr("文本"), image: tr("图片"), video: tr("视频"), audio: tr("音频") } as Record<string, string>)[value] || tr("未知");
 }
 function formatDuration(value: number) {
     if (value < 1_000) return `${value} ms`;
-    if (value < 60_000) return `${(value / 1_000).toFixed(value < 10_000 ? 1 : 0)} 秒`;
+    if (value < 60_000) return tr("{0} 秒", (value / 1_000).toFixed(value < 10_000 ? 1 : 0));
     const minutes = Math.floor(value / 60_000);
     const seconds = Math.round((value % 60_000) / 1_000);
-    return `${minutes} 分 ${seconds} 秒`;
+    return tr("{0} 分 {1} 秒", minutes, seconds);
 }
 
 
@@ -344,13 +345,13 @@ function MediaResult({ log, onPreview }: { log: ApiCallLog; onPreview: (url: str
         <div className="flex w-[90px] items-center gap-2">
             <button
                 type="button"
-                title={previewUnavailable ? "预览不可用，素材可能已删除" : `预览${kind === "video" ? "视频" : "图片"}`}
-                aria-label={previewUnavailable ? "预览不可用，素材可能已删除" : `预览${kind === "video" ? "视频" : "图片"}`}
+                title={previewUnavailable ? tr("预览不可用，素材可能已删除") : tr("预览{0}", kind === "video" ? tr("视频") : tr("图片"))}
+                aria-label={previewUnavailable ? tr("预览不可用，素材可能已删除") : tr("预览{0}", kind === "video" ? tr("视频") : tr("图片"))}
                 disabled={previewUnavailable}
                 className="group relative h-11 w-16 shrink-0 overflow-hidden rounded border border-border/75 bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => onPreview(url, kind)}
             >
-                <MediaPreview src={url} kind={kind} alt="生成结果" loading="lazy" className="size-full object-cover" fallbackClassName="text-white/55" fallbackLabel="预览不可用" onUnavailable={() => setUnavailableUrl(url)} />
+                <MediaPreview src={url} kind={kind} alt={tr("生成结果")} loading="lazy" className="size-full object-cover" fallbackClassName="text-white/55" fallbackLabel={tr("预览不可用")} onUnavailable={() => setUnavailableUrl(url)} />
                 {!previewUnavailable ? (
                     <span className="absolute inset-0 grid place-items-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100 group-focus-visible:bg-black/35 group-focus-visible:opacity-100">
                         {kind === "video" ? <Play className="size-4 fill-current" /> : <Eye className="size-4" />}
@@ -358,7 +359,7 @@ function MediaResult({ log, onPreview }: { log: ApiCallLog; onPreview: (url: str
                 ) : null}
                 {!previewUnavailable && log.mediaCount > 1 ? <span className="absolute bottom-0.5 right-0.5 rounded-sm bg-black/65 px-1 text-[var(--fs-micro)] leading-4 text-white">{log.mediaCount}</span> : null}
             </button>
-            <IconButton size="sm" variant="ghost" icon={Download} onClick={() => downloadMedia(url, kind)} title="下载原文件" aria-label="下载原文件" />
+            <IconButton size="sm" variant="ghost" icon={Download} onClick={() => downloadMedia(url, kind)} title={tr("下载原文件")} aria-label={tr("下载原文件")} />
         </div>
     );
 }
@@ -373,12 +374,12 @@ function CallStatus({ log }: { log: ApiCallLog }) {
             <div className="mb-1 text-xs font-medium text-foreground/70">{requestKindText(log.requestKind)}</div>
             <AdminStatusBadge {...logStatus(log)} />
             {log.mediaStage ? <div className="mt-1 text-xs text-foreground/60">{mediaDeliverySummary(log.taskStatus, log.mediaStage)}</div> : null}
-            {log.capability === "video" ? <div className="mt-1 text-xs tabular-nums text-foreground/45">已轮询 {log.pollCount || 0} 次</div> : null}
+            {log.capability === "video" ? <div className="mt-1 text-xs tabular-nums text-foreground/45">{tr("已轮询 {0} 次", log.pollCount || 0)}</div> : null}
         </div>
     );
 }
 
 function requestKindText(value: ApiCallLog["requestKind"]) {
-    const labels: Partial<Record<ApiCallLog["requestKind"], string>> = { create: "模型生成", poll: "状态查询", download: "结果下载", upload: "上传 OSS", local_save: "保存文件", local_fallback: "本地兜底保存", offload: "同步 OSS", register: "登记素材", repair: "结果修复" };
-    return labels[value] || "上游请求";
+    const labels: Partial<Record<ApiCallLog["requestKind"], string>> = { create: tr("模型生成"), poll: tr("状态查询"), download: tr("结果下载"), upload: tr("上传 OSS"), local_save: tr("保存文件"), local_fallback: tr("本地兜底保存"), offload: tr("同步 OSS"), register: tr("登记素材"), repair: tr("结果修复") };
+    return labels[value] || tr("上游请求");
 }

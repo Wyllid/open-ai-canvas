@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useMemo } from "react";
 import { ModelPicker } from "@/components/model-picker";
 import { VideoSettingsPanel } from "@/components/video-settings-panel";
@@ -76,12 +77,12 @@ export function CanvasAgentVideoApprovalSettings({ initial, value, theme, disabl
     };
 
     return (
-        <fieldset disabled={disabled} className="min-w-0 space-y-3 border-0 p-0" data-canvas-no-zoom data-canvas-wheel-scroll aria-label="视频生成设置">
+        <fieldset disabled={disabled} className="min-w-0 space-y-3 border-0 p-0" data-canvas-no-zoom data-canvas-wheel-scroll aria-label={tr("视频生成设置")}>
             <div className="space-y-2">
                 <div className="text-xs" style={{ color: theme.node.muted }}>
-                    生成模型
+                    {tr("生成模型")}
                 </div>
-                <ModelPicker config={config} capability="video" value={model} onChange={changeModel} requirements={requirements} variant="creation" fullWidth placeholder="选择生成模型" popoverClassName="agent-model-picker-popover" />
+                <ModelPicker config={config} capability="video" value={model} onChange={changeModel} requirements={requirements} variant="creation" fullWidth placeholder={tr("选择生成模型")} popoverClassName="agent-model-picker-popover" />
             </div>
             {model ? (
                 <VideoSettingsPanel
@@ -93,16 +94,17 @@ export function CanvasAgentVideoApprovalSettings({ initial, value, theme, disabl
                 />
             ) : (
                 <p className="text-xs" style={{ color: theme.node.muted }}>
-                    当前模型不在可选目录中，可重新选择；提交时将重新校验模型与规格。
+                    {tr("当前模型不在可选目录中，可重新选择；提交时将重新校验模型与规格。")}
                 </p>
             )}
             <p className="text-xs" style={{ color: theme.node.text }}>
-                本次规格：{settings.size}
+                {tr("本次规格：")}
+                {settings.size}
                 {settings.quality ? ` · ${settings.quality}` : ""}
-                {settings.durationSeconds ? ` · ${settings.durationSeconds} 秒` : ""}
+                {settings.durationSeconds ? tr(" · {0} 秒", settings.durationSeconds) : ""}
             </p>
             <p className="text-xs" style={{ color: theme.node.muted }}>
-                修改仅用于本次生成，最终按所选模型和规格提交。
+                {tr("修改仅用于本次生成，最终按所选模型和规格提交。")}
             </p>
         </fieldset>
     );

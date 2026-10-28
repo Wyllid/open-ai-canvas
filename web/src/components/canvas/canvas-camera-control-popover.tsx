@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useState } from "react";
 import { Camera } from "lucide-react";
 
@@ -26,12 +27,12 @@ export function CanvasCameraControlPopover({ cameraControl, onCameraControlChang
                     color: cameraEnabled ? theme.node.panel : theme.node.text,
                 }}
                 aria-pressed={cameraEnabled}
-                aria-label="摄像机控制"
-                title={`摄像机控制${cameraEnabled ? " · 已启用" : ""}`}
+                aria-label={tr("摄像机控制")}
+                title={tr("摄像机控制{0}", cameraEnabled ? tr(" · 已启用") : "")}
                 onClick={() => setOpen(true)}
             >
                 <Camera className="size-3.5" />
-                {!compact ? <span>摄像机</span> : null}
+                {!compact ? <span>{tr("摄像机")}</span> : null}
             </button>
             {open ? (
                 <AppModal title={null} closable={false} open centered footer={null} width={780} flush onCancel={() => setOpen(false)}>

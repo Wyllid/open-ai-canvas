@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { createZip } from "@/lib/zip";
 import { getImageBlob } from "@/services/image-storage";
 import { getMediaBlob } from "@/services/file-storage";
@@ -8,14 +9,14 @@ export function packageSegment(value: string): string {
     return encodeURIComponent(value).replace(/\./g, "%2E");
 }
 export function downloadName(value: string): string {
-    return value.replace(/[\x00-\x1f\\/:*?"<>|]/g, "_").trim() || "画布";
+    return value.replace(/[\x00-\x1f\\/:*?"<>|]/g, "_").trim() || tr("画布");
 }
 
 export class MediaPackage {
     private readonly entries = new Map<string, BlobPart>();
 
     put(path: string, data: BlobPart): void {
-        if (this.entries.has(path)) throw new Error(`导出文件路径重复：${path}`);
+        if (this.entries.has(path)) throw new Error(tr("导出文件路径重复：{0}", path));
         this.entries.set(path, data);
     }
 

@@ -8,6 +8,7 @@ import (
 
 type UserProfile = auth.UserProfile
 type ProfilePasswordRequest = auth.ProfilePasswordRequest
+type LocalAccountRequest = auth.LocalAccountRequest
 type ProfileEmailCodeRequest = auth.ProfileEmailCodeRequest
 type ProfileEmailChangeRequest = auth.ProfileEmailChangeRequest
 type ProfileEmailChangeResult = auth.ProfileEmailChangeResult
@@ -30,4 +31,8 @@ func (s *Service) BeginLinuxDOReauthentication(actor *model.User, cookie string)
 }
 func (s *Service) LinuxDOReauthenticationState(stateValue string) (bool, error) {
 	return s.authDomain().LinuxDOReauthenticationState(stateValue)
+}
+
+func (s *Service) ChangeLocalAccount(actor *model.User, cookie string, req LocalAccountRequest) error {
+	return s.authDomain().ChangeLocalAccount(actor, cookie, req)
 }

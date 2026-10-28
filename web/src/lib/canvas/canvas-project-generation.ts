@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { type GenerationTask } from "@/services/api/task-center";
 import { backendProviderConfig, logicalModelIDForConfig, runBackendGenerationTask, type GenerationTaskDependencies } from "@/services/api/generation-task";
 import { configuredModelMatchesCapability, defaultConfig, normalizeModelOptionValue, normalizeRunningHubCapability, resolveModelRequestConfig, type AiConfig, type WorkflowFieldMapping } from "@/stores/use-config-store";
@@ -83,7 +84,7 @@ export function canvasImageReferenceLimitError(config: AiConfig, referenceImages
     if ((config.taskWorkflowProvider || "model") !== "model") return "";
     const maxImages = modelCapabilityConfigFor(config, config.model).image?.references.maxImages;
     if (maxImages === undefined || referenceImages.length <= maxImages) return "";
-    return `当前图片模型最多支持 ${maxImages} 张参考图，当前已连接 ${referenceImages.length} 张。请移除多余连线后重试`;
+    return tr("当前图片模型最多支持 {0} 张参考图，当前已连接 {1} 张。请移除多余连线后重试", maxImages, referenceImages.length);
 }
 
 export function assertCanvasImageReferenceLimit(config: AiConfig, referenceImages: ReferenceImage[]) {
@@ -126,7 +127,7 @@ export async function runCanvasGenerationTaskToConsumer(
                 if (task.status === "succeeded") completedTask = task;
             },
         });
-        if (!completedTask) throw new Error("生成任务缺少成功终态");
+        if (!completedTask) throw new Error(tr("生成任务缺少成功终态"));
         await dependencies.consumeTask(completedTask);
         return result;
     });
@@ -332,8 +333,8 @@ export function buildVideoGenerationMetadata(
     // 工作流视频把已连接媒体交给字段映射处理，不再把历史首尾帧选择当成硬约束。
     // 工作流视频把已连接媒体交给字段映射处理，不再把历史首尾帧选择当成硬约束。
     const workflowVideo = node?.type === CanvasNodeType.Config && (config?.taskWorkflowProvider === "runninghub" || isCanvasWorkflowProvider(metadata));
-    const startFrame = workflowVideo ? undefined : requireConnectedVideoFrame(metadata?.videoStartFrameNodeId, "首帧", referenceImageIds);
-    const endFrame = workflowVideo ? undefined : requireConnectedVideoFrame(metadata?.videoEndFrameNodeId, "尾帧", referenceImageIds);
+    const startFrame = workflowVideo ? undefined : requireConnectedVideoFrame(metadata?.videoStartFrameNodeId, tr("首帧"), referenceImageIds);
+    const endFrame = workflowVideo ? undefined : requireConnectedVideoFrame(metadata?.videoEndFrameNodeId, tr("尾帧"), referenceImageIds);
     return {
         ...(config ? generationWorkflowMetadata(config) : {}),
         videoEditOperation: resolveVideoEditOperation(node, context),
@@ -347,7 +348,7 @@ export function buildVideoGenerationMetadata(
 function requireConnectedVideoFrame(frameNodeId: string | undefined, label: string, referenceImageIds: Set<string>) {
     if (!frameNodeId) return undefined;
     if (referenceImageIds.has(frameNodeId)) return frameNodeId;
-    throw new Error(`已配置的${label}参考图未连接或不可用，请重新选择后再生成`);
+    throw new Error(tr("已配置的{0}参考图未连接或不可用，请重新选择后再生成", label));
 }
 
 export async function resolveMetadataReferences(metadata: CanvasNodeMetadata) {
@@ -414,14 +415,14 @@ export function buildGenerationConfig(config: AiConfig, node: CanvasNodeData | u
     const generationSpec = node ? readNodeGenerationSpec(node) : undefined;
     const selection = generationSpec?.mode === mode ? generationSpec.modelSelection : undefined;
     const selectedModel = resolveGenerationSelection(config, selection);
-    if (selection && !selectedModel && !displayOnly) throw new Error("节点选择的模型或渠道已不可用，请重新选择模型后生成");
+    if (selection && !selectedModel && !displayOnly) throw new Error(tr("节点选择的模型或渠道已不可用，请重新选择模型后生成"));
     if (node && generationSpec?.mode === mode) node = { ...node, metadata: { ...node.metadata, ...generationSpecMetadata(generationSpec) } };
     // 只有独立 Config 节点读取工作流元数据；普通图片/视频/音频节点始终按基础模型生成。
     const workflowProvider = mode !== "text" && node?.type === CanvasNodeType.Config && resolveCanvasWorkflowProvider(node.metadata) === "runninghub" ? "runninghub" : "model";
     const defaultModel = mode === "image" ? config.imageModel : mode === "video" ? config.videoModel : mode === "audio" ? config.audioModel : config.textModel;
     const fallbackModel = mode === "image" ? defaultConfig.imageModel : mode === "video" ? defaultConfig.videoModel : mode === "audio" ? defaultConfig.audioModel : defaultConfig.textModel;
     const storedModel = resolveCanvasGenerationModel(config, selectedModel || node?.metadata?.model, mode);
-    if (selection && selectedModel && !storedModel && !displayOnly) throw new Error("节点选择的模型不支持当前生成模式，请重新选择");
+    if (selection && selectedModel && !storedModel && !displayOnly) throw new Error(tr("节点选择的模型不支持当前生成模式，请重新选择"));
     const preferredModel = storedModel || resolveCanvasGenerationModel(config, defaultModel, mode) || fallbackModel;
     // 先合并节点上的实时选择，再做兼容性匹配。否则路由只看到全局默认值，节点改过的时长、分辨率或布尔能力无法参与分流。
     const workflowParameters = node?.metadata?.workflowParameters || {};
@@ -586,7 +587,7 @@ export function resetInterruptedGeneration(nodes: CanvasNodeData[]) {
                 : mediaNode.type === CanvasNodeType.Script && mediaNode.height < NODE_DEFAULT_SIZE[CanvasNodeType.Script].height
                   ? { ...mediaNode, height: NODE_DEFAULT_SIZE[CanvasNodeType.Script].height }
                   : mediaNode;
-        const restoredNode = resizedNode.metadata?.status === "loading" ? { ...resizedNode, metadata: { ...resizedNode.metadata, errorDetails: "正在从任务中心恢复生成状态..." } } : resizedNode;
+        const restoredNode = resizedNode.metadata?.status === "loading" ? { ...resizedNode, metadata: { ...resizedNode.metadata, errorDetails: tr("正在从任务中心恢复生成状态...") } } : resizedNode;
         if (restoredNode !== node) changed = true;
         return restoredNode;
     });

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CanvasNodeData } from "@/types/canvas";
 
 export const ART_CRITIQUE_SCHEMA_VERSION = 1 as const;
@@ -172,28 +173,28 @@ function compactSource(value: string) {
 }
 
 export function artCritiqueCategoryLabel(category: ArtCritiqueCategory) {
-    if (category === "composition") return "构图";
-    if (category === "color") return "色彩";
-    if (category === "lighting") return "光线";
-    if (category === "proportion") return "比例";
-    return "其他";
+    if (category === "composition") return tr("构图");
+    if (category === "color") return tr("色彩");
+    if (category === "lighting") return tr("光线");
+    if (category === "proportion") return tr("比例");
+    return tr("其他");
 }
 
 export function artCritiqueSeverityLabel(severity: ArtCritiqueSeverity) {
-    if (severity === "high") return "优先处理";
-    if (severity === "medium") return "建议处理";
-    return "可选优化";
+    if (severity === "high") return tr("优先处理");
+    if (severity === "medium") return tr("建议处理");
+    return tr("可选优化");
 }
 
 export function artCritiqueStageLabel(stage?: ArtCritiquePipelineStage) {
-    if (stage === "preparing") return "准备图片";
-    if (stage === "scene") return "理解场景";
-    if (stage === "reviewing") return "检查视觉维度";
-    if (stage === "aggregating") return "整理重点问题";
-    if (stage === "grounding") return "定位问题区域";
-    if (stage === "verifying") return "复核批改结果";
-    if (stage === "annotating") return "生成标注";
-    if (stage === "completed") return "分析完成";
-    if (stage === "failed") return "分析失败";
-    return "尚未分析";
+    if (stage === "preparing") return tr("准备图片");
+    if (stage === "scene") return tr("理解场景");
+    if (stage === "reviewing") return tr("检查视觉维度");
+    if (stage === "aggregating") return tr("整理重点问题");
+    if (stage === "grounding") return tr("定位问题区域");
+    if (stage === "verifying") return tr("复核批改结果");
+    if (stage === "annotating") return tr("生成标注");
+    if (stage === "completed") return tr("分析完成");
+    if (stage === "failed") return tr("分析失败");
+    return tr("尚未分析");
 }

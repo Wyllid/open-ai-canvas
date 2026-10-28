@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 素材库的批量操作条、空态、筛选组、详情抽屉与图片放大。
 
 import { Button, Drawer, Tag } from "antd";
@@ -38,36 +39,36 @@ export function AssetsBatchBar({
     onDelete: () => void;
 }) {
     return (
-        <div className="assets-batch-bar" role="toolbar" aria-label="批量操作">
+        <div className="assets-batch-bar" role="toolbar" aria-label={tr("批量操作")}>
             <span className="assets-batch-count">
-                已选择 <strong>{count}</strong> 个素材 · 点击卡片多选，Shift 连选
+                {tr("已选择")} <strong>{count}</strong> {tr("个素材 · 点击卡片多选，Shift 连选")}
             </span>
             <div className="assets-batch-actions">
                 <Button size="small" icon={<CheckCheck className="size-3.5" />} disabled={allSelected || busy || pageLoading} onClick={onSelectAll}>
-                    全选本页
+                    {tr("全选本页")}
                 </Button>
                 <Button size="small" disabled={busy} onClick={onClear}>
-                    取消选择
+                    {tr("取消选择")}
                 </Button>
                 {isTrash ? (
                     <>
                         <Button size="small" type="primary" disabled={!count || busy} icon={<RotateCcw className="size-3.5" />} onClick={onRestore}>
-                            还原已选
+                            {tr("还原已选")}
                         </Button>
                         <Button size="small" danger disabled={!count || busy} icon={<Trash2 className="size-3.5" />} onClick={onDelete}>
-                            彻底删除已选
+                            {tr("彻底删除已选")}
                         </Button>
                     </>
                 ) : (
                     <>
                         <Button size="small" disabled={!count || busy} icon={<Download className="size-3.5" />} onClick={onExport}>
-                            导出
+                            {tr("导出")}
                         </Button>
                         <Button size="small" disabled={!count || busy} icon={<Trash2 className="size-3.5 text-amber-500" />} onClick={onArchive}>
-                            移入回收站
+                            {tr("移入回收站")}
                         </Button>
                         <Button size="small" danger disabled={!count || busy} icon={<Trash2 className="size-3.5" />} onClick={onDelete}>
-                            彻底删除
+                            {tr("彻底删除")}
                         </Button>
                     </>
                 )}
@@ -77,9 +78,9 @@ export function AssetsBatchBar({
 }
 
 export const assetsEmptyBannerFrames = [
-    { src: "/short-drama-styles/retro-hong-kong.jpg", caption: "ASSET.01 · 天台重逢" },
-    { src: "/short-drama-styles/cyberpunk-neon.jpg", caption: "ASSET.02 · 雨夜霓虹" },
-    { src: "/short-drama-styles/suspense-noir.jpg", caption: "ASSET.03 · 暗巷追逐" },
+    { src: "/short-drama-styles/retro-hong-kong.jpg", caption: tr("ASSET.01 · 天台重逢") },
+    { src: "/short-drama-styles/cyberpunk-neon.jpg", caption: tr("ASSET.02 · 雨夜霓虹") },
+    { src: "/short-drama-styles/suspense-noir.jpg", caption: tr("ASSET.03 · 暗巷追逐") },
 ];
 
 export function AssetsEmptyState({ onNew, onImport, onGoCanvas }: { onNew: () => void; onImport: () => void; onGoCanvas: () => void }) {
@@ -94,7 +95,11 @@ export function AssetsEmptyState({ onNew, onImport, onGoCanvas }: { onNew: () =>
                     </figure>
                 ))}
                 <span className="assets-empty-banner-caption">
-                    <span>{brandName}素材库</span>把每次创作的结果，留档成可复用的资产
+                    <span>
+                        {brandName}
+                        {tr("素材库")}
+                    </span>
+                    {tr("把每次创作的结果，留档成可复用的资产")}
                 </span>
             </div>
             <div className="assets-empty-cards">
@@ -102,22 +107,22 @@ export function AssetsEmptyState({ onNew, onImport, onGoCanvas }: { onNew: () =>
                     <span className="assets-empty-card-icon">
                         <Plus />
                     </span>
-                    <strong>新建素材</strong>
-                    <span>录入提示词、说明文案，或上传图片资产。</span>
+                    <strong>{tr("新建素材")}</strong>
+                    <span>{tr("录入提示词、说明文案，或上传图片资产。")}</span>
                 </button>
                 <button type="button" className="assets-empty-card" onClick={onImport}>
                     <span className="assets-empty-card-icon">
                         <FileUp />
                     </span>
-                    <strong>导入素材包</strong>
-                    <span>从素材压缩包一键恢复旧资产，继续创作。</span>
+                    <strong>{tr("导入素材包")}</strong>
+                    <span>{tr("从素材压缩包一键恢复旧资产，继续创作。")}</span>
                 </button>
                 <button type="button" className="assets-empty-card" onClick={onGoCanvas}>
                     <span className="assets-empty-card-icon">
                         <Clapperboard />
                     </span>
-                    <strong>去画布保存</strong>
-                    <span>把画布上满意的镜头与画面留档进素材库。</span>
+                    <strong>{tr("去画布保存")}</strong>
+                    <span>{tr("把画布上满意的镜头与画面留档进素材库。")}</span>
                 </button>
             </div>
         </div>
@@ -158,16 +163,16 @@ export function AssetFilterGroup({
 }
 
 const CHARACTER_PROFILE_FIELDS: Array<[string, string]> = [
-    ["role", "剧情身份"],
-    ["appearance", "外貌特征"],
-    ["physique", "体型姿态"],
-    ["clothing", "服装造型"],
-    ["personality", "性格气质"],
-    ["props", "标志道具"],
-    ["consistencyPrompt", "一致性要求"],
-    ["voiceLanguage", "语言口音"],
-    ["voiceAge", "声音年龄感"],
-    ["voiceTimbre", "音色气质"],
+    ["role", tr("剧情身份")],
+    ["appearance", tr("外貌特征")],
+    ["physique", tr("体型姿态")],
+    ["clothing", tr("服装造型")],
+    ["personality", tr("性格气质")],
+    ["props", tr("标志道具")],
+    ["consistencyPrompt", tr("一致性要求")],
+    ["voiceLanguage", tr("语言口音")],
+    ["voiceAge", tr("声音年龄感")],
+    ["voiceTimbre", tr("音色气质")],
 ];
 
 /** 素材档案里的角色卡：立绘主视觉 + 声音试听 + 已填写的设定，只读；编辑在画布角色卡里完成。 */
@@ -179,7 +184,7 @@ function CharacterArchive({ asset }: { asset: Extract<LibraryAsset, { kind: "ent
         ? ({
               id: `${asset.id}:voice`,
               kind: "audio",
-              title: asset.data.voiceName || "角色声音",
+              title: asset.data.voiceName || tr("角色声音"),
               coverUrl: "",
               tags: [],
               createdAt: asset.createdAt,
@@ -193,7 +198,11 @@ function CharacterArchive({ asset }: { asset: Extract<LibraryAsset, { kind: "ent
                 <CharacterAssetCover asset={asset} size="hero" />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-4">
                     <div className="text-[var(--fs-label)] font-medium uppercase tracking-[.24em] text-white/55">Character{asset.data.version ? ` · v${asset.data.version}` : ""}</div>
-                    {aliases.length ? <div className="mt-1 truncate text-xs text-white/70">又名 {aliases.join("、")}</div> : null}
+                    {aliases.length ? (
+                        <div className="mt-1 truncate text-xs text-white/70">
+                            {tr("又名")} {aliases.join("、")}
+                        </div>
+                    ) : null}
                 </div>
             </div>
             <div className="flex items-center gap-3 rounded-[var(--r-lg)] bg-foreground/[.04] px-4 py-3">
@@ -205,10 +214,10 @@ function CharacterArchive({ asset }: { asset: Extract<LibraryAsset, { kind: "ent
                     </span>
                 )}
                 <span className="min-w-0">
-                    <span className="block text-[var(--fs-label)] text-foreground/45">声音</span>
-                    <span className="block truncate text-sm font-medium">{asset.data.voiceName || "未绑定声音"}</span>
+                    <span className="block text-[var(--fs-label)] text-foreground/45">{tr("声音")}</span>
+                    <span className="block truncate text-sm font-medium">{asset.data.voiceName || tr("未绑定声音")}</span>
                 </span>
-                <span className={`ml-auto shrink-0 text-xs ${asset.data.visualStatus === "ready" ? "text-emerald-600 dark:text-emerald-400" : "text-foreground/45"}`}>{asset.data.visualStatus === "ready" ? "形象就绪" : "形象待完善"}</span>
+                <span className={`ml-auto shrink-0 text-xs ${asset.data.visualStatus === "ready" ? "text-emerald-600 dark:text-emerald-400" : "text-foreground/45"}`}>{asset.data.visualStatus === "ready" ? tr("形象就绪") : tr("形象待完善")}</span>
             </div>
             {rows.length ? (
                 <dl className="divide-y divide-border/60 border-y border-border/60">
@@ -220,7 +229,7 @@ function CharacterArchive({ asset }: { asset: Extract<LibraryAsset, { kind: "ent
                     ))}
                 </dl>
             ) : (
-                <p className="text-sm text-foreground/45">还没有填写角色设定，可在画布上打开角色卡补充。</p>
+                <p className="text-sm text-foreground/45">{tr("还没有填写角色设定，可在画布上打开角色卡补充。")}</p>
             )}
         </div>
     );
@@ -231,7 +240,7 @@ export function AssetDrawer({ asset, onClose, onCopy, onDownload }: { asset: Lib
     const kind = asset && isKnownAssetKind(asset.kind) ? asset.kind : undefined;
     const KindIcon = asset ? (kind ? assetKindIcons[kind] : FileText) : Clapperboard;
     return (
-        <Drawer className="library-drawer" title="素材档案" open={Boolean(asset)} size="large" onClose={onClose}>
+        <Drawer className="library-drawer" title={tr("素材档案")} open={Boolean(asset)} size="large" onClose={onClose}>
             {asset ? (
                 <div className="space-y-4">
                     <div className="asset-archive-header">
@@ -241,13 +250,13 @@ export function AssetDrawer({ asset, onClose, onCopy, onDownload }: { asset: Lib
                         <div className="min-w-0">
                             <h2 className="asset-archive-title">{asset.title}</h2>
                             <p className="asset-archive-subtitle">
-                                {assetCategoryLabel(asset.category)} · {formatAssetDateTime(asset.createdAt)} 创建
+                                {assetCategoryLabel(asset.category)} · {tr("{0} 创建", formatAssetDateTime(asset.createdAt))}
                             </p>
                         </div>
                     </div>
                     {asset.kind === "entity" && (asset.category === "environment" || asset.category === "prop") ? (
                         <div className="asset-archive-preview-note">
-                            <p>{String(asset.data.definition.description || "待生成图片")}</p>
+                            <p>{String(asset.data.definition.description || tr("待生成图片"))}</p>
                             <p>{String(asset.data.definition.prompt || "")}</p>
                         </div>
                     ) : asset.kind === "entity" ? (
@@ -281,8 +290,8 @@ export function AssetDrawer({ asset, onClose, onCopy, onDownload }: { asset: Lib
                             </Tag>
                         ))}
                         {asset.arkAssetId ? (
-                            <Tag className="m-0" color="geekblue" title="火山方舟素材 ID，生成视频时可直接 asset:// 引用">
-                                方舟 {asset.arkAssetId}
+                            <Tag className="m-0" color="geekblue" title={tr("火山方舟素材 ID，生成视频时可直接 asset:// 引用")}>
+                                {tr("方舟")} {asset.arkAssetId}
                             </Tag>
                         ) : null}
                         <StorageTag asset={asset} />
@@ -299,19 +308,19 @@ export function AssetDrawer({ asset, onClose, onCopy, onDownload }: { asset: Lib
                     </div>
                     <div className="asset-archive-link">
                         <Link2 />
-                        <span>所属项目</span>
+                        <span>{tr("所属项目")}</span>
                         <strong>{assetProjectLabel(asset)}</strong>
                     </div>
                     {asset.note ? (
                         <div className="asset-archive-section">
-                            <span className="asset-archive-section-title">备注</span>
+                            <span className="asset-archive-section-title">{tr("备注")}</span>
                             <p className="asset-archive-section-body">{asset.note}</p>
                         </div>
                     ) : null}
                     <div className="asset-archive-actions">
                         {asset.kind === "text" ? (
                             <Button type="primary" icon={<Copy className="size-4" />} onClick={() => onCopy(asset)}>
-                                复制文本
+                                {tr("复制文本")}
                             </Button>
                         ) : null}
                         {asset.kind === "image" || asset.kind === "video" || asset.kind === "audio" || asset.kind === "model" ? (
@@ -360,16 +369,16 @@ export function AssetImageZoom({ asset }: { asset: LibraryAsset & { kind: "image
         >
             <img src={asset.coverUrl || asset.data.dataUrl} alt={asset.title} loading="lazy" decoding="async" className="asset-archive-preview-media asset-zoom-image" style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }} />
             <div className="asset-zoom-controls" data-canvas-no-zoom>
-                <button type="button" title="缩小" aria-label="缩小" onClick={() => setScale((value) => Math.max(0.25, value / 1.25))}>
+                <button type="button" title={tr("缩小")} aria-label={tr("缩小")} onClick={() => setScale((value) => Math.max(0.25, value / 1.25))}>
                     <ZoomOut className="size-4" />
                 </button>
-                <button type="button" title="恢复适应" aria-label="恢复适应" onClick={reset}>
+                <button type="button" title={tr("恢复适应")} aria-label={tr("恢复适应")} onClick={reset}>
                     {Math.round(scale * 100)}%
                 </button>
-                <button type="button" title="放大" aria-label="放大" onClick={() => setScale((value) => Math.min(4, value * 1.25))}>
+                <button type="button" title={tr("放大")} aria-label={tr("放大")} onClick={() => setScale((value) => Math.min(4, value * 1.25))}>
                     <ZoomIn className="size-4" />
                 </button>
-                <button type="button" title="查看原图尺寸" aria-label="查看原图尺寸" onClick={() => setScale(1)}>
+                <button type="button" title={tr("查看原图尺寸")} aria-label={tr("查看原图尺寸")} onClick={() => setScale(1)}>
                     <Maximize2 className="size-4" />
                 </button>
             </div>
@@ -379,23 +388,23 @@ export function AssetImageZoom({ asset }: { asset: LibraryAsset & { kind: "image
 
 export function assetArchiveFacts(asset: LibraryAsset) {
     const facts: Array<{ label: string; value: string }> = [
-        { label: "类型", value: assetKindLabel(asset.kind, asset.category) },
-        { label: "分类", value: assetCategoryLabel(asset.category) },
+        { label: tr("类型"), value: assetKindLabel(asset.kind, asset.category) },
+        { label: tr("分类"), value: assetCategoryLabel(asset.category) },
     ];
     if (asset.kind === "image" || asset.kind === "video") {
-        facts.push({ label: "尺寸", value: assetSizeLabel(asset.data.width, asset.data.height) });
+        facts.push({ label: tr("尺寸"), value: assetSizeLabel(asset.data.width, asset.data.height) });
     }
     if (asset.kind === "video" || asset.kind === "audio") {
-        facts.push({ label: "时长", value: formatAssetClock(asset.data.durationMs) || "未知" });
+        facts.push({ label: tr("时长"), value: formatAssetClock(asset.data.durationMs) || tr("未知") });
     }
     if (asset.kind !== "text" && asset.kind !== "entity") {
-        facts.push({ label: "大小", value: formatBytes(asset.data.bytes) });
-        facts.push({ label: "格式", value: asset.data.mimeType });
-        facts.push({ label: "存储", value: resourceStorageLabel(asset.data.storageKey) });
+        facts.push({ label: tr("大小"), value: formatBytes(asset.data.bytes) });
+        facts.push({ label: tr("格式"), value: asset.data.mimeType });
+        facts.push({ label: tr("存储"), value: resourceStorageLabel(asset.data.storageKey) });
     }
-    if (asset.kind !== "entity" || asset.source) facts.push({ label: "来源", value: asset.source || "未标注" });
-    facts.push({ label: "创建", value: formatAssetDateTime(asset.createdAt) });
-    facts.push({ label: "更新", value: formatAssetDateTime(asset.updatedAt) });
+    if (asset.kind !== "entity" || asset.source) facts.push({ label: tr("来源"), value: asset.source || tr("未标注") });
+    facts.push({ label: tr("创建"), value: formatAssetDateTime(asset.createdAt) });
+    facts.push({ label: tr("更新"), value: formatAssetDateTime(asset.updatedAt) });
     return facts;
 }
 

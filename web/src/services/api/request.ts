@@ -1,3 +1,4 @@
+import { tr, trMessage } from "@/i18n";
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 
 export type ApiParams = Record<string, string | string[] | number | number[] | undefined>;
@@ -13,6 +14,7 @@ export type BackendEnvelope<T> = {
 /**
  * 业务错误的统一载体：HTTP 200 只代表传输完成，code/reason 才决定业务是否成功。
  * 调用方应依赖机器可读字段做分支，message 仅用于向用户展示，避免把后端文案当协议解析。
+ * Backend messages that match a catalog key are shown in the interface language.
  */
 
 export class ApiError extends Error {
@@ -51,7 +53,7 @@ export async function request<T>(promise: Promise<{ data: BackendEnvelope<T>; st
         const response = await promise;
         if (response.status === 304 && options.allowNotModified) return { notModified: true } as T;
         if (response.data.code !== 0) {
-            throw new ApiError(response.data.msg || "请求失败", {
+            throw new ApiError(trMessage(response.data.msg || "") || tr("请求失败"), {
                 status: response.status,
                 code: response.data.code,
                 reason: response.data.reason,
@@ -71,12 +73,12 @@ function unwrapTransportError(error: unknown): never {
         throw error;
     }
     if (axios.isCancel(error) || (axios.isAxiosError(error) && error.code === axios.AxiosError.ERR_CANCELED)) {
-        throw new DOMException("请求已取消", "AbortError");
+        throw new DOMException(tr("请求已取消"), "AbortError");
     }
     if (axios.isAxiosError<BackendEnvelope<unknown>>(error)) {
         const status = error.response?.status;
         const code = error.response?.data?.code;
-        throw new ApiError(error.response?.data?.msg || transportFailureMessage(status, error.message), {
+        throw new ApiError(trMessage(error.response?.data?.msg || "") || transportFailureMessage(status, error.message), {
             status,
             code,
             reason: error.response?.data?.reason,
@@ -94,13 +96,13 @@ function unwrapTransportError(error: unknown): never {
 function transportFailureMessage(status?: number, fallback?: string) {
     switch (status) {
         case 502:
-            return "后端服务暂时不可用，请稍后重试";
+            return tr("后端服务暂时不可用，请稍后重试");
         case 503:
-            return "服务暂时不可用，请稍后重试";
+            return tr("服务暂时不可用，请稍后重试");
         case 504:
-            return "服务响应超时，请稍后重试";
+            return tr("服务响应超时，请稍后重试");
         default:
-            return fallback || "请求失败";
+            return fallback || tr("请求失败");
     }
 }
 

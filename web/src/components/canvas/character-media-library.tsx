@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Input } from "antd";
 import { Check, ImagePlus, Loader2, Pause, Play, Search, Upload } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -65,9 +66,9 @@ function FilePicker({ accept, onFile, children }: { accept: string; onFile: (fil
 }
 
 function ListState({ loading, empty, loadingMore }: { loading: boolean; empty: string; loadingMore: boolean }) {
-    if (loading) return <p className="py-10 text-center text-xs text-foreground/40">正在读取素材库</p>;
+    if (loading) return <p className="py-10 text-center text-xs text-foreground/40">{tr("正在读取素材库")}</p>;
     if (empty) return <p className="py-10 text-center text-xs leading-5 text-foreground/40">{empty}</p>;
-    return loadingMore ? <p className="py-4 text-center text-xs text-foreground/40">正在加载更多</p> : null;
+    return loadingMore ? <p className="py-4 text-center text-xs text-foreground/40">{tr("正在加载更多")}</p> : null;
 }
 
 /** 同一资源在当前画布上有节点时，用节点名（用户改过的名字）代替素材库里的默认标题。 */
@@ -79,7 +80,7 @@ export function CharacterImageLibrary({ currentResourceId, busyKey, canvasTitles
     const { items, query, loading, loadingMore, sentinelRef } = useCharacterMediaPages("image", keyword);
     return (
         <div className="space-y-4">
-            <SearchField value={keyword} placeholder="搜索素材库图片" onChange={setKeyword} />
+            <SearchField value={keyword} placeholder={tr("搜索素材库图片")} onChange={setKeyword} />
             <div className="grid grid-cols-3 gap-2">
                 <FilePicker accept="image/*" onFile={onUpload}>
                     {(open) => (
@@ -89,7 +90,10 @@ export function CharacterImageLibrary({ currentResourceId, busyKey, canvasTitles
                             disabled={Boolean(busyKey)}
                             className="grid aspect-[3/4] place-items-center rounded-lg border border-dashed border-foreground/15 text-foreground/45 outline-none transition-colors hover:border-foreground/35 hover:text-foreground/75 focus-visible:ring-2 focus-visible:ring-[var(--workspace-accent)] disabled:cursor-wait"
                         >
-                            <span className="flex flex-col items-center gap-2 text-xs">{busyKey === "upload" ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5 stroke-[1.5]" />}上传本地图片</span>
+                            <span className="flex flex-col items-center gap-2 text-xs">
+                                {busyKey === "upload" ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5 stroke-[1.5]" />}
+                                {tr("上传本地图片")}
+                            </span>
                         </button>
                     )}
                 </FilePicker>
@@ -126,7 +130,7 @@ export function CharacterImageLibrary({ currentResourceId, busyKey, canvasTitles
                     );
                 })}
             </div>
-            <ListState loading={loading} loadingMore={loadingMore} empty={!loading && !items.length ? (query ? "没有匹配的图片" : "素材库里还没有图片，可以直接上传本地图片") : ""} />
+            <ListState loading={loading} loadingMore={loadingMore} empty={!loading && !items.length ? (query ? tr("没有匹配的图片") : tr("素材库里还没有图片，可以直接上传本地图片")) : ""} />
             <div ref={sentinelRef} />
         </div>
     );
@@ -178,7 +182,7 @@ export function CharacterVoiceLibrary({
         <div className="space-y-4">
             <div className="flex gap-2">
                 <div className="min-w-0 flex-1">
-                    <SearchField value={keyword} placeholder="搜索素材库音频" onChange={setKeyword} />
+                    <SearchField value={keyword} placeholder={tr("搜索素材库音频")} onChange={setKeyword} />
                 </div>
                 <FilePicker accept="audio/*" onFile={onUpload}>
                     {(open) => (
@@ -186,8 +190,8 @@ export function CharacterVoiceLibrary({
                             type="button"
                             onClick={open}
                             disabled={Boolean(busyKey)}
-                            aria-label="上传本地音频"
-                            title="上传本地音频"
+                            aria-label={tr("上传本地音频")}
+                            title={tr("上传本地音频")}
                             className="grid size-8 shrink-0 place-items-center rounded-md bg-foreground/[.05] text-foreground/60 outline-none transition-colors hover:bg-foreground/[.09] hover:text-foreground focus-visible:ring-2 focus-visible:ring-[var(--workspace-accent)] disabled:cursor-wait"
                         >
                             {busyKey === "upload" ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
@@ -206,19 +210,19 @@ export function CharacterVoiceLibrary({
                             <button
                                 type="button"
                                 onClick={() => void toggle(resourceId, asset.data.storageKey)}
-                                aria-label={`${playing === resourceId ? "暂停" : "试听"} ${title}`}
+                                aria-label={`${playing === resourceId ? tr("暂停") : tr("试听")} ${title}`}
                                 className={`grid size-8 shrink-0 place-items-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--workspace-accent)] ${playing === resourceId ? "bg-[var(--workspace-accent)] text-background" : "bg-foreground/[.06] text-foreground/70 hover:bg-foreground/[.1]"}`}
                             >
                                 {playing === resourceId ? <Pause className="size-3.5" /> : <Play className="size-3.5 translate-x-px" />}
                             </button>
                             <span className="min-w-0 flex-1">
                                 <span className="block truncate text-[var(--fs-ui)] font-medium">{title}</span>
-                                <span className="text-[var(--fs-label)] text-foreground/40">{seconds ? `${seconds} 秒` : "音频"}</span>
+                                <span className="text-[var(--fs-label)] text-foreground/40">{seconds ? tr("{0} 秒", seconds) : tr("音频")}</span>
                             </span>
                             {current ? (
                                 <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground/70">
                                     <Check className="size-3.5" />
-                                    使用中
+                                    {tr("使用中")}
                                 </span>
                             ) : (
                                 <button
@@ -227,14 +231,14 @@ export function CharacterVoiceLibrary({
                                     onClick={() => onPick(resourceId, title)}
                                     className="rounded-md px-2 py-1 text-xs font-medium text-foreground/55 opacity-0 outline-none transition hover:bg-foreground/[.07] hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[var(--workspace-accent)] group-hover:opacity-100 disabled:cursor-wait"
                                 >
-                                    {busyKey === resourceId ? <Loader2 className="size-3.5 animate-spin" /> : "使用"}
+                                    {busyKey === resourceId ? <Loader2 className="size-3.5 animate-spin" /> : tr("使用")}
                                 </button>
                             )}
                         </li>
                     );
                 })}
             </ul>
-            <ListState loading={loading} loadingMore={loadingMore} empty={!loading && !items.length ? (query ? "没有匹配的音频" : "素材库里还没有音频，可以直接上传本地音频") : ""} />
+            <ListState loading={loading} loadingMore={loadingMore} empty={!loading && !items.length ? (query ? tr("没有匹配的音频") : tr("素材库里还没有音频，可以直接上传本地音频")) : ""} />
             <div ref={sentinelRef} />
         </div>
     );

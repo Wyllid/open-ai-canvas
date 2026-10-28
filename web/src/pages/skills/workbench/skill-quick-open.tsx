@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -47,8 +48,8 @@ export function SkillQuickOpen({ open, paths, onClose, onPick }: { open: boolean
                     <input
                         autoFocus
                         value={query}
-                        placeholder="按名称搜索文件"
-                        aria-label="按名称搜索文件"
+                        placeholder={tr("按名称搜索文件")}
+                        aria-label={tr("按名称搜索文件")}
                         role="combobox"
                         aria-expanded="true"
                         aria-controls="skill-wb-quick-open-list"
@@ -73,7 +74,7 @@ export function SkillQuickOpen({ open, paths, onClose, onPick }: { open: boolean
                     />
                     <Kbd>Esc</Kbd>
                 </label>
-                <div id="skill-wb-quick-open-list" ref={listRef} className="skill-wb-quick-open-list thin-scrollbar" role="listbox" aria-label="匹配的文件">
+                <div id="skill-wb-quick-open-list" ref={listRef} className="skill-wb-quick-open-list thin-scrollbar" role="listbox" aria-label={tr("匹配的文件")}>
                     {results.length ? (
                         results.map((item, itemIndex) => (
                             <div
@@ -92,7 +93,7 @@ export function SkillQuickOpen({ open, paths, onClose, onPick }: { open: boolean
                             </div>
                         ))
                     ) : (
-                        <div className="skill-wb-quick-open-empty">没有匹配的文件</div>
+                        <div className="skill-wb-quick-open-empty">{tr("没有匹配的文件")}</div>
                     )}
                 </div>
             </div>

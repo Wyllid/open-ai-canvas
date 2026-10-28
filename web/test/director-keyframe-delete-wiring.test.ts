@@ -124,7 +124,7 @@ describe("时间轴关键帧入口可见、可选择、可键盘删除", () => {
     test("可编辑关键帧是真实 button，不是惰性 span", () => {
         expect(trackKeys).toContain('type="button"');
         expect(trackKeys).toContain("previs-sequencer-key is-actionable");
-        expect(trackKeys).toContain('aria-label={`选择 ${key.label ?? "关键帧"} ${key.time.toFixed(2)}s 的关键帧`}');
+        expect(trackKeys).toContain('aria-label={tr("选择 {0} {1}s 的关键帧", key.label ?? tr("关键帧"), key.time.toFixed(2))}');
         expect(trackKeys).toContain("aria-pressed=");
     });
 
@@ -198,11 +198,11 @@ describe("三类轨道都有删除入口，概览轨保持只读", () => {
     });
 
     test("所选关键帧提供 step/linear/smooth 缓动切换与显式删除按钮", () => {
-        expect(sequencer).toContain('aria-label="关键帧缓动"');
-        expect(sequencer).toContain('<option value="step">保持</option>');
-        expect(sequencer).toContain('<option value="linear">线性</option>');
-        expect(sequencer).toContain('<option value="smooth">平滑</option>');
-        expect(sequencer).toContain('aria-label="删除所选关键帧"');
+        expect(sequencer).toContain('aria-label={tr("关键帧缓动")}');
+        expect(sequencer).toContain('<option value="step">{tr("保持")}</option>');
+        expect(sequencer).toContain('<option value="linear">{tr("线性")}</option>');
+        expect(sequencer).toContain('<option value="smooth">{tr("平滑")}</option>');
+        expect(sequencer).toContain('aria-label={tr("删除所选关键帧")}');
     });
 
     test("切换摄影机或外部删帧后清除陈旧选择，顶部控件不能误改不可见轨道", () => {

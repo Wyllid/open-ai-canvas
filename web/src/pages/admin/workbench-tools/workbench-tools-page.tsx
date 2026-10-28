@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { createClientUUID } from "@/lib/client-id";
 import { App, Button, Form, Input, InputNumber, Modal, Select, Switch, Upload } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -119,7 +120,7 @@ function ResourceUpload({ label, value, kind = "image", disabled, upload, onChan
             <div className="admin-workbench-resource-preview">{value.url ? kind === "video" ? <video src={value.url} controls preload="metadata" /> : <img src={value.url} alt={label} /> : <WandSparkles className="size-5" />}</div>
             <div className="admin-workbench-resource-actions">
                 <strong>{label}</strong>
-                <small>{value.id ? (value.url ? "已上传" : "已上传，预览暂不可用") : "选择文件上传"}</small>
+                <small>{value.id ? (value.url ? tr("已上传") : tr("已上传，预览暂不可用")) : tr("选择文件上传")}</small>
                 <div>
                     <Upload
                         disabled={disabled}
@@ -138,12 +139,12 @@ function ResourceUpload({ label, value, kind = "image", disabled, upload, onChan
                         }}
                     >
                         <Button size="small" disabled={disabled} loading={uploading} icon={<CloudUpload className="size-3.5" />}>
-                            {value.id ? "替换文件" : "上传文件"}
+                            {value.id ? tr("替换文件") : tr("上传文件")}
                         </Button>
                     </Upload>
                     {value.id && (
-                        <Button size="small" disabled={disabled} type="text" danger aria-label={`移除${label}`} icon={<Trash2 className="size-3.5" />} onClick={() => onChange({})}>
-                            移除
+                        <Button size="small" disabled={disabled} type="text" danger aria-label={tr("移除{0}", label)} icon={<Trash2 className="size-3.5" />} onClick={() => onChange({})}>
+                            {tr("移除")}
                         </Button>
                     )}
                 </div>
@@ -173,38 +174,50 @@ function SlotEditor({
         <div className="admin-workbench-slot-row">
             <div className="admin-workbench-slot-fields">
                 <label>
-                    输入名称
-                    <Input aria-label={`输入 ${index + 1} 名称`} value={slot.name} placeholder="如模特、人脸、商品" onChange={(event) => onChange({ name: event.target.value })} />
+                    {tr("输入名称")}
+                    <Input aria-label={tr("输入 {0} 名称", index + 1)} value={slot.name} placeholder={tr("如模特、人脸、商品")} onChange={(event) => onChange({ name: event.target.value })} />
                 </label>
                 <label>
-                    媒体类型
+                    {tr("媒体类型")}
                     <Select
                         mode="multiple"
-                        aria-label={`输入 ${index + 1} 媒体类型`}
+                        aria-label={tr("输入 {0} 媒体类型", index + 1)}
                         value={slot.mediaTypes}
-                        options={(kind === "image" ? ["image"] : ["image", "video", "audio"]).map((value) => ({ value, label: value === "image" ? "图片" : value === "video" ? "视频" : "音频" }))}
+                        options={(kind === "image" ? ["image"] : ["image", "video", "audio"]).map((value) => ({ value, label: value === "image" ? tr("图片") : value === "video" ? tr("视频") : tr("音频") }))}
                         onChange={(mediaTypes) => onChange({ mediaTypes })}
                     />
                 </label>
                 <label>
-                    最少数量
-                    <InputNumber min={0} max={slot.maxCount} aria-label={`输入 ${index + 1} 最少数量`} value={slot.minCount} onChange={(value) => onChange({ minCount: value || 0, required: Boolean(value) })} />
+                    {tr("最少数量")}
+                    <InputNumber min={0} max={slot.maxCount} aria-label={tr("输入 {0} 最少数量", index + 1)} value={slot.minCount} onChange={(value) => onChange({ minCount: value || 0, required: Boolean(value) })} />
                 </label>
                 <label>
-                    最多数量
-                    <InputNumber min={Math.max(1, slot.minCount)} max={20} aria-label={`输入 ${index + 1} 最多数量`} value={slot.maxCount} onChange={(value) => onChange({ maxCount: value || 1 })} />
+                    {tr("最多数量")}
+                    <InputNumber min={Math.max(1, slot.minCount)} max={20} aria-label={tr("输入 {0} 最多数量", index + 1)} value={slot.maxCount} onChange={(value) => onChange({ maxCount: value || 1 })} />
                 </label>
                 <label>
-                    必填
-                    <Switch aria-label={`输入 ${index + 1} 必填`} checked={slot.required} onChange={(required) => onChange({ required, minCount: required ? Math.max(1, slot.minCount) : 0 })} />
+                    {tr("必填")}
+                    <Switch aria-label={tr("输入 {0} 必填", index + 1)} checked={slot.required} onChange={(required) => onChange({ required, minCount: required ? Math.max(1, slot.minCount) : 0 })} />
                 </label>
                 <Button disabled={disabled} danger type="text" size="small" onClick={onRemove}>
-                    移除输入
+                    {tr("移除输入")}
                 </Button>
             </div>
             <div className="admin-workbench-resource-grid">
-                <ResourceUpload label={`${slot.name || "输入"}封面`} value={{ id: slot.coverResourceId, url: slot.coverUrl }} disabled={disabled} upload={upload} onChange={(value) => onChange({ coverResourceId: value.id, coverUrl: value.url })} />
-                <ResourceUpload label={`${slot.name || "输入"}示例`} value={{ id: slot.sampleResourceId, url: slot.sampleUrl }} disabled={disabled} upload={upload} onChange={(value) => onChange({ sampleResourceId: value.id, sampleUrl: value.url })} />
+                <ResourceUpload
+                    label={tr("{0}封面", slot.name || tr("输入"))}
+                    value={{ id: slot.coverResourceId, url: slot.coverUrl }}
+                    disabled={disabled}
+                    upload={upload}
+                    onChange={(value) => onChange({ coverResourceId: value.id, coverUrl: value.url })}
+                />
+                <ResourceUpload
+                    label={tr("{0}示例", slot.name || tr("输入"))}
+                    value={{ id: slot.sampleResourceId, url: slot.sampleUrl }}
+                    disabled={disabled}
+                    upload={upload}
+                    onChange={(value) => onChange({ sampleResourceId: value.id, sampleUrl: value.url })}
+                />
             </div>
         </div>
     );
@@ -229,7 +242,7 @@ export default function WorkbenchToolsPage() {
             const result = await listWorkbenchTools(kind, undefined, true);
             setTools(result.tools.sort((a, b) => a.sortOrder - b.sortOrder));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "工作台工具加载失败");
+            message.error(error instanceof Error ? error.message : tr("工作台工具加载失败"));
         } finally {
             setLoading(false);
         }
@@ -255,17 +268,17 @@ export default function WorkbenchToolsPage() {
 
     const upload: UploadMedia = async (file, mediaKind) => {
         if (!file.type.startsWith(`${mediaKind}/`)) {
-            message.error(`请选择${mediaKind === "image" ? "图片" : "视频"}文件`);
-            throw new Error("文件类型不匹配");
+            message.error(tr("请选择{0}文件", mediaKind === "image" ? tr("图片") : tr("视频")));
+            throw new Error(tr("文件类型不匹配"));
         }
         setUploadCount((count) => count + 1);
         try {
             const resource = await uploadResourceFile(file, mediaKind, { fileName: file.name });
             const url = await resolveWorkbenchResourceURL(resource.id);
-            message.success("文件已上传");
+            message.success(tr("文件已上传"));
             return { id: resource.id, url };
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "文件上传失败");
+            message.error(error instanceof Error ? error.message : tr("文件上传失败"));
             throw error;
         } finally {
             setUploadCount((count) => count - 1);
@@ -282,11 +295,11 @@ export default function WorkbenchToolsPage() {
         }
         const slots = draft.inputContract.slots;
         if (slots.some((slot) => !slot.name.trim() || !slot.mediaTypes.length || slot.minCount > slot.maxCount)) {
-            message.warning("请补齐输入名称、媒体类型和有效数量范围");
+            message.warning(tr("请补齐输入名称、媒体类型和有效数量范围"));
             return;
         }
         if (draft.presets.some((preset) => !preset.name.trim() || !preset.promptTemplate.trim())) {
-            message.warning("请补齐预设名称和提示词");
+            message.warning(tr("请补齐预设名称和提示词"));
             return;
         }
         setSaving(true);
@@ -321,9 +334,9 @@ export default function WorkbenchToolsPage() {
             });
             setEditorOpen(false);
             await reload();
-            message.success(saved.enabled ? "工具已保存并开放" : "工具已保存为未开放");
+            message.success(saved.enabled ? tr("工具已保存并开放") : tr("工具已保存为未开放"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "工具保存失败");
+            message.error(error instanceof Error ? error.message : tr("工具保存失败"));
         } finally {
             setSaving(false);
         }
@@ -333,9 +346,9 @@ export default function WorkbenchToolsPage() {
         try {
             await setAdminWorkbenchToolEnabled(tool.id, enabled);
             await reload();
-            message.success(enabled ? "工具已开放" : "工具已下线");
+            message.success(enabled ? tr("工具已开放") : tr("工具已下线"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "工具状态更新失败");
+            message.error(error instanceof Error ? error.message : tr("工具状态更新失败"));
         }
     };
     const updateSlot = (key: string, patch: Partial<WorkbenchReferenceSlot>) =>
@@ -343,7 +356,7 @@ export default function WorkbenchToolsPage() {
     const updatePreset = (id: string, patch: Partial<WorkbenchPromptPreset>) => setDraft((current) => ({ ...current, presets: current.presets.map((preset) => (preset.id === id ? { ...preset, ...patch } : preset)) }));
     const columns: ColumnsType<WorkbenchTool> = [
         {
-            title: "工具",
+            title: tr("工具"),
             dataIndex: "name",
             render: (_, tool) => (
                 <div className="admin-workbench-tool-main">
@@ -355,28 +368,28 @@ export default function WorkbenchToolsPage() {
                 </div>
             ),
         },
-        { title: "分类", dataIndex: "categoryId", width: 140, align: "center", render: workbenchCategoryLabel },
-        { title: "预设", dataIndex: "presets", width: 90, align: "center", render: (value: WorkbenchPromptPreset[]) => `${value.filter((item) => item.enabled).length} 项启用` },
-        { title: "排序", dataIndex: "sortOrder", width: 80, align: "center" },
+        { title: tr("分类"), dataIndex: "categoryId", width: 140, align: "center", render: workbenchCategoryLabel },
+        { title: tr("预设"), dataIndex: "presets", width: 90, align: "center", render: (value: WorkbenchPromptPreset[]) => tr("{0} 项启用", value.filter((item) => item.enabled).length) },
+        { title: tr("排序"), dataIndex: "sortOrder", width: 80, align: "center" },
         {
-            title: "状态",
+            title: tr("状态"),
             dataIndex: "enabled",
             width: 120,
             align: "center",
             render: (enabled: boolean, tool) => (
                 <div className="admin-workbench-tool-status">
-                    <AdminStatusBadge label={enabled ? "已开放" : "未开放"} tone={enabled ? "success" : "neutral"} />
-                    <Switch checked={enabled} aria-label={`${enabled ? "下线" : "开放"}${tool.name}`} onChange={(checked) => void toggle(tool, checked)} />
+                    <AdminStatusBadge label={enabled ? tr("已开放") : tr("未开放")} tone={enabled ? "success" : "neutral"} />
+                    <Switch checked={enabled} aria-label={`${enabled ? tr("下线") : tr("开放")}${tool.name}`} onChange={(checked) => void toggle(tool, checked)} />
                 </div>
             ),
         },
         {
-            title: "操作",
+            title: tr("操作"),
             width: 120,
             align: "center",
             render: (_, tool) => (
                 <Button size="small" icon={<Edit3 className="size-3.5" />} onClick={() => void openEditor(tool)}>
-                    编辑
+                    {tr("编辑")}
                 </Button>
             ),
         },
@@ -384,42 +397,42 @@ export default function WorkbenchToolsPage() {
 
     return (
         <AdminPageFrame
-            title="工作台工具"
-            description="管理生图与视频的工具、场景输入和示例素材"
+            title={tr("工作台工具")}
+            description={tr("管理生图与视频的工具、场景输入和示例素材")}
             scroll
             actions={
                 <Button type="primary" icon={<Plus className="size-4" />} onClick={() => void openEditor()}>
-                    新建工具
+                    {tr("新建工具")}
                 </Button>
             }
         >
             <div className="admin-workbench-tools">
                 <div className="admin-workbench-tools-toolbar">
                     <Select
-                        aria-label="工作台类型"
+                        aria-label={tr("工作台类型")}
                         value={kind}
                         onChange={setKind}
                         options={[
-                            { label: "图片生成", value: "image" },
-                            { label: "视频生成", value: "video" },
+                            { label: tr("图片生成"), value: "image" },
+                            { label: tr("视频生成"), value: "video" },
                         ]}
                     />
-                    <Input aria-label="搜索工作台工具" prefix={<Search className="size-4" />} placeholder="搜索名称或说明" value={query} onChange={(event) => setQuery(event.target.value)} allowClear />
+                    <Input aria-label={tr("搜索工作台工具")} prefix={<Search className="size-4" />} placeholder={tr("搜索名称或说明")} value={query} onChange={(event) => setQuery(event.target.value)} allowClear />
                     <Button icon={<RefreshCw className="size-4" />} loading={loading} onClick={() => void reload()}>
-                        刷新
+                        {tr("刷新")}
                     </Button>
                 </div>
                 <AdminDataTable
                     table={{ className: "app-data-table", rowKey: "id", loading, pagination: false, columns, dataSource: visibleTools, scroll: { x: 900 } }}
-                    empty={<div className="admin-workbench-tools-empty">当前类型还没有工具，使用“新建工具”创建首个目录项。</div>}
+                    empty={<div className="admin-workbench-tools-empty">{tr("当前类型还没有工具，使用“新建工具”创建首个目录项。")}</div>}
                 />
             </div>
             <Modal
-                title={draft.id ? "编辑工作台工具" : "新建工作台工具"}
+                title={draft.id ? tr("编辑工作台工具") : tr("新建工作台工具")}
                 open={editorOpen}
                 onCancel={() => !editorBusy && setEditorOpen(false)}
                 onOk={() => void save()}
-                okText={uploadCount ? "等待上传完成" : "保存"}
+                okText={uploadCount ? tr("等待上传完成") : tr("保存")}
                 okButtonProps={{ disabled: uploadCount > 0 }}
                 cancelButtonProps={{ disabled: editorBusy }}
                 confirmLoading={saving}
@@ -432,13 +445,13 @@ export default function WorkbenchToolsPage() {
             >
                 <Form form={form} layout="vertical" disabled={editorBusy} className="admin-workbench-tool-form">
                     <div className="admin-workbench-tool-grid">
-                        <Form.Item label="工作台类型">
+                        <Form.Item label={tr("工作台类型")}>
                             <Select
                                 value={draft.kind}
                                 disabled={Boolean(draft.id) || editorBusy}
                                 options={[
-                                    { label: "图片生成", value: "image" },
-                                    { label: "视频生成", value: "video" },
+                                    { label: tr("图片生成"), value: "image" },
+                                    { label: tr("视频生成"), value: "video" },
                                 ]}
                                 onChange={(value: WorkbenchKind) => {
                                     setDraft((current) => ({
@@ -450,35 +463,35 @@ export default function WorkbenchToolsPage() {
                                 }}
                             />
                         </Form.Item>
-                        <Form.Item name="categoryId" label="业务分类" rules={[{ required: true }]}>
+                        <Form.Item name="categoryId" label={tr("业务分类")} rules={[{ required: true }]}>
                             <Select options={workbenchCategories} />
                         </Form.Item>
-                        <Form.Item name="name" label="工具名称" rules={[{ required: true, whitespace: true, max: 80 }]}>
+                        <Form.Item name="name" label={tr("工具名称")} rules={[{ required: true, whitespace: true, max: 80 }]}>
                             <Input maxLength={80} />
                         </Form.Item>
-                        <Form.Item name="subtitle" label="副标题">
+                        <Form.Item name="subtitle" label={tr("副标题")}>
                             <Input maxLength={160} />
                         </Form.Item>
-                        <Form.Item name="sortOrder" label="排序">
+                        <Form.Item name="sortOrder" label={tr("排序")}>
                             <InputNumber min={0} max={1000000} />
                         </Form.Item>
-                        <Form.Item name="enabled" label="用户端开放" valuePropName="checked">
+                        <Form.Item name="enabled" label={tr("用户端开放")} valuePropName="checked">
                             <Switch />
                         </Form.Item>
                     </div>
-                    <Form.Item name="description" label="简短说明" rules={[{ required: true, whitespace: true, max: 500 }]}>
+                    <Form.Item name="description" label={tr("简短说明")} rules={[{ required: true, whitespace: true, max: 500 }]}>
                         <Input.TextArea rows={2} maxLength={500} />
                     </Form.Item>
                     <div className="admin-workbench-resource-grid">
                         <ResourceUpload
-                            label="工具图标"
+                            label={tr("工具图标")}
                             value={{ id: draft.iconResourceId, url: draft.iconUrl }}
                             disabled={editorBusy}
                             upload={upload}
                             onChange={(value) => setDraft((current) => ({ ...current, iconResourceId: value.id, iconUrl: value.url }))}
                         />
                         <ResourceUpload
-                            label="工具封面"
+                            label={tr("工具封面")}
                             value={{ id: draft.coverResourceId, url: draft.coverUrl }}
                             disabled={editorBusy}
                             upload={upload}
@@ -486,12 +499,12 @@ export default function WorkbenchToolsPage() {
                         />
                     </div>
                     <div className="admin-workbench-section-title">
-                        <strong>用户需要提供什么</strong>
-                        <small>配置模特、人脸、商品等输入，用户端按媒体类型和数量展示上传入口。</small>
+                        <strong>{tr("用户需要提供什么")}</strong>
+                        <small>{tr("配置模特、人脸、商品等输入，用户端按媒体类型和数量展示上传入口。")}</small>
                     </div>
                     <div className="admin-workbench-contract-toolbar">
                         <label>
-                            提示词必填{" "}
+                            {tr("提示词必填")}{" "}
                             <Switch
                                 checked={draft.inputContract.promptRequired || draft.inputContract.minTextReferences > 0}
                                 onChange={(promptRequired) => setDraft((current) => ({ ...current, inputContract: { ...current.inputContract, promptRequired, minTextReferences: 0 } }))}
@@ -508,7 +521,7 @@ export default function WorkbenchToolsPage() {
                                 }))
                             }
                         >
-                            添加输入
+                            {tr("添加输入")}
                         </Button>
                     </div>
                     <div className="admin-workbench-slots">
@@ -526,40 +539,40 @@ export default function WorkbenchToolsPage() {
                         ))}
                     </div>
                     <div className="admin-workbench-section-title">
-                        <strong>使用说明与展示</strong>
+                        <strong>{tr("使用说明与展示")}</strong>
                     </div>
                     <div className="admin-workbench-tool-grid">
-                        <Form.Item name="inputHint" label="输入提示">
+                        <Form.Item name="inputHint" label={tr("输入提示")}>
                             <Input.TextArea rows={2} maxLength={500} />
                         </Form.Item>
-                        <Form.Item name="guideText" label="使用说明">
+                        <Form.Item name="guideText" label={tr("使用说明")}>
                             <Input.TextArea rows={2} maxLength={5000} />
                         </Form.Item>
-                        <Form.Item name="supportedModes" label="创作方式" rules={[{ required: true }]}>
+                        <Form.Item name="supportedModes" label={tr("创作方式")} rules={[{ required: true }]}>
                             <Select mode="multiple" options={workbenchModeOptions(draft.kind)} />
                         </Form.Item>
-                        <Form.Item name="searchKeywords" label="搜索关键词">
-                            <Select mode="tags" tokenSeparators={[",", "，"]} placeholder="输入关键词后按回车" />
+                        <Form.Item name="searchKeywords" label={tr("搜索关键词")}>
+                            <Select mode="tags" tokenSeparators={[",", "，"]} placeholder={tr("输入关键词后按回车")} />
                         </Form.Item>
-                        <Form.Item name="surfaces" label="展示入口">
-                            <Select mode="multiple" options={[{ value: "workbench", label: "创作工作台" }]} />
+                        <Form.Item name="surfaces" label={tr("展示入口")}>
+                            <Select mode="multiple" options={[{ value: "workbench", label: tr("创作工作台") }]} />
                         </Form.Item>
-                        <Form.Item name="recommendationOrder" label="推荐排序">
+                        <Form.Item name="recommendationOrder" label={tr("推荐排序")}>
                             <InputNumber min={0} max={1000000} />
                         </Form.Item>
-                        <Form.Item name="recommended" label="推荐工具" valuePropName="checked">
+                        <Form.Item name="recommended" label={tr("推荐工具")} valuePropName="checked">
                             <Switch />
                         </Form.Item>
                     </div>
                     <div className="admin-workbench-section-title">
-                        <strong>结果示例</strong>
-                        <small>上传实际效果图片或视频，帮助用户了解工具用途。</small>
+                        <strong>{tr("结果示例")}</strong>
+                        <small>{tr("上传实际效果图片或视频，帮助用户了解工具用途。")}</small>
                     </div>
                     <div className="admin-workbench-tool-grid">
-                        <Form.Item name="resultTitle" label="示例标题">
+                        <Form.Item name="resultTitle" label={tr("示例标题")}>
                             <Input maxLength={120} />
                         </Form.Item>
-                        <Form.Item name="resultDescription" label="示例说明">
+                        <Form.Item name="resultDescription" label={tr("示例说明")}>
                             <Input.TextArea rows={2} maxLength={500} />
                         </Form.Item>
                     </div>
@@ -567,7 +580,7 @@ export default function WorkbenchToolsPage() {
                         {draft.resultExample.imageResourceIds?.map((id, index) => (
                             <ResourceUpload
                                 key={id}
-                                label={`图片示例 ${index + 1}`}
+                                label={tr("图片示例 {0}", index + 1)}
                                 value={{ id, url: draft.resultExample.imageUrls?.[index] }}
                                 disabled={editorBusy}
                                 upload={upload}
@@ -587,7 +600,7 @@ export default function WorkbenchToolsPage() {
                     <div className="admin-workbench-resource-grid">
                         {(draft.resultExample.imageResourceIds?.length || 0) < 8 && (
                             <ResourceUpload
-                                label="添加图片示例"
+                                label={tr("添加图片示例")}
                                 value={{}}
                                 disabled={editorBusy}
                                 upload={upload}
@@ -602,7 +615,7 @@ export default function WorkbenchToolsPage() {
                         )}
                         {draft.kind === "video" && (
                             <ResourceUpload
-                                label="视频示例"
+                                label={tr("视频示例")}
                                 kind="video"
                                 value={{ id: draft.resultExample.videoResourceId, url: draft.resultExample.videoUrl }}
                                 disabled={editorBusy}
@@ -614,8 +627,8 @@ export default function WorkbenchToolsPage() {
                     <section className="admin-workbench-presets">
                         <header>
                             <div>
-                                <strong>预设提示词</strong>
-                                <small>与工具一起保存；已保存的预设可停用，历史记录保留。</small>
+                                <strong>{tr("预设提示词")}</strong>
+                                <small>{tr("与工具一起保存；已保存的预设可停用，历史记录保留。")}</small>
                             </div>
                             <Button
                                 size="small"
@@ -623,18 +636,18 @@ export default function WorkbenchToolsPage() {
                                 icon={<Plus className="size-3.5" />}
                                 onClick={() => setDraft((current) => ({ ...current, presets: [...current.presets, { id: createClientUUID(), name: "", promptTemplate: "", summary: "", enabled: true }] }))}
                             >
-                                添加预设
+                                {tr("添加预设")}
                             </Button>
                         </header>
                         {draft.presets.map((preset, index) => (
                             <div className="admin-workbench-preset-row" key={preset.id}>
-                                <Input aria-label={`预设 ${index + 1} 名称`} placeholder="预设名称" value={preset.name} onChange={(event) => updatePreset(preset.id, { name: event.target.value })} />
-                                <Input aria-label={`预设 ${index + 1} 简介`} placeholder="一句话说明" value={preset.summary} onChange={(event) => updatePreset(preset.id, { summary: event.target.value })} />
-                                <Input.TextArea aria-label={`预设 ${index + 1} 提示词`} rows={3} placeholder="提示词模板" value={preset.promptTemplate} onChange={(event) => updatePreset(preset.id, { promptTemplate: event.target.value })} />
-                                <Switch aria-label={`启用预设 ${index + 1}`} checked={preset.enabled} onChange={(enabled) => updatePreset(preset.id, { enabled })} />
+                                <Input aria-label={tr("预设 {0} 名称", index + 1)} placeholder={tr("预设名称")} value={preset.name} onChange={(event) => updatePreset(preset.id, { name: event.target.value })} />
+                                <Input aria-label={tr("预设 {0} 简介", index + 1)} placeholder={tr("一句话说明")} value={preset.summary} onChange={(event) => updatePreset(preset.id, { summary: event.target.value })} />
+                                <Input.TextArea aria-label={tr("预设 {0} 提示词", index + 1)} rows={3} placeholder={tr("提示词模板")} value={preset.promptTemplate} onChange={(event) => updatePreset(preset.id, { promptTemplate: event.target.value })} />
+                                <Switch aria-label={tr("启用预设 {0}", index + 1)} checked={preset.enabled} onChange={(enabled) => updatePreset(preset.id, { enabled })} />
                                 {!draft.savedPresetIds.includes(preset.id) && (
                                     <Button danger size="small" onClick={() => setDraft((current) => ({ ...current, presets: current.presets.filter((item) => item.id !== preset.id) }))}>
-                                        移除
+                                        {tr("移除")}
                                     </Button>
                                 )}
                             </div>

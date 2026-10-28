@@ -32,6 +32,9 @@ const (
 	dramaMusicVolume = 0.35
 	// dramaLoudnessLUFS 是短剧成片的总线响度目标，适合线上视频平台。
 	dramaLoudnessLUFS = -14
+	// 配乐首尾的淡入淡出，避免音乐硬起硬停；短于 4 倍时按时长的四分之一。
+	dramaMusicFadeInMs  = 250
+	dramaMusicFadeOutMs = 750
 )
 
 func decodeDramaMusicCues(raw string) []DramaMusicCue {
@@ -148,7 +151,8 @@ func dramaMusicClips(cues []DramaMusicCue, totalMs int64) []renderClip {
 		if volume <= 0 {
 			volume = dramaMusicVolume
 		}
-		clip := renderClip{ID: fmt.Sprintf("music-%d", i), Kind: "audio", TrackID: "music", StartMs: cue.StartMs, DurationMs: duration, SourceStartMs: cue.SourceStartMs, SourceDurationMs: duration, Volume: volume}
+		clip := renderClip{ID: fmt.Sprintf("music-%d", i), Kind: "audio", TrackID: "music", StartMs: cue.StartMs, DurationMs: duration, SourceStartMs: cue.SourceStartMs, SourceDurationMs: duration, Volume: volume,
+			FadeInMs: min(dramaMusicFadeInMs, duration/4), FadeOutMs: min(dramaMusicFadeOutMs, duration/4)}
 		clip.DirectMedia = &struct {
 			ID         string `json:"id"`
 			Kind       string `json:"kind"`

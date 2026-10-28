@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { saveAs } from "file-saver";
 import { MediaPackage, downloadName, packageSegment, referencedStorageKeys } from "@/lib/media-package";
 import { loadCanvasDrawing, loadCanvasDrawingPreview, loadCanvasDrawingRender } from "@/lib/canvas/canvas-drawing-storage";
@@ -20,14 +21,14 @@ async function addDrawing(archive: MediaPackage, project: CanvasProject, drawing
     return saved;
 }
 
-export async function exportCanvasProjects(projects: CanvasProject[], fileName = "画布", options: { includeLocalDrawings?: boolean } = {}): Promise<void> {
+export async function exportCanvasProjects(projects: CanvasProject[], fileName = tr("画布"), options: { includeLocalDrawings?: boolean } = {}): Promise<void> {
     const archive = new MediaPackage();
     const items: CanvasProjectExportItem[] = [];
     // Snapshot once so edits during asynchronous blob reads cannot change the manifest midway.
     const snapshot = structuredClone(projects);
     const projectIds = new Set<string>();
     for (const project of snapshot) {
-        if (projectIds.has(project.id)) throw new Error("不能重复导出同一个画布项目");
+        if (projectIds.has(project.id)) throw new Error(tr("不能重复导出同一个画布项目"));
         projectIds.add(project.id);
         const directory = `projects/${packageSegment(project.id)}`;
         const files = await archive.collect(referencedStorageKeys(project), `${directory}/files`);

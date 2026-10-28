@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Input, Modal, Tag } from "antd";
 import { CircleAlert, ExternalLink, Import, LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -70,14 +71,14 @@ export function LibTVImportDialog({ open, projectId, viewport, viewportSize, onC
 
     const load = async () => {
         if (!uuid) {
-            message.error("请填写 LibTV 画布 UUID 或链接");
+            message.error(tr("请填写 LibTV 画布 UUID 或链接"));
             return;
         }
         setLoading(true);
         try {
             setResult(await importLibTVCanvas(projectId, uuid));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "读取 LibTV 画布失败");
+            message.error(error instanceof Error ? error.message : tr("读取 LibTV 画布失败"));
         } finally {
             setLoading(false);
         }
@@ -90,9 +91,9 @@ export function LibTVImportDialog({ open, projectId, viewport, viewportSize, onC
             await onApply(buildCanvasNodes(result, viewport, viewportSize), result.connections);
             reset();
             onClose();
-            message.success(`已导入 ${result.importedNodeCount} 个节点和 ${result.importedConnectionCount} 条连接`);
+            message.success(tr("已导入 {0} 个节点和 {1} 条连接", result.importedNodeCount, result.importedConnectionCount));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "保存导入结果失败");
+            message.error(error instanceof Error ? error.message : tr("保存导入结果失败"));
         } finally {
             setLoading(false);
         }
@@ -103,32 +104,32 @@ export function LibTVImportDialog({ open, projectId, viewport, viewportSize, onC
             className="workspace-modal"
             open={open}
             onCancel={close}
-            title="导入 LibTV 画布"
+            title={tr("导入 LibTV 画布")}
             width={620}
             footer={
                 result ? (
                     [
                         <Button key="close" onClick={close}>
-                            关闭
+                            {tr("关闭")}
                         </Button>,
                         <Button key="apply" type="primary" icon={<Import className="size-4" />} loading={loading} onClick={() => void apply()}>
-                            确认导入
+                            {tr("确认导入")}
                         </Button>,
                     ]
                 ) : (
                     <Button type="primary" loading={loading} onClick={() => void load()}>
-                        读取画布
+                        {tr("读取画布")}
                     </Button>
                 )
             }
         >
             <div className="space-y-4">
                 <div>
-                    <label className="mb-2 block text-sm font-medium">LibTV 画布 UUID 或链接</label>
+                    <label className="mb-2 block text-sm font-medium">{tr("LibTV 画布 UUID 或链接")}</label>
                     <Input
                         value={value}
                         onChange={(event) => changeValue(event.target.value)}
-                        placeholder="粘贴 32 位 UUID、画布链接或分享链接"
+                        placeholder={tr("粘贴 32 位 UUID、画布链接或分享链接")}
                         disabled={loading}
                         suffix={uuid && value !== uuid ? <ExternalLink className="size-4 text-foreground/35" /> : null}
                     />
@@ -136,7 +137,7 @@ export function LibTVImportDialog({ open, projectId, viewport, viewportSize, onC
                 {loading && !result ? (
                     <div className="flex items-center gap-2 text-sm text-foreground/55">
                         <LoaderCircle className="size-4 animate-spin" />
-                        正在读取 LibTV 画布…
+                        {tr("正在读取 LibTV 画布…")}
                     </div>
                 ) : null}
                 {result ? (
@@ -144,29 +145,29 @@ export function LibTVImportDialog({ open, projectId, viewport, viewportSize, onC
                         <div className="rounded-xl p-4" style={{ background: "var(--library-surface)" }}>
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
-                                    <div className="text-sm font-semibold">{result.projectName || "LibTV 画布"}</div>
-                                    <div className="mt-1 text-sm text-foreground/60">可导入 {result.importedNodeCount} 个节点 · {result.importedConnectionCount} 条连线</div>
+                                    <div className="text-sm font-semibold">{result.projectName || tr("LibTV 画布")}</div>
+                                    <div className="mt-1 text-sm text-foreground/60">{tr("可导入 {0} 个节点 · {1} 条连线", result.importedNodeCount, result.importedConnectionCount)}</div>
                                 </div>
-                                <Tag color="blue">批次：{formatLibTVBatchTime(result.batchCreatedAt)}</Tag>
+                                <Tag color="blue">{tr("批次：")}{formatLibTVBatchTime(result.batchCreatedAt)}</Tag>
                             </div>
-                            <div className="mt-3 text-xs leading-5 text-foreground/50">节点会保留相对位置，并整体放到当前可视区域中心。</div>
+                            <div className="mt-3 text-xs leading-5 text-foreground/50">{tr("节点会保留相对位置，并整体放到当前可视区域中心。")}</div>
                         </div>
                         {result.skippedNodes.length || result.skippedConnections.length || result.multiResultNodeCount || result.staleNodeCount || result.reusedFailedNodeCount || result.placeholderNodeCount || result.convertedSpecialCount ? (
                             <div className="flex items-start gap-2 rounded-lg px-3 py-2 text-xs leading-5 text-foreground/60" style={{ background: "var(--surface-hover)" }}>
                                 <CircleAlert className="mt-0.5 size-4 shrink-0" />
                                 <div>
-                                    {result.skippedNodes.length ? <div>{result.skippedNodes.length} 个暂不支持的节点未导入，相关连线已自动忽略。</div> : null}
-                                    {!result.skippedNodes.length && result.skippedConnections.length ? <div>{result.skippedConnections.length} 条无效连线已自动忽略。</div> : null}
-                                    {result.reusedFailedNodeCount ? <div>{result.reusedFailedNodeCount} 个最近任务失败但仍有历史结果的节点已保留。</div> : null}
-                                    {result.placeholderNodeCount ? <div>{result.placeholderNodeCount} 个尚未生成结果的节点已作为占位节点保留。</div> : null}
-                                    {result.convertedSpecialCount ? <div>{result.convertedSpecialCount} 个特殊节点已转换为图片参考节点。</div> : null}
-                                    {result.multiResultNodeCount ? <div>{result.multiResultNodeCount} 个多结果节点已使用首个结果。</div> : null}
-                                    {result.staleNodeCount ? <div>{result.staleNodeCount} 个过期标记节点仍保留现有结果。</div> : null}
+                                    {result.skippedNodes.length ? <div>{tr("{0} 个暂不支持的节点未导入，相关连线已自动忽略。", result.skippedNodes.length)}</div> : null}
+                                    {!result.skippedNodes.length && result.skippedConnections.length ? <div>{tr("{0} 条无效连线已自动忽略。", result.skippedConnections.length)}</div> : null}
+                                    {result.reusedFailedNodeCount ? <div>{tr("{0} 个最近任务失败但仍有历史结果的节点已保留。", result.reusedFailedNodeCount)}</div> : null}
+                                    {result.placeholderNodeCount ? <div>{tr("{0} 个尚未生成结果的节点已作为占位节点保留。", result.placeholderNodeCount)}</div> : null}
+                                    {result.convertedSpecialCount ? <div>{tr("{0} 个特殊节点已转换为图片参考节点。", result.convertedSpecialCount)}</div> : null}
+                                    {result.multiResultNodeCount ? <div>{tr("{0} 个多结果节点已使用首个结果。", result.multiResultNodeCount)}</div> : null}
+                                    {result.staleNodeCount ? <div>{tr("{0} 个过期标记节点仍保留现有结果。", result.staleNodeCount)}</div> : null}
                                 </div>
                             </div>
                         ) : null}
                         <div className="flex flex-wrap gap-2">
-                            <Tag>等待确认导入</Tag>
+                            <Tag>{tr("等待确认导入")}</Tag>
                         </div>
                     </div>
                 ) : null}

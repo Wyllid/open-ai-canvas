@@ -214,3 +214,31 @@ func TestDramaSettingsRejectUnreadablePromptSkill(t *testing.T) {
 		t.Fatalf("an empty skill ref clears the selection: %v", err)
 	}
 }
+
+func TestDramaEpisodeDetailListsReferencesWithoutAVideoModel(t *testing.T) {
+	svc, _ := newDramaTestService(t)
+	project := createTestDramaWithMedia(t, svc, DramaReviewAuto, DramaMediaManual).Project.ID
+	runDramaTicks(t, svc, project, 20)
+	productionRow, err := svc.repo.DramaProduction(project)
+	if err != nil {
+		t.Fatal(err)
+	}
+	settings := parseDramaSettings(productionRow.SettingsJSON)
+	settings.Models.Video = DramaModelChoice{LogicalModelID: "missing-video-model"}
+	encoded, _ := json.Marshal(settings)
+	if err := svc.repo.UpdateDramaProduction(project, map[string]any{"settings_json": string(encoded)}); err != nil {
+		t.Fatal(err)
+	}
+	summary, _ := svc.DramaSummary("usr-drama", project)
+	detail, err := svc.DramaEpisodeDetail("usr-drama", project, summary.Episodes[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	payload, _ := json.Marshal(detail.Segments)
+	if len(detail.Segments) == 0 || strings.Contains(string(payload), `"references":null`) {
+		t.Fatalf("segment references must stay a list when the video model is missing: %s", payload)
+	}
+	if detail.Segments[0].Request.Warning == "" {
+		t.Fatal("the missing video model is reported as a warning")
+	}
+}

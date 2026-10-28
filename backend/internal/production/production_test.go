@@ -272,3 +272,26 @@ func TestSegmentWriterUsesSkill(t *testing.T) {
 		}
 	}
 }
+
+func TestParseStoryboardSourceAcceptsTranslatedHeaders(t *testing.T) {
+	for name, table := range map[string]string{
+		"en": "| Scene | Character | Shot size | Image | Dialogue | Duration |\n| --- | --- | --- | --- | --- | --- |\n| Living room | Lin Wan | Close-up | Lin Wan pushes the door open | Lin Wan: Why are you still here? | 3 |",
+		"pt": "| Cena | Personagem | Enquadramento | Imagem | Fala | Duração |\n| --- | --- | --- | --- | --- | --- |\n| Sala | Lin Wan | Close | Lin Wan abre a porta | Lin Wan: Por que você ainda está aqui? | 3 |",
+	} {
+		shots, ok := ParseStoryboardSource(table)
+		if !ok || len(shots) != 1 {
+			t.Fatalf("%s: ok=%v shots=%+v", name, ok, shots)
+		}
+		shot := shots[0]
+		if shot.Scene == "" || shot.ShotSize == "" || shot.Action == "" || shot.Speaker != "Lin Wan" || shot.Dialogue == "" || shot.DurationSeconds != 3 {
+			t.Fatalf("%s: unexpected shot %+v", name, shot)
+		}
+		if len(shot.Characters) != 1 || shot.Characters[0] != "Lin Wan" {
+			t.Fatalf("%s: characters %+v", name, shot.Characters)
+		}
+	}
+	speaker, _ := ParseStoryboardSource("| Falante | Fala |\n| --- | --- |\n| Gu Yan | Esperei muito por você. |")
+	if len(speaker) != 1 || speaker[0].Speaker != "Gu Yan" || speaker[0].Dialogue != "Esperei muito por você." {
+		t.Fatalf("speaker column: %+v", speaker)
+	}
+}

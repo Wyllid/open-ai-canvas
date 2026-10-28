@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { isCanvasNodeGenerating } from "@/lib/canvas/canvas-node-task-state";
 import { useCallback, useRef, type Dispatch, type SetStateAction } from "react";
 import { App } from "antd";
@@ -85,10 +86,10 @@ export function useCanvasGenerationExecutor({
         () =>
             new Promise<boolean>((resolve) => {
                 modal.confirm({
-                    title: "再次生成相同内容？",
-                    content: "当前节点已使用相同提示词、模型、参数和参考素材提交过任务。再次生成会新建任务，并可能再次消耗积分。",
-                    okText: "仍然生成",
-                    cancelText: "取消",
+                    title: tr("再次生成相同内容？"),
+                    content: tr("当前节点已使用相同提示词、模型、参数和参考素材提交过任务。再次生成会新建任务，并可能再次消耗积分。"),
+                    okText: tr("仍然生成"),
+                    cancelText: tr("取消"),
                     centered: true,
                     onOk: () => resolve(true),
                     onCancel: () => resolve(false),
@@ -105,11 +106,11 @@ export function useCanvasGenerationExecutor({
                 async () => {
                     const sourceNode = nodesRef.current.find((node) => node.id === nodeId);
                     if (isCanvasNodeGenerating(sourceNode)) {
-                        message.info("该节点的生成任务仍在进行中，请等待完成后再生成");
+                        message.info(tr("该节点的生成任务仍在进行中，请等待完成后再生成"));
                         return;
                     }
                     if (sourceNode?.type === CanvasNodeType.Video && sourceNode.metadata?.videoEditOperation === "concat") {
-                        message.info("合并成片节点不直接重新生成，请重新选择源视频合并");
+                        message.info(tr("合并成片节点不直接重新生成，请重新选择源视频合并"));
                         return;
                     }
                     let generationConfig = buildGenerationConfig(effectiveConfig, sourceNode, mode);
@@ -153,7 +154,7 @@ export function useCanvasGenerationExecutor({
                                               ...node.metadata,
                                               ...canvasGenerationPromptMetadata(prompt, prompt),
                                               status: NODE_STATUS_LOADING,
-                                              taskStage: "正在准备参考素材",
+                                              taskStage: tr("正在准备参考素材"),
                                               taskProgress: 0,
                                               taskCreatedAt: new Date().toISOString(),
                                               errorDetails: undefined,
@@ -187,13 +188,13 @@ export function useCanvasGenerationExecutor({
                         const requirements = generationModelRequirements(mode, baseContext, sourceNode, generationConfig, true);
                         generationConfig = buildGenerationConfig(effectiveConfig, sourceNode, mode, requirements);
                         const compatibilityError = usesWorkflowProvider ? "" : modelCompatibilityError(generationConfig, generationConfig.model, requirements);
-                        if (compatibilityError) throw new Error(`当前模型无法支持这组输入和参数：${compatibilityError}`);
+                        if (compatibilityError) throw new Error(tr("当前模型无法支持这组输入和参数：{0}", compatibilityError));
                         const referenceLimits = usesWorkflowProvider ? undefined : modelGroupReferenceLimits(effectiveConfig, generationConfig.model, mode, requirements);
                         rawGenerationContext = await hydrateNodeGenerationContext(baseContext, projectId, domainProjectId, mode, mode === "video" && Boolean(referenceLimits?.maxAudios), !promptOnly, referenceLimits, false);
                         const hydratedRequirements = generationModelRequirements(mode, rawGenerationContext, sourceNode, generationConfig);
                         generationConfig = buildGenerationConfig(effectiveConfig, sourceNode, mode, hydratedRequirements);
                         const hydratedCompatibilityError = usesWorkflowProvider ? "" : modelCompatibilityError(generationConfig, generationConfig.model, hydratedRequirements);
-                        if (hydratedCompatibilityError) throw new Error(`当前模型无法支持这组输入和参数：${hydratedCompatibilityError}`);
+                        if (hydratedCompatibilityError) throw new Error(tr("当前模型无法支持这组输入和参数：{0}", hydratedCompatibilityError));
                     } catch (error) {
                         const errorDetails = generationErrorMessage(error);
                         message.error(errorDetails);
@@ -206,7 +207,7 @@ export function useCanvasGenerationExecutor({
                     try {
                         skillExecution = await skillRuntime.prepare({ profile: "canvas", prompt: rawGenerationContext.prompt, skills: addedSkills });
                     } catch (error) {
-                        message.error(error instanceof Error ? error.message : "技能上下文加载失败");
+                        message.error(error instanceof Error ? error.message : tr("技能上下文加载失败"));
                         finishGenerationRequest(nodeId, preparationController);
                         setRunningNodeId(null);
                         return;
@@ -238,14 +239,14 @@ export function useCanvasGenerationExecutor({
                     const generationContext = { ...rawGenerationContext, prompt: effectivePrompt };
                     if (mode === "audio" && generationContext.characterReferences.length) {
                         if (generationContext.characterReferences.length !== 1) {
-                            message.error("角色配音一次只能引用一个角色卡");
+                            message.error(tr("角色配音一次只能引用一个角色卡"));
                             finishGenerationRequest(nodeId, preparationController);
                             setRunningNodeId(null);
                             return;
                         }
                         const voice = generationContext.resolvedCharacterVoices[0];
                         if (!voice) {
-                            message.error("角色尚未绑定可用声音，无法创建角色配音任务");
+                            message.error(tr("角色尚未绑定可用声音，无法创建角色配音任务"));
                             finishGenerationRequest(nodeId, preparationController);
                             setRunningNodeId(null);
                             return;
@@ -313,7 +314,7 @@ export function useCanvasGenerationExecutor({
                                               prompt,
                                               composerContent: prompt,
                                               status: NODE_STATUS_LOADING,
-                                              taskStage: "正在准备生成任务",
+                                              taskStage: tr("正在准备生成任务"),
                                               taskProgress: 0,
                                               taskCreatedAt: new Date().toISOString(),
                                               errorDetails: undefined,
@@ -417,7 +418,7 @@ export function useCanvasGenerationExecutor({
                         setRunningNodeId(null);
                     }
                 },
-                () => message.info({ key: `canvas-generation-submission-${nodeId}`, content: "该节点已有生成请求正在提交或执行，请勿重复点击" }),
+                () => message.info({ key: `canvas-generation-submission-${nodeId}`, content: tr("该节点已有生成请求正在提交或执行，请勿重复点击") }),
             ),
         [
             addedSkills,

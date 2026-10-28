@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { requestAudioGeneration } from "@/services/api/audio";
 import { requestGeneration, requestImageQuestion } from "@/services/api/image";
 import { createVideoGenerationTask } from "@/services/api/video";
@@ -5,8 +6,8 @@ import { defaultConfig, encodeChannelModel, type ModelCapability, type ModelChan
 import type { ModelProtocol } from "@/lib/model-protocols";
 
 export async function testChannelModelConnection(channel: ModelChannel, model: string, capability: ModelCapability, protocol: ModelProtocol) {
-    if (!channel.baseUrl.trim()) throw new Error("请先填写 Base URL");
-    if (!channel.apiKey.trim()) throw new Error("请先填写 API Key");
+    if (!channel.baseUrl.trim()) throw new Error(tr("请先填写 Base URL"));
+    if (!channel.apiKey.trim()) throw new Error(tr("请先填写 API Key"));
     const selectedModel = encodeChannelModel(channel.id, model);
     const modelCost = channel.modelCosts?.find((item) => item.model === model);
     const testProtocol = channel.apiFormat === "gemini" && !modelCost?.protocol ? undefined : protocol;
@@ -51,16 +52,16 @@ export async function testChannelModelConnection(channel: ModelChannel, model: s
     switch (capability) {
         case "text":
             await requestImageQuestion(config, [{ role: "user", content: "Reply with OK." }], () => undefined);
-            return "文本响应正常";
+            return tr("文本响应正常");
         case "image":
             await requestGeneration(config, "A simple gray circle on a white background.");
-            return "图片生成正常";
+            return tr("图片生成正常");
         case "audio":
             await requestAudioGeneration(config, "Model test.");
-            return "音频生成正常";
+            return tr("音频生成正常");
         case "video": {
             const task = await createVideoGenerationTask(config, "A static gray circle on a white background.");
-            return `视频任务已创建（${task.id}）`;
+            return tr("视频任务已创建（{0}）", task.id);
         }
     }
 }

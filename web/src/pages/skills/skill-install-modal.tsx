@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Form, Input, Modal, Upload, type UploadFile } from "antd";
 import { Select } from "@/components/ui/base/select";
 import { Switch } from "@/components/ui/base/switch";
@@ -23,7 +24,7 @@ type InstallFormValues = {
 
 const modeOptions = [
     { value: "markdown", label: <span className="inline-flex items-center gap-2"><FileText className="size-3.5" />Markdown</span> },
-    { value: "zip", label: <span className="inline-flex items-center gap-2"><FileArchive className="size-3.5" />ZIP 技能包</span> },
+    { value: "zip", label: <span className="inline-flex items-center gap-2"><FileArchive className="size-3.5" />{tr("ZIP 技能包")}</span> },
     { value: "github", label: <span className="inline-flex items-center gap-2"><GitBranch className="size-3.5" />GitHub</span> },
 ];
 
@@ -45,7 +46,7 @@ export function SkillInstallModal({ open, onClose, onInstalled, onManualCreate }
         const values = await form.validateFields();
         const file = fileList[0]?.originFileObj;
         if (mode !== "github" && !file) {
-            message.warning(`请选择一个 ${mode === "zip" ? "ZIP 技能包" : "Markdown 文件"}`);
+            message.warning(tr("请选择一个 {0}", mode === "zip" ? tr("ZIP 技能包") : tr("Markdown 文件")));
             return;
         }
         setInstalling(true);
@@ -67,10 +68,10 @@ export function SkillInstallModal({ open, onClose, onInstalled, onManualCreate }
                     tag: values.tag,
                     isPrivate: !values.is_public,
                 });
-            message.success("技能已安装");
+            message.success(tr("技能已安装"));
             onInstalled(result.skill);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "技能安装失败");
+            message.error(error instanceof Error ? error.message : tr("技能安装失败"));
         } finally {
             setInstalling(false);
         }
@@ -83,27 +84,27 @@ export function SkillInstallModal({ open, onClose, onInstalled, onManualCreate }
             width={680}
             destroyOnHidden
             mask={{ closable: !installing }}
-            title="安装技能"
+            title={tr("安装技能")}
             onCancel={onClose}
             footer={(
                 <div className="flex items-center justify-between gap-3">
-                    <Button type="text" onClick={onManualCreate}>从空白创建单文件技能</Button>
-                    <div className="flex gap-2"><Button onClick={onClose}>取消</Button><Button type="primary" loading={installing} onClick={() => void install()}>安装技能</Button></div>
+                    <Button type="text" onClick={onManualCreate}>{tr("从空白创建单文件技能")}</Button>
+                    <div className="flex gap-2"><Button onClick={onClose}>{tr("取消")}</Button><Button type="primary" loading={installing} onClick={() => void install()}>{tr("安装技能")}</Button></div>
                 </div>
             )}
         >
-            <p className="mb-4 text-sm leading-6 text-foreground/55">支持标准 <code>SKILL.md</code>、包含多层目录的 ZIP 技能包，或公开 GitHub 仓库。名称和简介会优先从技能入口自动读取。</p>
+            <p className="mb-4 text-sm leading-6 text-foreground/55">{tr("支持标准")} <code>SKILL.md</code>{tr("、包含多层目录的 ZIP 技能包，或公开 GitHub 仓库。名称和简介会优先从技能入口自动读取。")}</p>
 <SegmentedControl className="skill-install-mode" block options={modeOptions} value={mode} onChange={(value) => { setMode(value as InstallMode); setFileList([]); }} />
 
             <Form form={form} layout="vertical" requiredMark="optional" className="skill-install-form">
                 {mode === "github" ? (
                     <>
-                        <Form.Item name="url" label="GitHub 地址" rules={[{ required: true, message: "请填写 GitHub 仓库地址" }, { type: "url", message: "请输入有效链接" }]}>
+                        <Form.Item name="url" label={tr("GitHub 地址")} rules={[{ required: true, message: tr("请填写 GitHub 仓库地址") }, { type: "url", message: tr("请输入有效链接") }]}>
                             <Input type="url" inputMode="url" spellCheck={false} prefix={<GitBranch className="size-4 text-foreground/35" />} placeholder="https://github.com/owner/repository" />
                         </Form.Item>
                         <div className="grid gap-x-3 sm:grid-cols-2">
-                            <Form.Item name="ref" label="分支或标签" extra="留空时使用默认分支"><Input spellCheck={false} placeholder="main" /></Form.Item>
-                            <Form.Item name="subdir" label="技能子目录" extra="仓库仅含一个技能时可留空"><Input spellCheck={false} placeholder="skills/ai-director" /></Form.Item>
+                            <Form.Item name="ref" label={tr("分支或标签")} extra={tr("留空时使用默认分支")}><Input spellCheck={false} placeholder="main" /></Form.Item>
+                            <Form.Item name="subdir" label={tr("技能子目录")} extra={tr("仓库仅含一个技能时可留空")}><Input spellCheck={false} placeholder="skills/ai-director" /></Form.Item>
                         </div>
                     </>
                 ) : (
@@ -114,7 +115,7 @@ export function SkillInstallModal({ open, onClose, onInstalled, onManualCreate }
                             fileList={fileList}
                             beforeUpload={(file) => {
                                 if (file.size > 20 * 1024 * 1024) {
-                                    message.error("技能文件不能超过 20MB");
+                                    message.error(tr("技能文件不能超过 20MB"));
                                     return Upload.LIST_IGNORE;
                                 }
                                 return false;
@@ -123,25 +124,25 @@ export function SkillInstallModal({ open, onClose, onInstalled, onManualCreate }
                             onRemove={() => { setFileList([]); return true; }}
                         >
                             <UploadCloud className="mx-auto mb-3 size-8 text-foreground/38" />
-                            <div className="text-sm font-medium">拖入或选择 {mode === "zip" ? "ZIP 技能包" : "Markdown 文件"}</div>
-                            <div className="mt-1 text-xs text-foreground/45">{mode === "zip" ? "根目录或唯一子目录中必须包含 SKILL.md" : "普通 .md 会作为技能入口 SKILL.md 安装"}</div>
+                            <div className="text-sm font-medium">{tr("拖入或选择")} {mode === "zip" ? tr("ZIP 技能包") : tr("Markdown 文件")}</div>
+                            <div className="mt-1 text-xs text-foreground/45">{mode === "zip" ? tr("根目录或唯一子目录中必须包含 SKILL.md") : tr("普通 .md 会作为技能入口 SKILL.md 安装")}</div>
                         </Upload.Dragger>
                         <div className="mt-4 grid gap-x-3 sm:grid-cols-2">
-                            <Form.Item name="name" label="覆盖名称" extra="可选，留空时自动读取"><Input maxLength={80} autoComplete="off" /></Form.Item>
-                            <Form.Item name="description" label="覆盖简介" extra="可选，留空时自动读取"><Input maxLength={500} autoComplete="off" /></Form.Item>
+                            <Form.Item name="name" label={tr("覆盖名称")} extra={tr("可选，留空时自动读取")}><Input maxLength={80} autoComplete="off" /></Form.Item>
+                            <Form.Item name="description" label={tr("覆盖简介")} extra={tr("可选，留空时自动读取")}><Input maxLength={500} autoComplete="off" /></Form.Item>
                         </div>
                     </>
                 )}
 
                 <div className="grid gap-x-3 sm:grid-cols-2">
-                    <Form.Item name="tag" label="技能分类" rules={[{ required: true, message: "请选择技能分类" }]}>
+                    <Form.Item name="tag" label={tr("技能分类")} rules={[{ required: true, message: tr("请选择技能分类") }]}>
                         <Select options={fallbackSkillCategories} />
                     </Form.Item>
-                    <Form.Item name="is_public" label="公开状态" valuePropName="checked" extra="公开后其他用户可以加入使用。">
-                        <Switch checkedChildren="公开" unCheckedChildren="私有" />
+                    <Form.Item name="is_public" label={tr("公开状态")} valuePropName="checked" extra={tr("公开后其他用户可以加入使用。")}>
+                        <Switch checkedChildren={tr("公开")} unCheckedChildren={tr("私有")} />
                     </Form.Item>
                 </div>
-                {mode === "github" ? <Form.Item name="autoUpdate" label="自动同步" valuePropName="checked" extra="后台每 6 小时检查一次提交版本，并记录最近检查与同步时间。"><Switch checkedChildren="开启" unCheckedChildren="关闭" /></Form.Item> : null}
+                {mode === "github" ? <Form.Item name="autoUpdate" label={tr("自动同步")} valuePropName="checked" extra={tr("后台每 6 小时检查一次提交版本，并记录最近检查与同步时间。")}><Switch checkedChildren={tr("开启")} unCheckedChildren={tr("关闭")} /></Form.Item> : null}
             </Form>
         </Modal>
     );

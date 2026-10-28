@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // SRT 导入导出（复用 srt-parser）+ 「从节点重建字幕片段」命令（快照契约：
 // 节点 subtitleEntries 权威 → 重建时间线字幕快照，替换过期快照，单向显式同步）。
 // 时间线字幕片段是节点字幕的只读快照；AI 高亮只写权威节点字幕。
@@ -29,20 +30,20 @@ export function EditorSubtitleTools() {
     const importSrt = () => {
         const entries = parseSrt(srtText);
         if (entries.length === 0) {
-            setMessage("未解析到有效 SRT 条目");
+            setMessage(tr("未解析到有效 SRT 条目"));
             return;
         }
         dispatch({
             op: "rebuildSubtitleClips",
             payload: { nodeId: DEFAULT_SRT_NODE_ID, entries, trackId: subtitleTracks[0]?.id },
         });
-        setMessage(`已从节点 ${DEFAULT_SRT_NODE_ID} 重建 ${entries.length} 条字幕快照`);
+        setMessage(tr("已从节点 {0} 重建 {1} 条字幕快照", DEFAULT_SRT_NODE_ID, entries.length));
     };
 
     // SRT 导出：当前时间线字幕快照 → 序列化 → 下载 .srt（往返一致）。
     const exportSrt = () => {
         if (subtitleClips.length === 0) {
-            setMessage("时间线上没有字幕片段");
+            setMessage(tr("时间线上没有字幕片段"));
             return;
         }
         const entries: SrtEntry[] = subtitleClips.map((clip, idx) => ({
@@ -59,7 +60,7 @@ export function EditorSubtitleTools() {
         a.download = "subtitles.srt";
         a.click();
         URL.revokeObjectURL(url);
-        setMessage(`已导出 ${entries.length} 条字幕`);
+        setMessage(tr("已导出 {0} 条字幕", entries.length));
     };
 
     return (
@@ -67,30 +68,30 @@ export function EditorSubtitleTools() {
             <div className="director-scroll min-h-0 flex-1 overflow-y-auto p-3">
                 <div className="mb-3 rounded-md border border-[var(--previs-sequencer-border)] bg-[var(--previs-control-hover)] p-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-[var(--previs-dock-fg-strong)]">时间线字幕</span>
-                        <span className="text-[var(--fs-label)] text-[var(--previs-dock-fg)]/60">{subtitleClips.length} 条</span>
+                        <span className="text-xs font-medium text-[var(--previs-dock-fg-strong)]">{tr("时间线字幕")}</span>
+                        <span className="text-[var(--fs-label)] text-[var(--previs-dock-fg)]/60">{tr("{0} 条", subtitleClips.length)}</span>
                     </div>
                     {subtitleClips.length === 0 ? (
-                        <p className="mt-2 text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/55">暂无字幕快照。粘贴 SRT 导入后，字幕会重建到时间线。</p>
+                        <p className="mt-2 text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/55">{tr("暂无字幕快照。粘贴 SRT 导入后，字幕会重建到时间线。")}</p>
                     ) : (
                         <ul className="mt-2 space-y-1">
                             {subtitleClips.slice(0, 6).map((clip) => (
                                 <SubtitleRow key={clip.id} clip={clip} />
                             ))}
                             {subtitleClips.length > 6 && (
-                                <li className="pt-1 text-[var(--fs-label)] text-[var(--previs-dock-fg)]/50">…共 {subtitleClips.length} 条</li>
+                                <li className="pt-1 text-[var(--fs-label)] text-[var(--previs-dock-fg)]/50">{tr("…共 {0} 条", subtitleClips.length)}</li>
                             )}
                         </ul>
                     )}
                 </div>
 
                 <label className="mb-3 block">
-                    <span className="mb-1 block text-[var(--fs-label)] text-[var(--previs-dock-fg)]/70">SRT 文本（导入）</span>
+                    <span className="mb-1 block text-[var(--fs-label)] text-[var(--previs-dock-fg)]/70">{tr("SRT 文本（导入）")}</span>
                     <textarea
                         value={srtText}
                         onChange={(e) => setSrtText(e.target.value)}
                         rows={8}
-                        placeholder={"1\n00:00:00,500 --> 00:00:02,500\n你好，影策"}
+                        placeholder={tr("1\n00:00:00,500 --> 00:00:02,500\n你好，Local Studio")}
                         className="w-full resize-y rounded-md border border-[var(--previs-sequencer-border)] bg-[var(--previs-control-hover)] px-2 py-2 font-mono text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg-strong)] outline-none focus:border-[var(--workspace-accent)]/60"
                     />
                 </label>
@@ -102,7 +103,7 @@ export function EditorSubtitleTools() {
                         disabled={!srtText.trim()}
                         className="flex-1 rounded-md bg-[var(--previs-accent)] px-2 py-2 text-xs font-medium text-[var(--previs-on-accent)] hover:bg-[var(--previs-accent-hover)] disabled:opacity-40"
                     >
-                        导入（重建字幕）
+                        {tr("导入（重建字幕）")}
                     </button>
                     <button
                         type="button"
@@ -110,18 +111,17 @@ export function EditorSubtitleTools() {
                         disabled={subtitleClips.length === 0}
                         className="flex-1 rounded-md border border-[var(--previs-sequencer-border)] px-2 py-2 text-xs text-[var(--previs-dock-fg)] hover:bg-[var(--previs-control-hover)] disabled:opacity-40"
                     >
-                        导出 SRT
+                        {tr("导出 SRT")}
                     </button>
                 </div>
 
                 <div className="rounded-md border border-[var(--previs-sequencer-border)] bg-[var(--previs-control-hover)] p-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-[var(--previs-dock-fg-strong)]">AI 高亮</span>
-                        <span className="rounded-full bg-[var(--previs-dock-active-surface)] px-2 py-0.5 text-[var(--fs-label)] text-[var(--previs-dock-fg)]/80">可用</span>
+                        <span className="text-xs font-medium text-[var(--previs-dock-fg-strong)]">{tr("AI 高亮")}</span>
+                        <span className="rounded-full bg-[var(--previs-dock-active-surface)] px-2 py-0.5 text-[var(--fs-label)] text-[var(--previs-dock-fg)]/80">{tr("可用")}</span>
                     </div>
                     <p className="mt-2 text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/55">
-                        AI 字幕高亮与关键词标注已实现，入口在画布「字幕」弹窗（点击字幕 → AI 高亮，走 ai.text 权限）。
-                        时间线字幕片段由该字幕快照重建而来；待编辑器预览支持字幕文本渲染后，高亮会随快照同步到这里。
+                        {tr("AI 字幕高亮与关键词标注已实现，入口在画布「字幕」弹窗（点击字幕 → AI 高亮，走 ai.text 权限）。 时间线字幕片段由该字幕快照重建而来；待编辑器预览支持字幕文本渲染后，高亮会随快照同步到这里。")}
                     </p>
                 </div>
 

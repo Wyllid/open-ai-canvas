@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Input } from "antd";
@@ -23,15 +24,15 @@ export function PromptSkillField({ value, onChange }: { value?: DramaSkillRef; o
                         <span title={value.path}>{value.path}</span>
                     </div>
                     <Button size="small" onClick={() => setOpen(true)}>
-                        更换
+                        {tr("更换")}
                     </Button>
-                    <Button size="small" type="text" icon={<X className="size-3.5" />} aria-label="不使用技能" onClick={() => onChange(undefined)} />
+                    <Button size="small" type="text" icon={<X className="size-3.5" />} aria-label={tr("不使用技能")} onClick={() => onChange(undefined)} />
                 </div>
             ) : (
                 <div className="drama-pskill-current is-empty">
-                    <span>未选择技能，按内置格式撰写（视觉与首帧、站位轴线、角色道具、光源声音、逐镜时间码）。</span>
+                    <span>{tr("未选择技能，按内置格式撰写（视觉与首帧、站位轴线、角色道具、光源声音、逐镜时间码）。")}</span>
                     <Button size="small" icon={<BookMarked className="size-3.5" />} onClick={() => setOpen(true)}>
-                        选择技能
+                        {tr("选择技能")}
                     </Button>
                 </div>
             )}
@@ -74,13 +75,13 @@ function PromptSkillModal({ open, initial, onClose, onPick }: { open: boolean; i
             <div className="drama-skill-import">
                 <header className="drama-skill-import-head">
                     <div>
-                        <strong>选择视频提示词技能</strong>
-                        <span>撰写每个剧情段的视频提示词时，会把所选文件全文交给文本模型，按其中的结构和写法输出。</span>
+                        <strong>{tr("选择视频提示词技能")}</strong>
+                        <span>{tr("撰写每个剧情段的视频提示词时，会把所选文件全文交给文本模型，按其中的结构和写法输出。")}</span>
                     </div>
                 </header>
                 <div className="drama-skill-import-body">
                     <aside>
-                        <Input size="small" prefix={<Search className="size-3.5" />} allowClear placeholder="搜索已添加的技能" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
+                        <Input size="small" prefix={<Search className="size-3.5" />} allowClear placeholder={tr("搜索已添加的技能")} value={keyword} onChange={(event) => setKeyword(event.target.value)} />
                         <div className="drama-skill-import-list thin-scrollbar">
                             {skills.map((item) => (
                                 <button
@@ -96,11 +97,11 @@ function PromptSkillModal({ open, initial, onClose, onPick }: { open: boolean; i
                                     <span>{item.description || "—"}</span>
                                 </button>
                             ))}
-                            {!skillsQuery.isLoading && !skills.length ? <div className="drama-skill-import-empty">还没有添加技能，可在「技能」页面添加后再选择。</div> : null}
+                            {!skillsQuery.isLoading && !skills.length ? <div className="drama-skill-import-empty">{tr("还没有添加技能，可在「技能」页面添加后再选择。")}</div> : null}
                         </div>
                     </aside>
                     <aside>
-                        <div className="drama-skill-import-caption">{skill ? `${skill.skillName} · ${files.length} 份文本` : "文件"}</div>
+                        <div className="drama-skill-import-caption">{skill ? `${skill.skillName} · ${files.length} 份文本` : tr("文件")}</div>
                         <div className="drama-skill-import-list thin-scrollbar">
                             {files.map((file) => (
                                 <button key={file.path} type="button" className="is-file" aria-pressed={file.path === path} onClick={() => setPath(file.path)}>
@@ -108,27 +109,28 @@ function PromptSkillModal({ open, initial, onClose, onPick }: { open: boolean; i
                                     <span title={file.path}>{file.path}</span>
                                 </button>
                             ))}
-                            {skillId && !filesQuery.isLoading && !files.length ? <div className="drama-skill-import-empty">这个技能没有文本文件。</div> : null}
-                            {!skillId ? <div className="drama-skill-import-empty">先在左侧选择技能</div> : null}
+                            {skillId && !filesQuery.isLoading && !files.length ? <div className="drama-skill-import-empty">{tr("这个技能没有文本文件。")}</div> : null}
+                            {!skillId ? <div className="drama-skill-import-empty">{tr("先在左侧选择技能")}</div> : null}
                         </div>
                     </aside>
                     <section>
                         <div className="drama-skill-import-caption">
-                            {path || "原文"}
+                            {path || tr("原文")}
                             {content ? (
                                 <span>
-                                    {content.length.toLocaleString("zh-CN")} 字{content.length > 16000 ? " · 超过 16000 字的部分不会发送" : ""}
+                                    {tr("{0} 字", content.length.toLocaleString(currentLocale()))}
+                                    {content.length > 16000 ? tr(" · 超过 16000 字的部分不会发送") : ""}
                                 </span>
                             ) : null}
                         </div>
-                        <pre className="drama-skill-import-content thin-scrollbar">{fileQuery.isLoading ? "正在读取…" : content || "选择文件后在这里查看全文。"}</pre>
+                        <pre className="drama-skill-import-content thin-scrollbar">{fileQuery.isLoading ? tr("正在读取…") : content || tr("选择文件后在这里查看全文。")}</pre>
                     </section>
                 </div>
                 <footer className="drama-skill-import-foot">
-                    <span>修改后对之后撰写的剧情段生效；已写好的段可在分镜页多选后“重新撰写提示词”。</span>
-                    <Button onClick={onClose}>取消</Button>
+                    <span>{tr("修改后对之后撰写的剧情段生效；已写好的段可在分镜页多选后“重新撰写提示词”。")}</span>
+                    <Button onClick={onClose}>{tr("取消")}</Button>
                     <Button type="primary" disabled={!skill || !path || !content} onClick={() => skill && onPick({ skillId: skill.skillId, skillName: skill.skillName, path })}>
-                        使用这个文件
+                        {tr("使用这个文件")}
                     </Button>
                 </footer>
             </div>

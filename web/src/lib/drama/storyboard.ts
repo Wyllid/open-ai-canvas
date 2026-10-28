@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 分镜规则与单集时长的纯函数：与后端 production/storyboard.go 同一套默认值与夹取规则。
 import type { DramaSegmentMode, DramaStoryboardSettings, DramaTransition } from "@/services/api/drama";
 
@@ -10,7 +11,7 @@ export const DEFAULT_STORYBOARD: DramaStoryboardSettings = { segmentMode: "auto"
 
 export const EPISODE_PRESETS = [60, 90, 120, 180, 300, 600];
 
-export const TRANSITION_LABEL: Record<DramaTransition, string> = { cut: "硬切", fadeblack: "黑场过渡", fadewhite: "闪白" };
+export const TRANSITION_LABEL: Record<DramaTransition, string> = { cut: tr("硬切"), fadeblack: tr("黑场过渡"), fadewhite: tr("闪白") };
 
 const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
 
@@ -71,10 +72,10 @@ export function lineTarget(settings: DramaStoryboardSettings, episodeSeconds: nu
 }
 
 export function formatEpisodeSeconds(seconds: number) {
-    if (seconds < 60) return `${seconds} 秒`;
+    if (seconds < 60) return tr("{0} 秒", seconds);
     const minutes = Math.floor(seconds / 60);
     const rest = seconds % 60;
-    return rest ? `${minutes} 分 ${rest} 秒` : `${minutes} 分钟`;
+    return rest ? tr("{0} 分 {1} 秒", minutes, rest) : tr("{0} 分钟", minutes);
 }
 
 /** 解析“90”“5分钟”“5min”“2:30”“1分30秒”等写法为秒；无法识别返回 null。 */

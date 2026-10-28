@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { AudioLines, Check, Film, Flame, Image, MessageSquareText, Network, Settings2, Sparkles } from "lucide-react";
 import { Button, Modal } from "antd";
 import { useEffect, useState, type ReactNode } from "react";
@@ -15,17 +16,17 @@ const capabilityChoices: Array<{
     icon: ReactNode;
     brands: string[];
 }> = [
-    { value: "text", label: "文本", description: "对话与推理", icon: <MessageSquareText className="size-4" />, brands: ["openai", "deepseek", "glm"] },
-    { value: "image", label: "图片", description: "生成与编辑", icon: <Image className="size-4" />, brands: ["openai", "gemini"] },
-    { value: "video", label: "视频", description: "生成与续写", icon: <Film className="size-4" />, brands: ["grok", "gemini"] },
-    { value: "audio", label: "音频", description: "语音与音效", icon: <AudioLines className="size-4" />, brands: ["openai"] },
+    { value: "text", label: tr("文本"), description: tr("对话与推理"), icon: <MessageSquareText className="size-4" />, brands: ["openai", "deepseek", "glm"] },
+    { value: "image", label: tr("图片"), description: tr("生成与编辑"), icon: <Image className="size-4" />, brands: ["openai", "gemini"] },
+    { value: "video", label: tr("视频"), description: tr("生成与续写"), icon: <Film className="size-4" />, brands: ["grok", "gemini"] },
+    { value: "audio", label: tr("音频"), description: tr("语音与音效"), icon: <AudioLines className="size-4" />, brands: ["openai"] },
 ];
 
 type PickerDensity = "comfortable" | "compact";
 
 export function CapabilityCardPicker({ value, onChange, density = "comfortable" }: { value?: ModelCapabilityChoice; onChange?: (value: ModelCapabilityChoice) => void; density?: PickerDensity }) {
     return (
-        <div className={cn("grid grid-cols-2 gap-2 sm:grid-cols-4", density === "compact" && "gap-2")} role="radiogroup" aria-label="模型能力">
+        <div className={cn("grid grid-cols-2 gap-2 sm:grid-cols-4", density === "compact" && "gap-2")} role="radiogroup" aria-label={tr("模型能力")}>
             {capabilityChoices.map((item) => {
                 const selected = value === item.value;
                 return (
@@ -72,7 +73,7 @@ export function ProtocolCardPicker({
 }) {
     const availableProtocols = protocols.filter((item) => item.capability === capability && item.enabled !== false);
     return (
-        <div className={cn("grid grid-cols-1 gap-2 sm:grid-cols-2", density === "compact" && "gap-2 xl:grid-cols-3")} role="radiogroup" aria-label="模型请求协议">
+        <div className={cn("grid grid-cols-1 gap-2 sm:grid-cols-2", density === "compact" && "gap-2 xl:grid-cols-3")} role="radiogroup" aria-label={tr("模型请求协议")}>
             {availableProtocols.map((protocol) => {
                 const selected = value === protocol.value;
                 return (
@@ -105,7 +106,7 @@ export function ProtocolCardPicker({
                                 <div className="mt-2 line-clamp-2 text-xs leading-5 text-foreground/58">{protocol.media}</div>
                                 <div className="mt-auto flex items-center justify-between gap-2 pt-2 text-[var(--fs-tiny)] text-foreground/42">
                                     <span className="truncate">{protocol.contentType}</span>
-                                    {protocol.poll ? <span className="shrink-0">异步轮询</span> : <span className="shrink-0">同步响应</span>}
+                                    {protocol.poll ? <span className="shrink-0">{tr("异步轮询")}</span> : <span className="shrink-0">{tr("同步响应")}</span>}
                                 </div>
                             </>
                         ) : null}
@@ -153,14 +154,14 @@ export function ModelCapabilityProtocolModal({
                 </span>
             </Button>
             <Modal
-                title="配置模型能力与请求协议"
+                title={tr("配置模型能力与请求协议")}
                 open={open}
                 width="min(720px, calc(100vw - 24px))"
                 centered
                 destroyOnHidden
                 onCancel={() => setOpen(false)}
-                okText="应用配置"
-                cancelText="取消"
+                okText={tr("应用配置")}
+                cancelText={tr("取消")}
                 onOk={() => {
                     onChange(draft);
                     setOpen(false);
@@ -168,11 +169,11 @@ export function ModelCapabilityProtocolModal({
             >
                 <div className="space-y-4">
                     <section>
-                        <div className="mb-2 text-xs font-semibold text-foreground/65">模型能力</div>
+                        <div className="mb-2 text-xs font-semibold text-foreground/65">{tr("模型能力")}</div>
                         <CapabilityCardPicker value={draft.capability} onChange={updateCapability} />
                     </section>
                     <section>
-                        <div className="mb-2 text-xs font-semibold text-foreground/65">请求协议</div>
+                        <div className="mb-2 text-xs font-semibold text-foreground/65">{tr("请求协议")}</div>
                         <ProtocolCardPicker capability={draft.capability} value={draft.protocol} protocols={protocols} onChange={(protocol) => setDraft((current) => ({ ...current, protocol }))} />
                     </section>
                 </div>
@@ -219,10 +220,10 @@ function BrandIconRow({ models, compact = false, className }: { models: string[]
 }
 
 function modelBrandLabel(model: string) {
-    const labels: Record<string, string> = { openai: "OpenAI", deepseek: "DeepSeek", glm: "智谱 GLM", gemini: "Google Gemini", grok: "xAI Grok" };
+    const labels: Record<string, string> = { openai: "OpenAI", deepseek: "DeepSeek", glm: tr("智谱 GLM"), gemini: "Google Gemini", grok: "xAI Grok" };
     return labels[model] || model;
 }
 
 function capabilityLabel(value: ModelCapabilityChoice) {
-    return { text: "文本", image: "图片", video: "视频", audio: "音频" }[value];
+    return { text: tr("文本"), image: tr("图片"), video: tr("视频"), audio: tr("音频") }[value];
 }

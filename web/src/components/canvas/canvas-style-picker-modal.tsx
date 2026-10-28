@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Clock3, Copy, Eye, Palette, Pencil, Plus, Search, SlidersHorizontal, Star, Trash2, UserRound } from "lucide-react";
@@ -21,15 +22,15 @@ import { useActiveTheme } from "@/stores/canvas/use-canvas-theme-store";
 export type { CanvasStylePreset } from "@/lib/canvas/canvas-style-system";
 
 // 分类按短剧制作语境组织：先看媒介，再看题材与视觉气质，避免用品牌名称代替画风。
-const PROJECT_STYLE_SCOPE = "【使用边界】本规范是全项目美术与影像风格基线，用于统一角色资产、服装材质、建筑世界观、色彩语言和成片质感；它不是某张图片或某个镜头的提示词。具体场景内容、构图、景别、机位、运镜、动作、光源位置、天气和单场情绪由剧情与分镜节点决定，不得从本规范机械复制。";
+const PROJECT_STYLE_SCOPE = tr("【使用边界】本规范是全项目美术与影像风格基线，用于统一角色资产、服装材质、建筑世界观、色彩语言和成片质感；它不是某张图片或某个镜头的提示词。具体场景内容、构图、景别、机位、运镜、动作、光源位置、天气和单场情绪由剧情与分镜节点决定，不得从本规范机械复制。");
 
 const legacyCanvasStylePresets: CanvasStylePreset[] = [
     {
         id: "urban-live-action",
-        title: "都市真人短剧",
-        category: "真人实拍",
-        description: "中性城市色调、真实东亚演员与生活化服化道；统一自然光感、城市材质和克制表演，服务职场与情感题材。",
-        tags: ["职场", "情感", "现实生活"],
+        title: tr("都市真人短剧"),
+        category: tr("真人实拍"),
+        description: tr("中性城市色调、真实东亚演员与生活化服化道；统一自然光感、城市材质和克制表演，服务职场与情感题材。"),
+        tags: [tr("职场"), tr("情感"), tr("现实生活")],
         prompt: [
             "【项目定位】当代中国都市真人短剧的写实轻电影风格，视觉核心是真实人物、可信生活空间和克制的精致感；全片保持统一的自然肤色、真实材质与现代城市气质，不做影楼写真、广告大片或网红滤镜。",
             "【项目色彩系统】全项目色板使用权重约为 60% 中性白、雾灰、浅木和水泥色，30% 低饱和藏蓝、灰绿和驼色，10% 琥珀、酒红或项目识别色。该比例用于控制角色服装、场景美术和资产库的整体频率，不要求每个画面机械满足；肤色始终保持自然暖中性。",
@@ -45,10 +46,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "period-live-action",
-        title: "古装 / 年代真人",
-        category: "真人实拍",
-        description: "先锁定单一历史时期，再统一人物妆发、服装制度、器物与建筑；用低饱和东方色和材质细节建立时代可信度。",
-        tags: ["古装", "民国", "历史"],
+        title: tr("古装 / 年代真人"),
+        category: tr("真人实拍"),
+        description: tr("先锁定单一历史时期，再统一人物妆发、服装制度、器物与建筑；用低饱和东方色和材质细节建立时代可信度。"),
+        tags: [tr("古装"), tr("民国"), tr("历史")],
         prompt: [
             "【项目定位】历史题材真人短剧的写实东方美学。项目启动时必须依据小说从古代王朝、民国或其他年代中锁定一个明确时代子类型，并形成唯一的时代考据基线；全项目人物制度、服化道、器物和建筑只遵循该基线。",
             "【项目色彩系统】全项目色板使用权重约为 55% 米白、黛灰、木褐和土黄，30% 靛青、竹青、暗红和月白，15% 朱砂、鎏金、翡翠或项目身份色。该比例控制服装阵营、建筑材质和道具资产的整体分布；阶层差异通过色彩纯度、织物等级和金属用量表达。",
@@ -64,10 +65,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "suspense-noir",
-        title: "悬疑犯罪夜景",
-        category: "真人实拍",
-        description: "蓝黑低照度基底配少量危险色，统一城市夜景材质、实景光感与心理压迫气质，服务线索和反转题材。",
-        tags: ["悬疑", "犯罪", "反转"],
+        title: tr("悬疑犯罪夜景"),
+        category: tr("真人实拍"),
+        description: tr("蓝黑低照度基底配少量危险色，统一城市夜景材质、实景光感与心理压迫气质，服务线索和反转题材。"),
+        tags: [tr("悬疑"), tr("犯罪"), tr("反转")],
         prompt: [
             "【项目定位】现代中国悬疑犯罪真人短剧的写实暗调体系，以低照度、真实城市纹理和心理压迫作为全片视觉母题；风格服务于信息隐藏与揭示，但任何场景都必须保持人物、环境和关键叙事信息可读。",
             "【项目色彩系统】全项目色板使用权重约为 65% 蓝黑、炭灰和冷水泥色，25% 青绿荧光、脏黄钠灯和冷白屏幕色，10% 暗红、洋红或项目危险色。强调色只承担危险、权力或关键线索的视觉职责，不扩散成全片霓虹效果。",
@@ -83,10 +84,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "chinese-2d",
-        title: "国漫 2D",
-        category: "二维动画",
-        description: "半写实国漫人物、矿物东方色与工笔式场景体系；以稳定线稿、清晰剪影和统一二维资产保障跨集一致性。",
-        tags: ["古风", "仙侠", "二维"],
+        title: tr("国漫 2D"),
+        category: tr("二维动画"),
+        description: tr("半写实国漫人物、矿物东方色与工笔式场景体系；以稳定线稿、清晰剪影和统一二维资产保障跨集一致性。"),
+        tags: [tr("古风"), tr("仙侠"), tr("二维")],
         prompt: [
             "【项目定位】东方古风与仙侠题材的半写实国漫 2D 动画体系，统一采用有粗细变化的手绘线稿、赛璐璐角色上色与工笔式环境绘制；全项目保持二维绘画语言，不混入塑料手办、三维渲染或日系萌系模板。",
             "【项目色彩系统】全项目色板使用权重约为 55% 月白、黛青、石青和烟灰，30% 朱砂、靛蓝、竹青和赭石，15% 金色、亮青或项目法术色。该比例用于统筹角色阵营、场景色板和特效资产；每个主要角色固定主色、辅色与识别色。",
@@ -102,10 +103,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "ink-narrative",
-        title: "水墨叙事",
-        category: "风格化动画",
-        description: "宣纸留白占主导，以焦墨、淡墨和少量朱砂组织叙事；人物身份靠稳定轮廓、笔法与色点区分，而不是抽象成不可识别墨团。",
-        tags: ["水墨", "东方", "情绪"],
+        title: tr("水墨叙事"),
+        category: tr("风格化动画"),
+        description: tr("宣纸留白占主导，以焦墨、淡墨和少量朱砂组织叙事；人物身份靠稳定轮廓、笔法与色点区分，而不是抽象成不可识别墨团。"),
+        tags: [tr("水墨"), tr("东方"), tr("情绪")],
         prompt: [
             "【项目定位】以中国水墨画语言构建的叙事动画项目，统一使用宣纸纤维、干湿笔触、飞白、积墨、破墨与轻工笔勾线；全片保持诗意留白和角色可识别性之间的平衡，不把水墨理解成随机滤镜。",
             "【项目色彩系统】全项目色板使用权重约为 70% 宣纸暖白与留白，20% 焦墨、浓墨、淡墨组成的五级灰，10% 朱砂、石青、赭石或项目点色。点色按角色、阵营和关键器物分配固定职责，不在不同资产间随机更换。",
@@ -121,10 +122,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "three-d-cartoon",
-        title: "3D 卡通短剧",
-        category: "三维动画",
-        description: "轮廓鲜明的风格化三维人物、柔和材质与明快配色；用可读表情、夸张节奏和稳定资产支撑喜剧、亲子与治愈内容。",
-        tags: ["3D", "喜剧", "治愈"],
+        title: tr("3D 卡通短剧"),
+        category: tr("三维动画"),
+        description: tr("轮廓鲜明的风格化三维人物、柔和材质与明快配色；用可读表情、夸张节奏和稳定资产支撑喜剧、亲子与治愈内容。"),
+        tags: ["3D", tr("喜剧"), tr("治愈")],
         prompt: [
             "【项目定位】面向喜剧、亲子与治愈内容的风格化 3D 卡通短剧体系，统一采用简洁造型、清晰剪影、半哑光材质、柔和次表面散射和可读表情；保持动画片质感，不进入廉价塑料玩具或超写实恐怖谷。",
             "【项目色彩系统】全项目色板使用权重约为 50% 暖白、浅木、柔灰和天空色，35% 高识别度角色主色，15% 黄色、珊瑚红、薄荷绿等项目点睛色。颜色按角色、地点和功能分配，始终保证角色资产与环境资产有稳定明度区分。",
@@ -140,10 +141,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "fantasy-3d",
-        title: "国风 3D 玄幻",
-        category: "三维动画",
-        description: "半写实东方人物、可信中式建筑与分层材质构成玄幻世界；法术色受阵营约束，体积光和特效只强化动作与叙事重点。",
-        tags: ["玄幻", "法术", "宏大场景"],
+        title: tr("国风 3D 玄幻"),
+        category: tr("三维动画"),
+        description: tr("半写实东方人物、可信中式建筑与分层材质构成玄幻世界；法术色受阵营约束，体积光和特效只强化动作与叙事重点。"),
+        tags: [tr("玄幻"), tr("法术"), tr("宏大场景")],
         prompt: [
             "【项目定位】东方玄幻题材的半写实 3D 动画短剧体系，统一采用东方角色设计、电影级 PBR 材质、中式幻想建筑和分级法术视觉语言；项目奇观建立在中国美术与建筑逻辑上，不套用西方魔幻世界模板。",
             "【项目色彩系统】全项目色板使用权重约为 55% 黛青、墨黑、冷灰、古铜和云雾白，30% 朱红、靛蓝、青玉、暗金等阵营色，15% 单一高亮能量色。该比例用于宗门、角色、建筑和法术资产的整体规划；每个阵营与角色的能量色具有唯一职责。",
@@ -159,10 +160,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "future-tech",
-        title: "未来科技",
-        category: "科幻实拍",
-        description: "洁净白灰空间、精密工业结构与克制冷光构成可信近未来；科技来自功能与材质，不依赖满屏霓虹和悬浮界面。",
-        tags: ["科技", "近未来", "硬科幻"],
+        title: tr("未来科技"),
+        category: tr("科幻实拍"),
+        description: tr("洁净白灰空间、精密工业结构与克制冷光构成可信近未来；科技来自功能与材质，不依赖满屏霓虹和悬浮界面。"),
+        tags: [tr("科技"), tr("近未来"), tr("硬科幻")],
         prompt: [
             "【项目定位】近未来中国科技题材的写实硬科幻短剧体系，以可推演的技术、清晰功能结构和克制先进感为核心；世界比当下领先约十至三十年，所有设备、服装和空间都必须能解释用途，不使用空泛的科幻装饰。",
             "【项目色彩系统】全项目色板使用权重约为 65% 冷白、浅灰、钛金属和透明材质，25% 石墨黑、深海蓝和低饱和工业色，10% 青绿或电蓝状态指示色。高亮色只用于设备状态、权限和风险提示，不扩散为环境染色。",
@@ -178,10 +179,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "cyberpunk-neon",
-        title: "赛博霓虹",
-        category: "科幻实拍",
-        description: "高密度亚洲夜城、潮湿旧材质与受控霓虹形成技术失衡的近未来；人物身份由义体、阶层服装和企业色区分。",
-        tags: ["赛博朋克", "霓虹", "都市夜景"],
+        title: tr("赛博霓虹"),
+        category: tr("科幻实拍"),
+        description: tr("高密度亚洲夜城、潮湿旧材质与受控霓虹形成技术失衡的近未来；人物身份由义体、阶层服装和企业色区分。"),
+        tags: [tr("赛博朋克"), tr("霓虹"), tr("都市夜景")],
         prompt: [
             "【项目定位】亚洲高密度都市中的赛博朋克短剧体系，视觉核心是先进技术与老旧城市并存、企业秩序与街头生活碰撞；霓虹只作为商业、交通与身份系统的一部分，世界必须保留真实生活痕迹。",
             "【项目色彩系统】全项目色板使用权重约为 55% 沥青黑、旧水泥、潮湿金属和烟灰，30% 冷青、脏黄与屏幕白，15% 洋红、警戒红或企业识别色。每种高亮色绑定阵营或功能，避免无差别彩虹霓虹。",
@@ -197,10 +198,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "retro-hong-kong",
-        title: "复古港风",
-        category: "年代实拍",
-        description: "八九十年代华语都市的胶片色、密集街区与生活化服饰；用钨丝暖光、青绿阴影和真实时代器物建立怀旧感。",
-        tags: ["港风", "胶片", "年代都市"],
+        title: tr("复古港风"),
+        category: tr("年代实拍"),
+        description: tr("八九十年代华语都市的胶片色、密集街区与生活化服饰；用钨丝暖光、青绿阴影和真实时代器物建立怀旧感。"),
+        tags: [tr("港风"), tr("胶片"), tr("年代都市")],
         prompt: [
             "【项目定位】八十至九十年代华语都市题材的复古港风短剧体系，以真实时代生活、紧凑街区和胶片摄影质感为核心；怀旧来自服化道、空间和人物状态，不靠泛黄滤镜或明星仿妆。",
             "【项目色彩系统】全项目色板使用权重约为 50% 奶油白、旧墙灰、墨绿和木褐，35% 钨丝暖黄、青绿色阴影、牛仔蓝与暗红，15% 招牌红、出租车色或角色识别色。色彩保持胶片宽容度和自然肤色。",
@@ -216,10 +217,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "clay-stop-motion",
-        title: "黏土定格",
-        category: "定格动画",
-        description: "保留手塑痕迹的黏土角色、微缩布景与逐帧动作；统一模型比例、材料颗粒和灯光尺度，形成温暖可触的手工世界。",
-        tags: ["黏土", "定格", "手工质感"],
+        title: tr("黏土定格"),
+        category: tr("定格动画"),
+        description: tr("保留手塑痕迹的黏土角色、微缩布景与逐帧动作；统一模型比例、材料颗粒和灯光尺度，形成温暖可触的手工世界。"),
+        tags: [tr("黏土"), tr("定格"), tr("手工质感")],
         prompt: [
             "【项目定位】以手工黏土角色和微缩布景制作的定格动画短剧体系，视觉核心是可触摸的材料、真实模型尺度与逐帧表演；全项目保留适度手塑痕迹，不伪装成光滑三维动画。",
             "【项目色彩系统】全项目色板使用权重约为 55% 陶土、米白、旧木和纸张原色，30% 角色主色与场景功能色，15% 珊瑚红、芥末黄、湖蓝或项目点睛色。颜色带有实体颜料的轻微不均匀感。",
@@ -235,10 +236,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "black-white-noir",
-        title: "黑白默片",
-        category: "风格化实拍",
-        description: "以黑白灰阶、硬朗光影和克制表演建立无对白也可读的戏剧性；时代质感来自构图、材质与表演，不靠复古滤镜。",
-        tags: ["黑白", "默片", "电影感"],
+        title: tr("黑白默片"),
+        category: tr("风格化实拍"),
+        description: tr("以黑白灰阶、硬朗光影和克制表演建立无对白也可读的戏剧性；时代质感来自构图、材质与表演，不靠复古滤镜。"),
+        tags: [tr("黑白"), tr("默片"), tr("电影感")],
         prompt: [
             "【项目定位】以黑白电影和默片叙事为核心的风格化实拍短剧体系，强调轮廓、构图、肢体表演和视觉隐喻；可有少量时代道具，但不把项目固定为某一历史年代。",
             "【项目色彩系统】全项目使用黑、白和五级中性灰作为主色，允许极少量单色强调作为叙事线索；明暗关系优先服务人物层次与信息可读性，禁止把画面压成一团黑或过度漂白。",
@@ -254,10 +255,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "space-opera",
-        title: "太空歌剧",
-        category: "科幻动画",
-        description: "宏大星际尺度与鲜明阵营服饰结合可信航天结构；用色彩、徽记和材质建立政治与冒险叙事，而不是堆砌宇宙奇观。",
-        tags: ["星际", "阵营", "史诗"],
+        title: tr("太空歌剧"),
+        category: tr("科幻动画"),
+        description: tr("宏大星际尺度与鲜明阵营服饰结合可信航天结构；用色彩、徽记和材质建立政治与冒险叙事，而不是堆砌宇宙奇观。"),
+        tags: [tr("星际"), tr("阵营"), tr("史诗")],
         prompt: [
             "【项目定位】东方叙事语境下的太空歌剧项目，融合星际航行、阵营政治、家族关系与冒险成长；世界观允许宏大奇观，但人物动机、技术限制和空间尺度必须清楚可追踪。",
             "【项目色彩系统】全项目色板使用权重约为 45% 深空黑、冷灰、银白和舱体白，35% 阵营主色与舰队识别色，20% 星云紫、能源蓝或警戒橙作为叙事强调；每个阵营只拥有稳定主色和辅助色。",
@@ -273,10 +274,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "comic-pop",
-        title: "漫画分镜",
-        category: "风格化动画",
-        description: "高对比块面、网点纹理与漫画格律构成可读的动作喜剧视觉；夸张来自构图、拟声和姿态，角色资产仍保持连续性。",
-        tags: ["漫画", "动作", "高对比"],
+        title: tr("漫画分镜"),
+        category: tr("风格化动画"),
+        description: tr("高对比块面、网点纹理与漫画格律构成可读的动作喜剧视觉；夸张来自构图、拟声和姿态，角色资产仍保持连续性。"),
+        tags: [tr("漫画"), tr("动作"), tr("高对比")],
         prompt: [
             "【项目定位】面向动作、喜剧与都市冒险的漫画分镜风格，统一使用清晰外轮廓、平涂块面、网点纹理和有节奏的画格感；画面可以夸张，但角色关系、动作方向与空间连续性必须可靠。",
             "【项目色彩系统】全项目以米白、墨黑和中性灰为结构底色，30% 使用高饱和红、黄、蓝或项目主色，10% 使用单一冲击色承担危险、速度或情绪重点；颜色必须形成角色和阵营识别。",
@@ -292,10 +293,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "storybook-fantasy",
-        title: "绘本童话",
-        category: "插画动画",
-        description: "纸张颗粒、柔和色块和手绘边缘构成温暖童话世界；角色表情与轮廓清楚，避免把绘本感做成泛化的柔焦滤镜。",
-        tags: ["绘本", "童话", "温暖"],
+        title: tr("绘本童话"),
+        category: tr("插画动画"),
+        description: tr("纸张颗粒、柔和色块和手绘边缘构成温暖童话世界；角色表情与轮廓清楚，避免把绘本感做成泛化的柔焦滤镜。"),
+        tags: [tr("绘本"), tr("童话"), tr("温暖")],
         prompt: [
             "【项目定位】面向成长、亲子与寓言叙事的绘本童话动画体系，统一使用手绘边缘、纸张颗粒、有限色块和可读角色表情；故事世界可以奇幻，但情绪和人物关系保持温暖、具体且可理解。",
             "【项目色彩系统】全项目色板使用权重约为 55% 纸张暖白、雾蓝、鼠尾草绿和浅木色，30% 角色与场景主色，15% 蜜糖黄、珊瑚红或星光金作为叙事点色；避免所有画面都成为粉彩渐变。",
@@ -311,10 +312,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "surreal-dream",
-        title: "超现实梦境",
-        category: "风格化实拍",
-        description: "现实材质与不可能空间并置，以镜像、尺度错位和雾化光线表达梦境；所有超现实变化服务角色心理和叙事线索。",
-        tags: ["梦境", "超现实", "心理"],
+        title: tr("超现实梦境"),
+        category: tr("风格化实拍"),
+        description: tr("现实材质与不可能空间并置，以镜像、尺度错位和雾化光线表达梦境；所有超现实变化服务角色心理和叙事线索。"),
+        tags: [tr("梦境"), tr("超现实"), tr("心理")],
         prompt: [
             "【项目定位】以现实人物进入不可能空间为核心的超现实梦境短剧体系，梦境不是随机奇观，而是由人物记忆、欲望、恐惧和选择构成的可追踪视觉系统；现实段落与梦境段落必须有明确差异和回返规则。",
             "【项目色彩系统】现实段落使用自然中性灰与低饱和环境色，梦境段落使用 35% 雾白、浅金、冷青和暗紫，15% 固定象征色承载角色心理线索；同一象征色不能在不同角色间随意换义。",
@@ -330,10 +331,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "nature-healing",
-        title: "自然疗愈",
-        category: "真人实拍",
-        description: "真实自然光、植物与手作生活构成松弛的在地质感；以季节、声音和微小行动表达疗愈，不做广告式空镜。",
-        tags: ["疗愈", "自然", "慢生活"],
+        title: tr("自然疗愈"),
+        category: tr("真人实拍"),
+        description: tr("真实自然光、植物与手作生活构成松弛的在地质感；以季节、声音和微小行动表达疗愈，不做广告式空镜。"),
+        tags: [tr("疗愈"), tr("自然"), tr("慢生活")],
         prompt: [
             "【项目定位】面向家庭关系、返乡、成长与情绪修复的自然疗愈真人短剧体系，核心是人物在具体自然环境中的生活行动和关系变化；自然不是装饰背景，而是参与叙事的真实空间。",
             "【项目色彩系统】全项目色板使用权重约为 55% 叶绿、苔藓绿、土色和米白，30% 木材、石头、天空与季节环境色，15% 赭红、芥末黄或人物识别色；保持自然白平衡和季节连续性。",
@@ -349,10 +350,10 @@ const legacyCanvasStylePresets: CanvasStylePreset[] = [
     },
     {
         id: "real-life-documentary",
-        title: "现实生活纪实",
-        category: "真人实拍",
-        description: "自然灰土色、真实东亚普通人与中国在地生活空间；保留环境痕迹和观察式影像气质，让家庭与社会议题更可信。",
-        tags: ["家庭", "成长", "纪实"],
+        title: tr("现实生活纪实"),
+        category: tr("真人实拍"),
+        description: tr("自然灰土色、真实东亚普通人与中国在地生活空间；保留环境痕迹和观察式影像气质，让家庭与社会议题更可信。"),
+        tags: [tr("家庭"), tr("成长"), tr("纪实")],
         prompt: [
             "【项目定位】家庭、成长与社会议题的现实生活纪实短剧体系，接近观察式剧情纪录片：真实东亚普通人、真实中国在地空间、自然曝光和适度不完美；全片追求生活证据与人物关系的可信度，不追求广告级精致。",
             "【项目色彩系统】全项目色板使用权重约为 70% 自然灰、米白、旧木、土色和水泥色，20% 当地墙面、家具、植物与公共设施的环境色，10% 衣物、生活用品或项目识别色。色板允许随季节与地区变化，但始终保持低饱和、自然白平衡和在地真实感。",
@@ -407,7 +408,7 @@ export function resolveProjectCanvasStyle(presetId?: string, profileJson?: strin
     return {
         id: profile.presetId,
         title: profile.title,
-        category: preset?.category || "项目风格包",
+        category: preset?.category || tr("项目风格包"),
         description: profile.description,
         tags: [...profile.tags],
         prompt: profile.prompt,
@@ -441,7 +442,7 @@ export function CanvasStylePickerModal({ open, value, currentProfile, startInEdi
     const [detailPreset, setDetailPreset] = useState<CanvasStylePreset | null>(null);
     const [tab, setTab] = useState<StyleCenterTab>("system");
     const [query, setQuery] = useState("");
-    const [category, setCategory] = useState("全部");
+    const [category, setCategory] = useState(tr("全部"));
     const [systemFavoriteIds, setSystemFavoriteIds] = useState<string[]>([]);
     const [recentIds, setRecentIds] = useState<string[]>([]);
     const [editor, setEditor] = useState<StyleEditorState | null>(null);
@@ -451,7 +452,7 @@ export function CanvasStylePickerModal({ open, value, currentProfile, startInEdi
         if (!open) return;
         setTab("system");
         setQuery("");
-        setCategory("全部");
+        setCategory(tr("全部"));
         setSystemFavoriteIds(readStyleIds(STYLE_FAVORITES_KEY));
         setRecentIds(readStyleIds(STYLE_RECENT_KEY));
         setEditor(startInEditor && currentProfile?.source !== "user" && currentProfile ? { profile: editableCopy(currentProfile) } : null);
@@ -462,7 +463,7 @@ export function CanvasStylePickerModal({ open, value, currentProfile, startInEdi
         return preset ? [{ kind: "user" as const, preset, entity }] : [];
     }), [profilesQuery.data?.profiles]);
     const systemItems = useMemo<SystemStyleLibraryItem[]>(() => canvasStylePresets.map((preset) => ({ kind: "system", preset })), []);
-    const categories = useMemo(() => ["全部", ...Array.from(new Set(canvasStylePresets.map((preset) => preset.category)))], []);
+    const categories = useMemo(() => [tr("全部"), ...Array.from(new Set(canvasStylePresets.map((preset) => preset.category)))], []);
 
     useEffect(() => {
         if (!open || !startInEditor || !currentProfile || currentProfile.source !== "user" || editor || profilesQuery.isFetching || profilesQuery.isError) return;
@@ -495,20 +496,20 @@ export function CanvasStylePickerModal({ open, value, currentProfile, startInEdi
             const preset = userStylePreset(profile);
             setEditor(null);
             setTab("mine");
-            message.success("风格已保存到“我的风格”");
+            message.success(tr("风格已保存到“我的风格”"));
             if (apply && preset) selectItem({ kind: "user", preset, entity: profile });
         },
-        onError: (error) => message.error(error instanceof Error ? error.message : "风格保存失败"),
+        onError: (error) => message.error(error instanceof Error ? error.message : tr("风格保存失败")),
     });
     const favoriteMutation = useMutation({
         mutationFn: ({ id, favorite }: { id: string; favorite: boolean }) => setStyleProfileFavorite(id, favorite),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["style-profiles"] }),
-        onError: (error) => message.error(error instanceof Error ? error.message : "收藏状态更新失败"),
+        onError: (error) => message.error(error instanceof Error ? error.message : tr("收藏状态更新失败")),
     });
     const deleteMutation = useMutation({
         mutationFn: deleteStyleProfile,
-        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["style-profiles"] }); message.success("风格已删除"); },
-        onError: (error) => message.error(error instanceof Error ? error.message : "风格删除失败"),
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["style-profiles"] }); message.success(tr("风格已删除")); },
+        onError: (error) => message.error(error instanceof Error ? error.message : tr("风格删除失败")),
     });
 
     function selectItem(item: StyleLibraryItem) {
@@ -517,7 +518,7 @@ export function CanvasStylePickerModal({ open, value, currentProfile, startInEdi
         const next = [preset.id, ...recentIds.filter((id) => id !== preset.id)].slice(0, 12);
         setRecentIds(next);
         localStorage.setItem(STYLE_RECENT_KEY, JSON.stringify(next));
-        if (item.kind === "user") void touchStyleProfile(item.entity.id).then(() => queryClient.invalidateQueries({ queryKey: ["style-profiles"] })).catch((error) => message.warning(error instanceof Error ? error.message : "最近使用记录更新失败"));
+        if (item.kind === "user") void touchStyleProfile(item.entity.id).then(() => queryClient.invalidateQueries({ queryKey: ["style-profiles"] })).catch((error) => message.warning(error instanceof Error ? error.message : tr("最近使用记录更新失败")));
         onSelect(preset);
     }
     function toggleSystemFavorite(presetId: string) {
@@ -529,10 +530,10 @@ export function CanvasStylePickerModal({ open, value, currentProfile, startInEdi
         setEditor({ profile: blankUserStyle() });
     }
     function copyPreset(preset: CanvasStylePreset) {
-        setEditor({ profile: editableCopy(preset.profile || createStyleProfileSnapshot(preset), undefined, `${preset.title} 副本`, preset.imageUrl) });
+        setEditor({ profile: editableCopy(preset.profile || createStyleProfileSnapshot(preset), undefined, tr("{0} 副本", preset.title), preset.imageUrl) });
     }
     function confirmDelete(entity: UserStyleProfile) {
-        modal.confirm({ title: `删除“${entity.name}”？`, content: "项目中已经保存的快照不会被删除，但该风格将从“我的风格”中移除。", okText: "删除", cancelText: "取消", okButtonProps: { danger: true }, onOk: () => deleteMutation.mutateAsync(entity.id) });
+        modal.confirm({ title: tr("删除“{0}”？", entity.name), content: tr("项目中已经保存的快照不会被删除，但该风格将从“我的风格”中移除。"), okText: tr("删除"), cancelText: tr("取消"), okButtonProps: { danger: true }, onOk: () => deleteMutation.mutateAsync(entity.id) });
     }
 
     return (
@@ -541,26 +542,26 @@ export function CanvasStylePickerModal({ open, value, currentProfile, startInEdi
                 <div className="canvas-style-center-shell flex min-h-0 flex-col overflow-hidden" style={{ color: theme.node.text, background: theme.node.panel }}>
                     <header className="flex min-h-16 flex-col gap-3 border-b px-4 py-3 pr-12 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:pr-14" style={{ borderColor: theme.node.stroke }}>
                         <div className="min-w-0">
-                            <h2 className="text-base font-semibold">风格中心</h2>
-                            <p className="mt-0.5 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>系统规范 · 个人风格 · 项目快照</p>
+                            <h2 className="text-base font-semibold">{tr("风格中心")}</h2>
+                            <p className="mt-0.5 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>{tr("系统规范 · 个人风格 · 项目快照")}</p>
                         </div>
                         <div className="flex min-w-0 gap-2 sm:items-center">
-                            <Input allowClear className="style-center-search min-w-0 flex-1" prefix={<Search className="size-3.5 text-foreground/35" />} value={query} placeholder="搜索风格、题材或媒介" onChange={(event) => setQuery(event.target.value)} />
-                            <Button type="primary" className="shrink-0" icon={<Plus className="size-3.5" />} onClick={createNewStyle}>新建风格</Button>
+                            <Input allowClear className="style-center-search min-w-0 flex-1" prefix={<Search className="size-3.5 text-foreground/35" />} value={query} placeholder={tr("搜索风格、题材或媒介")} onChange={(event) => setQuery(event.target.value)} />
+                            <Button type="primary" className="shrink-0" icon={<Plus className="size-3.5" />} onClick={createNewStyle}>{tr("新建风格")}</Button>
                         </div>
                     </header>
                     <div className="style-center-workspace grid min-h-0 flex-1">
                         <aside className="style-center-sidebar thin-scrollbar min-h-0 overflow-auto border-b p-2 sm:p-3 lg:border-b-0 lg:border-r" style={{ borderColor: theme.node.stroke }}>
-                            <nav className="style-center-primary-nav flex gap-1 lg:flex-col" aria-label="风格中心视图">
-                                <StyleCenterNavItem active={tab === "system"} icon={<Palette className="size-3.5" />} label="系统风格" count={systemItems.length} onClick={() => setTab("system")} />
-                                <StyleCenterNavItem active={tab === "mine"} icon={<UserRound className="size-3.5" />} label="我的风格" count={userItems.length} onClick={() => setTab("mine")} />
-                                <StyleCenterNavItem active={tab === "favorites"} icon={<Star className="size-3.5" />} label="收藏" onClick={() => setTab("favorites")} />
-                                <StyleCenterNavItem active={tab === "recent"} icon={<Clock3 className="size-3.5" />} label="最近使用" onClick={() => setTab("recent")} />
+                            <nav className="style-center-primary-nav flex gap-1 lg:flex-col" aria-label={tr("风格中心视图")}>
+                                <StyleCenterNavItem active={tab === "system"} icon={<Palette className="size-3.5" />} label={tr("系统风格")} count={systemItems.length} onClick={() => setTab("system")} />
+                                <StyleCenterNavItem active={tab === "mine"} icon={<UserRound className="size-3.5" />} label={tr("我的风格")} count={userItems.length} onClick={() => setTab("mine")} />
+                                <StyleCenterNavItem active={tab === "favorites"} icon={<Star className="size-3.5" />} label={tr("收藏")} onClick={() => setTab("favorites")} />
+                                <StyleCenterNavItem active={tab === "recent"} icon={<Clock3 className="size-3.5" />} label={tr("最近使用")} onClick={() => setTab("recent")} />
                             </nav>
                             {tab === "system" ? (
                                 <div className="style-center-category-panel mt-2 border-t pt-2 lg:mt-4 lg:pt-3" style={{ borderColor: theme.node.stroke }}>
-                                    <div className="hidden px-2 pb-2 text-[var(--fs-tiny)] font-medium lg:block" style={{ color: theme.node.muted }}>分类</div>
-                                    <nav className="style-center-category-nav flex gap-1 lg:flex-col" aria-label="系统风格分类">
+                                    <div className="hidden px-2 pb-2 text-[var(--fs-tiny)] font-medium lg:block" style={{ color: theme.node.muted }}>{tr("分类")}</div>
+                                    <nav className="style-center-category-nav flex gap-1 lg:flex-col" aria-label={tr("系统风格分类")}>
                                         {categories.map((item) => <button key={item} type="button" aria-current={category === item ? "page" : undefined} className={`style-center-category-item h-9 shrink-0 rounded-md px-2 text-left text-xs outline-none transition-colors focus-visible:ring-2 ${category === item ? "is-active font-medium" : ""}`} onClick={() => setCategory(item)}>{item}</button>)}
                                     </nav>
                                 </div>
@@ -569,7 +570,7 @@ export function CanvasStylePickerModal({ open, value, currentProfile, startInEdi
                         <main className="flex min-h-0 min-w-0 flex-col">
                             <div className="flex h-11 shrink-0 items-center justify-between gap-3 border-b px-3 sm:px-4" style={{ borderColor: theme.node.stroke }}>
                                 <div className="min-w-0 truncate text-xs font-medium">{styleCenterViewTitle(tab, category)}</div>
-                                <div className="shrink-0 text-[var(--fs-tiny)] tabular-nums" style={{ color: theme.node.muted }}>{visibleItems.length} 个风格</div>
+                                <div className="shrink-0 text-[var(--fs-tiny)] tabular-nums" style={{ color: theme.node.muted }}>{tr("{0} 个风格", visibleItems.length)}</div>
                             </div>
                             <div className="style-center-grid thin-scrollbar min-h-0 flex-1 content-start overflow-y-auto p-3 sm:p-4">
                             {visibleItems.map((item) => (
@@ -614,23 +615,23 @@ function StyleCenterCard({ item, active, applying, favorite, theme, onApply, onD
     return (
         <article className={`style-center-card group flex min-w-0 flex-col overflow-hidden rounded-md border ${active ? "is-active" : ""}`} style={{ background: theme.canvas.background, borderColor: active ? theme.node.activeStroke : theme.node.stroke, boxShadow: active ? `inset 0 0 0 1px ${theme.node.activeStroke}` : undefined }}>
             <div className="relative overflow-hidden border-b" style={{ borderColor: theme.node.stroke }}>
-                <button type="button" className="style-center-card-cover block w-full overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-inset" style={{ "--tw-ring-color": theme.node.activeStroke } as CSSProperties} onClick={onDetail} aria-label={`查看${preset.title}规范`}>
-                    <img src={preset.imageUrl} width="640" height="360" alt={`${preset.title}画风示意`} className="h-full w-full object-cover transition-transform" />
+                <button type="button" className="style-center-card-cover block w-full overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-inset" style={{ "--tw-ring-color": theme.node.activeStroke } as CSSProperties} onClick={onDetail} aria-label={tr("查看{0}规范", preset.title)}>
+                    <img src={preset.imageUrl} width="640" height="360" alt={tr("{0}画风示意", preset.title)} className="h-full w-full object-cover transition-transform" />
                 </button>
-                <button type="button" className={`style-center-favorite-action absolute right-2 top-2 grid size-8 place-items-center rounded-md outline-none focus-visible:ring-2 ${favorite ? "is-active" : ""}`} onClick={onFavorite} aria-label={favorite ? "取消收藏" : "收藏"} title={favorite ? "取消收藏" : "收藏"}><Star className="size-3.5" fill={favorite ? "currentColor" : "none"} /></button>
+                <button type="button" className={`style-center-favorite-action absolute right-2 top-2 grid size-8 place-items-center rounded-md outline-none focus-visible:ring-2 ${favorite ? "is-active" : ""}`} onClick={onFavorite} aria-label={favorite ? tr("取消收藏") : tr("收藏")} title={favorite ? tr("取消收藏") : tr("收藏")}><Star className="size-3.5" fill={favorite ? "currentColor" : "none"} /></button>
             </div>
             <div className="flex min-h-0 flex-1 flex-col px-3 pt-3">
-                <div className="flex min-w-0 items-center gap-2 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}><span className="truncate">{item.kind === "user" ? "我的风格" : preset.category}</span>{active ? <span className="ml-auto flex shrink-0 items-center gap-1 font-medium" style={{ color: theme.node.activeStroke }}><Check className="size-3" />当前</span> : null}</div>
+                <div className="flex min-w-0 items-center gap-2 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}><span className="truncate">{item.kind === "user" ? tr("我的风格") : preset.category}</span>{active ? <span className="ml-auto flex shrink-0 items-center gap-1 font-medium" style={{ color: theme.node.activeStroke }}><Check className="size-3" />{tr("当前")}</span> : null}</div>
                 <h3 className="mt-2 truncate text-sm font-semibold">{preset.title}</h3>
                 <p className="mt-2 line-clamp-2 text-xs leading-5" style={{ color: theme.node.muted }}>{preset.description}</p>
                 <div className="mt-2 flex min-h-6 flex-wrap gap-1">{preset.tags.slice(0, 3).map((tag) => <span key={tag} className="rounded bg-foreground/5 px-2 py-0.5 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>{tag}</span>)}</div>
             </div>
             <footer className="mt-2 flex min-h-11 items-center gap-1 border-t px-2" style={{ borderColor: theme.node.stroke }}>
-                <IconAction label="查看规范" onClick={onDetail}><Eye className="size-3.5" /></IconAction>
-                <IconAction label="复制并编辑" onClick={onCopy}><Copy className="size-3.5" /></IconAction>
-                {onEdit ? <IconAction label="编辑风格" onClick={onEdit}><Pencil className="size-3.5" /></IconAction> : null}
-                {onDelete ? <IconAction label="删除风格" danger onClick={onDelete}><Trash2 className="size-3.5" /></IconAction> : null}
-                <Button type="default" size="small" className={`style-center-apply-button ml-auto ${active ? "is-current" : ""}`} disabled={active || applying} icon={active ? <Check className="size-3.5" /> : <Palette className="size-3.5" />} onClick={onApply}>{active ? "当前" : "应用"}</Button>
+                <IconAction label={tr("查看规范")} onClick={onDetail}><Eye className="size-3.5" /></IconAction>
+                <IconAction label={tr("复制并编辑")} onClick={onCopy}><Copy className="size-3.5" /></IconAction>
+                {onEdit ? <IconAction label={tr("编辑风格")} onClick={onEdit}><Pencil className="size-3.5" /></IconAction> : null}
+                {onDelete ? <IconAction label={tr("删除风格")} danger onClick={onDelete}><Trash2 className="size-3.5" /></IconAction> : null}
+                <Button type="default" size="small" className={`style-center-apply-button ml-auto ${active ? "is-current" : ""}`} disabled={active || applying} icon={active ? <Check className="size-3.5" /> : <Palette className="size-3.5" />} onClick={onApply}>{active ? tr("当前") : tr("应用")}</Button>
             </footer>
         </article>
     );
@@ -645,24 +646,24 @@ function StyleCenterNavItem({ active, icon, label, count, onClick }: { active: b
 }
 
 function styleCenterViewTitle(tab: StyleCenterTab, category: string) {
-    if (tab === "mine") return "我的风格";
-    if (tab === "favorites") return "收藏风格";
-    if (tab === "recent") return "最近使用";
-    return category === "全部" ? "全部系统风格" : category;
+    if (tab === "mine") return tr("我的风格");
+    if (tab === "favorites") return tr("收藏风格");
+    if (tab === "recent") return tr("最近使用");
+    return category === "全部" ? tr("全部系统风格") : category;
 }
 
 function EmptyStyleCenter({ tab, loading, failed, color, onCreate, onBrowse }: { tab: StyleCenterTab; loading: boolean; failed: boolean; color: string; onCreate: () => void; onBrowse: () => void }) {
-    return <div className="col-span-full grid min-h-64 place-items-center text-center"><div><Search className="mx-auto size-5" style={{ color }} /><p className="mt-2 text-xs font-medium">{loading ? "正在加载风格库" : failed && tab !== "system" ? "我的风格加载失败，请检查登录状态或后端服务" : tab === "mine" ? "还没有自己的风格" : tab === "favorites" ? "还没有收藏风格" : tab === "recent" ? "还没有使用记录" : "没有匹配的系统风格"}</p><div className="mt-3 flex justify-center gap-2">{tab === "mine" && !failed ? <Button size="small" icon={<Plus className="size-3.5" />} onClick={onCreate}>新建风格</Button> : null}<Button size="small" onClick={onBrowse}>浏览系统风格</Button></div></div></div>;
+    return <div className="col-span-full grid min-h-64 place-items-center text-center"><div><Search className="mx-auto size-5" style={{ color }} /><p className="mt-2 text-xs font-medium">{loading ? tr("正在加载风格库") : failed && tab !== "system" ? tr("我的风格加载失败，请检查登录状态或后端服务") : tab === "mine" ? tr("还没有自己的风格") : tab === "favorites" ? tr("还没有收藏风格") : tab === "recent" ? tr("还没有使用记录") : tr("没有匹配的系统风格")}</p><div className="mt-3 flex justify-center gap-2">{tab === "mine" && !failed ? <Button size="small" icon={<Plus className="size-3.5" />} onClick={onCreate}>{tr("新建风格")}</Button> : null}<Button size="small" onClick={onBrowse}>{tr("浏览系统风格")}</Button></div></div></div>;
 }
 
 export function userStylePreset(entity: UserStyleProfile): CanvasStylePreset | null {
     const profile = parseStyleProfile(entity.profileJson);
     if (!profile) return null;
-    return { id: profile.presetId, title: profile.title, category: "我的风格", description: profile.description, tags: [...profile.tags], prompt: profile.prompt, imageUrl: profile.coverUrl || entity.coverUrl || "/short-drama-styles/real-life.jpg", profile };
+    return { id: profile.presetId, title: profile.title, category: tr("我的风格"), description: profile.description, tags: [...profile.tags], prompt: profile.prompt, imageUrl: profile.coverUrl || entity.coverUrl || "/short-drama-styles/real-life.jpg", profile };
 }
 
 function blankUserStyle(): StyleProfileSnapshot {
-    return createStyleProfileSnapshot({ presetId: `draft-${nanoid()}`, title: "未命名风格", description: "", tags: [], prompt: "", assets: [], source: "user", revision: 1 });
+    return createStyleProfileSnapshot({ presetId: `draft-${nanoid()}`, title: tr("未命名风格"), description: "", tags: [], prompt: "", assets: [], source: "user", revision: 1 });
 }
 
 function editableCopy(profile: StyleProfileSnapshot, entityId?: string, title?: string, coverUrl?: string): StyleProfileSnapshot {
@@ -676,24 +677,24 @@ export function CanvasStyleDetailModal({ open, preset, selected = false, onClose
         <AppModal rootClassName="canvas-style-detail-modal" open={open} title={null} footer={null} centered destroyOnHidden width="min(820px, calc(100vw - 24px))" onCancel={onClose} flush>
             {preset ? <div className="canvas-style-detail-shell flex flex-col overflow-hidden" style={{ color: theme.node.text, background: theme.node.panel }}>
                 <div className="flex h-44 shrink-0 items-center justify-center overflow-hidden border-b sm:h-52" style={{ borderColor: theme.node.stroke, background: theme.canvas.background }}>
-                    <img src={preset.imageUrl} width="960" height="540" alt={`${preset.title}画风示意`} className="h-full w-full object-contain" style={preset.id === "black-white-noir" ? { filter: "grayscale(1) contrast(1.08)" } : undefined} />
+                    <img src={preset.imageUrl} width="960" height="540" alt={tr("{0}画风示意", preset.title)} className="h-full w-full object-contain" style={preset.id === "black-white-noir" ? { filter: "grayscale(1) contrast(1.08)" } : undefined} />
                 </div>
                 <header className="border-b px-4 py-3 pr-12 sm:px-5 sm:pr-12" style={{ borderColor: theme.node.stroke }}>
-                    <div className="flex items-center gap-2 text-[var(--fs-tiny)] font-medium" style={{ color: theme.node.activeStroke }}><span>{preset.category}</span><span className="flex items-center gap-1" style={{ color: theme.node.muted }}><SlidersHorizontal className="size-3" />{preset.profile?.assets.length ? `${preset.profile.assets.length} 个执行资产` : "Prompt 通用"}</span></div>
+                    <div className="flex items-center gap-2 text-[var(--fs-tiny)] font-medium" style={{ color: theme.node.activeStroke }}><span>{preset.category}</span><span className="flex items-center gap-1" style={{ color: theme.node.muted }}><SlidersHorizontal className="size-3" />{preset.profile?.assets.length ? tr("{0} 个执行资产", preset.profile.assets.length) : tr("Prompt 通用")}</span></div>
                     <h2 className="mt-1 text-base font-semibold">{preset.title}</h2>
                     <p className="mt-2 text-xs leading-5" style={{ color: theme.node.muted }}>{preset.description}</p>
                 </header>
                 <div className="grid shrink-0 grid-cols-3 divide-x border-b text-[var(--fs-tiny)]" style={{ borderColor: theme.node.stroke }}>
-                    <StyleDetailMetric label="执行方式" value={preset.profile?.assets.length ? "组合资产" : "Prompt 通用"} muted={theme.node.muted} />
-                    <StyleDetailMetric label="执行策略" value={preset.profile?.executionPolicy === "strict-assets" ? "严格校验" : "兼容降级"} muted={theme.node.muted} />
-                    <StyleDetailMetric label="快照版本" value={`r${preset.profile?.revision || 1}`} muted={theme.node.muted} />
+                    <StyleDetailMetric label={tr("执行方式")} value={preset.profile?.assets.length ? tr("组合资产") : tr("Prompt 通用")} muted={theme.node.muted} />
+                    <StyleDetailMetric label={tr("执行策略")} value={preset.profile?.executionPolicy === "strict-assets" ? tr("严格校验") : tr("兼容降级")} muted={theme.node.muted} />
+                    <StyleDetailMetric label={tr("快照版本")} value={`r${preset.profile?.revision || 1}`} muted={theme.node.muted} />
                 </div>
                 <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 sm:px-5">
-                    {preset.profile?.assets.length ? <section className="border-b py-3" style={{ borderColor: theme.node.stroke }}><h3 className="text-xs font-semibold">执行资产</h3><div className="mt-2 divide-y" style={{ borderColor: theme.node.stroke }}>{preset.profile.assets.map((asset) => <div key={asset.id} className="flex items-center justify-between gap-3 py-2 text-xs"><span className="min-w-0"><span className="block truncate font-medium">{asset.title}</span><span className="mt-0.5 block text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>{kindOptionsLabel(asset.kind)} · {asset.provider}</span></span><span className="shrink-0 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>{asset.status === "validated" ? "已验证" : asset.status === "unavailable" ? "不可用" : "待验证"}</span></div>)}</div></section> : null}
+                    {preset.profile?.assets.length ? <section className="border-b py-3" style={{ borderColor: theme.node.stroke }}><h3 className="text-xs font-semibold">{tr("执行资产")}</h3><div className="mt-2 divide-y" style={{ borderColor: theme.node.stroke }}>{preset.profile.assets.map((asset) => <div key={asset.id} className="flex items-center justify-between gap-3 py-2 text-xs"><span className="min-w-0"><span className="block truncate font-medium">{asset.title}</span><span className="mt-0.5 block text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>{kindOptionsLabel(asset.kind)} · {asset.provider}</span></span><span className="shrink-0 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>{asset.status === "validated" ? tr("已验证") : asset.status === "unavailable" ? tr("不可用") : tr("待验证")}</span></div>)}</div></section> : null}
                     {sections.map((section) => <section key={section.title} className="border-b py-3 last:border-b-0" style={{ borderColor: theme.node.stroke }}><h3 className="text-xs font-semibold">{section.title}</h3><p className="mt-2 text-xs leading-5" style={{ color: theme.node.muted }}>{section.content}</p></section>)}
-                    {preset.profile?.negativePrompt ? <section className="border-b py-3 last:border-b-0" style={{ borderColor: theme.node.stroke }}><h3 className="text-xs font-semibold">全局负面 Prompt</h3><p className="mt-2 whitespace-pre-wrap text-xs leading-5" style={{ color: theme.node.muted }}>{preset.profile.negativePrompt}</p></section> : null}
+                    {preset.profile?.negativePrompt ? <section className="border-b py-3 last:border-b-0" style={{ borderColor: theme.node.stroke }}><h3 className="text-xs font-semibold">{tr("全局负面 Prompt")}</h3><p className="mt-2 whitespace-pre-wrap text-xs leading-5" style={{ color: theme.node.muted }}>{preset.profile.negativePrompt}</p></section> : null}
                 </div>
-                <footer className="flex shrink-0 flex-wrap justify-end gap-2 border-t px-4 py-3 sm:px-5" style={{ borderColor: theme.node.stroke }}><Button onClick={onClose}>关闭</Button>{onSelect ? <Button type="primary" disabled={selected} icon={selected ? <Check className="size-3.5" /> : <Palette className="size-3.5" />} onClick={() => onSelect(preset)}>{selected ? "当前画风" : "选择该画风"}</Button> : null}</footer>
+                <footer className="flex shrink-0 flex-wrap justify-end gap-2 border-t px-4 py-3 sm:px-5" style={{ borderColor: theme.node.stroke }}><Button onClick={onClose}>{tr("关闭")}</Button>{onSelect ? <Button type="primary" disabled={selected} icon={selected ? <Check className="size-3.5" /> : <Palette className="size-3.5" />} onClick={() => onSelect(preset)}>{selected ? tr("当前画风") : tr("选择该画风")}</Button> : null}</footer>
             </div> : null}
         </AppModal>
     );
@@ -704,12 +705,12 @@ function StyleDetailMetric({ label, value, muted }: { label: string; value: stri
 }
 
 function kindOptionsLabel(kind: string) {
-    return kind === "lora" ? "LoRA" : kind === "template" ? "图片模板" : kind === "reference" ? "参考图组" : "提示词模块";
+    return kind === "lora" ? "LoRA" : kind === "template" ? tr("图片模板") : kind === "reference" ? tr("参考图组") : tr("提示词模块");
 }
 
 function parseStyleSections(prompt: string) {
     return prompt.split("\n").map((line) => {
         const match = line.match(/^【([^】]+)】(.*)$/);
-        return match ? { title: match[1], content: match[2] } : { title: "补充规范", content: line };
+        return match ? { title: match[1], content: match[2] } : { title: tr("补充规范"), content: line };
     }).filter((section) => section.content);
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { apiBaseURL } from "@/services/api/request";
 import { isSystemProxyBaseUrl, type AiConfig, type ChannelHeader } from "@/stores/use-config-store";
 
@@ -16,8 +17,8 @@ export function channelRequest(config: RelayConfig, upstreamUrl: string, headers
         return { url: upstreamUrl, headers: Object.fromEntries(normalizedHeaders.entries()), credentials: "include" };
     }
 
-    const normalizedBaseUrl = requireHttpUrl(config.baseUrl, "当前模型渠道 Base URL");
-    const normalizedUpstreamUrl = requireHttpUrl(upstreamUrl, "当前模型请求地址");
+    const normalizedBaseUrl = requireHttpUrl(config.baseUrl, tr("当前模型渠道 Base URL"));
+    const normalizedUpstreamUrl = requireHttpUrl(upstreamUrl, tr("当前模型请求地址"));
     normalizedHeaders.delete("X-Canvas-Upstream-Headers");
     normalizedHeaders.delete("x-goog-api-key");
     normalizedHeaders.set("Authorization", `Bearer ${config.apiKey}`);
@@ -38,10 +39,10 @@ function requireHttpUrl(value: string, label: string) {
     try {
         parsed = new URL(normalized);
     } catch {
-        throw new Error(`${label} 无效，请填写完整地址，例如：https://api.example.com/v1`);
+        throw new Error(tr("{0} 无效，请填写完整地址，例如：https://api.example.com/v1", label));
     }
     if (!parsed.hostname || (parsed.protocol !== "http:" && parsed.protocol !== "https:")) {
-        throw new Error(`${label} 无效，请填写完整地址，例如：https://api.example.com/v1`);
+        throw new Error(tr("{0} 无效，请填写完整地址，例如：https://api.example.com/v1", label));
     }
     return parsed.toString();
 }

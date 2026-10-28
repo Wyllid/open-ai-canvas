@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { memo, useEffect, useRef, useState, type RefObject } from "react";
 import { Monitor, ChevronDown } from "lucide-react";
 import { subscribeCanvasGraphicsViewportPreview, subscribeCanvasNodeDragPreview } from "@/lib/canvas/canvas-live-viewport";
@@ -144,7 +145,7 @@ export const CanvasCollaborationLayer = memo(function CanvasCollaborationLayer({
             const nextMembership = snapshot.connected && remote.length ? JSON.stringify([snapshot.selfId, ...snapshot.peers.map((peer) => `${peer.id}:${peer.number}`).sort()]) : "";
             if (membership !== nextMembership) {
                 membership = nextMembership;
-                identities = nextMembership ? snapshot.peers.map((peer) => ({ id: peer.id, number: peer.number, label: `设备${peer.number}`, self: peer.id === snapshot.selfId })).sort((a, b) => a.number - b.number) : [];
+                identities = nextMembership ? snapshot.peers.map((peer) => ({ id: peer.id, number: peer.number, label: tr("设备{0}", peer.number), self: peer.id === snapshot.selfId })).sort((a, b) => a.number - b.number) : [];
                 setMembers(identities);
             }
             if (nextMembership && !stopTracking) {
@@ -195,7 +196,7 @@ export const CanvasCollaborationLayer = memo(function CanvasCollaborationLayer({
                         }
                     }}
                 >
-                    <summary aria-label={`${members.length} 个设备在线，查看设备`}>
+                    <summary aria-label={tr("{0} 个设备在线，查看设备", members.length)}>
                         <Monitor size={14} aria-hidden="true" />
                         <span className="canvas-collaboration-member-dots" aria-hidden="true">
                             {members
@@ -205,17 +206,17 @@ export const CanvasCollaborationLayer = memo(function CanvasCollaborationLayer({
                                     <i key={member.id} className={`canvas-collaboration-device--${((member.number - 1) % 6) + 1}`} />
                                 ))}
                         </span>
-                        <span>{members.length} 设备在线</span>
+                        <span>{tr("{0} 设备在线", members.length)}</span>
                         <ChevronDown size={12} aria-hidden="true" />
                     </summary>
                     <div className="canvas-collaboration-member-panel">
-                        <div className="canvas-collaboration-member-heading">正在此画布协作</div>
-                        <ul aria-label="在线设备">
+                        <div className="canvas-collaboration-member-heading">{tr("正在此画布协作")}</div>
+                        <ul aria-label={tr("在线设备")}>
                             {members.map((member) => (
                                 <li key={member.id} data-device-number={member.number} className={`canvas-collaboration-device--${((member.number - 1) % 6) + 1}`}>
                                     <span className="canvas-collaboration-member-avatar">{member.number}</span>
                                     <span>{member.label}</span>
-                                    <small>{member.self ? "此窗口" : "在线"}</small>
+                                    <small>{member.self ? tr("此窗口") : tr("在线")}</small>
                                 </li>
                             ))}
                         </ul>

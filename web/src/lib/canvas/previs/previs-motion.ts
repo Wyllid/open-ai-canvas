@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Euler, Quaternion } from "three";
 
 import { interpolatePrevisBoneRotation, interpolatePrevisTransform, resolvePrevisKeyframeProgress } from "@/lib/canvas/previs/previs-scene";
@@ -141,12 +142,12 @@ const pulse = (time: number, hz: number) => Math.max(0, wave(time, hz)) ** 2;
 
 /** 21 个程序化动作；label 是 UI 与 Agent 摘要共用的中文名。 */
 export const PREVIS_MOTIONS: Record<PrevisMotionId, PrevisMotionDefinition> = {
-    idle: { id: "idle", label: "待机", duration: 4, loop: true, layer: "upper", sample: (t) => ({ bones: { ...relaxedArms, spine: [0.02 * wave(t, 0.28), 0, 0], chest: [0.015 * wave(t, 0.28), 0, 0], head: [0, 0.05 * wave(t, 0.11), 0] } }) },
-    walk: { id: "walk", label: "原地走", duration: 3, loop: true, layer: "full", sample: (t) => ({ bones: previsGaitPose(t, 0) }) },
-    run: { id: "run", label: "原地跑", duration: 3, loop: true, layer: "full", sample: (t) => ({ bones: previsGaitPose(t * 1.4, 1) }) },
+    idle: { id: "idle", label: tr("待机"), duration: 4, loop: true, layer: "upper", sample: (t) => ({ bones: { ...relaxedArms, spine: [0.02 * wave(t, 0.28), 0, 0], chest: [0.015 * wave(t, 0.28), 0, 0], head: [0, 0.05 * wave(t, 0.11), 0] } }) },
+    walk: { id: "walk", label: tr("原地走"), duration: 3, loop: true, layer: "full", sample: (t) => ({ bones: previsGaitPose(t, 0) }) },
+    run: { id: "run", label: tr("原地跑"), duration: 3, loop: true, layer: "full", sample: (t) => ({ bones: previsGaitPose(t * 1.4, 1) }) },
     talk: {
         id: "talk",
-        label: "说话手势",
+        label: tr("说话手势"),
         duration: 3,
         loop: true,
         layer: "upper",
@@ -160,16 +161,16 @@ export const PREVIS_MOTIONS: Record<PrevisMotionId, PrevisMotionDefinition> = {
             },
         }),
     },
-    wave: { id: "wave", label: "招手", duration: 2, loop: true, layer: "upper", sample: (t) => ({ bones: { rightUpperArm: [0, 0, -2.5], rightLowerArm: [-0.25, 0, -0.45 * wave(t, 2)], head: [0, -0.1, 0] } }) },
-    nod: { id: "nod", label: "点头", duration: 1.5, loop: true, layer: "upper", sample: (t) => ({ bones: { head: [0.28 * pulse(t, 1.6), 0, 0], neck: [0.08 * pulse(t, 1.6), 0, 0] } }) },
-    shake_head: { id: "shake_head", label: "摇头", duration: 1.5, loop: true, layer: "upper", sample: (t) => ({ bones: { head: [0, 0.42 * wave(t, 1.8), 0] } }) },
-    look_around: { id: "look_around", label: "环顾", duration: 4, loop: true, layer: "upper", sample: (t) => ({ bones: { head: [0.05, 0.7 * wave(t, 0.33), 0], chest: [0, 0.22 * wave(t, 0.33), 0] } }) },
-    point: { id: "point", label: "指向", duration: 2, loop: false, layer: "upper", sample: () => ({ bones: { rightUpperArm: [-1.5, 0, -0.15], rightLowerArm: [-0.05, 0, 0], chest: [0, -0.12, 0], head: [0, -0.12, 0] } }) },
-    phone_call: { id: "phone_call", label: "打电话", duration: 4, loop: true, layer: "upper", sample: (t) => ({ bones: { rightUpperArm: [-0.25, 0, -0.55], rightLowerArm: [-2.35, 0, 0], head: [0.05, 0.05 * wave(t, 0.4), 0.12] } }) },
-    sit_idle: { id: "sit_idle", label: "坐着待机", duration: 4, loop: true, layer: "full", sample: (t) => ({ bones: { ...PREVIS_MANNEQUIN_POSES.sit, spine: [-0.05 + 0.02 * wave(t, 0.28), 0, 0], head: [0, 0.08 * wave(t, 0.13), 0] } }) },
+    wave: { id: "wave", label: tr("招手"), duration: 2, loop: true, layer: "upper", sample: (t) => ({ bones: { rightUpperArm: [0, 0, -2.5], rightLowerArm: [-0.25, 0, -0.45 * wave(t, 2)], head: [0, -0.1, 0] } }) },
+    nod: { id: "nod", label: tr("点头"), duration: 1.5, loop: true, layer: "upper", sample: (t) => ({ bones: { head: [0.28 * pulse(t, 1.6), 0, 0], neck: [0.08 * pulse(t, 1.6), 0, 0] } }) },
+    shake_head: { id: "shake_head", label: tr("摇头"), duration: 1.5, loop: true, layer: "upper", sample: (t) => ({ bones: { head: [0, 0.42 * wave(t, 1.8), 0] } }) },
+    look_around: { id: "look_around", label: tr("环顾"), duration: 4, loop: true, layer: "upper", sample: (t) => ({ bones: { head: [0.05, 0.7 * wave(t, 0.33), 0], chest: [0, 0.22 * wave(t, 0.33), 0] } }) },
+    point: { id: "point", label: tr("指向"), duration: 2, loop: false, layer: "upper", sample: () => ({ bones: { rightUpperArm: [-1.5, 0, -0.15], rightLowerArm: [-0.05, 0, 0], chest: [0, -0.12, 0], head: [0, -0.12, 0] } }) },
+    phone_call: { id: "phone_call", label: tr("打电话"), duration: 4, loop: true, layer: "upper", sample: (t) => ({ bones: { rightUpperArm: [-0.25, 0, -0.55], rightLowerArm: [-2.35, 0, 0], head: [0.05, 0.05 * wave(t, 0.4), 0.12] } }) },
+    sit_idle: { id: "sit_idle", label: tr("坐着待机"), duration: 4, loop: true, layer: "full", sample: (t) => ({ bones: { ...PREVIS_MANNEQUIN_POSES.sit, spine: [-0.05 + 0.02 * wave(t, 0.28), 0, 0], head: [0, 0.08 * wave(t, 0.13), 0] } }) },
     clap: {
         id: "clap",
-        label: "鼓掌",
+        label: tr("鼓掌"),
         duration: 2,
         loop: true,
         layer: "upper",
@@ -178,10 +179,10 @@ export const PREVIS_MOTIONS: Record<PrevisMotionId, PrevisMotionDefinition> = {
             return { bones: { leftUpperArm: [-1, 0, 0.2], rightUpperArm: [-1, 0, -0.2], leftLowerArm: [-0.9, 0, -0.75 + open], rightLowerArm: [-0.9, 0, 0.75 - open] } };
         },
     },
-    fight_idle: { id: "fight_idle", label: "格斗架势", duration: 3, loop: true, layer: "full", sample: (t) => ({ bones: { ...fightStance, chest: [0.04 * wave(t, 1.2), 0, 0] } }) },
+    fight_idle: { id: "fight_idle", label: tr("格斗架势"), duration: 3, loop: true, layer: "full", sample: (t) => ({ bones: { ...fightStance, chest: [0.04 * wave(t, 1.2), 0, 0] } }) },
     punch: {
         id: "punch",
-        label: "出拳",
+        label: tr("出拳"),
         duration: 2,
         loop: true,
         layer: "full",
@@ -190,10 +191,10 @@ export const PREVIS_MOTIONS: Record<PrevisMotionId, PrevisMotionDefinition> = {
             return { bones: { ...fightStance, rightUpperArm: [-0.55 - 0.95 * hit, 0, -0.3 + 0.25 * hit], rightLowerArm: [-2 + 1.9 * hit, 0, 0], spine: [0.1, 0.25 - 0.5 * hit, 0] } };
         },
     },
-    jump: { id: "jump", label: "跳起", duration: 1.2, loop: false, layer: "full", sample: (t) => previsJumpSample(t) },
+    jump: { id: "jump", label: tr("跳起"), duration: 1.2, loop: false, layer: "full", sample: (t) => previsJumpSample(t) },
     fall: {
         id: "fall",
-        label: "倒地",
+        label: tr("倒地"),
         duration: 1.6,
         loop: false,
         layer: "full",
@@ -215,7 +216,7 @@ export const PREVIS_MOTIONS: Record<PrevisMotionId, PrevisMotionDefinition> = {
     },
     cry: {
         id: "cry",
-        label: "掩面哭",
+        label: tr("掩面哭"),
         duration: 3,
         loop: true,
         layer: "upper",
@@ -223,7 +224,7 @@ export const PREVIS_MOTIONS: Record<PrevisMotionId, PrevisMotionDefinition> = {
     },
     cheer: {
         id: "cheer",
-        label: "欢呼",
+        label: tr("欢呼"),
         duration: 2,
         loop: true,
         layer: "upper",
@@ -232,7 +233,7 @@ export const PREVIS_MOTIONS: Record<PrevisMotionId, PrevisMotionDefinition> = {
     // 扇巴掌：0~0.45s 右臂向外上方蓄力，0.45~0.62s 横扫到身前，之后慢慢收回。
     slap: {
         id: "slap",
-        label: "扇巴掌",
+        label: tr("扇巴掌"),
         duration: 1.4,
         loop: false,
         layer: "upper",
@@ -245,11 +246,11 @@ export const PREVIS_MOTIONS: Record<PrevisMotionId, PrevisMotionDefinition> = {
         },
     },
     // 牵手：靠近对方一侧的手自然垂向斜前方；成人与儿童共用，手臂角度由体型差异自然吻合。
-    hold_hand: { id: "hold_hand", label: "牵手", duration: 3, loop: true, layer: "upper", sample: (t) => ({ bones: { rightUpperArm: [-0.32 + 0.04 * wave(t, 0.9), 0, -0.32], rightLowerArm: [-0.25, 0, 0] } }) },
+    hold_hand: { id: "hold_hand", label: tr("牵手"), duration: 3, loop: true, layer: "upper", sample: (t) => ({ bones: { rightUpperArm: [-0.32 + 0.04 * wave(t, 0.9), 0, -0.32], rightLowerArm: [-0.25, 0, 0] } }) },
     // 被打：头和胸被扇向一侧后缓缓回正，手下意识抬到脸边。
     hit_react: {
         id: "hit_react",
-        label: "被打",
+        label: tr("被打"),
         duration: 1.4,
         loop: false,
         layer: "upper",

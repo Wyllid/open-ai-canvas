@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 /**
  * 预演台键盘快捷键解析。
  *
@@ -54,44 +55,44 @@ const TRANSFORM_KEYS: Record<string, PrevisToolMode> = {
  */
 export const PREVIS_SHORTCUT_GUIDE: Array<{ group: string; items: Array<{ keys: string[]; label: string }> }> = [
     {
-        group: "选择与变换",
+        group: tr("选择与变换"),
         items: [
-            { keys: ["Q"], label: "选择工具（只点选，不显示手柄）" },
-            { keys: ["W"], label: "移动" },
-            { keys: ["E"], label: "旋转" },
-            { keys: ["R"], label: "缩放" },
-            { keys: ["Esc"], label: "取消选择" },
-            { keys: ["Delete"], label: "删除选中对象 / 灯光" },
-            { keys: ["Ctrl/⌘", "D"], label: "复制选中对象" },
-            { keys: ["H"], label: "显示 / 隐藏选中对象" },
+            { keys: ["Q"], label: tr("选择工具（只点选，不显示手柄）") },
+            { keys: ["W"], label: tr("移动") },
+            { keys: ["E"], label: tr("旋转") },
+            { keys: ["R"], label: tr("缩放") },
+            { keys: ["Esc"], label: tr("取消选择") },
+            { keys: ["Delete"], label: tr("删除选中对象 / 灯光") },
+            { keys: ["Ctrl/⌘", "D"], label: tr("复制选中对象") },
+            { keys: ["H"], label: tr("显示 / 隐藏选中对象") },
         ],
     },
     {
-        group: "视图",
+        group: tr("视图"),
         items: [
-            { keys: ["F"], label: "聚焦选中对象" },
-            { keys: ["A"], label: "适配全部对象" },
-            { keys: ["C"], label: "切换 3D / 机位视图" },
+            { keys: ["F"], label: tr("聚焦选中对象") },
+            { keys: ["A"], label: tr("适配全部对象") },
+            { keys: ["C"], label: tr("切换 3D / 机位视图") },
         ],
     },
     {
-        group: "时间轴与输出",
+        group: tr("时间轴与输出"),
         items: [
-            { keys: ["Space"], label: "播放 / 暂停" },
-            { keys: ["Ctrl/⌘", "Z"], label: "撤销" },
-            { keys: ["Ctrl/⌘", "Shift", "Z"], label: "重做" },
-            { keys: ["P"], label: "截取当前镜头画面" },
-            { keys: ["?"], label: "显示 / 隐藏快捷键" },
+            { keys: ["Space"], label: tr("播放 / 暂停") },
+            { keys: ["Ctrl/⌘", "Z"], label: tr("撤销") },
+            { keys: ["Ctrl/⌘", "Shift", "Z"], label: tr("重做") },
+            { keys: ["P"], label: tr("截取当前镜头画面") },
+            { keys: ["?"], label: tr("显示 / 隐藏快捷键") },
         ],
     },
 ];
 
 /** 工具名附带按键，dock 与提示条共用。 */
 export const PREVIS_TOOL_LABELS: Record<PrevisToolMode, string> = {
-    select: "选择 (Q)",
-    translate: "移动 (W)",
-    rotate: "旋转 (E)",
-    scale: "缩放 (R)",
+    select: tr("选择 (Q)"),
+    translate: tr("移动 (W)"),
+    rotate: tr("旋转 (E)"),
+    scale: tr("缩放 (R)"),
 };
 
 /**

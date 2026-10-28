@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 工作流（RunningHub 等）字段到模型能力的推导：字段角色、取值范围、可选项、默认值与提交值。
 //
 // 与后端 workflow_provider_values.go 的取值规则保持一致；改动任何一边都要同步另一边。
@@ -209,8 +210,8 @@ export function workflowFieldPresetOptions(field: WorkflowVideoFieldLike | undef
 
 export function workflowFieldConfigurationError(field: WorkflowVideoFieldLike) {
     const bounds = workflowFieldNumberBounds(field);
-    if (bounds.min !== undefined && bounds.max !== undefined && bounds.min > bounds.max) return "最小值不能大于最大值";
-    if (bounds.step !== undefined && bounds.step <= 0) return "步长必须大于 0";
+    if (bounds.min !== undefined && bounds.max !== undefined && bounds.min > bounds.max) return tr("最小值不能大于最大值");
+    if (bounds.step !== undefined && bounds.step <= 0) return tr("步长必须大于 0");
     return "";
 }
 
@@ -223,17 +224,17 @@ export function workflowFieldValueError(field: WorkflowVideoFieldLike, value: un
     const bounds = workflowFieldNumberBounds(field);
     const numeric = ["NUMBER", "FLOAT", "INTEGER", "INT", "SLIDER"].includes(fieldType) || bounds.min !== undefined || bounds.max !== undefined || bounds.step !== undefined;
     if (numeric) {
-        if (value === undefined || value === null || String(value).trim() === "" || !Number.isFinite(Number(value))) return "请输入有效数字";
+        if (value === undefined || value === null || String(value).trim() === "" || !Number.isFinite(Number(value))) return tr("请输入有效数字");
         const parsed = Number(value);
-        if ((bounds.min !== undefined && parsed < bounds.min) || (bounds.max !== undefined && parsed > bounds.max)) return "数值超出允许范围";
+        if ((bounds.min !== undefined && parsed < bounds.min) || (bounds.max !== undefined && parsed > bounds.max)) return tr("数值超出允许范围");
         if (bounds.step !== undefined) {
             const start = bounds.min ?? 0;
             const steps = (parsed - start) / bounds.step;
-            if (Math.abs(steps - Math.round(steps)) > 1e-7) return "数值不符合步长";
+            if (Math.abs(steps - Math.round(steps)) > 1e-7) return tr("数值不符合步长");
         }
     }
     const options = workflowFieldChoiceValues(field).map(workflowFieldOptionValue);
-    if (options.length && !options.includes(workflowFieldOptionValue(value))) return "当前值不在允许选项中";
+    if (options.length && !options.includes(workflowFieldOptionValue(value))) return tr("当前值不在允许选项中");
     return "";
 }
 

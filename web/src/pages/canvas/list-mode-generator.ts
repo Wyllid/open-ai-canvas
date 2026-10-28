@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 import { message } from "antd";
 import { CanvasNodeType, type CanvasConnection, type CanvasNodeData, type CanvasBatchTableData, type CanvasBatchRow, type StoryboardRow } from "@/types/canvas";
@@ -395,7 +396,7 @@ export async function handleListGenerate({
                 storyboardRows,
                 storyboardTitle: storyboard.title || "视频脚本拆解",
                 storyboardSourceNodeIds: [...videoNodes.map((node) => node.id), ...imageNodes.map((node) => node.id)],
-                referenceColumns: [{ id: "ai-ref", label: "输入视频", type: "image" }],
+                referenceColumns: [{ id: "ai-ref", label: tr("输入视频"), type: "image" }],
                 textColumns: cinematicStoryboardColumns()
                     .filter((column) => !["shotNumber", "assets"].includes(column))
                     .map((column) => ({ id: `storyboard-${column}`, label: storyboardColumnLabel(column), type: "text" as const })),
@@ -412,7 +413,7 @@ export async function handleListGenerate({
             const batchNode: CanvasNodeData = {
                 id: batchNodeId,
                 type: CanvasNodeType.BatchTable,
-                title: storyboard.title || "视频分镜多维表格",
+                title: storyboard.title || tr("视频分镜多维表格"),
                 position: { x: sourcePos.x + 400, y: sourcePos.y },
                 width: 1280,
                 height: 560,
@@ -451,7 +452,7 @@ export async function handleListGenerate({
             type: "text" as const,
         }));
 
-        const referenceColumn = { id: "ai-ref", label: "输入", type: "image" as const };
+        const referenceColumn = { id: "ai-ref", label: tr("输入"), type: "image" as const };
 
         const rows: CanvasBatchRow[] = rowsForTable.map((row, rowIndex) => {
             const imageNode = imageNodes[rowIndex % imageNodes.length];
@@ -489,7 +490,7 @@ export async function handleListGenerate({
         const batchNode: CanvasNodeData = {
             id: batchNodeId,
             type: CanvasNodeType.BatchTable,
-            title: "AI 多维表格",
+            title: tr("AI 多维表格"),
             position: { x: sourcePos.x + 400, y: sourcePos.y },
             width: 1280,
             height: 560,

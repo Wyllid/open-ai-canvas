@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 读取选中片段（store.selectedClipId），属性编辑经 setClipProperty 命令入队
 // 并进入统一撤销历史；检查器不直接修改 project，避免绕过命令校验和持久化。
 
@@ -15,8 +16,8 @@ export function EditorInspector() {
         return (
             <div className="flex h-full flex-col bg-[var(--previs-sequencer-surface)]">
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4 text-center">
-                    <p className="text-xs text-[var(--previs-dock-fg)]/60">未选中片段</p>
-                    <p className="max-w-[180px] text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/45">在时间线中点击片段后，可在此编辑属性</p>
+                    <p className="text-xs text-[var(--previs-dock-fg)]/60">{tr("未选中片段")}</p>
+                    <p className="max-w-[180px] text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/45">{tr("在时间线中点击片段后，可在此编辑属性")}</p>
                 </div>
             </div>
         );
@@ -25,24 +26,24 @@ export function EditorInspector() {
     return (
         <div className="flex h-full flex-col bg-[var(--previs-sequencer-surface)]">
             <div className="director-scroll min-h-0 flex-1 overflow-y-auto px-3 py-3">
-                <SectionTitle>片段</SectionTitle>
+                <SectionTitle>{tr("片段")}</SectionTitle>
                 <ClipSummary clip={clip} />
-                <SectionTitle>基本</SectionTitle>
+                <SectionTitle>{tr("基本")}</SectionTitle>
                 <PropertyField
-                    label="名称"
+                    label={tr("名称")}
                     value={clip.title ?? clip.nodeId ?? clip.id}
                     onChange={(value) => dispatch({ op: "setClipProperty", payload: { id: clip.id, patch: { title: value } } })}
                 />
                 {clip.kind === "subtitle" && (
                     <PropertyField
-                        label="字幕文本"
+                        label={tr("字幕文本")}
                         value={clip.text ?? ""}
                         onChange={(value) => dispatch({ op: "setClipProperty", payload: { id: clip.id, patch: { text: value } } })}
                     />
                 )}
                 {clip.kind === "audio" && (
                     <PropertyField
-                        label="音量"
+                        label={tr("音量")}
                         type="range"
                         min={0}
                         max={1}
@@ -54,9 +55,9 @@ export function EditorInspector() {
                 )}
                 {(clip.kind === "video" || clip.kind === "audio") && (
                     <>
-                        <SectionTitle>转场</SectionTitle>
+                        <SectionTitle>{tr("转场")}</SectionTitle>
                         <PropertyField
-                            label="淡入"
+                            label={tr("淡入")}
                             type="range"
                             min={0}
                             max={2000}
@@ -66,7 +67,7 @@ export function EditorInspector() {
                             onChange={(value) => dispatch({ op: "setClipProperty", payload: { id: clip.id, patch: { fadeInMs: Number(value) } } })}
                         />
                         <PropertyField
-                            label="淡出"
+                            label={tr("淡出")}
                             type="range"
                             min={0}
                             max={2000}
@@ -84,7 +85,7 @@ export function EditorInspector() {
                     onClick={() => selectClip(null)}
                     className="w-full rounded-md border border-[var(--previs-sequencer-border)] py-2 text-xs text-[var(--previs-dock-fg)] hover:bg-[var(--previs-control-hover)]"
                 >
-                    清除选中
+                    {tr("清除选中")}
                 </button>
             </div>
         </div>
@@ -101,11 +102,11 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function ClipSummary({ clip }: { clip: TimelineClip }) {
     const kindLabel: Record<TimelineClip["kind"], string> = {
-        video: "视频",
-        audio: "音频",
-        subtitle: "字幕",
-        text: "文本",
-        image: "图片",
+        video: tr("视频"),
+        audio: tr("音频"),
+        subtitle: tr("字幕"),
+        text: tr("文本"),
+        image: tr("图片"),
     };
     return (
         <div>
@@ -115,19 +116,19 @@ function ClipSummary({ clip }: { clip: TimelineClip }) {
             </div>
             <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[var(--fs-label)]">
                 <div className="flex items-baseline justify-between gap-2">
-                    <dt className="shrink-0 text-[var(--previs-dock-fg)]/45">起点</dt>
+                    <dt className="shrink-0 text-[var(--previs-dock-fg)]/45">{tr("起点")}</dt>
                     <dd className="tabular-nums text-[var(--previs-dock-fg)]/80">{formatTimelineTime(clip.startMs)}</dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-2">
-                    <dt className="shrink-0 text-[var(--previs-dock-fg)]/45">时长</dt>
+                    <dt className="shrink-0 text-[var(--previs-dock-fg)]/45">{tr("时长")}</dt>
                     <dd className="tabular-nums text-[var(--previs-dock-fg)]/80">{formatTimelineTime(clip.durationMs)}</dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-2">
-                    <dt className="shrink-0 text-[var(--previs-dock-fg)]/45">源起点</dt>
+                    <dt className="shrink-0 text-[var(--previs-dock-fg)]/45">{tr("源起点")}</dt>
                     <dd className="tabular-nums text-[var(--previs-dock-fg)]/80">{formatTimelineTime(clip.sourceStartMs ?? 0)}</dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-2">
-                    <dt className="shrink-0 text-[var(--previs-dock-fg)]/45">结束</dt>
+                    <dt className="shrink-0 text-[var(--previs-dock-fg)]/45">{tr("结束")}</dt>
                     <dd className="tabular-nums text-[var(--previs-dock-fg)]/80">{formatTimelineTime(clip.startMs + clip.durationMs)}</dd>
                 </div>
             </dl>

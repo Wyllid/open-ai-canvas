@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { create } from "zustand";
 import { persist, type PersistStorage, type StorageValue } from "zustand/middleware";
 
@@ -159,7 +160,7 @@ async function preserveLocalRebaseConflicts(scope: string, projects: CanvasProje
             phase: "pending",
             pendingChanges: 1,
             errorKind: "conflict",
-            message: "其他标签页也修改了此画布，未确认操作会按字段重放",
+            message: tr("其他标签页也修改了此画布，未确认操作会按字段重放"),
         });
     }
 }
@@ -197,7 +198,7 @@ function recordCanvasNodePersistenceCounts(before: CanvasProject[], after: Canva
             level: nodesAfter < nodesBefore ? "error" : "info",
             category: "action",
             code: nodesAfter < nodesBefore ? "canvas.persistence.nodes_decreased" : "canvas.persistence.nodes_changed",
-            message: nodesAfter < nodesBefore ? "画布持久化后节点数量减少" : "画布持久化后节点数量变化",
+            message: nodesAfter < nodesBefore ? tr("画布持久化后节点数量减少") : tr("画布持久化后节点数量变化"),
             projectId: id,
             nodes_before: nodesBefore,
             nodes_after: nodesAfter,
@@ -237,7 +238,7 @@ function runWithBrowserCanvasStorageLock<T>(scope: string, operation: () => Prom
     const lockName = `${CANVAS_STORAGE_LOCK_PREFIX}${scope}`;
     if (locks) return locks.request(lockName, operation);
     if (options.requireCrossRealmLock && typeof window !== "undefined" && typeof document !== "undefined") {
-        throw new Error("当前浏览器不支持跨标签存储锁，已停止画布生成持久化");
+        throw new Error(tr("当前浏览器不支持跨标签存储锁，已停止画布生成持久化"));
     }
     return operation();
 }
@@ -332,7 +333,7 @@ async function writeQueuedCanvasPersist(scope: string, _token: number) {
         await withCanvasStorePersistenceLock(scope, () => commitPendingCanvasStorePersistenceLocked(scope));
     } catch (error) {
         const queued = queuedCanvasPersists.get(scope);
-        if (queued) markCanvasLocalPersistencePending(queued.state.projects, error instanceof Error ? error.message : "本地画布保存失败");
+        if (queued) markCanvasLocalPersistencePending(queued.state.projects, error instanceof Error ? error.message : tr("本地画布保存失败"));
         throw error;
     }
 }
@@ -588,7 +589,7 @@ async function recoverCanvasPersistenceJournal(scope: string, name: string, init
             for (const project of journal.projects) projects.set(project.id, project);
         }
         const recoveredProjects = [...projects.values()];
-        if (getActiveUserScope() === scope) markCanvasLocalPersistencePending(recoveredProjects, error instanceof Error ? error.message : "本地恢复记录写入失败");
+        if (getActiveUserScope() === scope) markCanvasLocalPersistencePending(recoveredProjects, error instanceof Error ? error.message : tr("本地恢复记录写入失败"));
         return { ...initial, state: { projects: recoveredProjects } };
     }
 }
@@ -637,7 +638,7 @@ const canvasStorage: PersistStorage<CanvasStore> = {
             token,
             journal: journalWritten ? journal || undefined : undefined,
         });
-        markCanvasLocalPersistencePending(nextState.projects, journal && !journalWritten ? "本地快速恢复记录写入失败，正在等待完整画布保存" : undefined);
+        markCanvasLocalPersistencePending(nextState.projects, journal && !journalWritten ? tr("本地快速恢复记录写入失败，正在等待完整画布保存") : undefined);
         clearCanvasSaveTimer(scope);
         const timer = setTimeout(() => {
             if (canvasSaveTimers.get(scope) === timer) canvasSaveTimers.delete(scope);
@@ -669,7 +670,7 @@ export const useCanvasStore = create<CanvasStore>()(
         (set, get) => ({
             hydrated: false,
             projects: [],
-            createProject: (title = "未命名画布", projectId) => {
+            createProject: (title = tr("未命名画布"), projectId) => {
                 const now = new Date().toISOString();
                 const id = nanoid();
                 const appearanceDefault = readCanvasAppearanceDefault();
@@ -699,7 +700,7 @@ export const useCanvasStore = create<CanvasStore>()(
                     id: nanoid(),
                     revision: 0,
                     projectId: source.projectId,
-                    title: source.title || "导入画布",
+                    title: source.title || tr("导入画布"),
                     createdAt: source.createdAt || now,
                     updatedAt: now,
                     nodes: source.nodes || [],

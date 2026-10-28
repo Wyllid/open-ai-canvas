@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { ScrollText } from "lucide-react";
 import { lazy, Suspense, useState, type CSSProperties, type ReactNode } from "react";
 import { useAppearanceStore } from "@/stores/use-appearance-store";
@@ -22,7 +23,7 @@ type AppChangelogButtonProps = {
 export function AppChangelogButton({ className, style, showVersion = false, showLabel = false, labelClassName, versionClassName, icon, label }: AppChangelogButtonProps) {
     const [open, setOpen] = useState(false);
     const updates = useAppearanceStore((state) => state.appearance.updates);
-    const title = updates?.enabled ? "更新公告" : "更新日志";
+    const title = updates?.enabled ? tr("更新公告") : tr("更新日志");
 
     return (
         <>
@@ -34,7 +35,7 @@ export function AppChangelogButton({ className, style, showVersion = false, show
                     void refreshPublicAppearance();
                     setOpen(true);
                 }}
-                aria-label={`查看${title}`}
+                aria-label={tr("查看{0}", title)}
                 title={title}
             >
                 {icon ?? <ScrollText className="size-4 shrink-0" />}

@@ -36,7 +36,7 @@ func profileHandlerFixture(t *testing.T) (*gin.Engine, *gorm.DB, string) {
 	if err := database.MigrateSchema(db); err != nil {
 		t.Fatal(err)
 	}
-	hash, err := auth.HashPassword("old-password")
+	hash, err := auth.HashPassword("old-password-12")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,8 +77,7 @@ func TestProfileRoutesRejectAnonymousBeforeMutation(t *testing.T) {
 		{"GET", "/api/auth/profile"}, {"PUT", "/api/auth/profile/avatar"},
 		{"DELETE", "/api/auth/profile/avatar"}, {"GET", "/api/auth/profile/avatar/profile-user"},
 		{"POST", "/api/auth/profile/avatar/default"},
-		{"POST", "/api/auth/profile/password"}, {"POST", "/api/auth/profile/email-code"},
-		{"POST", "/api/auth/profile/email"}, {"GET", "/api/auth/profile/linuxdo/start"},
+		{"POST", "/api/auth/profile/account"},
 	} {
 		rec := profileRequest(router, route.method, route.path, "{}", "")
 		if rec.Code != http.StatusUnauthorized {
@@ -87,9 +86,9 @@ func TestProfileRoutesRejectAnonymousBeforeMutation(t *testing.T) {
 	}
 }
 
-func TestProfilePasswordHTTPRevokesSessionsAndClearsCookie(t *testing.T) {
+func TestProfileAccountHTTPRenamesRevokesSessionsAndClearsCookie(t *testing.T) {
 	router, db, cookie := profileHandlerFixture(t)
-	wrong := profileRequest(router, "POST", "/api/auth/profile/password", `{"currentPassword":"wrong-password","newPassword":"new-password"}`, cookie)
+	wrong := profileRequest(router, "POST", "/api/auth/profile/account", `{"currentPassword":"wrong-password","username":"studio-owner","newPassword":"a-new-long-password"}`, cookie)
 	if wrong.Code != 401 {
 		t.Fatalf("wrong password status %d: %s", wrong.Code, wrong.Body.String())
 	}
@@ -98,7 +97,10 @@ func TestProfilePasswordHTTPRevokesSessionsAndClearsCookie(t *testing.T) {
 	if count != 2 {
 		t.Fatalf("failed change revoked sessions: %d", count)
 	}
-	rec := profileRequest(router, "POST", "/api/auth/profile/password", `{"currentPassword":"old-password","newPassword":"new-password"}`, cookie)
+	if weak := profileRequest(router, "POST", "/api/auth/profile/account", `{"currentPassword":"old-password-12","newPassword":"short-pass"}`, cookie); weak.Code != http.StatusBadRequest {
+		t.Fatalf("weak new password status %d: %s", weak.Code, weak.Body.String())
+	}
+	rec := profileRequest(router, "POST", "/api/auth/profile/account", `{"currentPassword":"old-password-12","username":"studio-owner","newPassword":"a-new-long-password"}`, cookie)
 	if rec.Code != 200 {
 		t.Fatalf("change status %d: %s", rec.Code, rec.Body.String())
 	}
@@ -113,8 +115,11 @@ func TestProfilePasswordHTTPRevokesSessionsAndClearsCookie(t *testing.T) {
 	}
 	var user model.User
 	db.First(&user, "id = ?", "profile-user")
-	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte("new-password")) != nil {
+	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte("a-new-long-password")) != nil {
 		t.Fatal("new password not persisted")
+	}
+	if user.Username != "studio-owner" {
+		t.Fatalf("username = %q, want studio-owner", user.Username)
 	}
 	db.Model(&model.AuthSession{}).Count(&count)
 	if count != 0 {
@@ -125,13 +130,13 @@ func TestProfilePasswordHTTPRevokesSessionsAndClearsCookie(t *testing.T) {
 	}
 }
 
-func TestProfilePasswordRejectsOversizedUTF8WithoutRevokingSessions(t *testing.T) {
+func TestProfileAccountRejectsOversizedUTF8WithoutRevokingSessions(t *testing.T) {
 	router, db, cookie := profileHandlerFixture(t)
-	body, err := json.Marshal(map[string]string{"currentPassword": "old-password", "newPassword": strings.Repeat("密", 25)})
+	body, err := json.Marshal(map[string]string{"currentPassword": "old-password-12", "newPassword": strings.Repeat("密", 25)})
 	if err != nil {
 		t.Fatal(err)
 	}
-	rec := profileRequest(router, "POST", "/api/auth/profile/password", string(body), cookie)
+	rec := profileRequest(router, "POST", "/api/auth/profile/account", string(body), cookie)
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("oversized UTF-8 password status %d, want 400", rec.Code)
 	}

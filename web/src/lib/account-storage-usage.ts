@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { formatBytes } from "@/lib/image-utils";
 import type { AccountFileStorageUsage } from "@/services/api/resources";
 
@@ -38,14 +39,14 @@ export function formatStorageCapacity(bytes: number) {
 }
 
 export function formatStorageDuration(days: number) {
-    if (!days) return "永久有效";
-    if (days % 365 === 0) return `${days / 365} 年`;
-    if (days % 30 === 0) return `${days / 30} 个月`;
-    return `${days} 天`;
+    if (!days) return tr("永久有效");
+    if (days % 365 === 0) return tr("{0} 年", days / 365);
+    if (days % 30 === 0) return tr("{0} 个月", days / 30);
+    return tr("{0} 天", days);
 }
 
 export function formatStorageDate(value?: string) {
-    return value ? new Date(value).toLocaleString("zh-CN", { hour12: false, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+    return value ? new Date(value).toLocaleString(currentLocale(), { hour12: false, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
 }
 
 export function accountStorageMeter(usage?: AccountFileStorageUsage | null): AccountStorageMeter {
@@ -76,8 +77,8 @@ export function accountStorageMeter(usage?: AccountFileStorageUsage | null): Acc
 
 /** 超额提示文案，侧栏、素材页和扩容弹窗共用。 */
 export function accountStorageStateMessage(meter: AccountStorageMeter) {
-    if (meter.state === "read_only") return "已超出容量且宽限期已结束，账号处于只读状态。删除素材或购买空间后恢复。";
-    if (meter.state === "grace") return `已超出容量，暂停上传和生成。${meter.readOnlyAtLabel ? `${meter.readOnlyAtLabel} 后` : "宽限期结束后"}将进入只读状态。`;
-    if (meter.full) return "容量已满，暂停上传和生成。";
+    if (meter.state === "read_only") return tr("已超出容量且宽限期已结束，账号处于只读状态。删除素材或购买空间后恢复。");
+    if (meter.state === "grace") return tr("已超出容量，暂停上传和生成。{0}将进入只读状态。", meter.readOnlyAtLabel ? tr("{0} 后", meter.readOnlyAtLabel) : tr("宽限期结束后"));
+    if (meter.full) return tr("容量已满，暂停上传和生成。");
     return "";
 }

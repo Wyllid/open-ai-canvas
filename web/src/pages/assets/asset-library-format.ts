@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 // 素材库的展示格式化：摘要、尺寸、时长、时间、下载名与搜索文本。纯函数。
 
 import { formatBytes } from "@/lib/image-utils";
@@ -22,7 +23,7 @@ export const assetKindIcons: Record<LibraryAsset["kind"], LucideIcon> = {
 };
 
 export function assetSummary(asset: LibraryAsset) {
-    if (asset.kind === "entity") return asset.category === "environment" || asset.category === "prop" ? String(asset.data.definition.description || "待生成图片") : characterAssetSummary(asset);
+    if (asset.kind === "entity") return asset.category === "environment" || asset.category === "prop" ? String(asset.data.definition.description || tr("待生成图片")) : characterAssetSummary(asset);
     if (asset.kind === "text") return asset.data.content;
     if (asset.kind === "audio") return `${formatAssetDuration(asset.data.durationMs)} · ${formatBytes(asset.data.bytes)} · ${asset.data.mimeType}`;
     if (asset.kind === "model") return `${asset.data.fileName} · ${formatBytes(asset.data.bytes)} · ${asset.data.mimeType}`;
@@ -30,7 +31,7 @@ export function assetSummary(asset: LibraryAsset) {
 }
 
 export function assetSizeLabel(width: number, height: number) {
-    return width > 0 && height > 0 ? `${width}x${height}` : "未知";
+    return width > 0 && height > 0 ? `${width}x${height}` : tr("未知");
 }
 
 export function assetSearchText(asset: LibraryAsset) {
@@ -41,19 +42,19 @@ export function assetSearchText(asset: LibraryAsset) {
 export function assetProjectLabel(asset: LibraryAsset) {
     const projectName = asset.metadata?.projectName;
     if (typeof projectName === "string" && projectName.trim()) return projectName;
-    return Array.isArray(asset.metadata?.projectIds) && asset.metadata.projectIds.length ? "已关联项目" : "未关联项目";
+    return Array.isArray(asset.metadata?.projectIds) && asset.metadata.projectIds.length ? tr("已关联项目") : tr("未关联项目");
 }
 
 export function assetKindLabel(kind: AssetKind, category?: string) {
-    if (kind === "entity" && (category === "environment" || category === "prop")) return `${assetCategoryLabel(category)}设定`;
-    return kind === "image" ? "图片" : kind === "video" ? "视频" : kind === "audio" ? "音频" : kind === "model" ? "3D 模型" : kind === "entity" ? "角色" : "文本";
+    if (kind === "entity" && (category === "environment" || category === "prop")) return tr("{0}设定", assetCategoryLabel(category));
+    return kind === "image" ? tr("图片") : kind === "video" ? tr("视频") : kind === "audio" ? tr("音频") : kind === "model" ? tr("3D 模型") : kind === "entity" ? tr("角色") : tr("文本");
 }
 
 export function assetDownloadLabel(asset: LibraryAsset) {
-    if (asset.kind === "video") return "下载视频";
-    if (asset.kind === "audio") return "下载音频";
-    if (asset.kind === "model") return "下载模型";
-    return "下载图片";
+    if (asset.kind === "video") return tr("下载视频");
+    if (asset.kind === "audio") return tr("下载音频");
+    if (asset.kind === "model") return tr("下载模型");
+    return tr("下载图片");
 }
 
 export function readAssetGridDensity(): AssetGridDensity {
@@ -72,8 +73,8 @@ export function assetCountMap<T extends { label: string; value: string }>(option
 }
 
 export function formatAssetDuration(durationMs?: number) {
-    if (!durationMs) return "时长未知";
-    return `${Math.round(durationMs / 100) / 10} 秒`;
+    if (!durationMs) return tr("时长未知");
+    return tr("{0} 秒", Math.round(durationMs / 100) / 10);
 }
 
 export function formatAssetClock(durationMs?: number) {
@@ -86,11 +87,11 @@ export function formatAssetClock(durationMs?: number) {
 
 export function formatAssetTime(value: string) {
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
+    return Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString(currentLocale(), { month: "2-digit", day: "2-digit" });
 }
 
 export function formatAssetDateTime(value: string) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "-";
-    return date.toLocaleString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleString(currentLocale(), { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
 }

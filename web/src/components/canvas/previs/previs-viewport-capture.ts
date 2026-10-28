@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Color, HalfFloatType, MeshBasicMaterial, MeshDepthMaterial, MeshNormalMaterial, NoToneMapping, PerspectiveCamera, SRGBColorSpace, Vector4, WebGLRenderTarget, type Object3D } from "three";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { applyClaySceneMaterials } from "@/lib/canvas/previs/previs-clay-materials";
@@ -11,7 +12,7 @@ export type PrevisCaptureSource = () => CaptureContext | null;
 
 /** 近白远黑，固定米制范围。禁止逐帧自动归一化，否则深度视频会闪烁。 */
 export function createPrevisDepthMaterial(near: number, far: number) {
-    if (!Number.isFinite(near) || !Number.isFinite(far) || near < 0 || far <= near) throw new Error("深度范围必须满足 0 ≤ 近端 < 远端");
+    if (!Number.isFinite(near) || !Number.isFinite(far) || near < 0 || far <= near) throw new Error(tr("深度范围必须满足 0 ≤ 近端 < 远端"));
     const material = new MeshDepthMaterial();
     let captureNear = 0.05;
     let captureFar = 500;
@@ -44,7 +45,7 @@ export function createPrevisDepthMaterial(near: number, far: number) {
 export function createPrevisShotSurface(source: PrevisCaptureSource, options: PrevisCaptureOptions = {}) {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("浏览器无法创建捕捉画布");
+    if (!ctx) throw new Error(tr("浏览器无法创建捕捉画布"));
     const camera = new PerspectiveCamera();
     const target = new WebGLRenderTarget(2, 2);
     // 颜色先保留 HDR 线性值，再做显示转换；数据 pass 始终写无色彩转换的独立字节目标。
@@ -60,14 +61,14 @@ export function createPrevisShotSurface(source: PrevisCaptureSource, options: Pr
     return {
         canvas,
         render(mode: PrevisRenderMode, time?: number) {
-            if (disposed) throw new Error("捕捉会话已关闭");
+            if (disposed) throw new Error(tr("捕捉会话已关闭"));
             options.signal?.throwIfAborted();
             const context = source();
-            if (!context || context.gl.getContext().isContextLost()) throw new Error("3D 视口尚未就绪或已失去上下文");
+            if (!context || context.gl.getContext().isContextLost()) throw new Error(tr("3D 视口尚未就绪或已失去上下文"));
             const { gl, scene, document: data, playhead } = context;
             const shot = resolvePrevisActiveShot(data);
             const framing = resolvePrevisViewFraming({ scene: data, mode: "camera", playhead: time ?? playhead });
-            if (!shot || !framing || !data.cameras.some((item) => item.id === shot.cameraId)) throw new Error("镜头未绑定有效摄影机");
+            if (!shot || !framing || !data.cameras.some((item) => item.id === shot.cameraId)) throw new Error(tr("镜头未绑定有效摄影机"));
             const { width, height } = resolvePrevisOutputSize(previsAspectValue(shot.aspectRatio), options.longEdge ?? 1280);
             if (canvas.width !== width || canvas.height !== height) {
                 canvas.width = width;
@@ -178,8 +179,8 @@ export async function captureFrame(source: PrevisCaptureSource, mode: PrevisRend
 
 /** 浏览器实时录制；独立求值镜头时间，不依赖播放头循环，也不修改工作台状态。 */
 export async function recordCanvas(source: PrevisCaptureSource, duration: number, fps: number, mode: PrevisRenderMode = "clay", options: PrevisCaptureOptions = {}) {
-    if (!Number.isFinite(duration) || duration <= 0 || duration > 60 || !Number.isFinite(fps) || fps < 1 || fps > 60) throw new Error("录制时长或帧率无效");
-    if (typeof MediaRecorder === "undefined") throw new Error("当前浏览器不支持录屏，请使用 Chrome 或 Edge");
+    if (!Number.isFinite(duration) || duration <= 0 || duration > 60 || !Number.isFinite(fps) || fps < 1 || fps > 60) throw new Error(tr("录制时长或帧率无效"));
+    if (typeof MediaRecorder === "undefined") throw new Error(tr("当前浏览器不支持录屏，请使用 Chrome 或 Edge"));
     const surface = createPrevisShotSurface(source, options);
     let stream: MediaStream | undefined;
     let timer = 0;
@@ -189,10 +190,10 @@ export async function recordCanvas(source: PrevisCaptureSource, duration: number
     let onHidden = () => {};
     try {
         surface.render(mode, 0);
-        if (!surface.canvas.captureStream) throw new Error("当前浏览器不支持画面录制");
+        if (!surface.canvas.captureStream) throw new Error(tr("当前浏览器不支持画面录制"));
         stream = surface.canvas.captureStream(fps);
         const mimeType = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/mp4", "video/webm"].find((type) => MediaRecorder.isTypeSupported(type));
-        if (!mimeType) throw new Error("当前浏览器没有可用的视频编码器");
+        if (!mimeType) throw new Error(tr("当前浏览器没有可用的视频编码器"));
         recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
         const activeRecorder = recorder;
         const chunks: Blob[] = [];
@@ -203,20 +204,20 @@ export async function recordCanvas(source: PrevisCaptureSource, duration: number
                 window.clearTimeout(timer);
                 if (activeRecorder.state !== "inactive") activeRecorder.stop();
             };
-            onAbort = () => stop(new Error("录制已取消"));
+            onAbort = () => stop(new Error(tr("录制已取消")));
             onHidden = () => {
-                if (document.hidden) stop(new Error("录制已中止：请保持预演台标签页可见"));
+                if (document.hidden) stop(new Error(tr("录制已中止：请保持预演台标签页可见")));
             };
             activeRecorder.ondataavailable = (event) => {
                 if (event.data.size) chunks.push(event.data);
             };
             activeRecorder.onerror = () => {
-                reject(new Error("视频编码失败"));
+                reject(new Error(tr("视频编码失败")));
             };
             activeRecorder.onstop = () => {
                 const blob = new Blob(chunks, { type: activeRecorder.mimeType });
                 if (failure) reject(failure);
-                else if (!blob.size) reject(new Error("录制没有产生视频数据"));
+                else if (!blob.size) reject(new Error(tr("录制没有产生视频数据")));
                 else resolve(blob);
             };
             options.signal?.addEventListener("abort", onAbort, { once: true });
@@ -233,14 +234,14 @@ export async function recordCanvas(source: PrevisCaptureSource, duration: number
                     surface.render(mode, Math.floor(elapsed * fps) / fps);
                     timer = window.setTimeout(tick, 1000 / fps);
                 } catch (error) {
-                    stop(error instanceof Error ? error : new Error("录制期间渲染失败"));
+                    stop(error instanceof Error ? error : new Error(tr("录制期间渲染失败")));
                 }
             };
             timer = window.setTimeout(tick, 1000 / fps);
             watchdog = window.setTimeout(
                 () => {
-                    stop(new Error("视频编码超时"));
-                    reject(new Error("视频编码超时"));
+                    stop(new Error(tr("视频编码超时")));
+                    reject(new Error(tr("视频编码超时")));
                 },
                 duration * 1000 + 10000,
             );
@@ -259,7 +260,7 @@ export async function recordCanvas(source: PrevisCaptureSource, duration: number
 }
 
 export function canvasToBlob(canvas: HTMLCanvasElement) {
-    return new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("3D 预览图导出失败"))), "image/png"));
+    return new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error(tr("3D 预览图导出失败")))), "image/png"));
 }
 
 /** 编辑辅助物（网格、机位模型、路径、gizmo、骨骼线、关节球）不进入成片与控制图。 */

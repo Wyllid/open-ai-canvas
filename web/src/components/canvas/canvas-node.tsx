@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { AlertCircle, BookOpenCheck, CheckCircle2, ChevronRight, Clapperboard, Copy, Download, History, Image as ImageIcon, Lock, Maximize2, Music2, Pencil, RefreshCw, ScanSearch, Settings2, Star, Trash2, Type, UserRound, Video, WandSparkles } from "lucide-react";
@@ -345,10 +346,10 @@ export const CanvasNode = React.memo(function CanvasNode({
                             className="canvas-node-inline-action inline-flex h-9 items-center gap-2 px-3 text-xs font-medium backdrop-blur-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                             style={{ outlineColor: theme.accent.primary }}
                             onClick={(event) => { event.stopPropagation(); onOpenTextEditor?.(data); }}
-                            aria-label="放大编辑文本"
+                            aria-label={tr("放大编辑文本")}
                         >
                             <Maximize2 className="size-3.5" />
-                            放大编辑
+                            {tr("放大编辑")}
                         </button>
                     </div>
                 ) : null}
@@ -372,21 +373,21 @@ export const CanvasNode = React.memo(function CanvasNode({
                         onPointerDown={(event) => event.stopPropagation()}
                     >
                         <div className="flex items-center gap-0.5 rounded-[var(--r-md)] border px-1 py-1 backdrop-blur-xl" style={{ background: `${theme.toolbar.panel}e6`, borderColor: theme.toolbar.border }}>
-                            {hasImageContent ? <BatchChildActionButton theme={theme} label="下载图片" icon={<Download className="size-3.5" />} onClick={() => downloadNode?.(data)} /> : null}
-                            {hasImageContent ? <BatchChildActionButton theme={theme} label="创建副本" icon={<Copy className="size-3.5" />} onClick={() => duplicateNode?.(data)} /> : null}
+                            {hasImageContent ? <BatchChildActionButton theme={theme} label={tr("下载图片")} icon={<Download className="size-3.5" />} onClick={() => downloadNode?.(data)} /> : null}
+                            {hasImageContent ? <BatchChildActionButton theme={theme} label={tr("创建副本")} icon={<Copy className="size-3.5" />} onClick={() => duplicateNode?.(data)} /> : null}
                             {hasImageContent && !data.metadata?.imageLayer && !data.metadata?.layerExtraction ? (
-                                <BatchChildActionButton theme={theme} label={batchPrimary ? "当前主图" : "设为主图"} icon={<Star className={`size-3.5 ${batchPrimary ? "fill-current" : ""}`} style={{ color: theme.accent.primary }} />} onClick={() => onSetBatchPrimary?.(data)} />
+                                <BatchChildActionButton theme={theme} label={batchPrimary ? tr("当前主图") : tr("设为主图")} icon={<Star className={`size-3.5 ${batchPrimary ? "fill-current" : ""}`} style={{ color: theme.accent.primary }} />} onClick={() => onSetBatchPrimary?.(data)} />
                             ) : null}
-                            {data.metadata?.status === "error" && data.metadata.resourceReloadAvailable ? <BatchChildActionButton theme={theme} label="重新加载资源" icon={<Download className="size-3.5" />} onClick={() => onReloadResource?.(data)} /> : null}
-                            {data.metadata?.status === "error" ? <BatchChildActionButton theme={theme} label={data.metadata?.taskCanRecoverMedia ? "重试保存" : "重新生成"} icon={<RefreshCw className="size-3.5" />} onClick={() => onRetry?.(data)} /> : null}
-                            {data.metadata?.status === "error" ? <BatchChildActionButton theme={theme} label="删除" icon={<Trash2 className="size-3.5" />} danger onClick={() => deleteNode?.(data)} /> : null}
+                            {data.metadata?.status === "error" && data.metadata.resourceReloadAvailable ? <BatchChildActionButton theme={theme} label={tr("重新加载资源")} icon={<Download className="size-3.5" />} onClick={() => onReloadResource?.(data)} /> : null}
+                            {data.metadata?.status === "error" ? <BatchChildActionButton theme={theme} label={data.metadata?.taskCanRecoverMedia ? tr("重试保存") : tr("重新生成")} icon={<RefreshCw className="size-3.5" />} onClick={() => onRetry?.(data)} /> : null}
+                            {data.metadata?.status === "error" ? <BatchChildActionButton theme={theme} label={tr("删除")} icon={<Trash2 className="size-3.5" />} danger onClick={() => deleteNode?.(data)} /> : null}
                         </div>
                     </div>
                 ) : null}
                 {/* 批次主图位（折叠根节点封面）常驻下载按钮 */}
                 {showChrome && isBatchRoot && hasImageContent && !readOnly && (!data.metadata?.imageLayerGroup?.compositeStatus || data.metadata.imageLayerGroup.compositeStatus === "ready") ? (
                     <div className="absolute bottom-2 right-2 z-[var(--node-z-overlay)]" onMouseDown={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
-                        <BatchChildActionButton theme={theme} label={data.metadata?.imageLayerGroup ? "下载合成图" : "下载主图"} icon={<Download className="size-3.5" />} onClick={() => downloadNode?.(data)} />
+                        <BatchChildActionButton theme={theme} label={data.metadata?.imageLayerGroup ? tr("下载合成图") : tr("下载主图")} icon={<Download className="size-3.5" />} onClick={() => downloadNode?.(data)} />
                     </div>
                 ) : null}
                 {showChrome && (assetTags.length || showProducedModel || (showImageInfo && hasImageContent)) ? (
@@ -490,7 +491,7 @@ function ResourceStorageBadge({ storageKey, active, theme }: { storageKey?: stri
 function MediaVersionBadge({ node, theme, onOpen }: { node: CanvasNodeData; theme: CanvasTheme; onOpen: () => void }) {
     const total = node.metadata?.mediaVersions?.length || 0;
     const current = currentMediaVersion(node);
-    const label = current ? `当前 V${current.number}，共 ${total} 个版本，打开版本历史` : `共 ${total} 个历史版本，打开版本历史`;
+    const label = current ? tr("当前 V{0}，共 {1} 个版本，打开版本历史", current.number, total) : tr("共 {0} 个历史版本，打开版本历史", total);
     return (
         <button type="button" className="canvas-node-tool-button inline-flex h-7 shrink-0 items-center gap-1 rounded-md border px-2 text-[var(--fs-tiny)] font-semibold tabular-nums backdrop-blur-md" style={{ background: `${theme.toolbar.panel}d9`, borderColor: `${theme.toolbar.border}cc`, color: theme.node.text }} title={label} aria-label={label} onClick={(event) => { event.stopPropagation(); onOpen(); }} onMouseDown={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
             <History className="size-3 opacity-70" />
@@ -500,12 +501,12 @@ function MediaVersionBadge({ node, theme, onOpen }: { node: CanvasNodeData; them
 }
 
 function NodeLockBadge({ theme }: { theme: CanvasTheme }) {
-    return <span className="pointer-events-none grid size-7 shrink-0 place-items-center rounded-md border backdrop-blur" style={{ background: theme.toolbar.panel, borderColor: theme.toolbar.border, color: theme.node.muted }} title="节点已锁定"><Lock className="size-3.5" /></span>;
+    return <span className="pointer-events-none grid size-7 shrink-0 place-items-center rounded-md border backdrop-blur" style={{ background: theme.toolbar.panel, borderColor: theme.toolbar.border, color: theme.node.muted }} title={tr("节点已锁定")}><Lock className="size-3.5" /></span>;
 }
 
 function BatchToggleBadge({ count, expanded, theme, onToggle }: { count: number; expanded: boolean; theme: CanvasTheme; onToggle: () => void }) {
     return (
-        <button type="button" className="canvas-node-tool-button inline-flex h-7 shrink-0 items-center gap-1 rounded-md border px-2 text-[var(--fs-tiny)] font-semibold backdrop-blur-md" style={{ background: `${theme.toolbar.panel}d9`, borderColor: `${theme.toolbar.border}cc`, color: theme.node.text }} aria-expanded={expanded} aria-label={expanded ? "收起图片组" : "展开图片组"} onClick={(event) => { event.stopPropagation(); onToggle(); }} onMouseDown={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
+        <button type="button" className="canvas-node-tool-button inline-flex h-7 shrink-0 items-center gap-1 rounded-md border px-2 text-[var(--fs-tiny)] font-semibold backdrop-blur-md" style={{ background: `${theme.toolbar.panel}d9`, borderColor: `${theme.toolbar.border}cc`, color: theme.node.text }} aria-expanded={expanded} aria-label={expanded ? tr("收起图片组") : tr("展开图片组")} onClick={(event) => { event.stopPropagation(); onToggle(); }} onMouseDown={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
             <span className="leading-none" style={{ color: theme.accent.primary }}>{count}</span>
             <ChevronRight className={`size-3 opacity-55 transition-transform ${expanded ? "rotate-90" : ""}`} />
         </button>
@@ -514,9 +515,9 @@ function BatchToggleBadge({ count, expanded, theme, onToggle }: { count: number;
 
 function BatchPrimaryBadge({ visible, selected, theme, onSelect }: { visible: boolean; selected: boolean; theme: CanvasTheme; onSelect: () => void }) {
     return (
-        <button type="button" className={`canvas-node-tool-button inline-flex h-7 shrink-0 items-center gap-1 rounded-md border px-2 text-[var(--fs-tiny)] font-medium backdrop-blur-md transition-opacity ${visible ? "opacity-100" : "pointer-events-none opacity-0"}`} style={{ background: theme.toolbar.panel, borderColor: selected ? theme.accent.primary : theme.toolbar.border, color: selected ? theme.accent.primary : theme.node.text }} aria-label={selected ? "当前主图" : "设置为主图"} aria-pressed={selected} onClick={(event) => { event.stopPropagation(); onSelect(); }} onMouseDown={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
+        <button type="button" className={`canvas-node-tool-button inline-flex h-7 shrink-0 items-center gap-1 rounded-md border px-2 text-[var(--fs-tiny)] font-medium backdrop-blur-md transition-opacity ${visible ? "opacity-100" : "pointer-events-none opacity-0"}`} style={{ background: theme.toolbar.panel, borderColor: selected ? theme.accent.primary : theme.toolbar.border, color: selected ? theme.accent.primary : theme.node.text }} aria-label={selected ? tr("当前主图") : tr("设置为主图")} aria-pressed={selected} onClick={(event) => { event.stopPropagation(); onSelect(); }} onMouseDown={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
             <Star className={`size-3 ${selected ? "fill-current" : ""}`} style={{ color: theme.accent.primary }} />
-            {selected ? "当前主图" : "主图"}
+            {selected ? tr("当前主图") : tr("主图")}
         </button>
     );
 }
@@ -628,10 +629,10 @@ function NodeExternalHeader({ node, scale, dimensionLabel, active, editable, edi
                             if (event.key === "Enter") event.currentTarget.blur();
                             if (event.key === "Escape") onCancel();
                         }}
-                        aria-label="节点名称"
+                        aria-label={tr("节点名称")}
                     />
                 ) : editable ? (
-                    <button type="button" className="group flex min-w-0 flex-1 items-center gap-1 rounded px-0.5 text-xs font-medium outline-none transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1" style={{ opacity: active ? 1 : 0.78, outlineColor: theme.node.muted }} onClick={onEdit} aria-label={`编辑节点名称：${node.title}`}>
+                    <button type="button" className="group flex min-w-0 flex-1 items-center gap-1 rounded px-0.5 text-xs font-medium outline-none transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1" style={{ opacity: active ? 1 : 0.78, outlineColor: theme.node.muted }} onClick={onEdit} aria-label={tr("编辑节点名称：{0}", node.title)}>
                         <span className="min-w-0 flex-1 truncate" title={node.title}>{node.title}</span>
                         <Pencil className="size-2.5 shrink-0 opacity-55 transition-opacity group-hover:opacity-100" />
                     </button>
@@ -665,10 +666,10 @@ function NodeStatusBadge({ status }: { status: "loading" | "success" | "error" }
             <div
                 className="pointer-events-none absolute left-2 top-2 z-20 flex items-center gap-1 rounded-full px-2 py-0.5 backdrop-blur-sm"
                 style={{ background: "color-mix(in oklch, var(--status-loading) 20%, transparent)", color: "var(--status-loading)" }}
-                aria-label="生成中"
+                aria-label={tr("生成中")}
             >
                 <span className="size-1.5 animate-pulse rounded-full" style={{ background: "var(--status-loading)" }} />
-                <span className="text-[var(--fs-micro)] font-medium leading-none">生成中</span>
+                <span className="text-[var(--fs-micro)] font-medium leading-none">{tr("生成中")}</span>
             </div>
         );
     }
@@ -677,10 +678,10 @@ function NodeStatusBadge({ status }: { status: "loading" | "success" | "error" }
             <div
                 className="pointer-events-none absolute left-2 top-2 z-20 flex items-center gap-1 rounded-full px-2 py-0.5 backdrop-blur-sm"
                 style={{ background: "color-mix(in oklch, var(--status-error) 20%, transparent)", color: "var(--status-error)" }}
-                aria-label="生成失败"
+                aria-label={tr("生成失败")}
             >
                 <AlertCircle className="size-3" strokeWidth={2} />
-                <span className="text-[var(--fs-micro)] font-medium leading-none">失败</span>
+                <span className="text-[var(--fs-micro)] font-medium leading-none">{tr("失败")}</span>
             </div>
         );
     }
@@ -689,10 +690,10 @@ function NodeStatusBadge({ status }: { status: "loading" | "success" | "error" }
         <div
             className="pointer-events-none absolute left-2 top-2 z-20 flex items-center gap-1 rounded-full px-2 py-0.5 backdrop-blur-sm"
             style={{ background: "color-mix(in oklch, var(--status-success) 20%, transparent)", color: "var(--status-success)", animation: "canvas-status-success-fade 2s ease-out forwards" }}
-            aria-label="生成完成"
+            aria-label={tr("生成完成")}
         >
             <CheckCircle2 className="size-3" strokeWidth={2} />
-            <span className="text-[var(--fs-micro)] font-medium leading-none">完成</span>
+            <span className="text-[var(--fs-micro)] font-medium leading-none">{tr("完成")}</span>
         </div>
     );
 }
@@ -749,7 +750,7 @@ function ConnectionSideRail({ side, scale, theme, visible, onPointerDown }: { si
                 resetHandle();
             }}
             onPointerDown={(event) => onPointerDown(event, 0.5)}
-            aria-label={`${side === "left" ? "输入" : "输出"}连接点，单击创建节点或拖动连线`}
+            aria-label={tr("{0}连接点，单击创建节点或拖动连线", side === "left" ? tr("输入") : tr("输出"))}
         >
             <span
                 ref={handleRef}

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 展示项目资产库，按来源区分「本地上传」与「项目素材」；点击资产 → makeClipFromAsset
 // → dispatch addClip 加入时间线（添加到匹配 kind 的轨道末尾）。资产是
 // "仅时间线作用域"直连媒体（nodeId=asset:<id>）。导入链路：uploadResourceFile →
@@ -40,9 +41,9 @@ const SOURCE_UPLOADED = "uploaded";
 type AssetFilter = "all" | "project" | "uploaded";
 
 const FILTER_TABS: { id: AssetFilter; label: string }[] = [
-    { id: "all", label: "全部" },
-    { id: "project", label: "项目素材" },
-    { id: "uploaded", label: "本地上传" },
+    { id: "all", label: tr("全部") },
+    { id: "project", label: tr("项目素材") },
+    { id: "uploaded", label: tr("本地上传") },
 ];
 
 /** 按 MIME 与扩展名推断媒体 kind；非媒体文件返回 null。 */
@@ -194,7 +195,7 @@ function MediaPreview({ asset }: { asset: ProjectAsset }) {
     return (
         <div className="flex h-16 items-center justify-center gap-2 rounded-md bg-[var(--previs-control-hover)] text-[var(--previs-dock-fg)]/60">
             <Music2 className="size-4" />
-            <span className="text-[var(--fs-label)]">音频素材 · 点击下方按钮加入时间线</span>
+            <span className="text-[var(--fs-label)]">{tr("音频素材 · 点击下方按钮加入时间线")}</span>
         </div>
     );
 }
@@ -232,7 +233,7 @@ function AssetDetailSheet({
     return (
         <div
             role="dialog"
-            aria-label={`${asset.title || "素材"} 详情`}
+            aria-label={tr("{0} 详情", asset.title || tr("素材"))}
             className={`absolute inset-1.5 z-10 flex min-h-0 flex-col overflow-hidden rounded-lg border border-[var(--previs-sequencer-border)] bg-[var(--previs-sequencer-surface-raised)] shadow-[0_12px_32px_rgba(0,0,0,0.35)] transition-[opacity,transform] duration-150 ease-out ${
                 shown ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
             }`}
@@ -248,7 +249,7 @@ function AssetDetailSheet({
                     ref={closeRef}
                     type="button"
                     onClick={onClose}
-                    aria-label="关闭详情"
+                    aria-label={tr("关闭详情")}
                     className="grid size-5 shrink-0 place-items-center rounded-md text-[var(--previs-dock-fg)]/55 transition-colors hover:bg-[var(--previs-control-hover)] hover:text-[var(--previs-dock-fg-strong)]"
                 >
                     <X className="size-3.5" />
@@ -257,13 +258,13 @@ function AssetDetailSheet({
             <div className="director-scroll min-h-0 flex-1 overflow-y-auto px-2 py-2">
                 <MediaPreview asset={asset} />
                 <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[var(--fs-label)]">
-                    <dt className="text-[var(--previs-dock-fg)]/60">媒体类型</dt>
+                    <dt className="text-[var(--previs-dock-fg)]/60">{tr("媒体类型")}</dt>
                     <dd className="truncate text-right capitalize text-[var(--previs-dock-fg-strong)]">{asset.mediaType}</dd>
-                    <dt className="text-[var(--previs-dock-fg)]/60">分类</dt>
+                    <dt className="text-[var(--previs-dock-fg)]/60">{tr("分类")}</dt>
                     <dd className="truncate text-right text-[var(--previs-dock-fg-strong)]">{asset.category}</dd>
                     {asset.durationMs ? (
                         <>
-                            <dt className="text-[var(--previs-dock-fg)]/60">时长</dt>
+                            <dt className="text-[var(--previs-dock-fg)]/60">{tr("时长")}</dt>
                             <dd className="text-right tabular-nums text-[var(--previs-dock-fg-strong)]">{formatDurationMs(asset.durationMs)}</dd>
                         </>
                     ) : null}
@@ -284,7 +285,7 @@ function AssetDetailSheet({
                     }`}
                 >
                     {added ? <Check className="size-3.5" /> : <Plus className="size-3.5" />}
-                    {added ? "已添加到时间线" : "添加到时间线"}
+                    {added ? tr("已添加到时间线") : tr("添加到时间线")}
                 </button>
             </div>
         </div>
@@ -325,7 +326,7 @@ export function EditorAssetIngest() {
             .map((file) => ({ file, kind: kindFromFile(file) }))
             .filter((x): x is { file: File; kind: "image" | "video" | "audio" } => x.kind !== null);
         if (media.length === 0) {
-            setImportError("仅支持视频、音频与图片文件");
+            setImportError(tr("仅支持视频、音频与图片文件"));
             return;
         }
         setImporting(true);
@@ -371,7 +372,7 @@ export function EditorAssetIngest() {
                     if (!linked) {
                         // 两次挂载都失败（asset 可能已创建但未挂上项目）：不删除，提示重试——重试走幂等路径可补挂。
                         failedNames.push(file.name);
-                        if (!firstErrorMsg) firstErrorMsg = `「${file.name}」已上传但挂载到项目失败，请重试`;
+                        if (!firstErrorMsg) firstErrorMsg = tr("「{0}」已上传但挂载到项目失败，请重试", file.name);
                         continue;
                     }
                     okCount += 1;
@@ -379,7 +380,7 @@ export function EditorAssetIngest() {
                 } catch (err) {
                     failedNames.push(file.name);
                     const detail = extractApiMessage(err);
-                    if (!firstErrorMsg) firstErrorMsg = detail ? `「${file.name}」${detail}` : `「${file.name}」导入失败`;
+                    if (!firstErrorMsg) firstErrorMsg = detail ? `「${file.name}」${detail}` : tr("「{0}」导入失败", file.name);
                 }
             }
             if (okCount > 0) {
@@ -389,15 +390,15 @@ export function EditorAssetIngest() {
                 if (firstList && linkedIds.some((id) => !firstList.some((asset) => asset.id === id))) {
                     await refreshAssets();
                 }
-                setImportNote(skipped > 0 ? `已导入 ${okCount} 个，跳过 ${skipped} 个重复文件` : `已导入 ${okCount} 个媒体`);
+                setImportNote(skipped > 0 ? tr("已导入 {0} 个，跳过 {1} 个重复文件", okCount, skipped) : tr("已导入 {0} 个媒体", okCount));
             } else if (skipped > 0 && failedNames.length === 0) {
-                setImportNote(`媒体库中已有同名素材，跳过 ${skipped} 个重复文件`);
+                setImportNote(tr("媒体库中已有同名素材，跳过 {0} 个重复文件", skipped));
             }
             if (firstErrorMsg) {
                 setImportError(firstErrorMsg);
             } else if (failedNames.length > 0) {
-                const failedText = failedNames.length === 1 ? `「${failedNames[0]}」` : `${failedNames.length} 个文件`;
-                setImportError(`${failedText}导入失败，请重试`);
+                const failedText = failedNames.length === 1 ? `「${failedNames[0]}」` : tr("{0} 个文件", failedNames.length);
+                setImportError(tr("{0}导入失败，请重试", failedText));
             }
         } finally {
             setImporting(false);
@@ -430,8 +431,8 @@ export function EditorAssetIngest() {
     // 画布产物已自动同步为普通项目素材：并入「项目素材」，不再按来源单列分组。
     const projectAssets = assets.filter((a) => a.source !== SOURCE_UPLOADED);
     const groups: { id: "uploaded" | "project"; label: string; icon: typeof HardDrive; items: ProjectAsset[] }[] = [
-        { id: "uploaded", label: "本地上传", icon: HardDrive, items: uploadedAssets },
-        { id: "project", label: "项目素材", icon: Boxes, items: projectAssets },
+        { id: "uploaded", label: tr("本地上传"), icon: HardDrive, items: uploadedAssets },
+        { id: "project", label: tr("项目素材"), icon: Boxes, items: projectAssets },
     ];
     const visibleGroups = groups.filter((g) => filter === "all" || g.id === filter);
     const totalCount = assets.length;
@@ -464,7 +465,7 @@ export function EditorAssetIngest() {
                         e.target.value = "";
                     }}
                 />
-                <span className="text-xs font-semibold text-[var(--previs-dock-fg-strong)]">媒体库</span>
+                <span className="text-xs font-semibold text-[var(--previs-dock-fg-strong)]">{tr("媒体库")}</span>
                 <span className="rounded-full bg-[var(--previs-control-hover)] px-2 text-[var(--fs-label)] tabular-nums text-[var(--previs-dock-fg)]/70">{totalCount}</span>
                 <div className="flex-1" />
                 <button
@@ -474,7 +475,7 @@ export function EditorAssetIngest() {
                     className="flex h-7 items-center gap-2 rounded-md border border-dashed border-[var(--previs-sequencer-border)] px-2 text-[var(--fs-label)] font-medium text-[var(--previs-dock-fg-strong)] transition-colors hover:border-[var(--previs-accent)] hover:bg-[var(--previs-control-hover)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {importing ? <Loader2 className="size-3.5 animate-spin" /> : <FolderOpen className="size-3.5" />}
-                    {importing ? "导入中…" : "导入媒体"}
+                    {importing ? tr("导入中…") : tr("导入媒体")}
                 </button>
             </div>
 
@@ -504,15 +505,15 @@ export function EditorAssetIngest() {
                 <div className="director-scroll h-full overflow-y-auto p-2">
                 {assets.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
-                        <p className="text-xs text-[var(--previs-dock-fg)]/60">项目暂无资产</p>
-                        <p className="max-w-[180px] text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/45">点击上方导入媒体，或将文件拖入此区域</p>
+                        <p className="text-xs text-[var(--previs-dock-fg)]/60">{tr("项目暂无资产")}</p>
+                        <p className="max-w-[180px] text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/45">{tr("点击上方导入媒体，或将文件拖入此区域")}</p>
                     </div>
                 ) : visibleGroups.every((g) => g.items.length === 0) ? (
                     <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
                         <p className="text-xs text-[var(--previs-dock-fg)]/60">
-                            {filter === "uploaded" ? "暂无本地上传的媒体" : filter === "project" ? "暂无项目素材" : "项目暂无资产"}
+                            {filter === "uploaded" ? tr("暂无本地上传的媒体") : filter === "project" ? tr("暂无项目素材") : tr("项目暂无资产")}
                         </p>
-                        <p className="max-w-[180px] text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/45">点击上方导入媒体，或将文件拖入此区域</p>
+                        <p className="max-w-[180px] text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/45">{tr("点击上方导入媒体，或将文件拖入此区域")}</p>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-1">

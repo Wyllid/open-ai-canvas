@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { createCanvasNode, createStoryboardRow } from "@/lib/canvas/canvas-project-domain";
 import type { ProjectShot, ProjectUnit } from "@/services/api/projects";
 import { CanvasNodeType, type CanvasConnection, type CanvasNodeData, type StoryboardData, type StoryboardRow } from "@/types/canvas";
@@ -28,13 +29,13 @@ export function upsertProjectChapterStoryboard(
     const scriptNode: CanvasNodeData = existing
         ? {
               ...existing,
-              title: `分镜脚本 · ${unit.title}`,
+              title: tr("分镜脚本 · {0}", unit.title),
               metadata: {
                   ...existing.metadata,
                   status: "idle" as const,
                   workflowKind: "storyboard" as const,
-                  workflowTitle: "章节分镜",
-                  workflowDescription: `已导入 ${rows.length} 个镜头`,
+                  workflowTitle: tr("章节分镜"),
+                  workflowDescription: tr("已导入 {0} 个镜头", rows.length),
                   chapterId: unit.id,
                   chapterTitle: unit.title,
                   storyboard,
@@ -69,8 +70,8 @@ function createChapterStoryboardNode(nodes: CanvasNodeData[], unit: Pick<Project
     const node = createCanvasNode(CanvasNodeType.Script, { x: rightEdge + 540, y: 340 }, {
         status: "idle",
         workflowKind: "storyboard",
-        workflowTitle: "章节分镜",
-        workflowDescription: `已导入 ${rows.length} 个镜头`,
+        workflowTitle: tr("章节分镜"),
+        workflowDescription: tr("已导入 {0} 个镜头", rows.length),
         chapterId: unit.id,
         chapterTitle: unit.title,
         storyboard: {
@@ -79,7 +80,7 @@ function createChapterStoryboardNode(nodes: CanvasNodeData[], unit: Pick<Project
             referenceNodeIds: [],
         },
     });
-    node.title = `分镜脚本 · ${unit.title}`;
+    node.title = tr("分镜脚本 · {0}", unit.title);
     return node;
 }
 

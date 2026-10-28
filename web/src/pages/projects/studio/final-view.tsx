@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useRef } from "react";
 import { App, Button } from "antd";
 import { Download, Film } from "lucide-react";
@@ -26,7 +27,7 @@ export function FinalView({ projectId, title, detail, aspectRatio, onOpenSegment
     const fileName = `${title}-episode-${episode.number}`;
     const download = () => {
         if (!episode.finalResourceId) return;
-        void downloadResource(episode.finalResourceId, `${fileName}.mp4`).catch((error) => message.error(error instanceof Error ? error.message : "Download failed"));
+        void downloadResource(episode.finalResourceId, `${fileName}.mp4`).catch((error) => message.error(error instanceof Error ? error.message : tr("下载失败")));
     };
     return (
         <div className="drama-finalv">
@@ -37,7 +38,7 @@ export function FinalView({ projectId, title, detail, aspectRatio, onOpenSegment
                     ) : (
                         <div className="drama-finalv-empty">
                             <Film className="size-6" aria-hidden />
-                            <span>{STAGE_LABEL[episode.stage]} · rendered automatically once every segment video is ready</span>
+                            <span>{tr("{0} · 全部段视频生成后自动合成", STAGE_LABEL[episode.stage])}</span>
                         </div>
                     )}
                 </div>
@@ -54,27 +55,23 @@ export function FinalView({ projectId, title, detail, aspectRatio, onOpenSegment
                             }}
                         >
                             <MediaThumb resourceId={segment.tailFrameResourceId} alt={segment.title} fallback={<span className="drama-filmstrip-empty" />} />
-                            <span>
-                                Segment {segment.index + 1} · {secondsLabel(segment.durationMs)}
-                            </span>
+                            <span>{tr("第 {0} 段 · {1}", segment.index + 1, secondsLabel(segment.durationMs))}</span>
                         </button>
                     ))}
                 </div>
             </div>
             <aside className="drama-finalv-side">
-                <h2>
-                    Episode {episode.number} · {episode.title}
-                </h2>
+                <h2>{tr("第 {0} 集 · {1}", episode.number, episode.title)}</h2>
                 <p>
-                    {formatDuration(episode.durationMs)} · {segments.length} segments · dialogue and sound from the video model
+                    {formatDuration(episode.durationMs)} · {tr("{0} 个剧情段 · 对白与音效来自视频模型", segments.length)}
                 </p>
                 {episode.finalStale ? (
                     <p className="drama-finalv-stale" role="status">
-                        Content changed since this render. The episode is rendered again once the affected segments are ready.
+                        {tr("内容已修改，当前成片是修改前的版本，相关段重新生成后会自动重新合成。")}
                     </p>
                 ) : null}
                 <Button icon={<Download className="size-4" />} disabled={!episode.finalResourceId} onClick={download}>
-                    Download video
+                    {tr("下载成片")}
                 </Button>
                 <PostProduction projectId={projectId} episodeId={episode.id} fileName={fileName} captions={detail.captions} motion={detail.motion} />
                 <FinalUpscale projectId={projectId} episode={episode} enhance={detail.enhance} fileName={fileName} />

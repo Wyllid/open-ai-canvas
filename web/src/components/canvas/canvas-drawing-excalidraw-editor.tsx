@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Excalidraw, exportToBlob, getNonDeletedElements, serializeAsJSON } from "@excalidraw/excalidraw";
 import type { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from "@excalidraw/excalidraw/types";
@@ -14,7 +15,7 @@ export const CanvasDrawingExcalidrawEditor = forwardRef<CanvasDrawingEditorHandl
     useImperativeHandle(ref, () => ({
         createSave: async () => {
             const api = apiRef.current;
-            if (!api) throw new Error("Excalidraw 编辑器尚未准备完成");
+            if (!api) throw new Error(tr("Excalidraw 编辑器尚未准备完成"));
             const elements = api.getSceneElementsIncludingDeleted();
             const appState = api.getAppState();
             const files = api.getFiles();
@@ -50,7 +51,7 @@ export const CanvasDrawingExcalidrawEditor = forwardRef<CanvasDrawingEditorHandl
     return (
         <Excalidraw
                 initialData={initialData}
-                langCode="zh-CN"
+                langCode={currentLocale()}
                 theme={colorScheme}
                 autoFocus
                 excalidrawAPI={(api) => {

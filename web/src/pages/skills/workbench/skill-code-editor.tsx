@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { json } from "@codemirror/lang-json";
 import { Annotation, Compartment, EditorState, EditorView, Prec, defaultLightThemeOption, getDefaultExtensions, oneDark, type Extension } from "@uiw/react-codemirror";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
@@ -87,7 +88,7 @@ export const SkillCodeEditor = forwardRef<SkillCodeEditorHandle, SkillCodeEditor
                 editableCompartment.of(editableExtension(configRef.current.readOnly)),
                 languageExtension(filePath),
                 tokenTheme,
-                EditorView.contentAttributes.of({ "aria-label": `编辑 ${filePath}`, spellcheck: "false" }),
+                EditorView.contentAttributes.of({ "aria-label": tr("编辑 {0}", filePath), spellcheck: "false" }),
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged && !update.transactions.some((transaction) => transaction.annotation(externalChange))) {
                         const text = update.state.doc.toString();

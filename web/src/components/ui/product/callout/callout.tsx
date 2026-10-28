@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { HTMLAttributes, ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Info, X, XCircle, type LucideIcon } from "lucide-react";
 
@@ -38,7 +39,7 @@ export interface CalloutProps extends Omit<HTMLAttributes<HTMLDivElement>, "titl
     closeLabel?: string;
 }
 
-export function Callout({ tone = "default", title, icon, action, onClose, closeLabel = "关闭", className, children, ...props }: CalloutProps) {
+export function Callout({ tone = "default", title, icon, action, onClose, closeLabel = tr("关闭"), className, children, ...props }: CalloutProps) {
     const resolved = tone === "default" ? "info" : tone;
     const Icon = icon ?? calloutIconByTone[resolved];
     return (

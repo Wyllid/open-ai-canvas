@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 
 import { addEagleItem, createEagleFolder, downloadEagleItem, eagleItemFileUrl, eagleItemThumbnailUrl, getEagleLibrary, listEagleItems, type EagleFolder, type EagleItem } from "@/services/api/eagle";
@@ -92,21 +93,21 @@ Eagle 插件把桌面 Eagle 资料库接入站点素材面板。浏览器不会�
 export const eagleAssetPlugin: RegisteredPlugin = {
     manifest: {
         id: EAGLE_PLUGIN_ID,
-        name: "Eagle 素材库",
+        name: tr("Eagle 素材库"),
         version: "0.3.0",
         publishedAt: "2026-08-21",
         updatedAt: "2026-08-22",
         apiVersion: "yingce.plugin/v1",
-        description: "把 Eagle 作为站点的外部素材来源，直接浏览原始文件夹并读写 Eagle 文件。",
+        description: tr("把 Eagle 作为站点的外部素材来源，直接浏览原始文件夹并读写 Eagle 文件。"),
         documentation: eaglePluginDocumentation,
-        author: "开源社区",
+        author: tr("开源社区"),
         permissions: ["asset.read", "asset.search", "asset.upload", "external.open"],
         trusted: true,
         configuration: {
             fields: [
                 { name: "baseUrl", type: "url", label: "Eagle Base URL", required: true, default: EAGLE_DEFAULT_BASE_URL },
-                { name: "autoUploadGenerated", type: "boolean", label: "自动上传生成结果", default: true },
-                { name: "generatedFolderId", type: "string", label: "生成结果文件夹" },
+                { name: "autoUploadGenerated", type: "boolean", label: tr("自动上传生成结果"), default: true },
+                { name: "generatedFolderId", type: "string", label: tr("生成结果文件夹") },
             ],
         },
         runtime: { web: "trusted-backend" },
@@ -122,7 +123,7 @@ export function createEagleAssetSource(baseUrl = EAGLE_DEFAULT_BASE_URL): AssetS
     let folderCache: EagleFolder[] | null = null;
 
     const getFolders = async (signal?: AbortSignal) => {
-        if (signal?.aborted) throw new DOMException("请求已取消", "AbortError");
+        if (signal?.aborted) throw new DOMException(tr("请求已取消"), "AbortError");
         if (!folderCache) folderCache = (await getEagleLibrary(baseUrl)).library.folders;
         return folderCache;
     };
@@ -147,7 +148,7 @@ export function createEagleAssetSource(baseUrl = EAGLE_DEFAULT_BASE_URL): AssetS
 
 async function importEagleAsset(item: ExternalAssetItem, baseUrl: string, signal?: AbortSignal): Promise<Asset> {
     const kind = item.kind;
-    if (kind === "text" || kind === "entity") throw new Error("当前 Eagle 导入暂不支持文本或实体素材");
+    if (kind === "text" || kind === "entity") throw new Error(tr("当前 Eagle 导入暂不支持文本或实体素材"));
     const blob = await downloadEagleItem(item.id, baseUrl, signal);
     const now = new Date().toISOString();
     const metadata = {
@@ -164,25 +165,25 @@ async function importEagleAsset(item: ExternalAssetItem, baseUrl: string, signal
     if (kind === "image") {
         const uploaded = await uploadImage(blob);
         return {
-            id: nanoid(), kind, title: item.title, coverUrl: uploaded.url, tags: item.tags || [], source: "Eagle 素材库", createdAt: now, updatedAt: now, metadata,
+            id: nanoid(), kind, title: item.title, coverUrl: uploaded.url, tags: item.tags || [], source: tr("Eagle 素材库"), createdAt: now, updatedAt: now, metadata,
             data: { dataUrl: uploaded.url, storageKey: uploaded.storageKey, width: item.width || uploaded.width, height: item.height || uploaded.height, bytes: uploaded.bytes, mimeType: uploaded.mimeType },
         };
     }
     const uploaded = await uploadMediaFile(blob, `eagle-${kind}`);
     if (kind === "video") {
         return {
-            id: nanoid(), kind, title: item.title, coverUrl: "", tags: item.tags || [], source: "Eagle 素材库", createdAt: now, updatedAt: now, metadata,
+            id: nanoid(), kind, title: item.title, coverUrl: "", tags: item.tags || [], source: tr("Eagle 素材库"), createdAt: now, updatedAt: now, metadata,
             data: { url: uploaded.url, storageKey: uploaded.storageKey, width: item.width || uploaded.width || 1280, height: item.height || uploaded.height || 720, bytes: uploaded.bytes, mimeType: uploaded.mimeType },
         };
     }
     if (kind === "audio") {
         return {
-            id: nanoid(), kind, title: item.title, coverUrl: "", tags: item.tags || [], source: "Eagle 素材库", createdAt: now, updatedAt: now, metadata,
+            id: nanoid(), kind, title: item.title, coverUrl: "", tags: item.tags || [], source: tr("Eagle 素材库"), createdAt: now, updatedAt: now, metadata,
             data: { url: uploaded.url, storageKey: uploaded.storageKey, durationMs: uploaded.durationMs, bytes: uploaded.bytes, mimeType: uploaded.mimeType },
         };
     }
     return {
-        id: nanoid(), kind: "model", title: item.title, coverUrl: "", tags: item.tags || [], source: "Eagle 素材库", createdAt: now, updatedAt: now, metadata,
+        id: nanoid(), kind: "model", title: item.title, coverUrl: "", tags: item.tags || [], source: tr("Eagle 素材库"), createdAt: now, updatedAt: now, metadata,
         data: { url: uploaded.url, storageKey: uploaded.storageKey, bytes: uploaded.bytes, mimeType: uploaded.mimeType, fileName: item.title },
     };
 }
@@ -190,7 +191,7 @@ async function importEagleAsset(item: ExternalAssetItem, baseUrl: string, signal
 type EagleWritableAsset = Extract<Asset, { kind: "image" | "video" | "audio" }>;
 
 async function uploadEagleAsset(asset: Asset, baseUrl: string, folderId?: string, signal?: AbortSignal): Promise<ExternalAssetItem> {
-    if (!isEagleWritableAsset(asset)) throw new Error("当前仅支持将图片、视频或音频写回 Eagle");
+    if (!isEagleWritableAsset(asset)) throw new Error(tr("当前仅支持将图片、视频或音频写回 Eagle"));
     const dataUrl = await assetToDataUrl(asset, signal);
     const result = await addEagleItem(baseUrl, {
         url: dataUrl,
@@ -214,15 +215,15 @@ async function assetToDataUrl(asset: EagleWritableAsset, signal?: AbortSignal) {
     const stored = asset.data.storageKey ? await getMediaBlob(asset.data.storageKey) : null;
     if (stored) return fileToDataUrl(withMimeType(stored, asset.data.mimeType), signal);
     const url = asset.data.url;
-    if (!url) throw new Error("生成结果没有可写入 Eagle 的媒体地址");
+    if (!url) throw new Error(tr("生成结果没有可写入 Eagle 的媒体地址"));
     if (url.startsWith("data:")) return url;
     const response = await fetch(url, { credentials: "include", signal });
-    if (!response.ok) throw new Error("读取生成媒体失败，无法写入 Eagle");
+    if (!response.ok) throw new Error(tr("读取生成媒体失败，无法写入 Eagle"));
     return fileToDataUrl(withMimeType(await response.blob(), asset.data.mimeType), signal);
 }
 
 function eagleAssetName(asset: EagleWritableAsset) {
-    const title = asset.title.trim() || (asset.kind === "image" ? "生成图片" : asset.kind === "video" ? "生成视频" : "生成音频");
+    const title = asset.title.trim() || (asset.kind === "image" ? tr("生成图片") : asset.kind === "video" ? tr("生成视频") : tr("生成音频"));
     if (/\.[a-z0-9]{2,8}$/i.test(title)) return title;
     const extension = asset.kind === "image" ? extensionFromMime(asset.data.mimeType, "png") : asset.kind === "video" ? extensionFromMime(asset.data.mimeType, "mp4") : extensionFromMime(asset.data.mimeType, "mp3");
     return title + "." + extension;
@@ -245,8 +246,8 @@ function withMimeType(blob: Blob, mimeType: string) {
     return mimeType && blob.type !== mimeType ? blob.slice(0, blob.size, mimeType) : blob;
 }
 async function uploadEagleFile(file: File, baseUrl: string, folderId?: string, signal?: AbortSignal): Promise<ExternalAssetItem> {
-    if (file.size > 96 * 1024 * 1024) throw new Error("单个文件不能超过 96 MB");
-    if (!isEagleMediaType(file.type)) throw new Error("Eagle 写入目前支持图片、视频和音频文件");
+    if (file.size > 96 * 1024 * 1024) throw new Error(tr("单个文件不能超过 96 MB"));
+    if (!isEagleMediaType(file.type)) throw new Error(tr("Eagle 写入目前支持图片、视频和音频文件"));
     const dataUrl = await fileToDataUrl(file, signal);
     const result = await addEagleItem(baseUrl, {
         url: dataUrl,
@@ -280,19 +281,19 @@ function fileToDataUrl(file: Blob, signal?: AbortSignal): Promise<string> {
         const abort = () => {
             reader.abort();
             cleanup();
-            reject(new DOMException("请求已取消", "AbortError"));
+            reject(new DOMException(tr("请求已取消"), "AbortError"));
         };
         reader.onload = () => {
             cleanup();
             if (typeof reader.result !== "string") {
-                reject(new Error("无法读取待写入的文件"));
+                reject(new Error(tr("无法读取待写入的文件")));
                 return;
             }
             resolve(reader.result);
         };
         reader.onerror = () => {
             cleanup();
-            reject(new Error("无法读取待写入的文件"));
+            reject(new Error(tr("无法读取待写入的文件")));
         };
         if (signal?.aborted) {
             abort();

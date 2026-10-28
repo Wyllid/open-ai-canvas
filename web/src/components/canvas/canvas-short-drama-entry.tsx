@@ -1,3 +1,4 @@
+import { tr, trParts } from "@/i18n";
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { Popover } from "antd";
 import { AlignLeft, ArrowUp, Check, ChevronUp, Clapperboard, FolderKanban, Images, LayoutGrid, Palette, Pencil, Plus, Sparkles, Type, Upload, Workflow, X } from "lucide-react";
@@ -15,11 +16,11 @@ export function CanvasLinkedProjectEmptyState({ projectName, hasChapter, onAddFi
     return (
         <div className="pointer-events-none absolute inset-0 z-20 grid place-items-center px-4 pb-16 pt-20">
             <div className="pointer-events-auto w-full max-w-[440px] rounded-lg border p-3 shadow-sm backdrop-blur" data-canvas-no-zoom style={{ background: theme.toolbar.panel, borderColor: theme.toolbar.border, color: theme.node.text }}>
-                <div className="flex items-center gap-2"><span className="grid size-8 shrink-0 place-items-center rounded-md" style={{ background: theme.toolbar.itemHover, color: theme.node.muted }}><FolderKanban className="size-4" /></span><div className="min-w-0"><h2 className="truncate text-sm font-semibold">{projectName}</h2><p className="mt-0.5 text-[var(--fs-label)]" style={{ color: theme.node.muted }}>项目画布为空</p></div></div>
+                <div className="flex items-center gap-2"><span className="grid size-8 shrink-0 place-items-center rounded-md" style={{ background: theme.toolbar.itemHover, color: theme.node.muted }}><FolderKanban className="size-4" /></span><div className="min-w-0"><h2 className="truncate text-sm font-semibold">{projectName}</h2><p className="mt-0.5 text-[var(--fs-label)]" style={{ color: theme.node.muted }}>{tr("项目画布为空")}</p></div></div>
                 <div className="mt-3 grid grid-cols-3 gap-2">
-                    <button type="button" disabled={!hasChapter} onClick={onAddFirstChapter} className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border px-2 text-[var(--fs-label)] font-medium disabled:opacity-35" style={{ borderColor: theme.node.stroke, background: theme.node.fill }}><Plus className="size-3.5 shrink-0" /><span className="truncate">添加首章</span></button>
-                    <button type="button" onClick={onOpenAssets} className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border px-2 text-[var(--fs-label)] font-medium" style={{ borderColor: theme.node.stroke, background: theme.node.fill }}><Images className="size-3.5 shrink-0" /><span className="truncate">项目资产</span></button>
-                    <button type="button" onClick={onAddText} className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border px-2 text-[var(--fs-label)] font-medium" style={{ borderColor: theme.node.stroke, background: theme.node.fill }}><Type className="size-3.5 shrink-0" /><span className="truncate">新建文本</span></button>
+                    <button type="button" disabled={!hasChapter} onClick={onAddFirstChapter} className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border px-2 text-[var(--fs-label)] font-medium disabled:opacity-35" style={{ borderColor: theme.node.stroke, background: theme.node.fill }}><Plus className="size-3.5 shrink-0" /><span className="truncate">{tr("添加首章")}</span></button>
+                    <button type="button" onClick={onOpenAssets} className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border px-2 text-[var(--fs-label)] font-medium" style={{ borderColor: theme.node.stroke, background: theme.node.fill }}><Images className="size-3.5 shrink-0" /><span className="truncate">{tr("项目资产")}</span></button>
+                    <button type="button" onClick={onAddText} className="flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border px-2 text-[var(--fs-label)] font-medium" style={{ borderColor: theme.node.stroke, background: theme.node.fill }}><Type className="size-3.5 shrink-0" /><span className="truncate">{tr("新建文本")}</span></button>
                 </div>
             </div>
         </div>
@@ -27,9 +28,9 @@ export function CanvasLinkedProjectEmptyState({ projectName, hasChapter, onAddFi
 }
 
 const ENTRY_SUGGESTIONS = [
-    "一个外卖员意外捡到会说话的猫",
-    "都市甜宠：总裁和实习生的契约婚姻",
-    "古风悬疑：雨夜古宅里的第三声钟响",
+    tr("一个外卖员意外捡到会说话的猫"),
+    tr("都市甜宠：总裁和实习生的契约婚姻"),
+    tr("古风悬疑：雨夜古宅里的第三声钟响"),
 ];
 
 export function CanvasShortDramaEmptyState({ onCreatePipeline, onSubmitPrompt, onStartFreeform, onUpload, onAddText, onAddScript }: {
@@ -64,9 +65,13 @@ export function CanvasShortDramaEmptyState({ onCreatePipeline, onSubmitPrompt, o
         <div ref={stageRef} className="canvas-entry-stage" style={entryStyle}>
             <CanvasEntryAmbientRipple />
             <div className="canvas-entry-shell" data-canvas-no-zoom data-canvas-wheel-scroll>
-                <span className="canvas-entry-eyebrow"><Sparkles aria-hidden="true" />AI 短剧工作台</span>
-                <h2 className="canvas-entry-title">让灵感，<strong>开始成片。</strong></h2>
-                <p className="canvas-entry-subtitle">写下一句故事，Agent 帮你拆剧本、定角色、出分镜和视频。</p>
+                <span className="canvas-entry-eyebrow"><Sparkles aria-hidden="true" />{tr("AI 短剧工作台")}</span>
+                <h2 className="canvas-entry-title">
+                    {trParts("让灵感，{0}", <strong key="cut">{tr("开始成片。")}</strong>).map((part, index) => (
+                        <Fragment key={index}>{part}</Fragment>
+                    ))}
+                </h2>
+                <p className="canvas-entry-subtitle">{tr("写下一句故事，Agent 帮你拆剧本、定角色、出分镜和视频。")}</p>
                 <form
                     className="canvas-entry-composer"
                     onSubmit={(event) => {
@@ -77,8 +82,8 @@ export function CanvasShortDramaEmptyState({ onCreatePipeline, onSubmitPrompt, o
                     <textarea
                         value={prompt}
                         rows={2}
-                        placeholder="描述你想拍的故事…"
-                        aria-label="描述你想拍的故事"
+                        placeholder={tr("描述你想拍的故事…")}
+                        aria-label={tr("描述你想拍的故事")}
                         onChange={(event) => setPrompt(event.target.value)}
                         onKeyDown={(event) => {
                             if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
@@ -88,21 +93,21 @@ export function CanvasShortDramaEmptyState({ onCreatePipeline, onSubmitPrompt, o
                         }}
                     />
                     <div className="canvas-entry-composer-bar">
-                        <button type="button" className="canvas-entry-ghost" onClick={onUpload}><Upload aria-hidden="true" />导入素材</button>
-                        <span className="canvas-entry-hint">Enter 发送 · Shift+Enter 换行</span>
-                        <button type="submit" className="canvas-entry-send" disabled={!prompt.trim()} aria-label="交给 Agent"><ArrowUp aria-hidden="true" /></button>
+                        <button type="button" className="canvas-entry-ghost" onClick={onUpload}><Upload aria-hidden="true" />{tr("导入素材")}</button>
+                        <span className="canvas-entry-hint">{tr("Enter 发送 · Shift+Enter 换行")}</span>
+                        <button type="submit" className="canvas-entry-send" disabled={!prompt.trim()} aria-label={tr("交给 Agent")}><ArrowUp aria-hidden="true" /></button>
                     </div>
                 </form>
-                <div className="canvas-entry-suggestions" role="list" aria-label="灵感示例">
+                <div className="canvas-entry-suggestions" role="list" aria-label={tr("灵感示例")}>
                     {ENTRY_SUGGESTIONS.map((item) => (
                         <button key={item} type="button" role="listitem" onClick={() => setPrompt(item)}>{item}</button>
                     ))}
                 </div>
                 <div className="canvas-entry-paths">
-                    <button type="button" onClick={onCreatePipeline}><Workflow aria-hidden="true" /><span><strong>自己创作</strong><small>按短剧流程搭好节点</small></span></button>
-                    <button type="button" onClick={onAddScript}><Clapperboard aria-hidden="true" /><span><strong>空白分镜</strong><small>直接写分镜表</small></span></button>
-                    <button type="button" onClick={onAddText}><Type aria-hidden="true" /><span><strong>新建文本</strong><small>先记下想法</small></span></button>
-                    <button type="button" onClick={onStartFreeform}><LayoutGrid aria-hidden="true" /><span><strong>空白画布</strong><small>不预设流程</small></span></button>
+                    <button type="button" onClick={onCreatePipeline}><Workflow aria-hidden="true" /><span><strong>{tr("自己创作")}</strong><small>{tr("按短剧流程搭好节点")}</small></span></button>
+                    <button type="button" onClick={onAddScript}><Clapperboard aria-hidden="true" /><span><strong>{tr("空白分镜")}</strong><small>{tr("直接写分镜表")}</small></span></button>
+                    <button type="button" onClick={onAddText}><Type aria-hidden="true" /><span><strong>{tr("新建文本")}</strong><small>{tr("先记下想法")}</small></span></button>
+                    <button type="button" onClick={onStartFreeform}><LayoutGrid aria-hidden="true" /><span><strong>{tr("空白画布")}</strong><small>{tr("不预设流程")}</small></span></button>
                 </div>
             </div>
         </div>
@@ -157,8 +162,8 @@ export function CanvasFreeformEmptyState({ commands }: { commands: CanvasCreateC
     return (
         <div className="pointer-events-none absolute inset-0 z-20 grid place-items-center px-4 pb-20 pt-24">
             <div className="pointer-events-auto flex min-h-[260px] w-full max-w-[520px] flex-col items-center justify-center rounded-2xl border border-dashed px-8 py-10 text-center backdrop-blur" data-canvas-no-zoom style={{ background: theme.node.fill, borderColor: theme.node.edge, boxShadow: theme.node.shadow, color: theme.node.text }}>
-                <h2 className="text-base font-semibold">自由空白画布</h2>
-                <p className="mt-1 text-xs" style={{ color: theme.node.muted }}>不预设流程，从任意一种素材开始创作。</p>
+                <h2 className="text-base font-semibold">{tr("自由空白画布")}</h2>
+                <p className="mt-1 text-xs" style={{ color: theme.node.muted }}>{tr("不预设流程，从任意一种素材开始创作。")}</p>
                 <Popover
                     arrow={false}
                     open={createOpen}
@@ -169,14 +174,14 @@ export function CanvasFreeformEmptyState({ commands }: { commands: CanvasCreateC
                 >
                     <button
                         type="button"
-                        aria-label="添加第一项"
+                        aria-label={tr("添加第一项")}
                         className="mt-7 grid size-14 place-items-center rounded-full border outline-none transition-opacity duration-150 hover:opacity-85 focus-visible:ring-2 motion-reduce:transition-none"
                         style={{ background: theme.toolbar.panel, borderColor: theme.node.edge, color: theme.node.text, boxShadow: theme.node.shadow, "--tw-ring-color": theme.accent.primary } as CSSProperties}
                     >
                         <Plus className="size-6" />
                     </button>
                 </Popover>
-                <p className="mt-4 text-[var(--fs-label)]" style={{ color: theme.node.muted }}>点击 + 添加文本、图片、视频、音频或导入素材</p>
+                <p className="mt-4 text-[var(--fs-label)]" style={{ color: theme.node.muted }}>{tr("点击 + 添加文本、图片、视频、音频或导入素材")}</p>
             </div>
         </div>
     );
@@ -237,8 +242,8 @@ export function CanvasShortDramaGuide({ progress, collapsed, onToggle, onSkip, o
                 </div>
             </div>
             <span className="mx-1 h-4 w-px shrink-0" style={{ background: theme.toolbar.border }} />
-            {!progress.completed ? <button type="button" className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[var(--fs-label)] outline-none transition hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/10" style={{ color: theme.node.muted, "--tw-ring-color": theme.accent.primary } as CSSProperties} onClick={onSkip}><X className="size-3" />跳过导引</button> : null}
-            <button type="button" className="grid size-8 shrink-0 place-items-center rounded-md outline-none transition hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/10" style={{ color: theme.node.muted, "--tw-ring-color": theme.accent.primary } as CSSProperties} onClick={onToggle} aria-label="折叠短剧流程"><ChevronUp className="size-3.5" /></button>
+            {!progress.completed ? <button type="button" className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[var(--fs-label)] outline-none transition hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/10" style={{ color: theme.node.muted, "--tw-ring-color": theme.accent.primary } as CSSProperties} onClick={onSkip}><X className="size-3" />{tr("跳过导引")}</button> : null}
+            <button type="button" className="grid size-8 shrink-0 place-items-center rounded-md outline-none transition hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/10" style={{ color: theme.node.muted, "--tw-ring-color": theme.accent.primary } as CSSProperties} onClick={onToggle} aria-label={tr("折叠短剧流程")}><ChevronUp className="size-3.5" /></button>
         </div>
     );
 }
@@ -248,9 +253,9 @@ export function CanvasStylePlaceholderNodeContent({ onChoose }: { onChoose: () =
     return (
         <div className="flex h-full w-full flex-col items-center justify-center px-6 text-center" style={{ color: theme.node.text }}>
             <span className="grid size-10 place-items-center rounded-md" style={{ background: `${theme.accent.primary}16`, color: theme.accent.primary }}><Palette className="size-5" /></span>
-            <div className="mt-3 text-sm font-semibold">项目画风</div>
-            <div className="mt-1 text-xs" style={{ color: theme.node.muted }}>待选择</div>
-            <button type="button" className="mt-4 inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium outline-none transition hover:brightness-105 focus-visible:ring-2" style={{ background: theme.toolbar.panel, borderColor: theme.node.stroke, "--tw-ring-color": theme.accent.primary } as CSSProperties} onMouseDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); onChoose(); }}><Sparkles className="size-3.5" />选择画风</button>
+            <div className="mt-3 text-sm font-semibold">{tr("项目画风")}</div>
+            <div className="mt-1 text-xs" style={{ color: theme.node.muted }}>{tr("待选择")}</div>
+            <button type="button" className="mt-4 inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium outline-none transition hover:brightness-105 focus-visible:ring-2" style={{ background: theme.toolbar.panel, borderColor: theme.node.stroke, "--tw-ring-color": theme.accent.primary } as CSSProperties} onMouseDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); onChoose(); }}><Sparkles className="size-3.5" />{tr("选择画风")}</button>
         </div>
     );
 }
@@ -261,10 +266,10 @@ export function CanvasStoryInputNodeContent({ node, onEdit }: { node: CanvasNode
     return (
         <div className="flex h-full w-full flex-col overflow-hidden p-4" style={{ color: theme.node.text }}>
             <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2"><span className="grid size-8 shrink-0 place-items-center rounded-md" style={{ background: theme.toolbar.itemHover, color: theme.node.muted }}><AlignLeft className="size-4" /></span><span className="truncate text-sm font-semibold">故事梗概</span></div>
+                <div className="flex min-w-0 items-center gap-2"><span className="grid size-8 shrink-0 place-items-center rounded-md" style={{ background: theme.toolbar.itemHover, color: theme.node.muted }}><AlignLeft className="size-4" /></span><span className="truncate text-sm font-semibold">{tr("故事梗概")}</span></div>
             </div>
-            <div className="mt-4 min-h-0 flex-1 overflow-hidden border-t pt-3 text-xs leading-6" style={{ borderColor: theme.node.stroke, color: content ? theme.node.muted : theme.node.placeholder }}>{content || "写下题材、角色、冲突和结局方向…"}</div>
-            <button type="button" className="mt-3 inline-flex h-8 w-fit items-center gap-2 rounded-md px-2 text-xs font-medium outline-none transition hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/10" style={{ color: theme.node.text, "--tw-ring-color": theme.accent.primary } as CSSProperties} onMouseDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); onEdit(); }}><Pencil className="size-3.5" />编辑故事</button>
+            <div className="mt-4 min-h-0 flex-1 overflow-hidden border-t pt-3 text-xs leading-6" style={{ borderColor: theme.node.stroke, color: content ? theme.node.muted : theme.node.placeholder }}>{content || tr("写下题材、角色、冲突和结局方向…")}</div>
+            <button type="button" className="mt-3 inline-flex h-8 w-fit items-center gap-2 rounded-md px-2 text-xs font-medium outline-none transition hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/10" style={{ color: theme.node.text, "--tw-ring-color": theme.accent.primary } as CSSProperties} onMouseDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); onEdit(); }}><Pencil className="size-3.5" />{tr("编辑故事")}</button>
         </div>
     );
 }

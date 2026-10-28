@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { getActiveUserScope } from "@/lib/user-scope";
 import { localForageStorageForScope } from "@/lib/localforage-storage";
 import { http, apiBaseURL, ApiError } from "@/services/api/request";
@@ -212,7 +213,7 @@ export function clearResourceAccessCache() {
         clearTimeout(resourceAccessBatchTimer);
         resourceAccessBatchTimer = undefined;
     }
-    const abortError = new DOMException("资源访问请求已因账号切换失效", "AbortError");
+    const abortError = new DOMException(tr("资源访问请求已因账号切换失效"), "AbortError");
     pendingResourceAccess.forEach((entry) => entry.reject(abortError));
     pendingResourceAccess.clear();
     accessCache.clear();
@@ -304,7 +305,7 @@ async function uploadFileInChunks(file: Blob, name: string, kind: "image" | "vid
             if (attempt === CHUNK_UPLOAD_RETRIES - 1) throw error;
         }
     }
-    throw new Error("上传失败");
+    throw new Error(tr("上传失败"));
 }
 
 async function runChunkedUpload(file: Blob, name: string, kind: "image" | "video" | "audio" | "file", meta: ResourceUploadMeta | undefined, onProgress?: (uploadedBytes: number, totalBytes: number) => void) {
@@ -343,12 +344,12 @@ function normalizeUploadError(error: unknown): ResourceUploadError {
         const permanent = status !== undefined && !error.retryable;
         // 即使误超 50MB multipart 上限（后端 http.MaxBytesError），也给出可读中文而非英文裸错。
         if (status === 400 && /body too large|MaxBytes/i.test(error.message)) {
-            return new ResourceUploadError("文件过大，请使用小于 50MB 的文件或稍后重试", { status, permanent: true, cause: error });
+            return new ResourceUploadError(tr("文件过大，请使用小于 50MB 的文件或稍后重试"), { status, permanent: true, cause: error });
         }
-        if (status === 413) return new ResourceUploadError("文件过大，无法上传", { status, permanent: true, cause: error });
-        return new ResourceUploadError(error.message || "上传失败", { status, permanent, cause: error });
+        if (status === 413) return new ResourceUploadError(tr("文件过大，无法上传"), { status, permanent: true, cause: error });
+        return new ResourceUploadError(error.message || tr("上传失败"), { status, permanent, cause: error });
     }
-    return new ResourceUploadError(error instanceof Error ? error.message : "上传失败", { permanent: false, cause: error });
+    return new ResourceUploadError(error instanceof Error ? error.message : tr("上传失败"), { permanent: false, cause: error });
 }
 
 export async function importResourceFromUrl(url: string, kind: "image" | "video" | "audio" | "file", meta?: Omit<ResourceUploadMeta, "fileName">) {
@@ -379,7 +380,7 @@ export function getResource(id: string): Promise<RemoteResource> {
     const cacheKey = resourceCacheKey(id);
     const cached = resourceCache.get(cacheKey);
     if (cached) return Promise.resolve(cached);
-    if (missingResourceIds.has(cacheKey)) return Promise.reject(new Error("资源不存在或已被删除"));
+    if (missingResourceIds.has(cacheKey)) return Promise.reject(new Error(tr("资源不存在或已被删除")));
     const pending = resourceRequests.get(cacheKey);
     if (pending) return pending;
     const task = http
@@ -416,7 +417,7 @@ export function refreshResource(id: string): Promise<RemoteResource> {
 
 function assertResourceRequestCurrent(generation: number, scope: string) {
     if (generation !== accessGeneration || scope !== getActiveUserScope()) {
-        throw new DOMException("资源请求已因账号切换失效", "AbortError");
+        throw new DOMException(tr("资源请求已因账号切换失效"), "AbortError");
     }
 }
 
@@ -424,7 +425,7 @@ const RESOURCE_ACCESS_BATCH_LIMIT = 100;
 const RESOURCE_ACCESS_BATCH_DELAY_MS = 16;
 
 function resourceAccessAbortError() {
-    return new DOMException("资源访问请求已因账号切换失效", "AbortError");
+    return new DOMException(tr("资源访问请求已因账号切换失效"), "AbortError");
 }
 
 function scheduleResourceAccessBatch() {
@@ -444,7 +445,7 @@ function enqueueResourceAccess(entry: Omit<PendingResourceAccess, "resolve" | "r
 
 async function completeResourceAccessBatchEntry(entry: PendingResourceAccess, item: ResourceAccessBatchItem | undefined) {
     if (entry.generation !== accessGeneration || entry.scope !== getActiveUserScope()) throw resourceAccessAbortError();
-    if (!item?.access?.url) throw new Error(item?.error?.msg || "后端未返回资源访问地址");
+    if (!item?.access?.url) throw new Error(item?.error?.msg || tr("后端未返回资源访问地址"));
     const value = item.access;
     const cachedEntry = { value, expiresAt: resourceAccessCacheExpiry(value) } satisfies CachedResourceAccess;
     if (cachedEntry.expiresAt > Date.now()) {
@@ -498,7 +499,7 @@ async function flushResourceAccessBatch() {
 
 export async function getResourceAccess(storageKey: string | undefined, purpose: ResourceAccessPurpose = "display", variant: ResourceAccessVariant = "original", downloadName = "", fetchOptions: ResourceAccessFetchOptions = {}) {
     const id = resourceIdFromStorageKey(storageKey);
-    if (!id) throw new Error("当前媒体尚未上传到后端资源存储");
+    if (!id) throw new Error(tr("当前媒体尚未上传到后端资源存储"));
     const scope = getActiveUserScope();
     const generation = accessGeneration;
     const key = `${scope}:${id}:${purpose}:${variant}:${downloadName}`;
@@ -538,7 +539,7 @@ export async function getResourceAccess(storageKey: string | undefined, purpose:
                 payload: { resourceId: id, purpose, variant, ...(downloadName ? { downloadName } : {}) },
             });
         } catch (error) {
-            if (error instanceof ApiError) throw new Error(error.message || "获取对象存储地址失败");
+            if (error instanceof ApiError) throw new Error(error.message || tr("获取对象存储地址失败"));
             throw error;
         } finally {
             if (accessRequests.get(key) === request) accessRequests.delete(key);
@@ -601,7 +602,7 @@ export async function getResourceBlob(storageKey: string) {
     // relative to the platform origin.
     const credentials = access.delivery === "platform-local" || access.delivery === "platform-proxy" ? "include" : "omit";
     const response = await fetch(resolveResourceAccessURL(access.url), { credentials, mode: "cors", signal: AbortSignal.timeout(60_000) });
-    if (!response.ok) throw new Error(`资源读取失败（${response.status}）`);
+    if (!response.ok) throw new Error(tr("资源读取失败（{0}）", response.status));
     return response.blob();
 }
 

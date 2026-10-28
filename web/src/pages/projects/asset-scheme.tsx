@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { App, Button, Input } from "antd";
@@ -27,7 +28,14 @@ export function defaultAssetSettings(catalog?: DramaAssetSchemeCatalog): DramaAs
 
 export type AssetPreviewSample = { characterName: string; characterAppearance: string; sceneName: string; sceneAppearance: string; style: string; rules: string };
 
-const FALLBACK_SAMPLE: AssetPreviewSample = { characterName: "主角", characterAppearance: "（作品圣经建立后自动填入角色外貌）", sceneName: "主场景", sceneAppearance: "（作品圣经建立后自动填入环境描述）", style: "写实电影感", rules: "" };
+const FALLBACK_SAMPLE: AssetPreviewSample = {
+    characterName: tr("主角"),
+    characterAppearance: tr("（作品圣经建立后自动填入角色外貌）"),
+    sceneName: tr("主场景"),
+    sceneAppearance: tr("（作品圣经建立后自动填入环境描述）"),
+    style: tr("写实电影感"),
+    rules: "",
+};
 
 /** 方案示意：用色块画出版式，比文字更快看懂差别。 */
 function SchemeGlyph({ mode }: { mode: DramaAssetMode }) {
@@ -70,7 +78,7 @@ export function AssetSchemePicker({ value, onChange, sample, layout = "wide" }: 
     const [importOpen, setImportOpen] = useState(false);
     const editorRef = useRef<TextAreaRef>(null);
     const preview = { ...FALLBACK_SAMPLE, ...Object.fromEntries(Object.entries(sample || {}).filter(([, item]) => item)) } as AssetPreviewSample;
-    if (!catalog || !value) return <div className="drama-assets is-loading">正在读取参考图方案…</div>;
+    if (!catalog || !value) return <div className="drama-assets is-loading">{tr("正在读取参考图方案…")}</div>;
 
     const scheme = catalog.schemes.find((item) => item.mode === value.mode);
     const prompt = tab === "character" ? value.characterPrompt : value.scenePrompt;
@@ -99,7 +107,7 @@ export function AssetSchemePicker({ value, onChange, sample, layout = "wide" }: 
             });
         const characterModified = scheme ? value.characterPrompt.trim() !== scheme.characterPrompt.trim() : true;
         if (target && characterModified) {
-            modal.confirm({ title: `切换为「${target.name}」？`, content: "当前角色提示词有修改，切换后会替换为该方案的默认提示词。", okText: "切换", cancelText: "保留当前", centered: true, onOk: apply });
+            modal.confirm({ title: tr("切换为「{0}」？", target.name), content: tr("当前角色提示词有修改，切换后会替换为该方案的默认提示词。"), okText: tr("切换"), cancelText: tr("保留当前"), centered: true, onOk: apply });
             return;
         }
         apply();
@@ -117,12 +125,12 @@ export function AssetSchemePicker({ value, onChange, sample, layout = "wide" }: 
 
     const schemes: Array<{ mode: DramaAssetMode; name: string; description: string; ratio: string }> = [
         ...catalog.schemes,
-        { mode: "custom", name: "自定义", description: "自己写约束或从技能导入，例如团队的资产卡规范；可自选参考图画幅。", ratio: value.mode === "custom" ? value.characterRatio : "自选" },
+        { mode: "custom", name: tr("自定义"), description: tr("自己写约束或从技能导入，例如团队的资产卡规范；可自选参考图画幅。"), ratio: value.mode === "custom" ? value.characterRatio : tr("自选") },
     ];
 
     return (
-        <section className={cn("drama-assets", layout === "compact" && "is-compact")} aria-label="参考图方案">
-            <div className="drama-assets-schemes" role="radiogroup" aria-label="角色参考图方案">
+        <section className={cn("drama-assets", layout === "compact" && "is-compact")} aria-label={tr("参考图方案")}>
+            <div className="drama-assets-schemes" role="radiogroup" aria-label={tr("角色参考图方案")}>
                 {schemes.map((item) => (
                     <button key={item.mode} type="button" role="radio" aria-checked={value.mode === item.mode} className="drama-assets-scheme" onClick={() => chooseMode(item.mode)}>
                         <SchemeGlyph mode={item.mode} />
@@ -143,40 +151,40 @@ export function AssetSchemePicker({ value, onChange, sample, layout = "wide" }: 
             </div>
             {value.mode === "custom" ? (
                 <div className="drama-assets-ratio">
-                    <span>角色参考图画幅</span>
-                    <div className="drama-tabs" role="radiogroup" aria-label="角色参考图画幅">
+                    <span>{tr("角色参考图画幅")}</span>
+                    <div className="drama-tabs" role="radiogroup" aria-label={tr("角色参考图画幅")}>
                         {CUSTOM_RATIOS.map((ratio) => (
                             <button key={ratio} type="button" role="radio" className="drama-tab" aria-checked={value.characterRatio === ratio} onClick={() => onChange({ ...value, characterRatio: ratio })}>
                                 {ratio}
                             </button>
                         ))}
                     </div>
-                    <small>实际像素按图片模型支持的最接近档位出图</small>
+                    <small>{tr("实际像素按图片模型支持的最接近档位出图")}</small>
                 </div>
             ) : null}
 
             <div className="drama-assets-editor">
                 <div className="drama-assets-editor-head">
-                    <div className="drama-tabs" role="tablist" aria-label="提示词对象">
+                    <div className="drama-tabs" role="tablist" aria-label={tr("提示词对象")}>
                         <button type="button" role="tab" className="drama-tab" aria-selected={tab === "character"} onClick={() => setTab("character")}>
-                            角色提示词
+                            {tr("角色提示词")}
                         </button>
                         <button type="button" role="tab" className="drama-tab" aria-selected={tab === "scene"} onClick={() => setTab("scene")}>
-                            场景提示词
+                            {tr("场景提示词")}
                         </button>
                     </div>
-                    {modified ? <span className="drama-assets-badge">已修改</span> : <span className="drama-assets-badge is-muted">默认</span>}
+                    {modified ? <span className="drama-assets-badge">{tr("已修改")}</span> : <span className="drama-assets-badge is-muted">{tr("默认")}</span>}
                     <div className="ml-auto flex gap-2">
                         <Button size="small" type="text" icon={<BookMarked className="size-3.5" />} onClick={() => setImportOpen(true)}>
-                            从技能导入
+                            {tr("从技能导入")}
                         </Button>
                         <Button size="small" type="text" icon={<RotateCcw className="size-3.5" />} disabled={!modified} onClick={() => setPrompt(defaultPrompt)}>
-                            恢复默认
+                            {tr("恢复默认")}
                         </Button>
                     </div>
                 </div>
-                <div className="drama-assets-variables" aria-label="插入变量">
-                    <span>插入变量</span>
+                <div className="drama-assets-variables" aria-label={tr("插入变量")}>
+                    <span>{tr("插入变量")}</span>
                     {variables.map((variable) => (
                         <button key={variable} type="button" onClick={() => insertVariable(variable)}>
                             {variable.slice(2, -2)}
@@ -190,28 +198,41 @@ export function AssetSchemePicker({ value, onChange, sample, layout = "wide" }: 
                     showCount
                     autoSize={{ minRows: layout === "compact" ? 5 : 6, maxRows: 16 }}
                     onChange={(event) => setPrompt(event.target.value)}
-                    aria-label={tab === "character" ? "角色参考图提示词" : "场景参考图提示词"}
+                    aria-label={tab === "character" ? tr("角色参考图提示词") : tr("场景参考图提示词")}
                     status={unknown.length ? "error" : undefined}
                 />
                 {unknown.length ? (
                     <p className="drama-assets-warning">
                         <TriangleAlert className="size-3.5" />
-                        不支持的变量：{unknown.join("、")}。保存时会被拒绝，可用变量见上方。
+                        {tr("不支持的变量：")}
+                        {unknown.join("、")}
+                        {tr("。保存时会被拒绝，可用变量见上方。")}
                     </p>
                 ) : null}
                 {tab === "character" && value.sourceSkillName ? (
                     <p className="drama-assets-source">
                         <Sparkles className="size-3.5" />
-                        约束来自技能「{value.sourceSkillName}」{value.sourcePath ? ` · ${value.sourcePath}` : ""}
+                        {tr("约束来自技能「")}
+                        {value.sourceSkillName}」{value.sourcePath ? ` · ${value.sourcePath}` : ""}
                     </p>
                 ) : null}
                 <div className="drama-assets-preview">
                     <div className="drama-assets-preview-head">
                         <Eye className="size-3.5" />
-                        实际发送预览<span>以「{tab === "character" ? preview.characterName : preview.sceneName}」为例</span>
+                        {tr("实际发送预览")}
+                        <span>
+                            {tr("以「")}
+                            {tab === "character" ? preview.characterName : preview.sceneName}
+                            {tr("」为例")}
+                        </span>
                     </div>
                     <p>{rendered}</p>
-                    {tab === "character" && scheme ? <small>参考图版式说明：{scheme.frameHint}</small> : null}
+                    {tab === "character" && scheme ? (
+                        <small>
+                            {tr("参考图版式说明：")}
+                            {scheme.frameHint}
+                        </small>
+                    ) : null}
                 </div>
             </div>
             <SkillPromptImportModal
@@ -248,10 +269,10 @@ function SkillPromptImportModal({ open, onClose, onImport }: { open: boolean; on
         const selected = selection && contentRef.current && contentRef.current.contains(selection.anchorNode) ? selection.toString() : "";
         const text = whole ? content : selected;
         if (!text.trim()) {
-            message.info("先在右侧原文中选中要导入的段落");
+            message.info(tr("先在右侧原文中选中要导入的段落"));
             return;
         }
-        if (text.length > PROMPT_LIMIT) message.warning(`内容超过 ${PROMPT_LIMIT} 字，已截断；建议只选中资产卡相关的段落`);
+        if (text.length > PROMPT_LIMIT) message.warning(tr("内容超过 {0} 字，已截断；建议只选中资产卡相关的段落", PROMPT_LIMIT));
         onImport({ text: text.slice(0, PROMPT_LIMIT), skillId, skillName: skill?.skillName || "", path });
     };
 
@@ -260,13 +281,13 @@ function SkillPromptImportModal({ open, onClose, onImport }: { open: boolean; on
             <div className="drama-skill-import">
                 <header className="drama-skill-import-head">
                     <div>
-                        <strong>从技能导入参考图约束</strong>
-                        <span>选择技能里的规范文档，选中资产卡相关段落导入；导入后仍可编辑。</span>
+                        <strong>{tr("从技能导入参考图约束")}</strong>
+                        <span>{tr("选择技能里的规范文档，选中资产卡相关段落导入；导入后仍可编辑。")}</span>
                     </div>
                 </header>
                 <div className="drama-skill-import-body">
                     <aside>
-                        <Input size="small" prefix={<Search className="size-3.5" />} allowClear placeholder="搜索已添加的技能" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
+                        <Input size="small" prefix={<Search className="size-3.5" />} allowClear placeholder={tr("搜索已添加的技能")} value={keyword} onChange={(event) => setKeyword(event.target.value)} />
                         <div className="drama-skill-import-list thin-scrollbar">
                             {skills.map((item) => (
                                 <button
@@ -282,11 +303,11 @@ function SkillPromptImportModal({ open, onClose, onImport }: { open: boolean; on
                                     <span>{item.description || "—"}</span>
                                 </button>
                             ))}
-                            {!skillsQuery.isLoading && !skills.length ? <ImportEmpty>还没有添加技能，可在「技能」页面添加后再导入。</ImportEmpty> : null}
+                            {!skillsQuery.isLoading && !skills.length ? <ImportEmpty>{tr("还没有添加技能，可在「技能」页面添加后再导入。")}</ImportEmpty> : null}
                         </div>
                     </aside>
                     <aside>
-                        <div className="drama-skill-import-caption">{skill ? `${skill.skillName} · ${files.length} 份文本` : "文件"}</div>
+                        <div className="drama-skill-import-caption">{skill ? `${skill.skillName} · ${files.length} 份文本` : tr("文件")}</div>
                         <div className="drama-skill-import-list thin-scrollbar">
                             {files.map((file) => (
                                 <button key={file.path} type="button" className="is-file" aria-pressed={file.path === path} onClick={() => setPath(file.path)}>
@@ -294,30 +315,30 @@ function SkillPromptImportModal({ open, onClose, onImport }: { open: boolean; on
                                     <span title={file.path}>{file.path}</span>
                                 </button>
                             ))}
-                            {skillId && !filesQuery.isLoading && !files.length ? <ImportEmpty>这个技能没有可导入的文本文件。</ImportEmpty> : null}
-                            {!skillId ? <ImportEmpty>先在左侧选择技能</ImportEmpty> : null}
+                            {skillId && !filesQuery.isLoading && !files.length ? <ImportEmpty>{tr("这个技能没有可导入的文本文件。")}</ImportEmpty> : null}
+                            {!skillId ? <ImportEmpty>{tr("先在左侧选择技能")}</ImportEmpty> : null}
                         </div>
                     </aside>
                     <section>
                         <div className="drama-skill-import-caption">
-                            {path || "原文"}
-                            {content ? <span>{content.length.toLocaleString("zh-CN")} 字</span> : null}
+                            {path || tr("原文")}
+                            {content ? <span>{tr("{0} 字", content.length.toLocaleString(currentLocale()))}</span> : null}
                         </div>
                         <pre ref={contentRef} className="drama-skill-import-content thin-scrollbar">
-                            {fileQuery.isLoading ? "正在读取…" : content || "选择文件后在这里查看原文，用鼠标选中需要的段落。"}
+                            {fileQuery.isLoading ? tr("正在读取…") : content || tr("选择文件后在这里查看原文，用鼠标选中需要的段落。")}
                         </pre>
                     </section>
                 </div>
                 <footer className="drama-skill-import-foot">
                     <span>
-                        未包含 {"{{角色名称}}"} / {"{{角色设定}}"} 时，导入后会在末尾自动补上本角色信息。
+                        {tr("未包含")} {"{{角色名称}}"} / {tr("{0} 时，导入后会在末尾自动补上本角色信息。", "{{角色设定}}")}
                     </span>
-                    <Button onClick={onClose}>取消</Button>
+                    <Button onClick={onClose}>{tr("取消")}</Button>
                     <Button disabled={!content} onClick={() => importText(true)}>
-                        导入整份文件
+                        {tr("导入整份文件")}
                     </Button>
                     <Button type="primary" disabled={!content} onClick={() => importText(false)}>
-                        导入选中内容
+                        {tr("导入选中内容")}
                     </Button>
                 </footer>
             </div>

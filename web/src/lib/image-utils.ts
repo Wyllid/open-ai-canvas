@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { ReferenceImage } from "@/types/image";
 import { loadRasterImage } from "./image-raster";
 
@@ -11,13 +12,13 @@ export function formatBytes(bytes: number): string {
 
 export function formatDuration(milliseconds: number): string {
     const seconds = Number.isFinite(milliseconds) ? Math.max(0, Math.trunc(milliseconds / 1000)) : 0;
-    if (seconds < 60) return `${seconds}秒`;
-    return `${Math.trunc(seconds / 60)}分${String(seconds % 60).padStart(2, "0")}秒`;
+    if (seconds < 60) return tr("{0}秒", seconds);
+    return tr("{0}分{1}秒", Math.trunc(seconds / 60), String(seconds % 60).padStart(2, "0"));
 }
 
 function decodeDataUrl(url: string): { bytes: Uint8Array<ArrayBuffer>; mimeType: string } {
     const separator = url.indexOf(",");
-    if (!url.startsWith("data:") || separator < 0) throw new Error("无效的图片数据地址");
+    if (!url.startsWith("data:") || separator < 0) throw new Error(tr("无效的图片数据地址"));
     const parameters = url.slice(5, separator).split(";");
     const payload = url.slice(separator + 1);
     let bytes: Uint8Array<ArrayBuffer>;
@@ -33,7 +34,7 @@ function decodeDataUrl(url: string): { bytes: Uint8Array<ArrayBuffer>; mimeType:
                 continue;
             }
             const hex = String.fromCharCode(...encoded.slice(cursor + 1, cursor + 3));
-            if (!/^[0-9a-f]{2}$/i.test(hex)) throw new Error("图片数据包含无效的转义字符");
+            if (!/^[0-9a-f]{2}$/i.test(hex)) throw new Error(tr("图片数据包含无效的转义字符"));
             output.push(parseInt(hex, 16));
             cursor += 2;
         }
@@ -75,7 +76,7 @@ export async function readImageMeta(source: string, signal?: AbortSignal): Promi
         const image = await loadRasterImage(source, request.signal);
         return { width: image.naturalWidth, height: image.naturalHeight, mimeType };
     } catch (failure) {
-        if (signal?.aborted) throw new DOMException("图片读取已取消", "AbortError");
+        if (signal?.aborted) throw new DOMException(tr("图片读取已取消"), "AbortError");
         return { width: 1024, height: 1024, mimeType };
     } finally {
         clearTimeout(expired);

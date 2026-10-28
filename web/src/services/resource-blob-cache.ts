@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import localforage from "localforage";
 
 import { getActiveUserScope } from "@/lib/user-scope";
@@ -213,7 +214,7 @@ async function cacheTarget(storageKey: string): Promise<ResourceCacheMeta | null
     const resourceId = resourceIdFromStorageKey(storageKey);
     if (!resourceId) return null;
     const userScope = getActiveUserScope();
-    if (userScope === "guest") throw new Error("游客不能读取远程媒体缓存");
+    if (userScope === "guest") throw new Error(tr("游客不能读取远程媒体缓存"));
     // resource ID 是不可变资源的稳定标识，文件接口本身负责鉴权。
     // 缓存初始化不能先对每个资源读取一遍元数据，否则首屏会重新形成 N+1 请求。
     const version = "file";

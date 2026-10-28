@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { AudioLines, Check, Film, Image, MessageSquareText } from "lucide-react";
 
 import { ModelIcon } from "@/components/model-picker";
@@ -19,10 +20,10 @@ const groups: Array<{
     description: string;
     icon: typeof Image;
 }> = [
-    { capability: "image", modelKey: "imageModel", title: "默认生图模型", description: "图片生成、图像编辑与视觉探索", icon: Image },
-    { capability: "video", modelKey: "videoModel", title: "默认视频模型", description: "文生视频、图生视频与镜头延展", icon: Film },
-    { capability: "text", modelKey: "textModel", title: "默认文本模型", description: "提示词改写、脚本与结构化文本", icon: MessageSquareText },
-    { capability: "audio", modelKey: "audioModel", title: "默认音频模型", description: "语音、音效与音乐生成", icon: AudioLines },
+    { capability: "image", modelKey: "imageModel", title: tr("默认生图模型"), description: tr("图片生成、图像编辑与视觉探索"), icon: Image },
+    { capability: "video", modelKey: "videoModel", title: tr("默认视频模型"), description: tr("文生视频、图生视频与镜头延展"), icon: Film },
+    { capability: "text", modelKey: "textModel", title: tr("默认文本模型"), description: tr("提示词改写、脚本与结构化文本"), icon: MessageSquareText },
+    { capability: "audio", modelKey: "audioModel", title: tr("默认音频模型"), description: tr("语音、音效与音乐生成"), icon: AudioLines },
 ];
 
 export function ModelDefaultGrid({ config, onChange }: { config: AiConfig; onChange: (key: DefaultModelKey, model: string) => void }) {
@@ -39,7 +40,7 @@ export function ModelDefaultGrid({ config, onChange }: { config: AiConfig; onCha
                                 <h3 id={`default-${group.capability}-title`} className="text-sm font-semibold">{group.title}</h3>
                                 <p className="mt-0.5 text-xs text-foreground/48">{group.description}</p>
                             </div>
-                            <span className="ml-auto shrink-0 text-xs tabular-nums text-foreground/38">{models.length} 个可用</span>
+                            <span className="ml-auto shrink-0 text-xs tabular-nums text-foreground/38">{tr("{0} 个可用", models.length)}</span>
                         </div>
                         {models.length ? (
                             <div role="radiogroup" aria-label={group.title} className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -65,8 +66,8 @@ export function ModelDefaultGrid({ config, onChange }: { config: AiConfig; onCha
                                                 <span className="min-w-0 flex-1">
                                                     <span className="block truncate text-xs font-semibold">{modelDisplayName(config, model)}</span>
                                                     <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[var(--fs-tiny)] text-foreground/45">
-                                                        <span className="max-w-full truncate">{channel.scope === "system" ? "系统模型" : channel.name || "未命名渠道"}</span>
-                                                        <span className="model-default-option-scope">{channel.scope === "system" ? "系统" : "自定义"}</span>
+                                                        <span className="max-w-full truncate">{channel.scope === "system" ? tr("系统模型") : channel.name || tr("未命名渠道")}</span>
+                                                        <span className="model-default-option-scope">{channel.scope === "system" ? tr("系统") : tr("自定义")}</span>
                                                     </span>
                                                 </span>
                                                 <span className={cn("model-default-option-check grid size-5 shrink-0 place-items-center rounded-full", selected ? "is-selected" : "text-transparent")}>
@@ -78,7 +79,7 @@ export function ModelDefaultGrid({ config, onChange }: { config: AiConfig; onCha
                                 })}
                             </div>
                         ) : (
-                            <div className="rounded-md bg-surface-active px-4 py-6 text-center text-xs text-foreground/45">当前渠道中没有可用的{capabilityLabel(group.capability)}模型</div>
+                            <div className="rounded-md bg-surface-active px-4 py-6 text-center text-xs text-foreground/45">{tr("当前渠道中没有可用的{0}模型", capabilityLabel(group.capability))}</div>
                         )}
                     </section>
                 );
@@ -88,6 +89,6 @@ export function ModelDefaultGrid({ config, onChange }: { config: AiConfig; onCha
 }
 
 function capabilityLabel(capability: ModelCapability) {
-    return { image: "图片", video: "视频", text: "文本", audio: "音频" }[capability];
+    return { image: tr("图片"), video: tr("视频"), text: tr("文本"), audio: tr("音频") }[capability];
 }
 

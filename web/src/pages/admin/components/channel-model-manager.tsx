@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useState } from "react";
 import { App, Button, Checkbox, Input, Modal, Popconfirm, Space } from "antd";
 import { AntTooltip as Tooltip } from "@/components/ui/base/tooltip/ant-tooltip";
@@ -48,7 +49,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
             setAvailableProtocols(await fetchPluginProviderCatalog("admin.system-channel"));
         } catch (error) {
             setAvailableProtocols([]);
-            setProtocolError(error instanceof Error ? error.message : "无法读取协议目录");
+            setProtocolError(error instanceof Error ? error.message : tr("无法读取协议目录"));
         } finally {
             setProtocolLoading(false);
         }
@@ -63,7 +64,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
             setItems(models);
             setSelectedModelIds((current) => current.filter((id) => availableIDs.has(id)));
         } catch (error) {
-            setLoadError(error instanceof Error ? error.message : "读取渠道模型失败");
+            setLoadError(error instanceof Error ? error.message : tr("读取渠道模型失败"));
         } finally {
             setLoading(false);
         }
@@ -88,14 +89,14 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
         try {
             const result = await fetchAdminChannelModels(channel.id);
             if (result.models.length === 0) {
-                message.warning("上游没有返回可用模型");
+                message.warning(tr("上游没有返回可用模型"));
                 return;
             }
             setFetchPreviewModels(result.models);
             setSelectedFetchModels(selectExistingImportModels(result.models, items.flatMap((item) => [item.modelKey, item.providerModelKey].filter(Boolean))));
             setFetchPreviewOpen(true);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "拉取模型失败");
+            message.error(error instanceof Error ? error.message : tr("拉取模型失败"));
         } finally {
             setFetching(false);
         }
@@ -116,7 +117,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
     const importSelectedModels = async () => {
         if (!selectedFetchModels.length) return;
         if (!selectedNewFetchModels.length) {
-            message.info("当前勾选的模型均已存在，没有需要新增的模型");
+            message.info(tr("当前勾选的模型均已存在，没有需要新增的模型"));
             resetFetchPreview();
             return;
         }
@@ -126,10 +127,10 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
             await reload();
             await onChanged();
             resetFetchPreview();
-            if (result.added > 0) message.success(`已导入 ${result.added} 个模型，新增模型仍需配置价格后启用`);
-            else message.info("所选模型均已存在，没有新增模型");
+            if (result.added > 0) message.success(tr("已导入 {0} 个模型，新增模型仍需配置价格后启用", result.added));
+            else message.info(tr("所选模型均已存在，没有新增模型"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "导入模型失败");
+            message.error(error instanceof Error ? error.message : tr("导入模型失败"));
         } finally {
             setImporting(false);
         }
@@ -156,9 +157,9 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
             await deleteAdminChannelModel(channel.id, item.id);
             await reload();
             await onChanged();
-            message.success("模型已删除");
+            message.success(tr("模型已删除"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "删除模型失败");
+            message.error(error instanceof Error ? error.message : tr("删除模型失败"));
         }
     };
 
@@ -166,10 +167,10 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
         if (!selectedModelIds.length) return;
         const count = selectedModelIds.length;
         modal.confirm({
-            title: `删除已选的 ${count} 个模型？`,
-            content: "删除后模型不再显示，且不能在页面恢复。只要其中任一模型仍被前台供应线路或进行中任务使用，本次就不会删除任何模型。",
-            okText: "批量删除",
-            cancelText: "取消",
+            title: tr("删除已选的 {0} 个模型？", count),
+            content: tr("删除后模型不再显示，且不能在页面恢复。只要其中任一模型仍被前台供应线路或进行中任务使用，本次就不会删除任何模型。"),
+            okText: tr("批量删除"),
+            cancelText: tr("取消"),
             okButtonProps: { danger: true },
             onOk: async () => {
                 setDeletingSelected(true);
@@ -179,9 +180,9 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                     setPage(1);
                     await reload();
                     await onChanged();
-                    message.success(`已删除 ${result.deleted} 个模型`);
+                    message.success(tr("已删除 {0} 个模型", result.deleted));
                 } catch (error) {
-                    message.error(error instanceof Error ? error.message : "批量删除模型失败");
+                    message.error(error instanceof Error ? error.message : tr("批量删除模型失败"));
                 } finally {
                     setDeletingSelected(false);
                 }
@@ -190,7 +191,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
     };
     const columns: ColumnsType<ChannelModel> = [
         {
-            title: "模型",
+            title: tr("模型"),
             width: 240,
             render: (_, item) => (
                 <div className="flex min-w-0 items-center gap-2">
@@ -202,15 +203,15 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                             {item.displayName || item.modelKey}
                         </div>
                         <div className="admin-monospace truncate text-xs text-foreground/45">{item.modelKey}</div>
-                        {item.channelLabel ? <div className="truncate text-xs text-foreground/60">渠道展示名：{item.channelLabel}</div> : null}
-                        {item.providerModelKey && item.providerModelKey !== item.modelKey ? <div className="admin-monospace truncate text-xs text-foreground/35">上游：{item.providerModelKey}</div> : null}
+                        {item.channelLabel ? <div className="truncate text-xs text-foreground/60">{tr("渠道展示名：")}{item.channelLabel}</div> : null}
+                        {item.providerModelKey && item.providerModelKey !== item.modelKey ? <div className="admin-monospace truncate text-xs text-foreground/35">{tr("上游：")}{item.providerModelKey}</div> : null}
                     </div>
                 </div>
             ),
         },
-        { title: "能力", dataIndex: "capability", width: 90, render: capabilityLabel },
+        { title: tr("能力"), dataIndex: "capability", width: 90, render: capabilityLabel },
         {
-            title: "请求协议",
+            title: tr("请求协议"),
             dataIndex: "protocol",
             width: 190,
             render: (value: ModelProtocol) =>
@@ -220,25 +221,25 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                         <div className="truncate text-[var(--fs-tiny)] text-foreground/45">{modelProtocolDefinition(value, availableProtocols)?.create}</div>
                     </div>
                 ) : (
-                    <AdminStatusBadge label="待配置" tone="warning" />
+                    <AdminStatusBadge label={tr("待配置")} tone="warning" />
                 ),
         },
-        { title: "规格档", width: 90, render: (_, item) => item.priceTiers.filter((tier) => tier.enabled).length },
-        { title: "状态", dataIndex: "enabled", width: 85, render: (enabled) => <AdminStatusBadge label={enabled ? "启用" : "停用"} tone={enabled ? "success" : "neutral"} /> },
+        { title: tr("规格档"), width: 90, render: (_, item) => item.priceTiers.filter((tier) => tier.enabled).length },
+        { title: tr("状态"), dataIndex: "enabled", width: 85, render: (enabled) => <AdminStatusBadge label={enabled ? tr("启用") : tr("停用")} tone={enabled ? "success" : "neutral"} /> },
         {
-            title: "操作",
+            title: tr("操作"),
             width: 130,
             fixed: "right",
             render: (_, item) => (
                 <Space size={4}>
                     <Button size="small" icon={<Pencil className="size-3.5" />} disabled={deletingSelected} onClick={() => startEdit(item)}>
-                        编辑
+                        {tr("编辑")}
                     </Button>
-                    <Tooltip title="复制模型">
-                        <Button size="small" aria-label={`复制模型 ${item.displayName || item.modelKey}`} disabled={deletingSelected} icon={<Copy className="size-3.5" />} onClick={() => startCopy(item)} />
+                    <Tooltip title={tr("复制模型")}>
+                        <Button size="small" aria-label={tr("复制模型 {0}", item.displayName || item.modelKey)} disabled={deletingSelected} icon={<Copy className="size-3.5" />} onClick={() => startCopy(item)} />
                     </Tooltip>
-                    <Popconfirm title="删除模型" description="已被前台供应线路或进行中任务使用的模型不能删除；删除后模型不再显示，且不能在页面恢复。" okText="删除" cancelText="取消" onConfirm={() => void remove(item)}>
-                        <Button size="small" danger disabled={deletingSelected} title="删除模型" aria-label="删除模型" icon={<Trash2 className="size-3.5" />} />
+                    <Popconfirm title={tr("删除模型")} description={tr("已被前台供应线路或进行中任务使用的模型不能删除；删除后模型不再显示，且不能在页面恢复。")} okText={tr("删除")} cancelText={tr("取消")} onConfirm={() => void remove(item)}>
+                        <Button size="small" danger disabled={deletingSelected} title={tr("删除模型")} aria-label={tr("删除模型")} icon={<Trash2 className="size-3.5" />} />
                     </Popconfirm>
                 </Space>
             ),
@@ -271,9 +272,9 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
             <div className="admin-channel-model-toolbar">
                 <div>
                     <h3 className="admin-channel-model-heading">
-                        模型管理 <span className="admin-channel-count">{items.length}</span>
+                        {tr("模型管理")} <span className="admin-channel-count">{items.length}</span>
                     </h3>
-                    <p className="admin-channel-model-hint">点击“自定义排序”调整模型展示顺序；规格展示成本价 / 销售价及加价率，勾选模型可统一调价</p>
+                    <p className="admin-channel-model-hint">{tr("点击“自定义排序”调整模型展示顺序；规格展示成本价 / 销售价及加价率，勾选模型可统一调价")}</p>
                 </div>
                 <Space wrap>
                     <ChannelOrderDialog
@@ -284,10 +285,10 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                         }}
                     />
                     <Button loading={fetching} icon={<RefreshCw className="size-4" />} onClick={() => void fetchModels()}>
-                        拉取模型
+                        {tr("拉取模型")}
                     </Button>
                     <Button type="primary" icon={<Plus className="size-4" />} onClick={startCreate}>
-                        新增模型
+                        {tr("新增模型")}
                     </Button>
                 </Space>
             </div>
@@ -295,15 +296,15 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                 <div className="admin-channel-load-error" role="alert">
                     <span>{loadError}</span>
                     <Button size="small" onClick={() => void reload()}>
-                        重新加载模型
+                        {tr("重新加载模型")}
                     </Button>
                 </div>
             ) : null}
             <AdminDataTable
                 empty={
                     <AdminTableEmpty
-                        title={loadError ? "模型列表加载失败" : items.length ? "没有匹配的模型" : "这个渠道还没有模型"}
-                        description={loadError ? "请重试加载，暂时无法确认模型列表。" : items.length ? "调整搜索或筛选条件后重试。" : "点击上方“拉取模型”从上游导入，或手动新增模型。"}
+                        title={loadError ? tr("模型列表加载失败") : items.length ? tr("没有匹配的模型") : tr("这个渠道还没有模型")}
+                        description={loadError ? tr("请重试加载，暂时无法确认模型列表。") : items.length ? tr("调整搜索或筛选条件后重试。") : tr("点击上方“拉取模型”从上游导入，或手动新增模型。")}
                     />
                 }
                 toolbar={
@@ -312,7 +313,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                         className="app-list-search"
                         prefix={<Search className="size-4 text-foreground/40" />}
                         value={keyword}
-                        placeholder="搜索模型标识或显示名称"
+                        placeholder={tr("搜索模型标识或显示名称")}
                         onChange={(event) => {
                             setKeyword(event.target.value);
                             setPage(1);
@@ -323,7 +324,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                     <>
                         {keyword ? (
                             <AdminFilterChip
-                                label={`搜索：${keyword}`}
+                                label={tr("搜索：{0}", keyword)}
                                 onRemove={() => {
                                     setKeyword("");
                                     setPage(1);
@@ -332,7 +333,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                         ) : null}
                         {capability !== "all" ? (
                             <AdminFilterChip
-                                label={`能力：${capability}`}
+                                label={tr("能力：{0}", capability)}
                                 onRemove={() => {
                                     setCapability("all");
                                     setPage(1);
@@ -341,7 +342,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                         ) : null}
                         {status !== "all" ? (
                             <AdminFilterChip
-                                label={`状态：${status === "enabled" ? "已启用" : "已停用"}`}
+                                label={tr("状态：{0}", status === "enabled" ? tr("已启用") : tr("已停用"))}
                                 onRemove={() => {
                                     setStatus("all");
                                     setPage(1);
@@ -361,11 +362,11 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                                 setPage(1);
                             }}
                             options={[
-                                { label: "全部能力", value: "all" },
-                                { label: "文本", value: "text" },
-                                { label: "图片", value: "image" },
-                                { label: "视频", value: "video" },
-                                { label: "音频", value: "audio" },
+                                { label: tr("全部能力"), value: "all" },
+                                { label: tr("文本"), value: "text" },
+                                { label: tr("图片"), value: "image" },
+                                { label: tr("视频"), value: "video" },
+                                { label: tr("音频"), value: "audio" },
                             ]}
                         />
                         <Select
@@ -376,9 +377,9 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                                 setPage(1);
                             }}
                             options={[
-                                { label: "全部状态", value: "all" },
-                                { label: "已启用", value: "enabled" },
-                                { label: "已停用", value: "disabled" },
+                                { label: tr("全部状态"), value: "all" },
+                                { label: tr("已启用"), value: "enabled" },
+                                { label: tr("已停用"), value: "disabled" },
                             ]}
                         />
                     </>
@@ -392,7 +393,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                 batchActions={
                     <AdminBatchBar count={selectedModelIds.length} onClear={() => setSelectedModelIds([])}>
                         <Button danger size="small" icon={<Trash2 className="size-3.5" />} loading={deletingSelected} onClick={confirmBatchRemove}>
-                            批量删除
+                            {tr("批量删除")}
                         </Button>
                     </AdminBatchBar>
                 }
@@ -406,7 +407,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                         preserveSelectedRowKeys: true,
                         onChange: (keys) => {
                             const next = keys.map(String);
-                            if (next.length > 100) message.warning("单次最多选择 100 个模型");
+                            if (next.length > 100) message.warning(tr("单次最多选择 100 个模型"));
                             setSelectedModelIds(next.slice(0, 100));
                         },
                     },
@@ -429,7 +430,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                 }
             />
             <Modal
-                title="选择要导入的模型"
+                title={tr("选择要导入的模型")}
                 open={fetchPreviewOpen}
                 centered
                 width={720}
@@ -439,30 +440,30 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                 closable={!importing}
                 footer={[
                     <Button key="cancel" disabled={importing} onClick={closeFetchPreview}>
-                        取消
+                        {tr("取消")}
                     </Button>,
                     <Button key="confirm" type="primary" loading={importing} disabled={!selectedFetchModels.length} onClick={() => void importSelectedModels()}>
-                        确认导入
+                        {tr("确认导入")}
                     </Button>,
                 ]}
             >
                 <div className="space-y-3">
-                    <p className="m-0 text-sm text-foreground/65">上游共返回 {fetchPreviewModels.length} 个模型。默认勾选已存在的模型，新模型默认不勾选；可批量全选或取消全选，已存在的模型不会重复导入。</p>
+                    <p className="m-0 text-sm text-foreground/65">{tr("上游共返回 {0} 个模型。默认勾选已存在的模型，新模型默认不勾选；可批量全选或取消全选，已存在的模型不会重复导入。", fetchPreviewModels.length)}</p>
                     <Input
                         allowClear
                         autoFocus
                         className="app-list-search"
                         prefix={<Search className="size-4 text-foreground/40" />}
                         value={fetchKeyword}
-                        placeholder="搜索模型标识，例如 minimax、sd2.5"
-                        aria-label="搜索上游模型"
+                        placeholder={tr("搜索模型标识，例如 minimax、sd2.5")}
+                        aria-label={tr("搜索上游模型")}
                         disabled={importing}
                         onChange={(event) => setFetchKeyword(event.target.value)}
                     />
                     <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/70 bg-muted/25 px-3 py-2">
                         <span className="text-sm font-medium text-foreground/70" aria-live="polite">
-                            已选择 {selectedFetchModels.length} / {fetchPreviewModels.length} 个模型
-                            {fetchKeywordQuery ? `，当前匹配 ${visibleFetchModels.length} 个（其中 ${selectedVisibleFetchCount} 个已勾选）` : ""}
+                            {tr("已选择 {0} / {1} 个模型", selectedFetchModels.length, fetchPreviewModels.length)}
+                            {fetchKeywordQuery ? tr("，当前匹配 {0} 个（其中 {1} 个已勾选）", visibleFetchModels.length, selectedVisibleFetchCount) : ""}
                         </span>
                         <Space size={4}>
                             <Button
@@ -470,14 +471,14 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                                 disabled={importing || !visibleFetchModels.length || allVisibleFetchModelsSelected}
                                 onClick={() => setSelectedFetchModels((current) => selectVisibleModels(current, visibleFetchModels))}
                             >
-                                {fetchKeywordQuery ? `全选匹配的 ${visibleFetchModels.length} 个` : "全选"}
+                                {fetchKeywordQuery ? tr("全选匹配的 {0} 个", visibleFetchModels.length) : tr("全选")}
                             </Button>
                             <Button
                                 size="small"
                                 disabled={importing || selectedVisibleFetchCount === 0}
                                 onClick={() => setSelectedFetchModels((current) => deselectVisibleModels(current, visibleFetchModels))}
                             >
-                                {fetchKeywordQuery ? "取消选中匹配的" : "取消全选"}
+                                {fetchKeywordQuery ? tr("取消选中匹配的") : tr("取消全选")}
                             </Button>
                         </Space>
                     </div>
@@ -492,13 +493,13 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                             />
                         ) : (
                             <p className="m-0 py-6 text-center text-sm text-foreground/55">
-                                没有匹配「{fetchKeyword.trim()}」的模型
+                                {tr("没有匹配「{0}」的模型", fetchKeyword.trim())}
                             </p>
                         )}
                     </div>
                     <div className="text-xs text-foreground/50">
-                        {selectedNewFetchModels.length > 0 ? `将导入 ${selectedNewFetchModels.length} 个新模型` : "当前勾选的模型均已存在"}
-                        {selectedExistingFetchCount > 0 ? `，另有 ${selectedExistingFetchCount} 个已存在模型已勾选` : ""}
+                        {selectedNewFetchModels.length > 0 ? tr("将导入 {0} 个新模型", selectedNewFetchModels.length) : tr("当前勾选的模型均已存在")}
+                        {selectedExistingFetchCount > 0 ? tr("，另有 {0} 个已存在模型已勾选", selectedExistingFetchCount) : ""}
                     </div>
                 </div>
             </Modal>
@@ -527,5 +528,5 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
 }
 
 function capabilityLabel(value: ChannelModel["capability"]) {
-    return { text: "文本", image: "图片", video: "视频", audio: "音频", "": "待配置" }[value];
+    return { text: tr("文本"), image: tr("图片"), video: tr("视频"), audio: tr("音频"), "": tr("待配置") }[value];
 }

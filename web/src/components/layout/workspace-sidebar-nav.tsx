@@ -1,10 +1,12 @@
+import { tr } from "@/i18n";
 import { Popover } from "antd";
-import { ChevronDown, ChevronRight, CircleUserRound, History as HistoryIcon, Image as ImageIcon, Infinity as InfinityIcon, PanelLeftClose, PanelLeftOpen, Plus, Video } from "lucide-react";
+import { ChevronDown, ChevronRight, CircleUserRound, History as HistoryIcon, Image as ImageIcon, PanelLeftClose, PanelLeftOpen, Plus, Video } from "lucide-react";
 import { LayoutGroup, motion, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState, type ComponentType, type CSSProperties } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 
 import { BrandLogoFrame } from "@/components/brand/brand-logo";
+import { LocalStudioMark } from "@/components/brand/local-studio-mark";
 import { UserAvatar } from "@/components/layout/user-avatar";
 import { Kbd } from "@/components/ui/base/kbd";
 import { navigationTools, type NavigationToolSlug } from "@/constant/navigation-tools";
@@ -15,7 +17,6 @@ import { preloadWorkspaceRoute } from "@/lib/workspace-route-modules";
 import { useUserStore, type FeatureAvailability } from "@/stores/use-user-store";
 import { useAppearanceStore } from "@/stores/use-appearance-store";
 import { WorkspaceAccountCard } from "./workspace-account-card";
-import { WorkspaceSidebarStorageMeter } from "./workspace-sidebar-storage-meter";
 
 export type WorkspaceNavItem = {
     id: string;
@@ -41,27 +42,20 @@ function toolItem(slug: NavigationToolSlug, to: string): WorkspaceNavItem {
 function buildNav(features: FeatureAvailability): { groups: WorkspaceNavGroup[]; footer: WorkspaceNavItem[] } {
     const groups: WorkspaceNavGroup[] = [
         {
+            items: [{ ...toolItem("create", "/"), id: "home", title: tr("创作") }, ...(features.shortDramaEnabled ? [{ ...toolItem("projects", "/projects"), title: tr("短剧制作") }] : []), { ...toolItem("canvas", "/canvas"), title: tr("自由画布") }],
+        },
+        {
+            heading: tr("资源与工具"),
             items: [
-                { ...toolItem("create", "/"), id: "home", title: "创作" },
-                ...(features.shortDramaEnabled ? [{ ...toolItem("projects", "/projects"), title: "短剧制作" }] : []),
-                { ...toolItem("canvas", "/canvas"), title: "自由画布" },
+                ...(features.imageWorkbenchEnabled ? [{ id: "toolbox-image", title: tr("图片生成"), icon: ImageIcon, to: "/toolbox/image" }] : []),
+                ...(features.videoWorkbenchEnabled ? [{ id: "toolbox-video", title: tr("视频生成"), icon: Video, to: "/toolbox/video" }] : []),
+                { ...toolItem("skills", "/skills"), title: tr("技能") },
+                ...(features.pluginCenterEnabled ? [{ ...toolItem("plugins", "/plugins"), title: tr("插件") }] : []),
             ],
         },
         {
-            heading: "资源与工具",
-            items: [
-                ...(features.imageWorkbenchEnabled ? [{ id: "toolbox-image", title: "图片生成", icon: ImageIcon, to: "/toolbox/image" }] : []),
-                ...(features.videoWorkbenchEnabled ? [{ id: "toolbox-video", title: "视频生成", icon: Video, to: "/toolbox/video" }] : []),
-                { ...toolItem("skills", "/skills"), title: "技能" },
-                ...(features.pluginCenterEnabled ? [{ ...toolItem("plugins", "/plugins"), title: "插件" }] : []),
-            ],
-        },
-        {
-            heading: "资产与历史",
-            items: [
-                { ...toolItem("assets", "/assets"), title: "资产" },
-                ...(features.taskCenterEnabled ? [{ id: "tasks", title: "创作历史", icon: ImageIcon, to: "/tasks" }] : []),
-            ],
+            heading: tr("资产与历史"),
+            items: [{ ...toolItem("assets", "/assets"), title: tr("资产") }, ...(features.taskCenterEnabled ? [{ id: "tasks", title: tr("创作历史"), icon: ImageIcon, to: "/tasks" }] : [])],
         },
     ];
 
@@ -72,46 +66,43 @@ function buildNav(features: FeatureAvailability): { groups: WorkspaceNavGroup[];
 
 function WorkspaceSidebarProfile({ collapsed, user, onExpand, onCollapse }: { collapsed: boolean; user: NonNullable<ReturnType<typeof useUserStore.getState>["user"]> | null; onExpand: () => void; onCollapse: () => void }) {
     const [menuOpen, setMenuOpen] = useState(false);
-    const profileName = user?.displayName || user?.username || "未登录";
+    const profileName = user?.displayName || user?.username || tr("未登录");
 
     if (!user) {
         return (
-            <Link to="/login" className={cn("app-workspace-sidebar-profile", collapsed && "is-collapsed")} aria-label="登录" title="登录">
+            <Link to="/login" className={cn("app-workspace-sidebar-profile", collapsed && "is-collapsed")} aria-label={tr("登录")} title={tr("登录")}>
                 <span className="app-workspace-sidebar-profile-avatar">
                     <CircleUserRound aria-hidden />
                 </span>
-                {!collapsed ? <span>游客模式</span> : null}
+                {!collapsed ? <span>{tr("游客模式")}</span> : null}
             </Link>
         );
     }
 
-    const content = (
-        <WorkspaceAccountCard onNavigate={() => setMenuOpen(false)} />
-    );
+    const content = <WorkspaceAccountCard onNavigate={() => setMenuOpen(false)} />;
 
     return (
         <div className={cn("app-workspace-sidebar-account", collapsed && "is-collapsed")}>
-            <WorkspaceSidebarStorageMeter collapsed={collapsed} />
             <div className={cn("app-workspace-sidebar-profile-row", collapsed && "is-collapsed")}>
                 <Popover open={menuOpen} onOpenChange={setMenuOpen} trigger="click" placement="topLeft" arrow={false} rootClassName="workspace-account-popover" content={content}>
-                    <button type="button" className={cn("app-workspace-sidebar-profile", collapsed && "is-collapsed")} aria-label="打开账户菜单" title={profileName}>
+                    <button type="button" className={cn("app-workspace-sidebar-profile", collapsed && "is-collapsed")} aria-label={tr("打开账户菜单")} title={profileName}>
                         <UserAvatar user={user} className="app-workspace-sidebar-profile-avatar" />
                         {!collapsed ? (
                             <span className="app-workspace-sidebar-profile-copy">
                                 <strong>{profileName}</strong>
-                                <span>创作工作台</span>
+                                <span>{tr("创作工作台")}</span>
                             </span>
                         ) : null}
                     </button>
                 </Popover>
                 {!collapsed ? (
-                    <button type="button" className="app-workspace-sidebar-collapse-toggle" aria-label="收起侧栏" title="收起侧栏" onClick={onCollapse}>
+                    <button type="button" className="app-workspace-sidebar-collapse-toggle" aria-label={tr("收起侧栏")} title={tr("收起侧栏")} onClick={onCollapse}>
                         <PanelLeftClose className="size-4" strokeWidth={1.7} />
                     </button>
                 ) : null}
             </div>
             {collapsed ? (
-                <button type="button" className="app-workspace-sidebar-collapse-toggle is-collapsed" aria-label="展开侧栏菜单" title="展开侧栏菜单" onClick={onExpand}>
+                <button type="button" className="app-workspace-sidebar-collapse-toggle is-collapsed" aria-label={tr("展开侧栏菜单")} title={tr("展开侧栏菜单")} onClick={onExpand}>
                     <PanelLeftOpen className="size-4" strokeWidth={1.7} />
                 </button>
             ) : null}
@@ -125,12 +116,12 @@ function WorkspaceSwitcher({ collapsed, onNavigate }: { collapsed: boolean; onNa
     if (collapsed) {
         return (
             <div className="app-workspace-sidebar-brand-row relative shrink-0 flex items-center justify-center px-3 pt-3">
-                <Link to="/" onClick={onNavigate} className="app-workspace-sidebar-brand-button group" aria-label={`${appearance.brandName}首页`}>
+                <Link to="/" onClick={onNavigate} className="app-workspace-sidebar-brand-button group" aria-label={tr("{0}首页", appearance.brandName)}>
                     <BrandLogoFrame
                         className="app-workspace-brand-mark grid size-8 shrink-0 place-items-center rounded-[var(--r-sm)] shadow-sm"
                         logoClassName="size-5 object-contain"
                         alt=""
-                        fallback={<InfinityIcon className="size-4" strokeWidth={2.2} />}
+                        fallback={<LocalStudioMark className="size-[18px]" />}
                     />
                 </Link>
             </div>
@@ -139,17 +130,17 @@ function WorkspaceSwitcher({ collapsed, onNavigate }: { collapsed: boolean; onNa
 
     return (
         <div className="app-workspace-sidebar-brand-row relative shrink-0 px-3 pt-3">
-            <Link to="/" onClick={onNavigate} className="app-workspace-sidebar-brand-button group" aria-label={`${appearance.brandName}首页`}>
+            <Link to="/" onClick={onNavigate} className="app-workspace-sidebar-brand-button group" aria-label={tr("{0}首页", appearance.brandName)}>
                 <span className="flex min-w-0 items-center gap-2">
                     <BrandLogoFrame
                         className="app-workspace-brand-mark grid size-8 shrink-0 place-items-center rounded-[var(--r-sm)] shadow-sm"
                         logoClassName="size-5 object-contain"
                         alt=""
-                        fallback={<InfinityIcon className="size-4" strokeWidth={2.2} />}
+                        fallback={<LocalStudioMark className="size-[18px]" />}
                     />
                     <span className="flex min-w-0 flex-col">
                         <span className="app-workspace-brand-wordmark truncate text-[var(--fs-body)] leading-none font-semibold">{appearance.brandName}</span>
-                        <span className="mt-1 truncate text-[var(--fs-label)] leading-none text-foreground/60">创作工作台</span>
+                        <span className="mt-1 truncate text-[var(--fs-label)] leading-none text-foreground/60">{tr("创作工作台")}</span>
                     </span>
                 </span>
             </Link>
@@ -188,7 +179,7 @@ function NavItem({
     const rowStyle = collapsed ? undefined : ({ paddingLeft: `${level * 12 + 10}px` } as CSSProperties);
 
     const collapsedTitle =
-        item.id === "home" ? "创作" : item.id === "projects" ? "短剧" : item.id === "canvas" ? "画布" : item.id === "assets" ? "资产" : item.id === "skills" ? "技能" : item.id === "plugins" ? "插件" : item.id === "tasks" ? "历史" : item.title.slice(0, 2);
+        item.id === "home" ? tr("创作") : item.id === "projects" ? tr("短剧") : item.id === "canvas" ? tr("画布") : item.id === "assets" ? tr("资产") : item.id === "skills" ? tr("技能") : item.id === "plugins" ? tr("插件") : item.id === "tasks" ? tr("历史") : item.title.slice(0, 2);
     const rowContent = (
         <>
             <span className="app-workspace-nav-main flex min-w-0 items-center gap-2">

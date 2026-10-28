@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { http, ApiError } from "@/services/api/request";
 import type { ClientDiagnosticEvent } from "./client-diagnostics";
 
@@ -52,17 +53,17 @@ export async function exportDiagnosticBundle(input: DiagnosticExportInput): Prom
             try {
                 const payload = raw ? (JSON.parse(raw) as { code?: number; msg?: string }) : null;
                 if (payload) {
-                    const message = status === 404 ? "诊断接口未部署，请重启或重新构建后端" : payload.msg || "导出诊断包失败";
+                    const message = status === 404 ? tr("诊断接口未部署，请重启或重新构建后端") : payload.msg || tr("导出诊断包失败");
                     throw new ApiError(message, { status, code: payload.code, cause: error });
                 }
             } catch (parseError) {
                 if (parseError instanceof ApiError) throw parseError;
             }
             if (status === 404) {
-                throw new ApiError("诊断接口未部署，请重启或重新构建后端", { status, cause: error });
+                throw new ApiError(tr("诊断接口未部署，请重启或重新构建后端"), { status, cause: error });
             }
             if (status === 502 || status === 503 || status === 504) {
-                throw new ApiError("后端服务暂时不可用，请重启后端后重试", { status, cause: error });
+                throw new ApiError(tr("后端服务暂时不可用，请重启后端后重试"), { status, cause: error });
             }
         }
         throw error;

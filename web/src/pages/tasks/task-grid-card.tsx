@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Button } from "antd";
 import { IconButton } from "@/components/ui/base/buttons";
 import { Tooltip } from "@/components/ui/base/tooltip";
@@ -32,16 +33,16 @@ export function TaskGridCard({ task, actingId, onOpen, onRetry }: { task: Genera
                     <Icon />
                 )}
                 <div className="task-grid-overlay">
-                    <Tooltip title="查看详情">
-                        <IconButton size="sm" variant="ghost" icon={Eye} aria-label="查看详情" onClick={onOpen} />
+                    <Tooltip title={tr("查看详情")}>
+                        <IconButton size="sm" variant="ghost" icon={Eye} aria-label={tr("查看详情")} onClick={onOpen} />
                     </Tooltip>
                     {isFailed ? (
-                        <Tooltip title={retryDisabled ? "内容审核失败，无法自动重试" : task.canRecoverMedia ? "重试保存，不重新生成" : "重试任务"}>
+                        <Tooltip title={retryDisabled ? tr("内容审核失败，无法自动重试") : task.canRecoverMedia ? tr("重试保存，不重新生成") : tr("重试任务")}>
                             <Button
                                 type="text"
                                 size="small"
                                 icon={<RotateCcw className="size-3.5" />}
-                                aria-label={task.canRecoverMedia ? "重试保存" : "重试任务"}
+                                aria-label={task.canRecoverMedia ? tr("重试保存") : tr("重试任务")}
                                 loading={actingId === task.id}
                                 disabled={retryDisabled}
                                 onClick={onRetry}
@@ -52,7 +53,7 @@ export function TaskGridCard({ task, actingId, onOpen, onRetry }: { task: Genera
             </div>
             <div className="task-grid-body">
                 <button type="button" className="task-grid-title" title={task.prompt} onClick={onOpen}>
-                    {task.prompt || "未命名任务"}
+                    {task.prompt || tr("未命名任务")}
                 </button>
                 <div className="task-grid-meta">
                     <span className={`task-grid-status ${isFailed ? "is-failed" : isActive ? "is-active" : task.status === "succeeded" ? "is-success" : ""}`}>

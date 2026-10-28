@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { create } from "zustand";
 import { DEFAULT_CANVAS_APPEARANCE } from "@/lib/canvas/agent-appearance";
 import { DEFAULT_UPDATE_ANNOUNCEMENT, normalizeUpdateAnnouncement } from "@/lib/update-announcement";
@@ -9,9 +10,9 @@ export const DEFAULT_PUBLIC_APPEARANCE: PublicAppearance = {
     updates: DEFAULT_UPDATE_ANNOUNCEMENT,
     canvas: DEFAULT_CANVAS_APPEARANCE,
     schemaVersion: 10,
-    brandName: "影策",
-    brandSlug: "open-ai-canvas",
-    authHeroTitle: "让一个故事，\n从文字走向银幕。",
+    brandName: "Local Studio",
+    brandSlug: "local-studio",
+    authHeroTitle: tr("让一个故事，\n从文字走向银幕。"),
     authHeroDescription: "",
     logoUrl: "/logo.svg",
     darkLogoUrl: "/logo.svg",
@@ -21,10 +22,10 @@ export const DEFAULT_PUBLIC_APPEARANCE: PublicAppearance = {
     authVideoAutoplay: true,
     skinId: "classic",
     activeSkin: DEFAULT_CLASSIC_SKIN,
-    seoTitle: "影策",
-    seoDescription: "影策，面向 AI 影视与短剧创作的工作台。",
+    seoTitle: "Local Studio",
+    seoDescription: tr("{0}，面向 AI 影视与短剧创作的工作台。", "Local Studio"),
     seoKeywords: "",
-    footerCopyright: `© ${new Date().getFullYear()} 影策. All rights reserved.`,
+    footerCopyright: `© ${new Date().getFullYear()} Local Studio`,
     icpFilingEnabled: false,
     icpFilingNumber: "",
     redeemPurchaseUrl: "",
@@ -58,7 +59,7 @@ export function normalizePublicAppearance(value?: Partial<PublicAppearance> | nu
     const darkLogoUrl = safeAppearanceURL(value?.darkLogoUrl, logoUrl);
     const resolvedBrandName = brandName || DEFAULT_PUBLIC_APPEARANCE.brandName;
     const seoTitle = normalizeAppearanceCopy(value?.seoTitle, resolvedBrandName);
-    const seoDescription = normalizeAppearanceCopy(value?.seoDescription, `${resolvedBrandName}，面向 AI 影视与短剧创作的工作台。`, true);
+    const seoDescription = normalizeAppearanceCopy(value?.seoDescription, tr("{0}，面向 AI 影视与短剧创作的工作台。", resolvedBrandName), true);
     const seoKeywords = normalizeAppearanceCopy(value?.seoKeywords, "", true);
     const footerCopyright = normalizeAppearanceCopy(value?.footerCopyright, `© ${new Date().getFullYear()} ${resolvedBrandName}. All rights reserved.`);
     const icpFilingNumber = normalizeAppearanceCopy(value?.icpFilingNumber, "", true);
@@ -164,7 +165,7 @@ export function appearanceLogoURL(appearance: PublicAppearance, theme: "light" |
 }
 
 export function brandStudioLabel(appearance: PublicAppearance) {
-    if (appearance.brandName === DEFAULT_PUBLIC_APPEARANCE.brandName && appearance.brandSlug === DEFAULT_PUBLIC_APPEARANCE.brandSlug) return "YINGCE STUDIO";
+    if (appearance.brandName === DEFAULT_PUBLIC_APPEARANCE.brandName && appearance.brandSlug === DEFAULT_PUBLIC_APPEARANCE.brandSlug) return "LOCAL STUDIO";
     return appearance.brandSlug.replace(/-+/g, " ").toLocaleUpperCase();
 }
 

@@ -131,10 +131,9 @@ describe("site appearance and editable skin library", () => {
         expect(appearance.activeSkin.name).toBe("暖调测试");
     });
 
-    test("site UI wires metadata, editable theme actions, and the official ICP destination", async () => {
-        const [storeSource, footerSource, pageSource, editorSource, globalStyles, adminStyles] = await Promise.all([
+    test("site UI wires metadata and editable theme actions", async () => {
+        const [storeSource, pageSource, editorSource, globalStyles, adminStyles] = await Promise.all([
             Bun.file(new URL("../src/stores/use-appearance-store.ts", import.meta.url)).text(),
-            Bun.file(new URL("../src/components/layout/site-compliance-footer.tsx", import.meta.url)).text(),
             Promise.resolve(moduleGroupSource("pages/admin/settings/appearance-settings-page.tsx")),
             Bun.file(new URL("../src/pages/admin/settings/components/skin-theme-editor.tsx", import.meta.url)).text(),
             Bun.file(new URL("../src/styles/globals.css", import.meta.url)).text(),
@@ -143,9 +142,7 @@ describe("site appearance and editable skin library", () => {
 
         expect(storeSource).toContain('setMeta(targetDocument, "name", "description"');
         expect(storeSource).toContain('setMeta(targetDocument, "property", "og:title"');
-        expect(footerSource).toContain("https://beian.miit.gov.cn/");
-        expect(footerSource).toContain('rel="noopener noreferrer"');
-        expect(pageSource).toContain('title="皮肤主题"');
+        expect(pageSource).toContain('title={tr("皮肤主题")}');
         expect(editorSource).toContain("从默认新建");
         expect(editorSource).toContain("复制当前");
         expect(editorSource).toContain("删除这套主题");

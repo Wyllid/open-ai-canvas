@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 
 import { createCanvasNode } from "@/lib/canvas/canvas-project-domain";
@@ -27,11 +28,11 @@ export function createShortDramaPipeline(center: Position) {
         content: "",
         status: "idle",
         workflowKind: "styleboard",
-        workflowTitle: "项目画风",
-        workflowDescription: "待选择",
+        workflowTitle: tr("项目画风"),
+        workflowDescription: tr("待选择"),
         fontSize: 14,
     });
-    styleNode.title = "项目画风 · 待选择";
+    styleNode.title = tr("项目画风 · 待选择");
     styleNode.width = 360;
     styleNode.height = 220;
 
@@ -39,25 +40,25 @@ export function createShortDramaPipeline(center: Position) {
         content: "",
         status: "idle",
         workflowKind: "story_input",
-        workflowTitle: "故事输入",
-        workflowDescription: "题材、角色、冲突和结局方向",
+        workflowTitle: tr("故事输入"),
+        workflowDescription: tr("题材、角色、冲突和结局方向"),
         fontSize: 14,
     });
-    storyNode.title = "故事梗概";
+    storyNode.title = tr("故事梗概");
     storyNode.width = 420;
     storyNode.height = 260;
 
     const scriptNode = createCanvasNode(CanvasNodeType.Script, { x: center.x + 180, y: center.y }, {
         status: "idle",
         workflowKind: "storyboard",
-        workflowTitle: "分镜脚本",
+        workflowTitle: tr("分镜脚本"),
         storyboard: {
             rows: [],
             visibleColumns: ["shotNumber", "durationSeconds", "videoMotionPrompt", "dialogue", "assets"],
             referenceNodeIds: [],
         },
     });
-    scriptNode.title = "分镜脚本 · 待生成";
+    scriptNode.title = tr("分镜脚本 · 待生成");
 
     const connections: CanvasConnection[] = [
         { id: nanoid(), fromNodeId: styleNode.id, toNodeId: scriptNode.id, toHandleId: "storyboard:context" },
@@ -102,11 +103,11 @@ export function deriveShortDramaProgress(nodes: CanvasNodeData[], connections: C
     const firstIncomplete = done.findIndex((value) => !value);
     const firstShotNode = shotNodes[0];
     const definitions: Array<{ id: CanvasShortDramaStepId; label: string; nodeId?: string }> = [
-        { id: "style", label: "选择画风", nodeId: styleNode?.id },
-        { id: "story", label: "输入故事", nodeId: storyNode?.id },
-        { id: "storyboard", label: "生成分镜", nodeId: scriptNode?.id || firstShotNode?.id },
-        { id: "video", label: "生成视频", nodeId: scriptNode?.id || firstShotNode?.id || completedShotVideos[0]?.id },
-        { id: "final", label: "合并成片", nodeId: finalNode?.id || finalNodes[0]?.id || completedShotVideos[0]?.id },
+        { id: "style", label: tr("选择画风"), nodeId: styleNode?.id },
+        { id: "story", label: tr("输入故事"), nodeId: storyNode?.id },
+        { id: "storyboard", label: tr("生成分镜"), nodeId: scriptNode?.id || firstShotNode?.id },
+        { id: "video", label: tr("生成视频"), nodeId: scriptNode?.id || firstShotNode?.id || completedShotVideos[0]?.id },
+        { id: "final", label: tr("合并成片"), nodeId: finalNode?.id || finalNodes[0]?.id || completedShotVideos[0]?.id },
     ];
     const steps = definitions.map((step, index): CanvasShortDramaStep => ({
         ...step,

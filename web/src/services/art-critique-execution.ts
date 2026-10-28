@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { inspectAgentImage } from "./agent-image-preview";
 import { runBackendToolGenerationTask } from "./api/generation-task";
 import { runArtCritiquePipeline, type ArtCritiquePipelineOptions } from "@/lib/art-critique/pipeline";
@@ -21,10 +22,10 @@ export async function executeArtCritique(input: {
     onDraftReport?: ArtCritiquePipelineOptions["onDraftReport"];
     submitStage?: typeof runBackendToolGenerationTask;
 }, dependencies = { inspectImage: inspectAgentImage, runTask: runBackendToolGenerationTask, runPipeline: runArtCritiquePipeline }) {
-    if (!input.nodeId || !input.runId || !isArtCritiqueImageInput(input.source)) throw new Error("分析需要真实目标节点、执行标识和已有图片");
+    if (!input.nodeId || !input.runId || !isArtCritiqueImageInput(input.source)) throw new Error(tr("分析需要真实目标节点、执行标识和已有图片"));
     const scope = getActiveUserScope();
     const assertLive = () => {
-        if (input.signal.aborted || getActiveUserScope() !== scope) throw new DOMException("分析已停止或账号已切换", "AbortError");
+        if (input.signal.aborted || getActiveUserScope() !== scope) throw new DOMException(tr("分析已停止或账号已切换"), "AbortError");
     };
     assertLive();
     const content = input.source.metadata?.content || input.source.metadata?.previewContent || "";
@@ -37,7 +38,7 @@ export async function executeArtCritique(input: {
         onDraftReport: (report) => { assertLive(); input.onDraftReport?.(report); },
         requestStage: async ({ config, messages, tool, toolName, signal }) => {
             assertLive();
-            if (calledStages.has(toolName) || calledStages.size >= ART_CRITIQUE_MAX_MODEL_CALLS) throw new Error("分析阶段重复或超过本次调用数量上限");
+            if (calledStages.has(toolName) || calledStages.size >= ART_CRITIQUE_MAX_MODEL_CALLS) throw new Error(tr("分析阶段重复或超过本次调用数量上限"));
             calledStages.add(toolName);
             const result = await (input.submitStage || dependencies.runTask)({
                 config, messages, tools: [tool], toolChoice: { type: "function", name: toolName },

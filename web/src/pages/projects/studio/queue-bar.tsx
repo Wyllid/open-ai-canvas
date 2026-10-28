@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "antd";
@@ -25,45 +26,46 @@ export function QueueBar({ projectId, summary, retrying, onRetry, onJump }: { pr
         <div className="drama-queue">
             <div className="drama-queue-bar">
                 <span className={`drama-queue-stat ${(jobCounts.running || 0) > 0 ? "is-run" : ""}`}>
-                    {(jobCounts.running || 0) > 0 ? <Loader2 className="size-3.5 animate-spin" /> : <span className="drama-dot opacity-40" />}运行中 <b>{jobCounts.running || 0}</b>
+                    {(jobCounts.running || 0) > 0 ? <Loader2 className="size-3.5 animate-spin" /> : <span className="drama-dot opacity-40" />}
+                    {tr("运行中")} <b>{jobCounts.running || 0}</b>
                 </span>
                 <span className="drama-queue-stat">
-                    排队 <b>{jobCounts.queued || 0}</b>
+                    {tr("排队")} <b>{jobCounts.queued || 0}</b>
                 </span>
                 <span className="drama-queue-stat">
-                    已完成 <b>{jobCounts.succeeded || 0}</b>
+                    {tr("已完成")} <b>{jobCounts.succeeded || 0}</b>
                 </span>
                 {failedItems ? (
                     <span className="drama-queue-stat is-err">
                         <AlertCircle className="size-3.5" />
-                        待重试 <b>{failedItems}</b>
+                        {tr("待重试")} <b>{failedItems}</b>
                     </span>
                 ) : null}
                 {failedItems ? (
                     <Button size="small" type="text" icon={<RotateCcw className="size-3.5" />} loading={retrying} onClick={onRetry}>
-                        全部重试
+                        {tr("全部重试")}
                     </Button>
                 ) : null}
                 <button type="button" className="drama-queue-toggle" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
                     {open ? <ChevronDown className="size-3.5" /> : <ChevronUp className="size-3.5" />}
-                    {open ? "收起队列" : "展开队列"}
+                    {open ? tr("收起队列") : tr("展开队列")}
                 </button>
             </div>
             {open ? (
                 <div className="drama-queue-panel">
-                    <div className="drama-queue-filters" role="tablist" aria-label="队列筛选">
+                    <div className="drama-queue-filters" role="tablist" aria-label={tr("队列筛选")}>
                         {(
                             [
-                                ["all", "全部"],
-                                ["active", "进行中"],
-                                ["failed", "失败"],
+                                ["all", tr("全部")],
+                                ["active", tr("进行中")],
+                                ["failed", tr("失败")],
                             ] as const
                         ).map(([key, label]) => (
                             <button key={key} type="button" role="tab" className="drama-filter" aria-pressed={filter === key} aria-selected={filter === key} onClick={() => setFilter(key)}>
                                 {label}
                             </button>
                         ))}
-                        <span className="ml-auto drama-queue-hint">点击任一行查看请求详情</span>
+                        <span className="ml-auto drama-queue-hint">{tr("点击任一行查看请求详情")}</span>
                     </div>
                     <div className="drama-queue-list thin-scrollbar" role="list">
                         {jobs.map((job) => (
@@ -81,9 +83,9 @@ export function QueueBar({ projectId, summary, retrying, onRetry, onJump }: { pr
                             </button>
                         ))}
                         {jobsQuery.isLoading ? (
-                            <div className="drama-queue-empty">正在读取队列…</div>
+                            <div className="drama-queue-empty">{tr("正在读取队列…")}</div>
                         ) : !jobs.length ? (
-                            <div className="drama-queue-empty">{filter === "failed" ? "没有失败的工作" : filter === "active" ? "没有进行中的工作" : "还没有调度记录"}</div>
+                            <div className="drama-queue-empty">{filter === "failed" ? tr("没有失败的工作") : filter === "active" ? tr("没有进行中的工作") : tr("还没有调度记录")}</div>
                         ) : null}
                     </div>
                 </div>

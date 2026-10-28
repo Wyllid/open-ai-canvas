@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 媒体时长探测工具：上传前通过 <video>/<audio> 元数据读取真实时长（毫秒）。
 // 结果随上传 meta 传给后端，供资源摘要和时间线片段使用；这里不负责验证完整播放能力。
 
@@ -23,7 +24,7 @@ export async function probeMediaDurationMs(file: File): Promise<number | undefin
     el.muted = true;
     try {
         const durationMs = await new Promise<number>((resolve, reject) => {
-            timeoutId = window.setTimeout(() => reject(new Error("媒体元数据读取超时")), PROBE_TIMEOUT_MS);
+            timeoutId = window.setTimeout(() => reject(new Error(tr("媒体元数据读取超时"))), PROBE_TIMEOUT_MS);
             el.onloadedmetadata = () => {
                 const durationSeconds = el.duration;
                 resolve(Number.isFinite(durationSeconds) && durationSeconds > 0 ? Math.round(durationSeconds * 1000) : 0);

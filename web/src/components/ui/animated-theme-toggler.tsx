@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useCallback, useEffect, useRef, useState, type ComponentPropsWithoutRef } from "react";
 import { flushSync } from "react-dom";
 import { Moon, Sun } from "lucide-react";
@@ -216,7 +217,7 @@ export const AnimatedThemeToggler = ({ children, className, duration = 400, vari
     return (
         <button type="button" ref={buttonRef} onClick={changeTheme} className={cn(className)} {...buttonProps}>
             {children ?? (dark ? <Sun /> : <Moon />)}
-            <span className="sr-only">{buttonProps["aria-label"] || "切换主题"}</span>
+            <span className="sr-only">{buttonProps["aria-label"] || tr("切换主题")}</span>
         </button>
     );
 };

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 export type CanvasFaceBox = {
     id: string;
     x: number;
@@ -51,7 +52,7 @@ export type CanvasEmotionEditPlan = {
 export function resolveEmotionEditPlan(maskSupported: boolean): CanvasEmotionEditPlan {
     return maskSupported
         ? { mode: "provider-mask", includeMask: true }
-        : { mode: "local-composite", includeMask: false, notice: "当前渠道不支持蒙版，使用脸部裁切与本地羽化融合" };
+        : { mode: "local-composite", includeMask: false, notice: tr("当前渠道不支持蒙版，使用脸部裁切与本地羽化融合") };
 }
 
 export function emotionProviderMask<T>(plan: CanvasEmotionEditPlan, mask: T) {
@@ -92,11 +93,11 @@ type BlendshapeName =
 export type CanvasEmotionBlendshapes = Partial<Record<BlendshapeName, number>>;
 
 const labels = [
-    ["欣喜若狂", "兴高采烈", "惊喜", "震惊", "惊恐"],
-    ["开怀", "期待", "专注", "警觉", "紧张"],
-    ["温柔", "浅然莞尔", "中性克制", "隐忍", "疏离"],
-    ["安心", "释然", "疲惫", "失落", "悲伤"],
-    ["满足", "平静", "冷淡", "隐忍心伤", "绝望"],
+    [tr("欣喜若狂"), tr("兴高采烈"), tr("惊喜"), tr("震惊"), tr("惊恐")],
+    [tr("开怀"), tr("期待"), tr("专注"), tr("警觉"), tr("紧张")],
+    [tr("温柔"), tr("浅然莞尔"), tr("中性克制"), tr("隐忍"), tr("疏离")],
+    [tr("安心"), tr("释然"), tr("疲惫"), tr("失落"), tr("悲伤")],
+    [tr("满足"), tr("平静"), tr("冷淡"), tr("隐忍心伤"), tr("绝望")],
 ] as const;
 
 const prompts = [
@@ -207,7 +208,7 @@ function describeEmotionTarget(box: CanvasFaceBox, region: CanvasEmotionEditRegi
     const height = Math.max(1, Math.min(region.height - y, Math.round(box.height)));
     const centerX = Math.round(((x + width / 2) / Math.max(1, region.width)) * 100);
     const centerY = Math.round(((y + height / 2) / Math.max(1, region.height)) * 100);
-    return `目标人脸框（相对于第一张裁切输入图）：x=${x}px，y=${y}px，width=${width}px，height=${height}px；人脸中心约位于裁切图的 ${centerX}% 横向、${centerY}% 纵向。最终仅将该人脸周围的椭圆区域融合回原图。`;
+    return tr("目标人脸框（相对于第一张裁切输入图）：x={0}px，y={1}px，width={2}px，height={3}px；人脸中心约位于裁切图的 {4}% 横向、{5}% 纵向。最终仅将该人脸周围的椭圆区域融合回原图。", x, y, width, height, centerX, centerY);
 }
 
 export async function buildEmotionImageArtifacts(dataUrl: string, box: CanvasFaceBox, imageWidth: number, imageHeight: number): Promise<CanvasEmotionImageArtifacts> {
@@ -247,14 +248,14 @@ export async function compositeEmotionImage(sourceDataUrl: string, generatedData
         canvas.width = source.width;
         canvas.height = source.height;
         const context = canvas.getContext("2d", { willReadFrequently: true });
-        if (!context) throw new Error("浏览器无法合成表情编辑结果");
+        if (!context) throw new Error(tr("浏览器无法合成表情编辑结果"));
         context.drawImage(source, 0, 0);
 
         const generatedCanvas = document.createElement("canvas");
         generatedCanvas.width = normalizedRegion.width;
         generatedCanvas.height = normalizedRegion.height;
         const generatedContext = generatedCanvas.getContext("2d", { willReadFrequently: true });
-        if (!generatedContext) throw new Error("浏览器无法读取表情生成结果");
+        if (!generatedContext) throw new Error(tr("浏览器无法读取表情生成结果"));
         generatedContext.imageSmoothingEnabled = true;
         generatedContext.imageSmoothingQuality = "high";
         generatedContext.drawImage(generated, 0, 0, generated.width, generated.height, 0, 0, normalizedRegion.width, normalizedRegion.height);
@@ -308,7 +309,7 @@ function drawSourceCrop(image: ImageBitmap, region: CanvasEmotionEditRegion) {
     canvas.width = region.width;
     canvas.height = region.height;
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("浏览器无法裁切头部编辑区域");
+    if (!context) throw new Error(tr("浏览器无法裁切头部编辑区域"));
     context.drawImage(image, region.x, region.y, region.width, region.height, 0, 0, region.width, region.height);
     return canvas.toDataURL("image/png");
 }
@@ -318,7 +319,7 @@ function drawFaceMask(box: CanvasFaceBox, region: CanvasEmotionEditRegion) {
     canvas.width = region.width;
     canvas.height = region.height;
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("浏览器无法创建人脸编辑蒙版");
+    if (!context) throw new Error(tr("浏览器无法创建人脸编辑蒙版"));
     context.fillStyle = "#fff";
     context.fillRect(0, 0, region.width, region.height);
     const ellipse = emotionEditEllipse(box, region);
@@ -410,7 +411,7 @@ function drawFaceCrop(image: ImageBitmap, box: CanvasFaceBox, imageWidth: number
     canvas.width = 384;
     canvas.height = 384;
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("浏览器无法创建人物参考图");
+    if (!context) throw new Error(tr("浏览器无法创建人物参考图"));
     context.fillStyle = "#111";
     context.fillRect(0, 0, canvas.width, canvas.height);
     const scale = Math.min(canvas.width / sw, canvas.height / sh);
@@ -422,7 +423,7 @@ function drawFaceCrop(image: ImageBitmap, box: CanvasFaceBox, imageWidth: number
 
 async function loadImageBitmap(dataUrl: string) {
     const response = await fetch(dataUrl);
-    if (!response.ok) throw new Error("无法读取源图片，请重新上传后再试");
+    if (!response.ok) throw new Error(tr("无法读取源图片，请重新上传后再试"));
     return createImageBitmap(await response.blob());
 }
 

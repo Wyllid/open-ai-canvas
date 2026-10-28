@@ -57,7 +57,7 @@ test("real model manager renders inline without a second page or back navigation
 test("channel navigation is persistent, keyed and responsive with all server pages loaded", async () => {
     const page = await Bun.file(new URL("../src/pages/admin/channels/channels-page.tsx", import.meta.url)).text();
     const css = await Bun.file(new URL("../src/pages/admin/channels/channels-page.css", import.meta.url)).text();
-    expect(page).toContain('aria-label="系统渠道"');
+    expect(page).toContain('aria-label={tr("系统渠道")}');
     expect(page).toContain("新增渠道");
     expect(page).toContain("key={selectedChannel.id}");
     expect(page).toContain("aria-pressed={selectedChannel?.id === channel.id}");

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // @ 引用在可编辑区域里的行内胶囊（chip）与预览缩略图。
 //
 // 胶囊是 contentEditable 内的 DOM 节点，序列化时还原成 @[kind:id] 令牌；这里只负责渲染。
@@ -45,7 +46,7 @@ export function createInlineMentionChip(reference: CanvasResourceReference, toke
     chip.dataset.mentionReferenceId = reference.id;
     const isDecorated = reference.kind === "skill" || reference.kind === "tool";
     chip.className = `canvas-resource-inline-mention ${isDecorated ? `is-${reference.kind}` : ""}`;
-    chip.title = "双击放大预览";
+    chip.title = tr("双击放大预览");
     if (reference.kind === "skill") chip.style.setProperty("--canvas-skill-mention-color", skillMentionColor(reference));
     if (reference.kind === "tool") chip.style.setProperty("--canvas-skill-mention-color", skillMentionColor(reference));
 
@@ -88,10 +89,10 @@ export function InlineReferencePreview({ reference, onClose }: { reference: Canv
     const url = referencePreviewUrl(reference);
     if (!url) return null;
     return createPortal(
-        <div className="fixed inset-0 z-[var(--z-dialog-popover)] grid place-items-center bg-black/80 p-6" role="dialog" aria-label={`预览${reference.label}`} onClick={onClose}>
+        <div className="fixed inset-0 z-[var(--z-dialog-popover)] grid place-items-center bg-black/80 p-6" role="dialog" aria-label={tr("预览{0}", reference.label)} onClick={onClose}>
             <div className="relative max-h-[92vh] max-w-[92vw]" onClick={(event) => event.stopPropagation()}>
                 <img src={url} alt={reference.label} className="max-h-[88vh] max-w-[88vw] rounded-xl object-contain shadow-2xl" />
-                <button type="button" className="absolute -right-3 -top-3 rounded-full bg-black/75 p-2 text-white shadow-lg" onClick={onClose} aria-label="关闭图片预览">
+                <button type="button" className="absolute -right-3 -top-3 rounded-full bg-black/75 p-2 text-white shadow-lg" onClick={onClose} aria-label={tr("关闭图片预览")}>
                     <X className="size-4" />
                 </button>
             </div>

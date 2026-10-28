@@ -133,6 +133,22 @@ func TestAppearanceBackfillsVersionSevenFieldsForExistingSetting(t *testing.T) {
 	}
 }
 
+func TestAppearanceMigratesUpstreamBrandDefaultsToLocalStudio(t *testing.T) {
+	svc, db, _, _ := newAppearanceTestService(t)
+	stored := model.SystemSetting{Key: appearanceSettingKey, ValueJSON: `{"schemaVersion":10,"brandName":"影策","brandSlug":"open-ai-canvas","canvas":{"agentName":"影策","launcherLabel":"Agent","panelTitle":"画布助手","welcomeTitle":"欢迎","welcomeDescription":"说明","inputPlaceholder":"输入","avatarType":"bundle","avatarHeight":220}}`}
+	if err := db.Create(&stored).Error; err != nil {
+		t.Fatal(err)
+	}
+
+	appearance, err := svc.Appearance()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if appearance.BrandName != defaultAppearanceBrandName || appearance.BrandSlug != defaultAppearanceBrandSlug || appearance.Canvas.AgentName != defaultCanvasAppearance().AgentName || appearance.SEOTitle != defaultAppearanceBrandName {
+		t.Fatalf("migrated appearance = %#v", appearance)
+	}
+}
+
 func TestUpdateAppearancePersistsAuditsAndUsesVersionedPublicAssets(t *testing.T) {
 	svc, db, dataDir, admin := newAppearanceTestService(t)
 	resources := []model.Resource{

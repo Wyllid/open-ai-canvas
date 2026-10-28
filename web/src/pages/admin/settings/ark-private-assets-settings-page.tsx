@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Form, Input, Skeleton } from "antd";
 import { Switch } from "@/pages/admin/ui/controls";
 import { AlertTriangle, CloudUpload, KeyRound, RefreshCw, RotateCcw, Save } from "lucide-react";
@@ -44,14 +45,14 @@ export default function ArkPrivateAssetsSettingsPage() {
             try {
                 const result = await getAdminArkPrivateAssetSetting();
                 if (requestVersion !== requestVersionRef.current) return;
-                if (!isAdminArkPrivateAssetSetting(result.setting)) throw new Error("服务端返回的方舟素材库配置格式无效");
+                if (!isAdminArkPrivateAssetSetting(result.setting)) throw new Error(tr("服务端返回的方舟素材库配置格式无效"));
                 setSetting(result.setting);
                 setDirty(false);
                 setSaveError("");
-                if (announce) message.success("已重新读取方舟素材库配置");
+                if (announce) message.success(tr("已重新读取方舟素材库配置"));
             } catch (error) {
                 if (requestVersion !== requestVersionRef.current) return;
-                const errorMessage = error instanceof Error ? error.message : "读取方舟素材库配置失败";
+                const errorMessage = error instanceof Error ? error.message : tr("读取方舟素材库配置失败");
                 setLoadError(errorMessage);
                 if (!initial) message.error(errorMessage);
             } finally {
@@ -92,10 +93,10 @@ export default function ArkPrivateAssetsSettingsPage() {
         navigationConfirmOpenRef.current = true;
         navigationTriggerRef.current = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
         modal.confirm({
-            title: "放弃方舟素材库调整？",
-            content: "当前页面有尚未保存的同步策略、项目或 IAM 凭据草稿，离开后这些内容会丢失。服务端正在使用的配置不会改变。",
-            okText: "放弃并离开",
-            cancelText: "继续编辑",
+            title: tr("放弃方舟素材库调整？"),
+            content: tr("当前页面有尚未保存的同步策略、项目或 IAM 凭据草稿，离开后这些内容会丢失。服务端正在使用的配置不会改变。"),
+            okText: tr("放弃并离开"),
+            cancelText: tr("继续编辑"),
             okButtonProps: { danger: true },
             onOk: () => {
                 navigationConfirmOpenRef.current = false;
@@ -122,7 +123,7 @@ export default function ArkPrivateAssetsSettingsPage() {
         form.setFields([]);
         setDirty(false);
         setSaveError("");
-        message.info("已撤销方舟素材库的未保存调整");
+        message.info(tr("已撤销方舟素材库的未保存调整"));
     };
 
     const requestRefresh = () => {
@@ -131,10 +132,10 @@ export default function ArkPrivateAssetsSettingsPage() {
             return;
         }
         modal.confirm({
-            title: "放弃调整并重新读取？",
-            content: "重新读取会丢弃当前同步策略、项目和 IAM 凭据草稿，并以服务端配置为准。",
-            okText: "放弃并刷新",
-            cancelText: "继续编辑",
+            title: tr("放弃调整并重新读取？"),
+            content: tr("重新读取会丢弃当前同步策略、项目和 IAM 凭据草稿，并以服务端配置为准。"),
+            okText: tr("放弃并刷新"),
+            cancelText: tr("继续编辑"),
             okButtonProps: { danger: true },
             onOk: () => load(false, true),
         });
@@ -149,16 +150,16 @@ export default function ArkPrivateAssetsSettingsPage() {
         try {
             const result = await updateAdminArkPrivateAssetSetting(expected);
             if (!isAdminArkPrivateAssetSetting(result.setting) || !arkPrivateAssetResponseMatches(result.setting, expected, expectedHasSecret)) {
-                throw new Error("服务端返回的方舟素材库配置与本次保存内容不一致，请重新读取后核对");
+                throw new Error(tr("服务端返回的方舟素材库配置与本次保存内容不一致，请重新读取后核对"));
             }
             setSetting(result.setting);
             const nextValues = toFormValues(result.setting);
             form.setFieldsValue(nextValues);
             setDirty(false);
-            message.success("方舟素材库配置已保存");
+            message.success(tr("方舟素材库配置已保存"));
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "保存方舟素材库配置失败";
-            setSaveError(`${errorMessage}。未自动重试，请重新读取当前配置后再决定是否保存。`);
+            const errorMessage = error instanceof Error ? error.message : tr("保存方舟素材库配置失败");
+            setSaveError(tr("{0}。未自动重试，请重新读取当前配置后再决定是否保存。", errorMessage));
             message.error(errorMessage);
             throw error;
         } finally {
@@ -188,8 +189,8 @@ export default function ArkPrivateAssetsSettingsPage() {
 
     if (loading && !setting) {
         return (
-            <AdminPageFrame title="方舟素材库" description="为 Seedance 参考图配置后端可信素材导入" scroll>
-                <div className="admin-settings-stack admin-ark-settings" aria-label="正在读取方舟素材库配置" role="status">
+            <AdminPageFrame title={tr("方舟素材库")} description={tr("为 Seedance 参考图配置后端可信素材导入")} scroll>
+                <div className="admin-settings-stack admin-ark-settings" aria-label={tr("正在读取方舟素材库配置")} role="status">
                     <div className="admin-ark-command-bar">
                         <Skeleton active title={{ width: 190 }} paragraph={false} />
                     </div>
@@ -203,18 +204,18 @@ export default function ArkPrivateAssetsSettingsPage() {
 
     if (!setting) {
         return (
-            <AdminPageFrame title="方舟素材库" description="为 Seedance 参考图配置后端可信素材导入" scroll>
+            <AdminPageFrame title={tr("方舟素材库")} description={tr("为 Seedance 参考图配置后端可信素材导入")} scroll>
                 <div className="admin-settings-stack admin-ark-settings">
                     <div className="admin-ark-load-error" role="alert">
                         <span className="admin-ark-load-error-icon">
                             <AlertTriangle className="size-5" aria-hidden="true" />
                         </span>
                         <div>
-                            <h2>无法读取方舟素材库配置</h2>
-                            <p>{loadError || "当前没有可显示的配置，请稍后重试。"}</p>
+                            <h2>{tr("无法读取方舟素材库配置")}</h2>
+                            <p>{loadError || tr("当前没有可显示的配置，请稍后重试。")}</p>
                         </div>
                         <Button icon={<RefreshCw className="size-4" />} loading={refreshing} onClick={() => void load(false, true)}>
-                            重新读取
+                            {tr("重新读取")}
                         </Button>
                     </div>
                 </div>
@@ -230,26 +231,26 @@ export default function ArkPrivateAssetsSettingsPage() {
     const prerequisitesReady = projectReady && credentialsReady;
 
     return (
-        <AdminPageFrame title="方舟素材库" description="为 Seedance 参考图配置后端可信素材导入" scroll>
+        <AdminPageFrame title={tr("方舟素材库")} description={tr("为 Seedance 参考图配置后端可信素材导入")} scroll>
             <div className="admin-settings-stack admin-ark-settings">
                 <div className={cn("admin-ark-command-bar", dirty && "is-dirty")}>
                     <div className="admin-ark-command-copy" aria-live="polite">
                         <div className="flex flex-wrap items-center gap-2">
-                            <strong>{dirty ? "方舟素材库有调整待保存" : "方舟素材库配置已同步"}</strong>
-                            <AdminStatusBadge label={dirty ? "尚未生效" : "服务端配置"} tone={dirty ? "warning" : "neutral"} />
+                            <strong>{dirty ? tr("方舟素材库有调整待保存") : tr("方舟素材库配置已同步")}</strong>
+                            <AdminStatusBadge label={dirty ? tr("尚未生效") : tr("服务端配置")} tone={dirty ? "warning" : "neutral"} />
                         </div>
                     </div>
                     <div className="admin-ark-command-actions">
                         {dirty ? (
                             <Button icon={<RotateCcw className="size-4" />} disabled={saving} onClick={resetDraft}>
-                                撤销调整
+                                {tr("撤销调整")}
                             </Button>
                         ) : null}
                         <Button icon={<RefreshCw className="size-4" />} loading={refreshing} disabled={saving} onClick={requestRefresh}>
-                            刷新状态
+                            {tr("刷新状态")}
                         </Button>
                         <Button type="primary" icon={<Save className="size-4" />} loading={saving} disabled={!dirty || loading || refreshing} onClick={() => void submitSave()}>
-                            保存修改
+                            {tr("保存修改")}
                         </Button>
                     </div>
                 </div>
@@ -257,7 +258,7 @@ export default function ArkPrivateAssetsSettingsPage() {
                 {loadError || saveError ? (
                     <div className="admin-ark-inline-alert" role="alert">
                         <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
-                        <span>{saveError || `${loadError}。页面仍显示上一次成功读取的配置。`}</span>
+                        <span>{saveError || tr("{0}。页面仍显示上一次成功读取的配置。", loadError)}</span>
                     </div>
                 ) : null}
 
@@ -280,22 +281,22 @@ export default function ArkPrivateAssetsSettingsPage() {
                         <SettingsSectionCard
                             className="admin-ark-section admin-ark-configuration-section"
                             icon={<KeyRound className="size-4" aria-hidden="true" />}
-                            title="1. 配置方舟项目与 IAM 凭据"
-                            description="凭据仅保存在服务端，用于创建素材组、上传图片和查询审核状态。"
-                            status={<AdminStatusBadge label={prerequisitesReady ? "已配置" : "待配置"} tone={prerequisitesReady ? "success" : "neutral"} />}
+                            title={tr("1. 配置方舟项目与 IAM 凭据")}
+                            description={tr("凭据仅保存在服务端，用于创建素材组、上传图片和查询审核状态。")}
+                            status={<AdminStatusBadge label={prerequisitesReady ? tr("已配置") : tr("待配置")} tone={prerequisitesReady ? "success" : "neutral"} />}
                         >
                             <div className="admin-ark-form-grid">
-                                <Form.Item name="region" label="Region" extra="方舟控制面当前仅 cn-beijing 区域开放，其他区域连接会被直接重置。">
+                                <Form.Item name="region" label="Region" extra={tr("方舟控制面当前仅 cn-beijing 区域开放，其他区域连接会被直接重置。")}>
                                     <Input autoComplete="off" placeholder="cn-beijing" />
                                 </Form.Item>
                                 <Form.Item name="projectName" label="Ark ProjectName">
-                                    <Input autoComplete="off" placeholder="方舟项目名称" />
+                                    <Input autoComplete="off" placeholder={tr("方舟项目名称")} />
                                 </Form.Item>
                                 <Form.Item name="accessKeyId" label="IAM AccessKey">
-                                    <Input autoComplete="off" prefix={<KeyRound className="size-4 text-foreground/35" />} placeholder="仅保存在服务端" />
+                                    <Input autoComplete="off" prefix={<KeyRound className="size-4 text-foreground/35" />} placeholder={tr("仅保存在服务端")} />
                                 </Form.Item>
-                                <Form.Item name="accessKeySecret" label={setting.hasAccessKeySecret ? `IAM SecretKey（${configuredSecretText}）` : "IAM SecretKey"} extra={setting.hasAccessKeySecret ? "AccessKey 不变时留空可保留原密钥。" : undefined}>
-                                    <Input.Password autoComplete="new-password" placeholder={setting.hasAccessKeySecret ? "留空保留原密钥" : "仅保存在服务端"} />
+                                <Form.Item name="accessKeySecret" label={setting.hasAccessKeySecret ? `IAM SecretKey（${configuredSecretText}）` : "IAM SecretKey"} extra={setting.hasAccessKeySecret ? tr("AccessKey 不变时留空可保留原密钥。") : undefined}>
+                                    <Input.Password autoComplete="new-password" placeholder={setting.hasAccessKeySecret ? tr("留空保留原密钥") : tr("仅保存在服务端")} />
                                 </Form.Item>
                             </div>
                         </SettingsSectionCard>
@@ -306,19 +307,19 @@ export default function ArkPrivateAssetsSettingsPage() {
                             <SettingsSectionCard
                                 className="admin-ark-section admin-ark-policy-section"
                                 icon={<CloudUpload className="size-4" aria-hidden="true" />}
-                                title="2. 是否启用可信素材同步"
-                                description="启用后，符合条件的 Seedance 参考图会在生成前导入方舟素材库。"
-                                status={<AdminStatusBadge label={draftEnabled ? "已启用" : "已停用"} tone={draftEnabled ? "success" : "neutral"} />}
+                                title={tr("2. 是否启用可信素材同步")}
+                                description={tr("启用后，符合条件的 Seedance 参考图会在生成前导入方舟素材库。")}
+                                status={<AdminStatusBadge label={draftEnabled ? tr("已启用") : tr("已停用")} tone={draftEnabled ? "success" : "neutral"} />}
                             >
                                 <div className="admin-ark-policy-control">
                                     <div className="admin-ark-policy-copy">
-                                        <strong>自动导入可信参考素材</strong>
-                                        <p>关闭只停止新素材同步，不删除已有素材和绑定。</p>
+                                        <strong>{tr("自动导入可信参考素材")}</strong>
+                                        <p>{tr("关闭只停止新素材同步，不删除已有素材和绑定。")}</p>
                                     </div>
                                     <div className="admin-ark-policy-switch">
-                                        <span>{draftEnabled ? "启用" : "停用"}</span>
+                                        <span>{draftEnabled ? tr("启用") : tr("停用")}</span>
                                         <Form.Item name="enabled" valuePropName="checked" noStyle>
-                                            <Switch aria-label="启用可信素材同步，保存修改后生效" />
+                                            <Switch aria-label={tr("启用可信素材同步，保存修改后生效")} />
                                         </Form.Item>
                                     </div>
                                 </div>
@@ -361,10 +362,10 @@ function hasArkPrivateAssetChanges(values: Partial<ArkPrivateAssetForm>, setting
 function validateArkPrivateAssetDraft(values: ArkPrivateAssetForm, setting: AdminArkPrivateAssetSetting) {
     const draft = normalizeArkPrivateAssetPayload(values);
     if (!draft.enabled) return "";
-    if (!draft.region) return "请填写方舟 Region";
-    if (!draft.projectName) return "请填写方舟 ProjectName";
-    if (!draft.accessKeyId) return "请填写方舟素材库 IAM AccessKey";
-    if (!hasUsableSecret(draft, setting)) return draft.accessKeyId !== setting.accessKeyId ? "更换 IAM AccessKey 时请同时填写匹配的 SecretKey" : "请填写方舟素材库 IAM SecretKey";
+    if (!draft.region) return tr("请填写方舟 Region");
+    if (!draft.projectName) return tr("请填写方舟 ProjectName");
+    if (!draft.accessKeyId) return tr("请填写方舟素材库 IAM AccessKey");
+    if (!hasUsableSecret(draft, setting)) return draft.accessKeyId !== setting.accessKeyId ? tr("更换 IAM AccessKey 时请同时填写匹配的 SecretKey") : tr("请填写方舟素材库 IAM SecretKey");
     return "";
 }
 

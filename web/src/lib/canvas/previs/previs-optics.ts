@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { PrevisAspectRatio, PrevisCamera, PrevisShot } from "@/types/previs";
 
 /**
@@ -10,9 +11,9 @@ import type { PrevisAspectRatio, PrevisCamera, PrevisShot } from "@/types/previs
 export const PREVIS_SENSOR_WIDTH_MM = 36;
 
 export const PREVIS_ASPECT_RATIOS: Array<{ value: PrevisAspectRatio; label: string; ratio: number }> = [
-    { value: "9:16", label: "9:16 竖屏", ratio: 9 / 16 },
-    { value: "16:9", label: "16:9 横屏", ratio: 16 / 9 },
-    { value: "2.39:1", label: "2.39:1 宽银幕", ratio: 2.39 },
+    { value: "9:16", label: tr("9:16 竖屏"), ratio: 9 / 16 },
+    { value: "16:9", label: tr("16:9 横屏"), ratio: 16 / 9 },
+    { value: "2.39:1", label: tr("2.39:1 宽银幕"), ratio: 2.39 },
 ];
 
 export function previsAspectValue(value?: PrevisAspectRatio): number {
@@ -55,7 +56,7 @@ export function resolvePrevisSafeFrame(container: { width: number; height: numbe
  * 输出分辨率：长边固定，短边按画幅换算并取偶数（H.264 yuv420p 要求宽高为偶数）。
  */
 export function resolvePrevisOutputSize(aspect: number, longEdge = 1280) {
-    if (!Number.isFinite(longEdge) || longEdge < 2 || longEdge > 8192) throw new Error("输出长边必须在 2–8192 像素之间");
+    if (!Number.isFinite(longEdge) || longEdge < 2 || longEdge > 8192) throw new Error(tr("输出长边必须在 2–8192 像素之间"));
     const safeAspect = Number.isFinite(aspect) && aspect > 0 ? aspect : 9 / 16;
     const even = (value: number) => Math.max(2, Math.round(value / 2) * 2);
     if (safeAspect >= 1) return { width: even(longEdge), height: even(longEdge / safeAspect) };
@@ -75,7 +76,7 @@ export function resolvePrevisDepthRange(input: { cameraPositions: Array<[number,
         }
     }
     const maxFar = input.maxFar ?? 80;
-    if (!Number.isFinite(maxFar) || maxFar < 2) throw new Error("深度范围上限必须至少为 2 米");
+    if (!Number.isFinite(maxFar) || maxFar < 2) throw new Error(tr("深度范围上限必须至少为 2 米"));
     if (!distances.length) return { near: 0, far: Math.min(30, maxFar) };
     const nearest = Math.min(...distances);
     const farthest = Math.max(...distances);

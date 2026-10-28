@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { Video } from "lucide-react";
 import { MediaPreview } from "@/components/media-preview";
@@ -36,6 +37,6 @@ export function TaskVideoThumbnail({ src }: { src: string }) {
         };
     }, [src]);
     return <span ref={container} className="block h-full w-full">
-        {poster?.source === src ? <MediaPreview src={poster.url} kind="image" className="h-full w-full object-cover" /> : <span className="task-video-poster-placeholder"><Video /><small>视频预览</small></span>}
+        {poster?.source === src ? <MediaPreview src={poster.url} kind="image" className="h-full w-full object-cover" /> : <span className="task-video-poster-placeholder"><Video /><small>{tr("视频预览")}</small></span>}
     </span>;
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { scopedLocalStorage } from "@/lib/user-scope";
 import { useMemo } from "react";
 import type { ModelTag } from "@/lib/model-tags";
@@ -187,7 +188,7 @@ export const defaultConfig: AiConfig = {
     audioLanguage: "",
     audioDialect: "",
     audioInstructions: "",
-    audioEmotionControlMethod: "与音色参考音频相同",
+    audioEmotionControlMethod: tr("与音色参考音频相同"),
     audioEmotionRandom: "false",
     audioEmotionHappy: "0",
     audioEmotionAngry: "0",
@@ -363,7 +364,7 @@ export const useConfigStore = create<ConfigStore>()(
                         createModelChannel({
                             ...channel,
                             id: channel.id || `system-${index + 1}`,
-                            name: "系统模型",
+                            name: tr("系统模型"),
                             scope: "system",
                             apiKey: channel.apiKey || "system",
                         }),
@@ -499,7 +500,7 @@ export function createModelChannel(channel?: Partial<ModelChannel>): ModelChanne
     const providedBaseUrl = channel?.baseUrl?.trim();
     return {
         id: channel?.id?.trim() || nanoid(),
-        name: channel?.name?.trim() || "新渠道",
+        name: channel?.name?.trim() || tr("新渠道"),
         sortOrder: channel?.sortOrder ?? 0,
         baseUrl: providedBaseUrl || (interfaceType ? defaultBaseUrlForChannelInterface(interfaceType) : defaultBaseUrlForApiFormat(apiFormat)),
         apiKey: channel?.apiKey || "",
@@ -520,7 +521,7 @@ export function resolveModelChannel(config: AiConfig, value: string) {
     const decoded = decodeChannelModel(value);
     const model = decoded?.model || value;
     const matched = decoded ? config.channels.find((channel) => channel.id === decoded.channelId) : config.channels.find((channel) => channel.models.includes(model));
-    return matched || config.channels[0] || createModelChannel({ id: "default", name: "默认渠道", baseUrl: config.baseUrl, apiKey: config.apiKey, apiFormat: config.apiFormat, models: config.models.map(modelOptionName) });
+    return matched || config.channels[0] || createModelChannel({ id: "default", name: tr("默认渠道"), baseUrl: config.baseUrl, apiKey: config.apiKey, apiFormat: config.apiFormat, models: config.models.map(modelOptionName) });
 }
 
 export function logicalModelIDForConfig(config: AiConfig) {
@@ -557,7 +558,7 @@ function normalizeChannels(config: AiConfig, ensureDefault = true) {
             createModelChannel({
                 ...channel,
                 id: channel.id || (index === 0 ? "default" : `channel-${index + 1}`),
-                name: channel.name || (index === 0 ? "默认渠道" : `渠道 ${index + 1}`),
+                name: channel.name || (index === 0 ? tr("默认渠道") : tr("渠道 {0}", index + 1)),
                 models: uniqueRawModels(channel.models || []),
             }),
         )
@@ -566,7 +567,7 @@ function normalizeChannels(config: AiConfig, ensureDefault = true) {
         channels.push(
             createModelChannel({
                 id: "default",
-                name: "默认渠道",
+                name: tr("默认渠道"),
                 baseUrl: config.baseUrl || defaultConfig.baseUrl,
                 apiKey: config.apiKey || "",
                 apiFormat: config.apiFormat || defaultConfig.apiFormat,

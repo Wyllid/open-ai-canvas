@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 export type TaskTextStreamEvent = {
     event: string;
     id?: number;
@@ -51,7 +52,7 @@ function emitTaskTextStreamBlock(block: string, onEvent: (event: TaskTextStreamE
     try {
         parsed = JSON.parse(raw);
     } catch {
-        throw new Error("任务文本流返回了无效数据");
+        throw new Error(tr("任务文本流返回了无效数据"));
     }
     onEvent({ event, ...(id !== undefined ? { id } : {}), data: parsed });
 }

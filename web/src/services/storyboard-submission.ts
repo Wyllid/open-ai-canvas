@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 import { creationRuns, type CreationSubmission } from "./api/creation-runs";
 import type { CreateTaskInput } from "./api/task-center";
@@ -22,9 +23,9 @@ export async function submitStoryboardTask(request: CreateTaskInput, options: {
         signal.throwIfAborted();
         if (connectionError) throw connectionError;
         assertCurrent();
-        if (Date.parse(submission.quote.expiresAt) <= Date.now()) throw new Error("分镜确认已过期，请重新发起拆镜并确认");
+        if (Date.parse(submission.quote.expiresAt) <= Date.now()) throw new Error(tr("分镜确认已过期，请重新发起拆镜并确认"));
         const approved = await api.approve(run.id, { ...guard, submissionIds: [submission.id] }, signal);
-        if (!approved.submissions.some((item) => item.id === submission.id && item.approvedAt)) throw new Error("确认回执不完整，尚未提交拆镜任务");
+        if (!approved.submissions.some((item) => item.id === submission.id && item.approvedAt)) throw new Error(tr("确认回执不完整，尚未提交拆镜任务"));
         signal.throwIfAborted();
         assertCurrent();
         return await api.execute(run.id, { ...guard, submissionId: submission.id }, signal);

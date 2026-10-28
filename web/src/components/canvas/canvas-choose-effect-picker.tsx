@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useUserStore } from "@/stores/use-user-store";
 import { useEffect, useState } from "react";
 import { CanvasToolPopover } from "./canvas-tool-popover";
@@ -65,7 +66,7 @@ export function CanvasChooseEffectPicker({
 
     return (
         <CanvasToolPopover
-            label="选择特效"
+            label={tr("选择特效")}
             open={actualOpen}
             onOpenChange={setOpen}
             trigger={["click"]}
@@ -90,30 +91,30 @@ export function CanvasChooseEffectPicker({
                                         </button>
                                     ))}
                                 </div>
-                                <input className="asset-search min-w-0 flex-1" placeholder="搜索名称/标签" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} aria-label="搜索特效" />
+                                <input className="asset-search min-w-0 flex-1" placeholder={tr("搜索名称/标签")} value={searchInput} onChange={(event) => setSearchInput(event.target.value)} aria-label={tr("搜索特效")} />
                                 {searchInput ? (
-                                    <button type="button" className="grid size-5 shrink-0 place-items-center rounded text-foreground/32 hover:bg-surface-hover hover:text-foreground" onClick={() => setSearchInput("")} aria-label="清空搜索">
+                                    <button type="button" className="grid size-5 shrink-0 place-items-center rounded text-foreground/32 hover:bg-surface-hover hover:text-foreground" onClick={() => setSearchInput("")} aria-label={tr("清空搜索")}>
                                         <X className="size-3" />
                                     </button>
                                 ) : null}
                             </div>
                         </div>
-                        <div className="thin-scrollbar grid max-h-80 grid-cols-5 gap-2 overflow-y-auto p-2" role="listbox" aria-label="特效工具">
+                        <div className="thin-scrollbar grid max-h-80 grid-cols-5 gap-2 overflow-y-auto p-2" role="listbox" aria-label={tr("特效工具")}>
                             {toolsQuery.isPending ? (
                                 <div className="col-span-5 grid h-24 place-items-center text-foreground/40">
                                     <LoaderCircle className="size-4 animate-spin" />
                                 </div>
                             ) : toolsQuery.isError ? (
-                                <div className="col-span-5 grid h-24 place-items-center text-xs text-foreground/40">特效工具加载失败，请稍后重试</div>
+                                <div className="col-span-5 grid h-24 place-items-center text-xs text-foreground/40">{tr("特效工具加载失败，请稍后重试")}</div>
                             ) : tools.length === 0 ? (
-                                <div className="col-span-5 grid h-24 place-items-center text-xs text-foreground/40">{searchText ? "没有匹配的特效" : "暂无特效工具"}</div>
+                                <div className="col-span-5 grid h-24 place-items-center text-xs text-foreground/40">{searchText ? tr("没有匹配的特效") : tr("暂无特效工具")}</div>
                             ) : (
                                 tools.map((tool) => <EffectToolCard key={tool.id} tool={tool} selected={tool.id === activeToolId} onSelect={handleSelect} />)
                             )}
                         </div>
                         {toolsQuery.hasNextPage && (
                             <button type="button" disabled={toolsQuery.isFetchingNextPage} onClick={() => void toolsQuery.fetchNextPage()}>
-                                加载更多
+                                {tr("加载更多")}
                             </button>
                         )}
                     </div>
@@ -124,7 +125,7 @@ export function CanvasChooseEffectPicker({
                 role="button"
                 tabIndex={0}
                 className="canvas-node-composer-header-action canvas-node-fixed-chip relative overflow-hidden cursor-pointer"
-                title={resolvedLabel ? `特效：${resolvedLabel}` : "选择特效"}
+                title={resolvedLabel ? tr("特效：{0}", resolvedLabel) : tr("选择特效")}
                 aria-expanded={actualOpen}
                 aria-haspopup="dialog"
                 onClick={() => setOpen(true)}
@@ -137,11 +138,11 @@ export function CanvasChooseEffectPicker({
                 onPointerDown={(event) => event.stopPropagation()}
             >
                 <Sparkles className="size-3 shrink-0" />
-                <span className="truncate">{resolvedLabel || "特效"}</span>
+                <span className="truncate">{resolvedLabel || tr("特效")}</span>
                 {activeToolId != null && onClear ? (
                     <button
                         type="button"
-                        aria-label="移除特效"
+                        aria-label={tr("移除特效")}
                         onClick={(event) => {
                             event.stopPropagation();
                             onClear();

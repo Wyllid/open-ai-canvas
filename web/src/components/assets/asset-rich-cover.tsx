@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Mic, Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -5,7 +6,7 @@ import { getResourceAccess, resolveResourceAccessURL } from "@/services/api/reso
 import type { AudioAsset, EntityAsset } from "@/stores/use-asset-store";
 
 function initial(name: string) {
-    return Array.from(name.trim())[0] || "角";
+    return Array.from(name.trim())[0] || tr("角");
 }
 
 /** 换取资源展示地址；一次换取供多个 <img> 共用，避免两个图片组件各自加载、各自失败。 */
@@ -68,7 +69,7 @@ export function CharacterAssetCover({ asset, size = "card" }: { asset: EntityAss
 export function characterAssetSummary(asset: EntityAsset) {
     const role = typeof asset.data.definition.role === "string" ? asset.data.definition.role.trim() : "";
     const appearance = typeof asset.data.definition.appearance === "string" ? asset.data.definition.appearance.trim() : "";
-    const states = [asset.data.visualStatus === "ready" ? "形象就绪" : "形象待完善", asset.data.voiceName ? `声音：${asset.data.voiceName}` : "未绑定声音"];
+    const states = [asset.data.visualStatus === "ready" ? tr("形象就绪") : tr("形象待完善"), asset.data.voiceName ? tr("声音：{0}", asset.data.voiceName) : tr("未绑定声音")];
     return [role || appearance, ...states].filter(Boolean).join(" · ");
 }
 
@@ -111,8 +112,8 @@ export function AudioPlayButton({ asset, className = "", onPlayingChange }: { as
     return (
         <button
             type="button"
-            aria-label={`${playing ? "暂停" : "试听"} ${asset.title}`}
-            title={playing ? "暂停" : "试听"}
+            aria-label={`${playing ? tr("暂停") : tr("试听")} ${asset.title}`}
+            title={playing ? tr("暂停") : tr("试听")}
             onClick={(event) => {
                 event.stopPropagation();
                 void toggle();

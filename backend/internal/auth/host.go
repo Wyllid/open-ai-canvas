@@ -10,7 +10,10 @@ import (
 	"yingce/backend/internal/repository"
 )
 
-const DefaultBrandName = "影策"
+const DefaultBrandName = "Local Studio"
+
+// LegacyBrandName is the upstream default; a sender name still set to it follows the current brand.
+const LegacyBrandName = "影策"
 
 // Host 由组合根注入，避免 auth → service 回环。
 type Host interface {

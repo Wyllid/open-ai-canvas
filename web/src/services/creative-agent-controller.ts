@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 import { applyCanvasOperations, type CanvasOperation, type CanvasSnapshot } from "@/lib/canvas/canvas-operation-contract";
 import { buildCanvasContext } from "@/lib/canvas/canvas-context-discovery";
@@ -232,7 +233,7 @@ export class CreativeAgentController {
         // pendingPayment also retains submitted IDs for recovery; only unsubmitted items need an approval card.
         const pending = this.state.pendingPayment?.map((id) => this.submissions.find((item) => item.id === id)).filter((item): item is CreationSubmission => Boolean(item && !item.taskId && !item.revokedAt));
         if (!pending?.length) return undefined;
-        return { id: pending.map((item) => item.id).join(":"), title: this.state.planning && !this.state.planning.consumed ? "确认本次理解与规划" : "确认本批生成", items: pending.map((item) => { const media = this.state.media.find((media) => media.submissionId === item.id); const node = this.state.proposal?.workflow.nodes.find((node) => node.ref === media?.ref); return { id: item.id, label: node?.title || "理解需求并生成问答或方案", model: item.quote.model, quantity: 1, specification: [...Object.entries(item.quote.options || {}).filter(([, value]) => value !== undefined && value !== "").map(([key, value]) => `${({ size: "比例/尺寸", videoSeconds: "时长（秒）", vquality: "清晰度", quality: "质量", count: "数量" } as Record<string, string>)[key] || key}：${String(value)}`)].join(" · ") }; }), amountLabel: `${pending.length} 项`, basis: "仅批准本批列出的生成项。", expiresAt: pending.map((item) => item.quote.expiresAt).sort()[0], approvedQuantity: pending.filter((item) => item.approvedAt).length };
+        return { id: pending.map((item) => item.id).join(":"), title: this.state.planning && !this.state.planning.consumed ? tr("确认本次理解与规划") : tr("确认本批生成"), items: pending.map((item) => { const media = this.state.media.find((media) => media.submissionId === item.id); const node = this.state.proposal?.workflow.nodes.find((node) => node.ref === media?.ref); return { id: item.id, label: node?.title || tr("理解需求并生成问答或方案"), model: item.quote.model, quantity: 1, specification: [...Object.entries(item.quote.options || {}).filter(([, value]) => value !== undefined && value !== "").map(([key, value]) => `${({ size: "比例/尺寸", videoSeconds: "时长（秒）", vquality: "清晰度", quality: "质量", count: "数量" } as Record<string, string>)[key] || key}：${String(value)}`)].join(" · ") }; }), amountLabel: `${pending.length} 项`, basis: "仅批准本批列出的生成项。", expiresAt: pending.map((item) => item.quote.expiresAt).sort()[0], approvedQuantity: pending.filter((item) => item.approvedAt).length };
     }
 
     async approveGeneration() {
@@ -356,7 +357,7 @@ export class CreativeAgentController {
             const snapshot = this.options.canvas()?.read() || { projectId: "", title: "", nodes: [], connections: [], selectedNodeIds: [], viewport: { x: 0, y: 0, k: 1 } };
             const ops = creativeProposalOps(this.run!.id, proposal, snapshot, this.options.config());
             proposal.extra = { ...(proposal.extra as Record<string, unknown> || {}), nodeIds: Object.fromEntries(proposal.workflow.nodes.map((node) => [node.ref, creativeNodeId(this.run!.id, proposal.version, node.ref)])) };
-            this.state = { ...this.state, proposal, operations: ops, messages: [...this.state.messages, { id: nanoid(), role: "assistant", text: `方案 v${proposal.version}：${proposal.title}`, proposal }] };
+            this.state = { ...this.state, proposal, operations: ops, messages: [...this.state.messages, { id: nanoid(), role: "assistant", text: tr("方案 v{0}：{1}", proposal.version, proposal.title), proposal }] };
             await this.save("waiting_proposal");
             this.run = await this.api.approveProposal(this.run!.id, { ...this.guard(), revision: this.run!.revision, proposalVersion: proposal.version, proposal, ops }, this.abort.signal);
             const linked = await this.api.canvas(this.run.id, this.guard(), this.abort.signal);
@@ -371,9 +372,9 @@ export class CreativeAgentController {
             const ops = this.state.pendingEdits;
             if (!ops?.length) throw new Error("当前没有待确认节点调整");
             const version = Math.max(this.state.proposal?.version || 0, this.run?.approvedProposalVersion || 0) + 1;
-            this.run = await this.api.approveProposal(this.run!.id, { ...this.guard(), revision: this.run!.revision, proposalVersion: version, proposal: { title: "局部节点调整", ops }, ops }, this.abort.signal);
+            this.run = await this.api.approveProposal(this.run!.id, { ...this.guard(), revision: this.run!.revision, proposalVersion: version, proposal: { title: tr("局部节点调整"), ops }, ops }, this.abort.signal);
             await this.commitOps(ops);
-            this.state = { ...this.state, pendingEdits: undefined, messages: [...this.state.messages, { id: nanoid(), role: "assistant", text: "已更新指定节点字段。" }] };
+            this.state = { ...this.state, pendingEdits: undefined, messages: [...this.state.messages, { id: nanoid(), role: "assistant", text: tr("已更新指定节点字段。") }] };
             await this.save("idle");
         });
     }
@@ -418,7 +419,7 @@ export class CreativeAgentController {
         const existingRefs = Object.keys((proposal.extra as { existingAssets?: Record<string, unknown> } | undefined)?.existingAssets || {});
         const ready = new Set([...existingRefs, ...this.state.media.filter((item) => item.status === "ready").map((item) => item.ref)]);
         if (this.state.media.every((item) => item.status === "ready")) {
-            this.state = { ...this.state, pendingPayment: undefined, messages: [...this.state.messages, { id: nanoid(), role: "assistant", text: "本次产物已生成并保存，可以在会话和画布查看。" }] };
+            this.state = { ...this.state, pendingPayment: undefined, messages: [...this.state.messages, { id: nanoid(), role: "assistant", text: tr("本次产物已生成并保存，可以在会话和画布查看。") }] };
             await this.save("completed"); return;
         }
         const candidates = this.state.media.filter((media) => media.status === "pending" && proposal.generationItems.find((item) => item.ref === media.ref)?.referenceRefs?.every((ref) => ready.has(ref)) !== false);
@@ -433,7 +434,7 @@ export class CreativeAgentController {
                 const storageKey = typeof reference?.metadata?.storageKey === "string" ? reference.metadata.storageKey : "";
                 const resourceId = resourceIdFromStorageKey(storageKey);
                 if (!reference || !resourceId || reference.metadata?.status !== "success") throw new Error("引用素材尚未就绪，请选择实际可用的资源");
-                return { id: reference.id, name: reference.title || "参考图", type: reference.metadata?.mimeType || "image/png", storageKey, dataUrl: resourceFileUrl(resourceId) };
+                return { id: reference.id, name: reference.title || tr("参考图"), type: reference.metadata?.mimeType || "image/png", storageKey, dataUrl: resourceFileUrl(resourceId) };
             });
             const config = { ...this.requestConfig(item.model), count: "1", ...(item.size ? { size: item.size } : {}), ...(item.seconds !== undefined ? { videoSeconds: String(item.seconds) } : {}), ...(item.quality ? item.mode === "video" ? { vquality: item.quality } : { quality: item.quality } : {}) };
             const request = await prepareBackendGenerationTask({ projectId: this.run!.canvasId, mode: item.mode, prompt: node.metadata?.prompt || "", config, referenceImages, signal: this.abort.signal, metadata: { source: "creative-agent", creationRunId: this.run!.id, nodeId: node.id, conversationId: this.run!.id } });

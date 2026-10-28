@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { RefObject } from "react";
 
 import { CanvasSelectionToolbar } from "@/components/canvas/canvas-workspace-overlays";
@@ -54,7 +55,7 @@ export function CanvasProjectSelectionToolbar({ anchorRef, containerRef, count, 
 
     return (
         <CanvasSelectionToolbar anchorRef={anchorRef} containerRef={containerRef} count={count}>
-            <FloatingDock items={items} size="compact" className="canvas-floating-dock" style={canvasDockStyle(theme)} ariaLabel="多选节点布局工具" />
+            <FloatingDock items={items} size="compact" className="canvas-floating-dock" style={canvasDockStyle(theme)} ariaLabel={tr("多选节点布局工具")} />
         </CanvasSelectionToolbar>
     );
 }

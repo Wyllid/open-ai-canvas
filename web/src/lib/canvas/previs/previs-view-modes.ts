@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Euler, Vector3 } from "three";
 
 import { interpolatePrevisTransform } from "@/lib/canvas/previs/previs-scene";
@@ -43,13 +44,13 @@ const CAPABILITIES: Record<PrevisViewMode, PrevisViewModeCapabilities> = {
 };
 
 export const PREVIS_VIEW_MODES: Array<{ mode: PrevisViewMode; label: string; hint: string }> = [
-    { mode: "free", label: "3D", hint: "自由视角：拖拽环绕、滚轮缩放" },
-    { mode: "camera", label: "CAM", hint: "机位视图：按当前镜头的摄影机取景，环绕已锁定" },
-    { mode: "top", label: "TOP", hint: "俯视：从正上方向下看，正交投影，环绕已锁定" },
-    { mode: "front", label: "FRONT", hint: "正视：沿 -Z 方向看向场景，正交投影，环绕已锁定" },
-    { mode: "back", label: "BACK", hint: "背视：沿 +Z 方向看向场景，正交投影，环绕已锁定" },
-    { mode: "left", label: "LEFT", hint: "左视：沿 +X 方向看向场景，正交投影，环绕已锁定" },
-    { mode: "right", label: "RIGHT", hint: "右视：沿 -X 方向看向场景，正交投影，环绕已锁定" },
+    { mode: "free", label: "3D", hint: tr("自由视角：拖拽环绕、滚轮缩放") },
+    { mode: "camera", label: "CAM", hint: tr("机位视图：按当前镜头的摄影机取景，环绕已锁定") },
+    { mode: "top", label: "TOP", hint: tr("俯视：从正上方向下看，正交投影，环绕已锁定") },
+    { mode: "front", label: "FRONT", hint: tr("正视：沿 -Z 方向看向场景，正交投影，环绕已锁定") },
+    { mode: "back", label: "BACK", hint: tr("背视：沿 +Z 方向看向场景，正交投影，环绕已锁定") },
+    { mode: "left", label: "LEFT", hint: tr("左视：沿 +X 方向看向场景，正交投影，环绕已锁定") },
+    { mode: "right", label: "RIGHT", hint: tr("右视：沿 -X 方向看向场景，正交投影，环绕已锁定") },
 ];
 
 export const PREVIS_DEFAULT_VIEW_MODE: PrevisViewMode = "free";

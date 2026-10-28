@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { NODE_DEFAULT_SIZE } from "@/constant/canvas";
 import { CanvasNodeType, isBuiltinCanvasNodeType, type CanvasNodeData } from "@/types/canvas";
 
@@ -80,7 +81,7 @@ export function imageNodeSizeFromRatio(size: string, baseWidth = 720, baseHeight
 
 export function ensureMediaNodeMinimumSize(node: CanvasNodeData) {
     if (node.type !== CanvasNodeType.Image && node.type !== CanvasNodeType.Video) return node;
-    const title = node.title === "New Generation" ? "图片" : node.title === "Video" ? "视频" : node.title;
+    const title = node.title === "New Generation" ? tr("图片") : node.title === "Video" ? tr("视频") : node.title;
     if (node.type === CanvasNodeType.Image) {
         const metadata = node.metadata;
         // 手动尺寸、自由拉伸及锁定布局必须跨保存和重载保持不变。

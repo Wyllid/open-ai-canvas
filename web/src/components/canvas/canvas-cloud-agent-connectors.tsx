@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // Agent 连接器：输入框底部的第三方协作工具入口条。
 //
 // 流光溢彩渐变背景 + 紧凑排列的品牌图标，无独立按钮背景。
@@ -104,11 +105,11 @@ function SlackIcon() {
 
 const AGENT_CONNECTORS: AgentConnector[] = [
     { id: "notion", name: "Notion", icon: <NotionIcon /> },
-    { id: "feishu", name: "飞书", icon: <FeishuIcon /> },
+    { id: "feishu", name: tr("飞书"), icon: <FeishuIcon /> },
     { id: "basecamp", name: "Basecamp", icon: <BasecampIcon /> },
     { id: "obsidian", name: "Obsidian", icon: <ObsidianIcon /> },
     { id: "github", name: "GitHub", icon: <GitHubIcon /> },
-    { id: "tencent-docs", name: "腾讯文档", icon: <TencentDocsIcon /> },
+    { id: "tencent-docs", name: tr("腾讯文档"), icon: <TencentDocsIcon /> },
     { id: "slack", name: "Slack", icon: <SlackIcon /> },
 ];
 
@@ -116,21 +117,26 @@ const AGENT_CONNECTORS: AgentConnector[] = [
 export function AgentConnectorsBar({ onClose }: { onClose: () => void }) {
     const { message } = App.useApp();
     return (
-        <div className="agent-connectors" role="group" aria-label="连接器">
+        <div className="agent-connectors" role="group" aria-label={tr("连接器")}>
             <div className="agent-connectors-label">
                 <Cable />
-                <span>连接器</span>
+                <span>{tr("连接器")}</span>
             </div>
             <div className="agent-connectors-list">
                 {AGENT_CONNECTORS.map((connector) => (
-                    <Tooltip key={connector.id} title={`${connector.name} · 研发中`} placement="top">
-                        <button type="button" className="agent-connector-item" aria-label={`${connector.name}（研发中）`} onClick={() => message.info({ content: `${connector.name}连接器研发中，敬请期待`, key: `agent-connector-${connector.id}` })}>
+                    <Tooltip key={connector.id} title={tr("{0} · 研发中", connector.name)} placement="top">
+                        <button
+                            type="button"
+                            className="agent-connector-item"
+                            aria-label={tr("{0}（研发中）", connector.name)}
+                            onClick={() => message.info({ content: tr("{0}连接器研发中，敬请期待", connector.name), key: `agent-connector-${connector.id}` })}
+                        >
                             {connector.icon}
                         </button>
                     </Tooltip>
                 ))}
             </div>
-            <button type="button" className="agent-connectors-close" aria-label="收起连接器" onClick={onClose}>
+            <button type="button" className="agent-connectors-close" aria-label={tr("收起连接器")} onClick={onClose}>
                 <X />
             </button>
         </div>

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 创作页消息流：用户消息、媒体结果、生成中占位、引用素材与预览。
 
 import { conversationTimeFormatter, type CreationMessage } from "./creation-types";
@@ -46,26 +47,36 @@ export function CreationMessageView({
     const brandName = useAppearanceStore((state) => state.appearance.brandName);
     if (item.role === "user") return <CreationUserMessage item={item} shotNumber={shotNumber} onEditUserMessage={onEditUserMessage} />;
     const mode = item.mode || "text";
-    const stateLabel = item.status === "pending" ? "生成中" : item.status === "cancelled" ? "已停止" : item.status === "error" ? "生成失败" : "";
+    const stateLabel = item.status === "pending" ? tr("生成中") : item.status === "cancelled" ? tr("已停止") : item.status === "error" ? tr("生成失败") : "";
     const heading =
         mode !== "text" ? (
             <>
-                {shotNumber > 0 ? <span className="creation-shot-badge">镜 {shotNumber}</span> : null}
+                {shotNumber > 0 ? (
+                    <span className="creation-shot-badge">
+                        {tr("镜")} {shotNumber}
+                    </span>
+                ) : null}
                 <span className="creation-message-mark">
                     <Sparkles />
                 </span>
-                <strong>{mode === "image" ? "图像生成" : "视频生成"}</strong>
+                <strong>{mode === "image" ? tr("图像生成") : tr("视频生成")}</strong>
                 {item.status === "pending" ? (
                     <span className="creation-message-progress-copy">
-                        {brandName}正在生成{mode === "video" ? "视频" : "图像"}……
+                        {brandName}
+                        {tr("正在生成")}
+                        {mode === "video" ? tr("视频") : tr("图像")}……
                     </span>
                 ) : item.status === "done" ? (
-                    <span className="creation-message-progress-copy">你的{mode === "video" ? "视频" : "图像"}已创建</span>
+                    <span className="creation-message-progress-copy">
+                        {tr("你的")}
+                        {mode === "video" ? tr("视频") : tr("图像")}
+                        {tr("已创建")}
+                    </span>
                 ) : null}
                 {item.status === "done" ? (
                     <button type="button" className="creation-message-variant-action" onClick={onCreateVariant}>
                         <RefreshCw />
-                        生成同款
+                        {tr("生成同款")}
                     </button>
                 ) : null}
                 {item.createdAt ? <time dateTime={item.createdAt}>{formatMessageTime(item.createdAt)}</time> : null}
@@ -73,7 +84,11 @@ export function CreationMessageView({
             </>
         ) : (
             <>
-                {shotNumber > 0 ? <span className="creation-shot-badge">镜 {shotNumber}</span> : null}
+                {shotNumber > 0 ? (
+                    <span className="creation-shot-badge">
+                        {tr("镜")} {shotNumber}
+                    </span>
+                ) : null}
                 <span className="creation-message-mark">
                     <Sparkles />
                 </span>
@@ -99,7 +114,7 @@ export function CreationMessageView({
                         ) : (
                             <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
                                 <WorkingDots dotSize={5} gap={2} />
-                                <span>正在生成…</span>
+                                <span>{tr("正在生成…")}</span>
                             </span>
                         )}
                     </div>
@@ -114,7 +129,7 @@ export function CreationMessageView({
                     <span>{generationErrorMessage(item.error)}</span>
                     <button type="button" onClick={onRetryFailure}>
                         <RefreshCw />
-                        重新生成
+                        {tr("重新生成")}
                     </button>
                 </div>
             ) : null}
@@ -131,9 +146,13 @@ export function CreationUserMessage({ item, shotNumber, onEditUserMessage }: { i
     return (
         <article className="creation-user-message">
             <div className="creation-user-message-meta">
-                {shotNumber > 0 ? <span className="creation-shot-badge">镜 {shotNumber}</span> : null}
+                {shotNumber > 0 ? (
+                    <span className="creation-shot-badge">
+                        {tr("镜")} {shotNumber}
+                    </span>
+                ) : null}
                 {item.createdAt ? <time dateTime={item.createdAt}>{formatMessageTime(item.createdAt)}</time> : null}
-                <strong>{user?.displayName || "你"}</strong>
+                <strong>{user?.displayName || tr("你")}</strong>
                 {user ? (
                     <UserAvatar user={user} className="creation-user-avatar" />
                 ) : (
@@ -164,13 +183,13 @@ export function CreationUserMessage({ item, shotNumber, onEditUserMessage }: { i
                                     setPreviewType(kind === "video" ? "video" : "image");
                                     setPreviewUrl(kind === "video" ? attachment.url || "" : previewUrl);
                                 }}
-                                aria-label={previewable ? `预览 ${attachment.name || "附件"}` : attachment.name || "附件"}
+                                aria-label={previewable ? tr("预览 {0}", attachment.name || tr("附件")) : attachment.name || tr("附件")}
                                 disabled={previewable && !previewUrl}
                             >
                                 {kind === "video" ? (
                                     <video src={attachment.url || ""} poster={url !== attachment.url ? url : undefined} muted playsInline preload="metadata" />
                                 ) : kind === "image" ? (
-                                    <CachedResourceImage storageKey={attachment.storageKey} src={imageUrl} alt={attachment.name || "附件"} width={44} height={44} loading="lazy" decoding="async" />
+                                    <CachedResourceImage storageKey={attachment.storageKey} src={imageUrl} alt={attachment.name || tr("附件")} width={44} height={44} loading="lazy" decoding="async" />
                                 ) : kind === "audio" ? (
                                     <Music2 />
                                 ) : (
@@ -187,13 +206,13 @@ export function CreationUserMessage({ item, shotNumber, onEditUserMessage }: { i
                 </div>
             ) : null}
             <div className="creation-user-message-actions">
-                <Tooltip title="复制提示词">
-                    <button type="button" className="creation-user-message-copy" aria-label="复制提示词" onClick={() => copyText(visiblePrompt, "提示词已复制")}>
+                <Tooltip title={tr("复制提示词")}>
+                    <button type="button" className="creation-user-message-copy" aria-label={tr("复制提示词")} onClick={() => copyText(visiblePrompt, tr("提示词已复制"))}>
                         <Copy />
                     </button>
                 </Tooltip>
-                <Tooltip title="编辑并重新发送">
-                    <button type="button" className="creation-user-message-edit" aria-label="编辑提示词" onClick={() => onEditUserMessage(visiblePrompt)}>
+                <Tooltip title={tr("编辑并重新发送")}>
+                    <button type="button" className="creation-user-message-edit" aria-label={tr("编辑提示词")} onClick={() => onEditUserMessage(visiblePrompt)}>
                         <Pencil />
                     </button>
                 </Tooltip>
@@ -284,10 +303,10 @@ export function MediaResult({
     if ((item.status === "error" || item.status === "cancelled") && !expectedResultCount)
         return (
             <div className="creation-media-error">
-                <span>{item.status === "cancelled" ? item.content || "已停止" : generationErrorMessage(item.error || "生成失败")}</span>
+                <span>{item.status === "cancelled" ? item.content || tr("已停止") : generationErrorMessage(item.error || tr("生成失败"))}</span>
                 <button type="button" onClick={onRetryFailure}>
                     <RefreshCw />
-                    重新生成
+                    {tr("重新生成")}
                 </button>
             </div>
         );
@@ -295,9 +314,9 @@ export function MediaResult({
     if (!expectedResultCount || (!displayResultUrls.length && !resolving))
         return (
             <div className="creation-media-empty">
-                没有返回可预览结果{" "}
+                {tr("没有返回可预览结果")}{" "}
                 <button type="button" onClick={onRetryFailure}>
-                    重试
+                    {tr("重试")}
                 </button>
             </div>
         );
@@ -312,12 +331,12 @@ export function MediaResult({
                         setPreviewType("video");
                         setPreviewUrl(displayResultUrls[0]);
                     }}
-                    aria-label="预览生成视频"
+                    aria-label={tr("预览生成视频")}
                 >
                     {displayResultUrls[0] ? <video muted preload="metadata" src={displayResultUrls[0]} /> : null}
                     <span>
                         <Maximize2 />
-                        预览视频
+                        {tr("预览视频")}
                     </span>
                 </button>
             ) : (
@@ -331,9 +350,9 @@ export function MediaResult({
                                 setPreviewType("image");
                                 setPreviewUrl(url);
                             }}
-                            aria-label="预览生成图片"
+                            aria-label={tr("预览生成图片")}
                         >
-                            <img src={url} alt="生成结果" />
+                            <img src={url} alt={tr("生成结果")} />
                             <span>
                                 <Maximize2 />
                             </span>
@@ -342,18 +361,18 @@ export function MediaResult({
                 </div>
             )}
             <div className="creation-media-actions">
-                <span>{isVideo ? "视频结果" : `${displayResultUrls.length} 张图片`}</span>
-                <Button type="link" size="small" loading={openingCanvas} disabled={!canContinueWithResults} title={canContinueWithResults ? undefined : "素材保存完成后才能转入画布"} onClick={() => onContinueCanvas(resultAssetIds)}>
-                    添加到画布
+                <span>{isVideo ? tr("视频结果") : tr("{0} 张图片", displayResultUrls.length)}</span>
+                <Button type="link" size="small" loading={openingCanvas} disabled={!canContinueWithResults} title={canContinueWithResults ? undefined : tr("素材保存完成后才能转入画布")} onClick={() => onContinueCanvas(resultAssetIds)}>
+                    {tr("添加到画布")}
                 </Button>
                 {displayResultUrls.map((url, index) => (
                     <a key={`download-${index}`} href={url} download>
                         {displayResultUrls.length > 1 ? (
-                            `下载 ${index + 1}`
+                            tr("下载 {0}", index + 1)
                         ) : (
                             <>
                                 <Download />
-                                下载
+                                {tr("下载")}
                             </>
                         )}
                     </a>
@@ -372,7 +391,9 @@ export function CreationMediaPending({ mode, ratio }: { mode: CreationMode; rati
                 <WorkingDots dotSize={7} gap={3} minOpacity={0.3} />
             </span>
             <span className="sr-only">
-                {brandName}正在生成{mode === "video" ? "视频" : "图像"}
+                {brandName}
+                {tr("正在生成")}
+                {mode === "video" ? tr("视频") : tr("图像")}
             </span>
         </div>
     );
@@ -380,7 +401,7 @@ export function CreationMediaPending({ mode, ratio }: { mode: CreationMode; rati
 
 export function CreationMessageReferences({ references }: { references: CreationReference[] }) {
     return (
-        <div className="creation-user-message-references" aria-label="本次引用">
+        <div className="creation-user-message-references" aria-label={tr("本次引用")}>
             {references.map((reference) => {
                 const Icon = reference.kind === "skill" ? Sparkles : reference.kind === "image" ? ImageIcon : reference.kind === "video" ? Film : reference.kind === "audio" ? Music2 : FileText;
                 const imageUrl = reference.kind === "image" ? resolveResourceUrl(reference.storageKey, reference.previewUrl) : reference.previewUrl;
@@ -402,7 +423,7 @@ export function CreationMessageReferences({ references }: { references: Creation
 }
 
 export function CreationMediaPreviewModal({ url, type, onClose }: { url: string; type: "image" | "video"; onClose: () => void }) {
-    if (type === "image") return <CanvasImagePreview src={url} alt="媒体预览" onClose={onClose} />;
+    if (type === "image") return <CanvasImagePreview src={url} alt={tr("媒体预览")} onClose={onClose} />;
 
     return (
         <AppModal flush open={Boolean(url)} title={null} footer={null} centered destroyOnHidden width="min(1160px, calc(100vw - 32px))" onCancel={onClose} className="creation-media-preview-modal">
@@ -442,7 +463,7 @@ export function CreationAttachmentThumbnail({ item, onPreview, onRemove }: { ite
     return (
         <div className="creation-reference-card-content">
             {previewable ? (
-                <button type="button" className="creation-reference-card-preview" onClick={() => onPreview(kind === "video" ? "video" : "image", previewUrl)} aria-label={`放大预览 ${item.name}`} disabled={!previewUrl}>
+                <button type="button" className="creation-reference-card-preview" onClick={() => onPreview(kind === "video" ? "video" : "image", previewUrl)} aria-label={tr("放大预览 {0}", item.name)} disabled={!previewUrl}>
                     {content}
                     <span aria-hidden="true">
                         <Maximize2 />
@@ -462,7 +483,7 @@ export function CreationAttachmentThumbnail({ item, onPreview, onRemove }: { ite
                     event.stopPropagation();
                     onRemove(item.id);
                 }}
-                aria-label={`移除 ${item.name}`}
+                aria-label={tr("移除 {0}", item.name)}
             >
                 <X />
             </button>
@@ -473,9 +494,9 @@ export function CreationAttachmentThumbnail({ item, onPreview, onRemove }: { ite
 export type CreationThinking = { title: string; hint: string; steps: string[]; activity: string };
 
 export function thinkingFor(mode: CreationMode, brandName: string): CreationThinking {
-    if (mode === "image") return { title: "正在为你画这一镜", hint: `${brandName}正在理解你的构图意图，并把画面交给模型出图。`, steps: ["理解构图", "定调画风", "生成画面"], activity: "正在理解构图并把画面交给模型出图" };
-    if (mode === "text") return { title: "正在为你写这段", hint: `${brandName}正在梳理你的创作脉络，组织语言与结构。`, steps: ["梳理脉络", "组织语言", "输出段落"], activity: "正在梳理脉络并组织语言" };
-    return { title: "正在为你拍这一镜", hint: `${brandName}正在拆解你的镜头脚本，设计运镜与光线，并交给模型渲染成片。`, steps: ["拆解镜头", "设计运镜", "定调布光", "渲染成片"], activity: "正在按导演思路拆解镜头并渲染" };
+    if (mode === "image") return { title: tr("正在为你画这一镜"), hint: tr("{0}正在理解你的构图意图，并把画面交给模型出图。", brandName), steps: [tr("理解构图"), tr("定调画风"), tr("生成画面")], activity: tr("正在理解构图并把画面交给模型出图") };
+    if (mode === "text") return { title: tr("正在为你写这段"), hint: tr("{0}正在梳理你的创作脉络，组织语言与结构。", brandName), steps: [tr("梳理脉络"), tr("组织语言"), tr("输出段落")], activity: tr("正在梳理脉络并组织语言") };
+    return { title: tr("正在为你拍这一镜"), hint: tr("{0}正在拆解你的镜头脚本，设计运镜与光线，并交给模型渲染成片。", brandName), steps: [tr("拆解镜头"), tr("设计运镜"), tr("定调布光"), tr("渲染成片")], activity: tr("正在按导演思路拆解镜头并渲染") };
 }
 
 export function formatMessageTime(value: string) {

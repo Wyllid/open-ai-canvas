@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { createCanvasReferenceLabeler } from "@/lib/canvas/canvas-reference-slots";
 import { normalizeCharacterImageMentions } from "@/lib/canvas/canvas-character-reference";
 import { canvasNodeVideoPreviewUrl, canvasVideoAssetPreviewUrl } from "@/lib/canvas/canvas-media-preview";
@@ -392,7 +393,7 @@ export function buildCanvasResourceReferences(nodes: CanvasNodeData[], connectio
 export function buildCanvasAgentMentionReferences(nodes: CanvasNodeData[]): CanvasResourceReference[] {
     return nodes.map((node, index) => {
         const kind = resourceKind(node) || "text";
-        const fallbackTitle = `节点 ${index + 1}`;
+        const fallbackTitle = tr("节点 {0}", index + 1);
         return {
             id: node.id,
             nodeId: node.id,

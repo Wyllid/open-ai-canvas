@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 /**
  * Professional cinematography prompt library for the Camera Control panel.
  *
@@ -47,7 +48,7 @@ export const CAMERA_PROFILES: CameraProfile[] = [
         profilePrompt: "shot on Panavision DXL2 with Panavision DXL color science, large-format Monstro 8K VV sensor, signature organic highlight rolloff, rich filmic texture, premium modern cinema look",
         bodyColor: "#2a2a2a",
         accentColor: "#e2a84f",
-        description: "好莱坞顶级院线电影机，8K 大画幅传感器，质感油润。",
+        description: tr("好莱坞顶级院线电影机，8K 大画幅传感器，质感油润。"),
         useCase: "剧情长片、奢华广告、顶级商业片",
     },
     {
@@ -58,7 +59,7 @@ export const CAMERA_PROFILES: CameraProfile[] = [
         profilePrompt: "shot on ARRI Alexa Mini LF with ARRI Wide Gamut color science, ALEV III large-format sensor, gorgeous skin-tone rendering, buttery highlight rolloff, industry-standard feature-film look",
         bodyColor: "#3a3a3a",
         accentColor: "#d4d4d4",
-        description: "行业基准院线电影机，肤色渲染公认最佳。",
+        description: tr("行业基准院线电影机，肤色渲染公认最佳。"),
         useCase: "剧情片、人像叙事、品牌广告",
     },
     {
@@ -69,7 +70,7 @@ export const CAMERA_PROFILES: CameraProfile[] = [
         profilePrompt: "shot on RED Komodo 6K with RED IPP2 color pipeline, Super35 global-shutter sensor, crisp modern digital detail, clean shadows, crisp action-movie look",
         bodyColor: "#8b2b2b",
         accentColor: "#ff3b3b",
-        description: "紧凑全局快门 6K，无果冻效应，动作片首选。",
+        description: tr("紧凑全局快门 6K，无果冻效应，动作片首选。"),
         useCase: "动作片、FPV、穿越机、无人机",
     },
     {
@@ -80,7 +81,7 @@ export const CAMERA_PROFILES: CameraProfile[] = [
         profilePrompt: "shot on RED V-Raptor 8K VV, RED IPP2 color pipeline, 8K Vista Vision sensor, razor-sharp resolution, vivid yet natural color",
         bodyColor: "#701f1f",
         accentColor: "#ff5555",
-        description: "RED 旗舰 8K Vista Vision，极致清晰度。",
+        description: tr("RED 旗舰 8K Vista Vision，极致清晰度。"),
         useCase: "科幻大片、高分辨率 VFX 场景",
     },
     {
@@ -91,7 +92,7 @@ export const CAMERA_PROFILES: CameraProfile[] = [
         profilePrompt: "shot on Sony Venice 2 with Sony S-Gamut3.Cine / S-Log3, dual native ISO full-frame cinema sensor, clean shadows, highly refined modern color science",
         bodyColor: "#2d3a4d",
         accentColor: "#4d90d0",
-        description: "全画幅双原生 ISO，弱光表现极佳。",
+        description: tr("全画幅双原生 ISO，弱光表现极佳。"),
         useCase: "高端广告、纪录片、夜景戏剧",
     },
     {
@@ -102,7 +103,7 @@ export const CAMERA_PROFILES: CameraProfile[] = [
         profilePrompt: "shot on Sony FX6, Sony Venice-derived color science, full-frame cinema sensor, clean low-light performance, documentary-friendly modern look",
         bodyColor: "#2d2d36",
         accentColor: "#ff9000",
-        description: "轻量全画幅 Cinema Line，手持纪录片常用。",
+        description: tr("轻量全画幅 Cinema Line，手持纪录片常用。"),
         useCase: "纪录片、单兵采访、轻量剧情",
     },
     {
@@ -113,7 +114,7 @@ export const CAMERA_PROFILES: CameraProfile[] = [
         profilePrompt: "shot on Blackmagic URSA Cine 12K with Blackmagic Generation 5 color science, Super35 12K sensor, rich filmic tones, indie-cinema aesthetic",
         bodyColor: "#2e2e2e",
         accentColor: "#ffb820",
-        description: "独立电影人宠儿，12K 高分辨率性价比机。",
+        description: tr("独立电影人宠儿，12K 高分辨率性价比机。"),
         useCase: "独立电影、音乐短片、实验影像",
     },
     {
@@ -124,7 +125,7 @@ export const CAMERA_PROFILES: CameraProfile[] = [
         profilePrompt: "shot on Canon C500 Mark II with Canon Cinema Gamut, full-frame cinema sensor, warm natural skin tones, premium broadcast and feature-film character",
         bodyColor: "#332a22",
         accentColor: "#e8c070",
-        description: "佳能色彩科学，暖调肤色，广播级电影机。",
+        description: tr("佳能色彩科学，暖调肤色，广播级电影机。"),
         useCase: "广告、电视剧、婚礼电影",
     },
 ];
@@ -138,7 +139,7 @@ export const LENS_PROFILES: LensProfile[] = [
         profilePrompt: "ARRI Signature Prime lens, large-format coverage, creamy organic bokeh, gentle contrast, smooth highlight rolloff, soft flattering flares",
         lensColor: "#2a2a2a",
         ringColor: "#c4a060",
-        description: "顶级大画幅定焦头，奶油虚化，温润对比。",
+        description: tr("顶级大画幅定焦头，奶油虚化，温润对比。"),
         useCase: "人物叙事、顶级商业片",
     },
     {
@@ -149,7 +150,7 @@ export const LENS_PROFILES: LensProfile[] = [
         profilePrompt: "Cooke S7/i lens, legendary \"Cooke Look\", warm color bias, gentle contrast, soft rounded bokeh, classic flattering skin rendering",
         lensColor: "#26231d",
         ringColor: "#d0a060",
-        description: "传奇「Cooke Look」，暖调偏红，讨喜肤色。",
+        description: tr("传奇「Cooke Look」，暖调偏红，讨喜肤色。"),
         useCase: "古典人像、时代感叙事",
     },
     {
@@ -160,7 +161,7 @@ export const LENS_PROFILES: LensProfile[] = [
         profilePrompt: "Zeiss Supreme Prime lens, neutral modern color, high micro-contrast, sharp yet refined detail, clean bokeh with subtle cat-eye near edges",
         lensColor: "#1e1e22",
         ringColor: "#4d90d0",
-        description: "中性现代色彩，微反差锐利而不硬。",
+        description: tr("中性现代色彩，微反差锐利而不硬。"),
         useCase: "科技感广告、现代剧情",
     },
     {
@@ -171,7 +172,7 @@ export const LENS_PROFILES: LensProfile[] = [
         profilePrompt: "Canon Sumire Prime lens, soft organic character, warm gentle color rendering, dreamy rounded bokeh, cinematic softness for portraits",
         lensColor: "#2c241c",
         ringColor: "#e0b070",
-        description: "柔和梦幻肤色镜，暖调柔焦。",
+        description: tr("柔和梦幻肤色镜，暖调柔焦。"),
         useCase: "爱情片、梦境、人物特写",
     },
     {
@@ -182,7 +183,7 @@ export const LENS_PROFILES: LensProfile[] = [
         profilePrompt: "Cooke anamorphic lens, oval bokeh, horizontal blue streaks for flares, wide cinematic framing, subtle focus roll-off, 2.39:1 anamorphic cinematic feel",
         lensColor: "#1a1a24",
         ringColor: "#6a9ed6",
-        description: "宽银幕变形镜，椭圆虚化 + 水平蓝色光晕。",
+        description: tr("宽银幕变形镜，椭圆虚化 + 水平蓝色光晕。"),
         useCase: "科幻大片、太空戏、夜戏",
     },
     {
@@ -193,7 +194,7 @@ export const LENS_PROFILES: LensProfile[] = [
         profilePrompt: "Atlas Orion anamorphic lens, oval bokeh, cyan horizontal flares, modern anamorphic look with clean center and subtle edge blur",
         lensColor: "#1b2228",
         ringColor: "#40c0e0",
-        description: "现代变形镜，青色光晕，中心清晰边缘柔。",
+        description: tr("现代变形镜，青色光晕，中心清晰边缘柔。"),
         useCase: "音乐 MV、风格化广告",
     },
     {
@@ -204,7 +205,7 @@ export const LENS_PROFILES: LensProfile[] = [
         profilePrompt: "vintage Leica R prime lens, rich color saturation, slight glow on highlights, slightly soft edges, nostalgic 1970s-80s cinema character",
         lensColor: "#3a2f1f",
         ringColor: "#d04040",
-        description: "上世纪老镜，高光微透溢，复古怀旧味。",
+        description: tr("上世纪老镜，高光微透溢，复古怀旧味。"),
         useCase: "年代戏、怀旧 MV、文艺片",
     },
     {
@@ -215,7 +216,7 @@ export const LENS_PROFILES: LensProfile[] = [
         profilePrompt: "macro 100mm prime lens, extremely shallow depth of field, razor-thin focus plane, smooth creamy bokeh, detail-rich close-up rendering",
         lensColor: "#1f1f1f",
         ringColor: "#60d090",
-        description: "微距特写专用，细节惊人，景深极浅。",
+        description: tr("微距特写专用，细节惊人，景深极浅。"),
         useCase: "美食广告、珠宝、昆虫、细节",
     },
 ];
@@ -224,30 +225,30 @@ export const FOCAL_LENGTHS = [14, 18, 24, 35, 40, 50, 65, 85, 100, 135, 200] as 
 export const APERTURES = [1.2, 1.4, 1.8, 2, 2.8, 4, 5.6, 8, 11, 16] as const;
 
 export const FOCAL_LENGTH_META: Record<number, { zhName: string; description: string; useCase: string }> = {
-    14: { zhName: "超广角", description: "14mm 极致广角，空间被极度拉伸", useCase: "建筑内景、风景全景、沉浸视角" },
-    18: { zhName: "超广角", description: "18mm 超广角，强烈空间纵深", useCase: "街头摄影、室内、建筑" },
-    24: { zhName: "广角", description: "24mm 广角，环境感强烈", useCase: "风光、大场面、新闻纪实" },
-    35: { zhName: "小广角", description: "35mm 经典叙事焦段，接近人眼", useCase: "纪实、人物环境叙事" },
-    40: { zhName: "准标准", description: "40mm 准标准，构图平衡", useCase: "人像叙事、文艺片" },
-    50: { zhName: "标准", description: "50mm 标准，空间感自然", useCase: "人像、日常、街拍" },
-    65: { zhName: "中焦", description: "65mm 中焦，轻微压缩，讨喜肤色", useCase: "半身人像、对话戏" },
-    85: { zhName: "中长焦", description: "85mm 经典人像焦段", useCase: "特写人像、婚礼" },
-    100: { zhName: "长焦", description: "100mm 长焦，背景压缩明显", useCase: "特写、微距、体育" },
-    135: { zhName: "长焦", description: "135mm 电影专用长焦", useCase: "剧情特写、舞台" },
-    200: { zhName: "超长焦", description: "200mm 超长焦，极致背景压缩", useCase: "体育、野生动物、戏剧感特写" },
+    14: { zhName: "超广角", description: tr("14mm 极致广角，空间被极度拉伸"), useCase: "建筑内景、风景全景、沉浸视角" },
+    18: { zhName: "超广角", description: tr("18mm 超广角，强烈空间纵深"), useCase: "街头摄影、室内、建筑" },
+    24: { zhName: "广角", description: tr("24mm 广角，环境感强烈"), useCase: "风光、大场面、新闻纪实" },
+    35: { zhName: "小广角", description: tr("35mm 经典叙事焦段，接近人眼"), useCase: "纪实、人物环境叙事" },
+    40: { zhName: "准标准", description: tr("40mm 准标准，构图平衡"), useCase: "人像叙事、文艺片" },
+    50: { zhName: "标准", description: tr("50mm 标准，空间感自然"), useCase: "人像、日常、街拍" },
+    65: { zhName: "中焦", description: tr("65mm 中焦，轻微压缩，讨喜肤色"), useCase: "半身人像、对话戏" },
+    85: { zhName: "中长焦", description: tr("85mm 经典人像焦段"), useCase: "特写人像、婚礼" },
+    100: { zhName: "长焦", description: tr("100mm 长焦，背景压缩明显"), useCase: "特写、微距、体育" },
+    135: { zhName: "长焦", description: tr("135mm 电影专用长焦"), useCase: "剧情特写、舞台" },
+    200: { zhName: "超长焦", description: tr("200mm 超长焦，极致背景压缩"), useCase: "体育、野生动物、戏剧感特写" },
 };
 
 export const APERTURE_META: Record<number, { zhName: string; description: string; useCase: string }> = {
-    1.2: { zhName: "极大光圈", description: "f/1.2 虚化极致，景深刀削般薄", useCase: "梦幻人像、高光溢出效果" },
-    1.4: { zhName: "大光圈", description: "f/1.4 强烈虚化，电影感十足", useCase: "夜景人像、暗光" },
-    1.8: { zhName: "大光圈", description: "f/1.8 明显背景虚化", useCase: "半身人像、街头弱光" },
-    2: { zhName: "大光圈", description: "f/2 柔和虚化与充足锐度", useCase: "人像、文艺日常" },
-    2.8: { zhName: "标准大光圈", description: "f/2.8 景深适中、虚化柔和", useCase: "群像、叙事" },
-    4: { zhName: "中光圈", description: "f/4 主体清晰，背景有轻微虚化", useCase: "群像、婚礼、电视剧" },
-    5.6: { zhName: "中光圈", description: "f/5.6 背景可辨，环境感强", useCase: "纪实、日常、小品" },
-    8: { zhName: "小光圈", description: "f/8 画质最佳区，前后皆清晰", useCase: "风光、建筑、全景" },
-    11: { zhName: "小光圈", description: "f/11 超大景深，几乎全清晰", useCase: "大场景、产品摆拍" },
-    16: { zhName: "极小光圈", description: "f/16 星芒出现，需高光源", useCase: "日光风光、星芒特效" },
+    1.2: { zhName: "极大光圈", description: tr("f/1.2 虚化极致，景深刀削般薄"), useCase: "梦幻人像、高光溢出效果" },
+    1.4: { zhName: "大光圈", description: tr("f/1.4 强烈虚化，电影感十足"), useCase: "夜景人像、暗光" },
+    1.8: { zhName: "大光圈", description: tr("f/1.8 明显背景虚化"), useCase: "半身人像、街头弱光" },
+    2: { zhName: "大光圈", description: tr("f/2 柔和虚化与充足锐度"), useCase: "人像、文艺日常" },
+    2.8: { zhName: "标准大光圈", description: tr("f/2.8 景深适中、虚化柔和"), useCase: "群像、叙事" },
+    4: { zhName: "中光圈", description: tr("f/4 主体清晰，背景有轻微虚化"), useCase: "群像、婚礼、电视剧" },
+    5.6: { zhName: "中光圈", description: tr("f/5.6 背景可辨，环境感强"), useCase: "纪实、日常、小品" },
+    8: { zhName: "小光圈", description: tr("f/8 画质最佳区，前后皆清晰"), useCase: "风光、建筑、全景" },
+    11: { zhName: "小光圈", description: tr("f/11 超大景深，几乎全清晰"), useCase: "大场景、产品摆拍" },
+    16: { zhName: "极小光圈", description: tr("f/16 星芒出现，需高光源"), useCase: "日光风光、星芒特效" },
 };
 
 const CAMERA_PROMPT_TEMPLATE = [

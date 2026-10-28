@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { App, Button, Input, InputNumber, Select, Switch } from "antd";
@@ -16,17 +17,17 @@ type Props = {
 };
 
 const STYLE_OPTIONS: { value: DramaCaptionStyle; label: string }[] = [
-    { value: "plain", label: "Plain" },
-    { value: "karaoke", label: "Karaoke, word by word" },
+    { value: "plain", label: tr("Plain") },
+    { value: "karaoke", label: tr("Karaoke, word by word") },
 ];
 
 const NO_GRAPHICS: DramaMotionItem[] = [];
 
 const POSITION_LABEL: Record<string, string> = {
-    "top-left": "top left",
-    "top-right": "top right",
-    "bottom-left": "bottom left",
-    "bottom-right": "bottom right",
+    "top-left": tr("top left"),
+    "top-right": tr("top right"),
+    "bottom-left": tr("bottom left"),
+    "bottom-right": tr("bottom right"),
     center: "center",
 };
 
@@ -52,12 +53,12 @@ function downloadText(text: string, fileName: string) {
 export function PostProduction({ projectId, episodeId, fileName, captions, motion }: Props) {
     const { message } = App.useApp();
     const invalidate = useDramaInvalidate(projectId);
-    const onError = (error: unknown) => message.error(error instanceof Error ? error.message : "Could not save");
+    const onError = (error: unknown) => message.error(error instanceof Error ? error.message : tr("Could not save"));
     const saveCaptions = useMutation({
         mutationFn: (update: DramaCaptionsUpdate) => setDramaCaptions(projectId, episodeId, update),
         onSuccess: () => {
             invalidate(episodeId);
-            message.success("Captions saved; the episode is rendered again without new videos");
+            message.success(tr("Captions saved; the episode is rendered again without new videos"));
         },
         onError,
     });
@@ -65,7 +66,7 @@ export function PostProduction({ projectId, episodeId, fileName, captions, motio
         mutationFn: (items: DramaMotionItem[]) => setDramaMotion(projectId, episodeId, items),
         onSuccess: () => {
             invalidate(episodeId);
-            message.success("Graphics saved; the episode is rendered again without new videos");
+            message.success(tr("Graphics saved; the episode is rendered again without new videos"));
         },
         onError,
     });
@@ -91,33 +92,33 @@ function CaptionsBlock({ captions, fileName, busy, onSave }: { captions?: DramaC
     return (
         <div className="drama-post-block">
             <div className="drama-post-head">
-                <span className="drama-eyebrow">Captions</span>
+                <span className="drama-eyebrow">{tr("Captions")}</span>
                 <Button size="small" type="text" icon={<FileText className="size-3.5" />} disabled={!captions?.srt} onClick={() => captions && downloadText(captions.srt, `${fileName}.srt`)}>
-                    Download SRT
+                    {tr("Download SRT")}
                 </Button>
             </div>
             <label className="drama-post-row">
                 <Switch size="small" checked={captions?.burn || false} disabled={busy || !captions} onChange={(burn) => onSave({ burn })} />
-                <span>Burn into the video</span>
+                <span>{tr("Burn into the video")}</span>
             </label>
-            <Select size="small" value={captions?.style || "plain"} options={STYLE_OPTIONS} disabled={busy || !captions?.burn} onChange={(style) => onSave({ style })} aria-label="Caption style" />
+            <Select size="small" value={captions?.style || "plain"} options={STYLE_OPTIONS} disabled={busy || !captions?.burn} onChange={(style) => onSave({ style })} aria-label={tr("Caption style")} />
             <p className="drama-sg-note">
                 {cues.length === 0
-                    ? "No dialogue to caption yet."
+                    ? tr("No dialogue to caption yet.")
                     : captions?.edited
-                      ? `${cues.length} edited captions; script changes no longer update them.`
-                      : `${cues.length} captions timed from the dialogue${captions?.estimatedTiming ? "; word timing is estimated" : ""}.`}
-                {captions?.outdated?.length ? " Some of their shots were removed from the script." : ""}
+                      ? tr("{0} edited captions; script changes no longer update them.", cues.length)
+                      : tr("{0} captions timed from the dialogue{1}.", cues.length, captions?.estimatedTiming ? tr("; word timing is estimated") : "")}
+                {captions?.outdated?.length ? tr(" Some of their shots were removed from the script.") : ""}
             </p>
             <div className="drama-post-actions">
                 {cues.length ? (
                     <Button size="small" onClick={() => setOpen(!open)} aria-expanded={open}>
-                        {open ? "Hide captions" : "Edit text"}
+                        {open ? tr("Hide captions") : tr("Edit text")}
                     </Button>
                 ) : null}
                 {captions?.edited ? (
                     <Button size="small" type="text" disabled={busy} onClick={() => onSave({ reset: true })}>
-                        Back to automatic
+                        {tr("Back to automatic")}
                     </Button>
                 ) : null}
             </div>
@@ -132,7 +133,7 @@ function CaptionsBlock({ captions, fileName, busy, onSave }: { captions?: DramaC
                         </div>
                     ))}
                     <Button size="small" type="primary" disabled={busy || !dirty} onClick={saveTexts}>
-                        Save captions
+                        {tr("Save captions")}
                     </Button>
                 </div>
             ) : null}
@@ -149,48 +150,49 @@ function GraphicsBlock({ items, busy, onSave }: { items: DramaMotionItem[]; busy
     return (
         <div className="drama-post-block">
             <div className="drama-post-head">
-                <span className="drama-eyebrow">Lower thirds and overlays</span>
+                <span className="drama-eyebrow">{tr("Lower thirds and overlays")}</span>
                 <Button size="small" type="text" icon={<Plus className="size-3.5" />} disabled={busy || draft.length >= 32} onClick={() => setDraft([...draft, { kind: "lowerThird", title: "", subtitle: "", startMs: 0, durationMs: 3000 }])}>
-                    Lower third
+                    {tr("Lower third")}
                 </Button>
             </div>
-            {draft.length === 0 ? <p className="drama-sg-note">Name and place bars appear over the picture. Image overlays such as a logo can be added by the agent.</p> : null}
+            {draft.length === 0 ? <p className="drama-sg-note">{tr("Name and place bars appear over the picture. Image overlays such as a logo can be added by the agent.")}</p> : null}
             {draft.map((item, index) => (
                 <div key={index} className="drama-post-item">
                     {item.kind === "lowerThird" ? (
                         <>
-                            <Input size="small" value={item.title} maxLength={40} placeholder="Name or place" onChange={(event) => update(index, { title: event.target.value })} />
-                            <Input size="small" value={item.subtitle} maxLength={60} placeholder="Second line (optional)" onChange={(event) => update(index, { subtitle: event.target.value })} />
+                            <Input size="small" value={item.title} maxLength={40} placeholder={tr("Name or place")} onChange={(event) => update(index, { title: event.target.value })} />
+                            <Input size="small" value={item.subtitle} maxLength={60} placeholder={tr("Second line (optional)")} onChange={(event) => update(index, { subtitle: event.target.value })} />
                         </>
                     ) : (
                         <span className="drama-post-overlay">
-                            Image overlay · {POSITION_LABEL[item.position || "top-right"]} · {item.widthPct || 18}% wide
+                            {tr("Image overlay ·")} {POSITION_LABEL[item.position || "top-right"]} · {item.widthPct || 18}
+                            {tr("% wide")}
                         </span>
                     )}
                     <div className="drama-post-times">
-                        <InputNumber size="small" min={0} step={0.5} value={item.startMs / 1000} prefix="At" suffix="s" aria-label="Start (seconds)" onChange={(value) => update(index, { startMs: Math.round((value || 0) * 1000) })} />
+                        <InputNumber size="small" min={0} step={0.5} value={item.startMs / 1000} prefix={tr("At")} suffix="s" aria-label={tr("Start (seconds)")} onChange={(value) => update(index, { startMs: Math.round((value || 0) * 1000) })} />
                         <InputNumber
                             size="small"
                             min={0.5}
                             max={600}
                             step={0.5}
                             value={item.durationMs / 1000}
-                            prefix="For"
+                            prefix={tr("For")}
                             suffix="s"
-                            aria-label="Duration (seconds)"
+                            aria-label={tr("Duration (seconds)")}
                             onChange={(value) => update(index, { durationMs: Math.round((value || 0.5) * 1000) })}
                         />
-                        <Button size="small" type="text" icon={<Trash2 className="size-3.5" />} aria-label="Remove" onClick={() => setDraft(draft.filter((_, at) => at !== index))} />
+                        <Button size="small" type="text" icon={<Trash2 className="size-3.5" />} aria-label={tr("Remove")} onClick={() => setDraft(draft.filter((_, at) => at !== index))} />
                     </div>
                 </div>
             ))}
             {dirty ? (
                 <div className="drama-post-actions">
                     <Button size="small" type="primary" disabled={busy || !valid} onClick={() => onSave(draft)}>
-                        Save graphics
+                        {tr("Save graphics")}
                     </Button>
                     <Button size="small" type="text" disabled={busy} onClick={() => setDraft(items)}>
-                        Discard
+                        {tr("Discard")}
                     </Button>
                 </div>
             ) : null}

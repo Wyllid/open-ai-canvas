@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Checkbox, Input } from "antd";
@@ -20,11 +21,11 @@ function useTextFile(onText: (text: string, fileName: string) => void) {
     const inputRef = useRef<HTMLInputElement>(null);
     const read = async (file: File) => {
         if (!TEXT_FILE.test(file.name)) {
-            message.warning("支持 TXT、Markdown、CSV、TSV 文本文件");
+            message.warning(tr("支持 TXT、Markdown、CSV、TSV 文本文件"));
             return;
         }
         if (file.size > MAX_FILE_BYTES) {
-            message.warning("单集文件不超过 2MB");
+            message.warning(tr("单集文件不超过 2MB"));
             return;
         }
         onText(decodeNovelText(await file.arrayBuffer()), file.name);
@@ -49,7 +50,8 @@ function CharCounter({ chars, limit }: { chars: number; limit: number }) {
     const over = chars > limit;
     return (
         <span className={`drama-composer-count ${over ? "is-over" : ""}`}>
-            {formatCount(chars)} / {formatCount(limit)} 字{over ? " · 超出部分会丢台词，请拆成多集" : ""}
+            {formatCount(chars)} / {tr("{0} 字", formatCount(limit))}
+            {over ? tr(" · 超出部分会丢台词，请拆成多集") : ""}
         </span>
     );
 }
@@ -98,17 +100,20 @@ function SourceComposer({
                         <strong>{title}</strong>
                         <span>{subtitle}</span>
                     </div>
-                    <Button type="text" icon={<X className="size-4" />} aria-label="关闭" onClick={onClose} />
+                    <Button type="text" icon={<X className="size-4" />} aria-label={tr("关闭")} onClick={onClose} />
                 </header>
                 <div className="drama-composer-body">
                     <aside className="drama-composer-side thin-scrollbar">
                         {side}
                         <div className="drama-composer-field">
-                            <span className="drama-composer-label">素材类型</span>
+                            <span className="drama-composer-label">{tr("素材类型")}</span>
                             <SourceFormatPicker value={format} onChange={onFormat} />
                         </div>
                         <div className="drama-composer-guide">
-                            <span className="drama-composer-label">{SOURCE_FORMAT_LABEL[format].title}怎么写</span>
+                            <span className="drama-composer-label">
+                                {SOURCE_FORMAT_LABEL[format].title}
+                                {tr("怎么写")}
+                            </span>
                             <ul>
                                 {SOURCE_FORMAT_LABEL[format].guide.map((line) => (
                                     <li key={line}>{line}</li>
@@ -116,7 +121,7 @@ function SourceComposer({
                             </ul>
                         </div>
                         <Button block icon={<FileUp className="size-4" />} onClick={file.open}>
-                            从文件导入
+                            {tr("从文件导入")}
                         </Button>
                         {file.input}
                     </aside>
@@ -134,8 +139,8 @@ function SourceComposer({
                             className="drama-composer-text thin-scrollbar"
                             value={loading ? "" : text}
                             disabled={loading}
-                            placeholder={loading ? "正在读取原文…" : `${SOURCE_FORMAT_LABEL[format].placeholder}\n\n也可以把 TXT / Markdown 文件拖到这里。`}
-                            aria-label="本集原文"
+                            placeholder={loading ? tr("正在读取原文…") : tr("{0}\n\n也可以把 TXT / Markdown 文件拖到这里。", SOURCE_FORMAT_LABEL[format].placeholder)}
+                            aria-label={tr("本集原文")}
                             onChange={(event) => onText(event.target.value)}
                         />
                     </section>
@@ -177,16 +182,16 @@ export function AddEpisodeModal({
     const add = useMutation({
         mutationFn: () => addDramaEpisode(projectId, { title: title.trim(), text, sourceFormat: format }),
         onSuccess: (detail) => {
-            message.success(`已添加第 ${detail.episode.number} 集，开始${format === "novel" ? "改编" : "拆镜"}`);
+            message.success(tr("已添加第 {0} 集，开始{1}", detail.episode.number, format === "novel" ? tr("改编") : tr("拆镜")));
             onAdded(detail.episode.id);
         },
-        onError: (error) => message.error(error instanceof Error ? error.message : "添加失败"),
+        onError: (error) => message.error(error instanceof Error ? error.message : tr("添加失败")),
     });
     return (
         <SourceComposer
             open={open}
-            title={`添加第 ${nextNumber} 集`}
-            subtitle="一次只放这一集的内容，前面已做好的集不会受影响"
+            title={tr("添加第 {0} 集", nextNumber)}
+            subtitle={tr("一次只放这一集的内容，前面已做好的集不会受影响")}
             format={format}
             onFormat={setFormat}
             text={text}
@@ -197,8 +202,8 @@ export function AddEpisodeModal({
             onClose={onClose}
             side={
                 <label className="drama-composer-field">
-                    <span className="drama-composer-label">集标题</span>
-                    <Input value={title} maxLength={60} placeholder={`留空为“第 ${nextNumber} 集”`} aria-label="集标题" onChange={(event) => setTitle(event.target.value)} />
+                    <span className="drama-composer-label">{tr("集标题")}</span>
+                    <Input value={title} maxLength={60} placeholder={tr("留空为“第 {0} 集”", nextNumber)} aria-label={tr("集标题")} onChange={(event) => setTitle(event.target.value)} />
                 </label>
             }
             notice={
@@ -213,9 +218,9 @@ export function AddEpisodeModal({
                 <>
                     <CharCounter chars={chars} limit={EPISODE_SOURCE_CHARS} />
                     <span className="flex-1" />
-                    <Button onClick={onClose}>取消</Button>
+                    <Button onClick={onClose}>{tr("取消")}</Button>
                     <Button type="primary" loading={add.isPending} disabled={Boolean(blockedReason) || !chars || chars > EPISODE_SOURCE_CHARS} onClick={() => add.mutate()}>
-                        {format === "storyboard" ? "导入这一集" : "添加并开始拆镜"}
+                        {format === "storyboard" ? tr("导入这一集") : tr("添加并开始拆镜")}
                     </Button>
                 </>
             }
@@ -264,16 +269,16 @@ export function SourceEditModal({
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey });
-            message.success(rescript ? "原文已保存，正在按新原文重新改编" : "原文已保存，点“重新改编”后生效");
+            message.success(rescript ? tr("原文已保存，正在按新原文重新改编") : tr("原文已保存，点“重新改编”后生效"));
             onSaved(rescript);
         },
-        onError: (error) => message.error(error instanceof Error ? error.message : "保存失败"),
+        onError: (error) => message.error(error instanceof Error ? error.message : tr("保存失败")),
     });
     return (
         <SourceComposer
             open={open}
-            title={chapter ? `编辑原文 · ${chapter.title}` : "编辑原文"}
-            subtitle="改的是这一章的原文；已写好的剧本保持不变，重新改编后才按新原文重写"
+            title={chapter ? tr("编辑原文 · {0}", chapter.title) : tr("编辑原文")}
+            subtitle={tr("改的是这一章的原文；已写好的剧本保持不变，重新改编后才按新原文重写")}
             format={format}
             onFormat={setFormat}
             text={text}
@@ -283,13 +288,13 @@ export function SourceEditModal({
             footer={
                 <>
                     <Checkbox checked={rescript} onChange={(event) => setRescript(event.target.checked)}>
-                        保存后重新改编本集
+                        {tr("保存后重新改编本集")}
                     </Checkbox>
                     <CharCounter chars={chars} limit={limit} />
                     <span className="flex-1" />
-                    <Button onClick={onClose}>取消</Button>
+                    <Button onClick={onClose}>{tr("取消")}</Button>
                     <Button type="primary" loading={save.isPending} disabled={!changed || !chars || chars > limit || query.isLoading} onClick={() => save.mutate()}>
-                        {rescript ? "保存并重新改编" : "保存原文"}
+                        {rescript ? tr("保存并重新改编") : tr("保存原文")}
                     </Button>
                 </>
             }

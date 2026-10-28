@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useState } from "react";
 import { Image as ImageIcon, LoaderCircle } from "lucide-react";
 
@@ -12,7 +13,7 @@ type CanvasImagePreviewProps = {
     onClose: () => void;
 };
 
-export function CanvasImagePreview({ src = "", storageKey, alt = "图片", onClose }: CanvasImagePreviewProps) {
+export function CanvasImagePreview({ src = "", storageKey, alt = tr("图片"), onClose }: CanvasImagePreviewProps) {
     const [resolvedSrc, setResolvedSrc] = useState(() => (storageKey ? peekCachedResourceObjectUrl(storageKey) : src));
     const [loading, setLoading] = useState(Boolean(src || storageKey));
     const [error, setError] = useState(false);
@@ -98,13 +99,13 @@ export function CanvasImagePreview({ src = "", storageKey, alt = "图片", onClo
                                 background: "color-mix(in srgb, var(--workspace-surface-strong) 68%, var(--workspace-surface))",
                             }}
                             role="status"
-                            aria-label="图片加载中"
+                            aria-label={tr("图片加载中")}
                         >
                             <div className="flex flex-col items-center gap-3" style={{ color: "var(--workspace-text-muted)" }}>
                                 <span className="grid size-11 place-items-center rounded-full border bg-[var(--workspace-surface-strong)]" style={{ borderColor: "var(--workspace-border)" }}>
                                     <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" />
                                 </span>
-                                <span className="text-xs font-medium">正在加载高清图片</span>
+                                <span className="text-xs font-medium">{tr("正在加载高清图片")}</span>
                             </div>
                         </div>
                     ) : null}
@@ -121,8 +122,8 @@ export function CanvasImagePreview({ src = "", storageKey, alt = "图片", onClo
                             <div className="flex flex-col items-center gap-3 text-center">
                                 <ImageIcon className="size-8 opacity-45" />
                                 <div>
-                                    <div className="text-sm font-medium">图片暂时无法显示</div>
-                                    <div className="mt-1 text-xs opacity-70">请关闭预览后重试</div>
+                                    <div className="text-sm font-medium">{tr("图片暂时无法显示")}</div>
+                                    <div className="mt-1 text-xs opacity-70">{tr("请关闭预览后重试")}</div>
                                 </div>
                             </div>
                         </div>

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useMemo, useState } from "react";
 import { Input, Popover } from "antd";
 import { LayoutTemplate, Search, WandSparkles } from "lucide-react";
@@ -47,7 +48,7 @@ export function CanvasPresetPicker({
                 {
                     id: `skill:${reference.skill.skillId}`,
                     name: reference.skill.skillName,
-                    description: reference.skill.description || reference.skill.instruction || "已加入技能",
+                    description: reference.skill.description || reference.skill.instruction || tr("已加入技能"),
                     prompt: `@${reference.skill.skillName} `,
                     modes: ["text", "image", "video", "audio"],
                     source: "skill",
@@ -67,7 +68,7 @@ export function CanvasPresetPicker({
                 allowClear
                 size="small"
                 prefix={<Search className="size-3.5" />}
-                placeholder="搜索预设或已加入技能"
+                placeholder={tr("搜索预设或已加入技能")}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
             />
@@ -90,7 +91,7 @@ export function CanvasPresetPicker({
                                 <span className="flex items-center gap-2 text-xs font-semibold" style={{ color: theme.node.text }}>
                                     <span className="truncate">{preset.name}</span>
                                     <span className="shrink-0 text-[var(--fs-micro)] font-medium" style={{ color: theme.accent.primary }}>
-                                        {preset.source === "skill" ? "技能" : "预设"}
+                                        {preset.source === "skill" ? tr("技能") : tr("预设")}
                                     </span>
                                 </span>
                                 <span className="mt-0.5 block truncate text-[var(--fs-tiny)] leading-4" style={{ color: theme.node.muted }}>
@@ -101,7 +102,7 @@ export function CanvasPresetPicker({
                     ))
                 ) : (
                     <div className="py-8 text-center text-xs" style={{ color: theme.node.muted }}>
-                        没有匹配的预设
+                        {tr("没有匹配的预设")}
                     </div>
                 )}
             </div>
@@ -123,12 +124,12 @@ export function CanvasPresetPicker({
                 type="button"
                 className={`canvas-preset-picker-trigger ${appearance === "quiet" ? "canvas-node-composer-header-action" : ""} inline-flex shrink-0 items-center justify-center gap-1 rounded-lg transition focus-visible:outline-none ${compact ? "size-6" : dense ? "h-6 px-2" : "h-7 px-2"}`}
                 style={appearance === "quiet" ? undefined : { background: theme.accent.primarySoft, color: theme.accent.primary }}
-                title={appearance === "quiet" ? "提示词模板" : "打开提示词预设"}
-                aria-label={appearance === "quiet" ? "提示词模板" : "打开提示词预设"}
+                title={appearance === "quiet" ? tr("提示词模板") : tr("打开提示词预设")}
+                aria-label={appearance === "quiet" ? tr("提示词模板") : tr("打开提示词预设")}
                 aria-expanded={actualOpen}
             >
                 {appearance === "quiet" ? <LayoutTemplate className="size-3" /> : <WandSparkles className={dense ? "size-3" : "size-3.5"} />}
-                {compact ? null : <span className="text-[var(--fs-tiny)] font-medium">{appearance === "quiet" ? "提示词模板" : "预设"}</span>}
+                {compact ? null : <span className="text-[var(--fs-tiny)] font-medium">{appearance === "quiet" ? tr("提示词模板") : tr("预设")}</span>}
             </button>
         </Popover>
     );

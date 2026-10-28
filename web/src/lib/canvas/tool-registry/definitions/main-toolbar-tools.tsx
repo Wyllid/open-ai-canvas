@@ -1,20 +1,21 @@
+import { tr } from "@/i18n";
 import { PanelsTopLeft, Eraser, FolderOpen, Hand, MousePointer2, Palette, Plus, Redo2, Settings2, Trash2, Undo2 } from "lucide-react";
 
 import { registerToolbarTools, type ToolDefinition } from "@/lib/canvas/tool-registry";
 import type { CanvasToolMode } from "@/types/canvas";
 
 const canvasModeOptions = [
-    { id: "box-select", label: "区域选择", icon: <MousePointer2 />, value: "box-select" },
-    { id: "move", label: "抓手工具", icon: <Hand />, value: "move" },
+    { id: "box-select", label: tr("区域选择"), icon: <MousePointer2 />, value: "box-select" },
+    { id: "move", label: tr("抓手工具"), icon: <Hand />, value: "move" },
 ];
 
 export const mainToolbarTools: ToolDefinition[] = [
-    { id: "tool-workspace", toolbar: "main", category: "navigation", label: "工作区", icon: <PanelsTopLeft />, defaultVisible: true, defaultOrder: 65, run: ctx => ctx.handlers.onOpenWorkspace?.() },
+    { id: "tool-workspace", toolbar: "main", category: "navigation", label: tr("工作区"), icon: <PanelsTopLeft />, defaultVisible: true, defaultOrder: 65, run: ctx => ctx.handlers.onOpenWorkspace?.() },
     {
         id: "tool-canvas-mode",
         toolbar: "main",
         category: "navigation",
-        label: "抓手 / 框选",
+        label: tr("抓手 / 框选"),
         icon: <MousePointer2 />,
         defaultVisible: true,
         defaultOrder: 10,
@@ -29,7 +30,7 @@ export const mainToolbarTools: ToolDefinition[] = [
         id: "tool-undo",
         toolbar: "main",
         category: "history",
-        label: "撤销",
+        label: tr("撤销"),
         icon: <Undo2 />,
         defaultVisible: true,
         defaultOrder: 30,
@@ -40,7 +41,7 @@ export const mainToolbarTools: ToolDefinition[] = [
         id: "tool-redo",
         toolbar: "main",
         category: "history",
-        label: "重做",
+        label: tr("重做"),
         icon: <Redo2 />,
         defaultVisible: true,
         defaultOrder: 40,
@@ -51,7 +52,7 @@ export const mainToolbarTools: ToolDefinition[] = [
         id: "tool-add",
         toolbar: "main",
         category: "create",
-        label: "添加节点",
+        label: tr("添加节点"),
         icon: <Plus />,
         defaultVisible: true,
         defaultOrder: 50,
@@ -63,7 +64,7 @@ export const mainToolbarTools: ToolDefinition[] = [
         id: "tool-assets",
         toolbar: "main",
         category: "resource",
-        label: "素材库",
+        label: tr("素材库"),
         icon: <FolderOpen />,
         defaultVisible: true,
         defaultOrder: 60,
@@ -74,7 +75,7 @@ export const mainToolbarTools: ToolDefinition[] = [
         id: "tool-style",
         toolbar: "main",
         category: "appearance",
-        label: "画布外观",
+        label: tr("画布外观"),
         icon: <Palette />,
         defaultVisible: true,
         defaultOrder: 70,
@@ -86,7 +87,7 @@ export const mainToolbarTools: ToolDefinition[] = [
         id: "tool-settings",
         toolbar: "main",
         category: "appearance",
-        label: "工具栏设置",
+        label: tr("工具栏设置"),
         icon: <Settings2 />,
         defaultVisible: true,
         defaultOrder: 80,
@@ -98,7 +99,7 @@ export const mainToolbarTools: ToolDefinition[] = [
         id: "tool-delete",
         toolbar: "main",
         category: "danger",
-        label: (ctx) => ctx.selectedCount > 1 ? `删除 ${ctx.selectedCount} 个节点` : "删除选中节点",
+        label: (ctx) => ctx.selectedCount > 1 ? tr("删除 {0} 个节点", ctx.selectedCount) : tr("删除选中节点"),
         icon: <Trash2 />,
         defaultVisible: true,
         defaultOrder: 90,
@@ -110,7 +111,7 @@ export const mainToolbarTools: ToolDefinition[] = [
         id: "tool-clear",
         toolbar: "main",
         category: "danger",
-        label: "清空画布",
+        label: tr("清空画布"),
         icon: <Eraser />,
         defaultVisible: true,
         defaultOrder: 100,

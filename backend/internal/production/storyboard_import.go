@@ -71,29 +71,30 @@ func storyboardHeader(cell string) storyboardColumn {
 	switch {
 	case value == "":
 		return columnIgnore
-	case has("台词", "对白", "对话", "dialogue", "line"):
-		return columnDialogue
-	case has("旁白", "画外音", "narration"):
-		return columnNarration
-	case has("说话人", "讲话人", "speaker"):
+	// 葡语“falante”包含“fala”，说话人列须先于台词列判断。
+	case has("说话人", "讲话人", "speaker", "falante", "locutor"):
 		return columnSpeaker
-	case has("景别", "shotsize"):
+	case has("台词", "对白", "对话", "dialogue", "line", "fala", "diálogo"):
+		return columnDialogue
+	case has("旁白", "画外音", "narration", "narração", "narrador"):
+		return columnNarration
+	case has("景别", "shotsize", "enquadramento"):
 		return columnShotSize
-	case has("运镜", "镜头运动", "机位", "camera"):
+	case has("运镜", "镜头运动", "机位", "camera", "câmera", "movimento"):
 		return columnCamera
-	case has("时长", "秒", "duration", "time"):
+	case has("时长", "秒", "duration", "time", "duração", "tempo"):
 		return columnDuration
-	case has("转场", "transition"):
+	case has("转场", "transition", "transição"):
 		return columnTransition
-	case has("场景", "地点", "scene", "location"):
+	case has("场景", "地点", "scene", "location", "cena", "cenário", "local"):
 		return columnScene
-	case has("道具", "prop"):
+	case has("道具", "prop", "objeto", "adereço"):
 		return columnProps
-	case has("角色", "人物", "出场", "character"):
+	case has("角色", "人物", "出场", "character", "personagem"):
 		return columnCharacters
-	case has("画面", "构图", "image", "visual"):
+	case has("画面", "构图", "image", "visual", "imagem", "quadro"):
 		return columnImage
-	case has("动作", "内容", "描述", "剧情", "action", "description"):
+	case has("动作", "内容", "描述", "剧情", "action", "description", "ação", "descrição", "conteúdo"):
 		return columnAction
 	}
 	return columnIgnore

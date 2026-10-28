@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { VideoSettingsPanel, videoResolutionLabel, videoSecondsLabel, videoSizeLabel } from "@/components/video-settings-panel";
 import { canvasThemes } from "@/lib/canvas-theme";
 import { modelCapabilityConfigFor, resolveVideoRatioValue, resolveVideoResolutionValue } from "@/lib/model-capabilities";
@@ -14,7 +15,7 @@ export function CanvasVideoSettingsPopover({ config, onConfigChange, ...popover 
     if (profile?.resolutions.length) parts.push(videoResolutionLabel(resolveVideoResolutionValue(profile, config.vquality)));
     if (profile?.ratios.length) parts.push(videoSizeLabel(resolveVideoRatioValue(profile, config.size)));
     parts.push(videoSecondsLabel(config.videoSeconds));
-    return <CanvasSettingsPopover {...popover} label="视频设置" summary={parts.join(" · ")}>
+    return <CanvasSettingsPopover {...popover} label={tr("视频设置")} summary={parts.join(" · ")}>
         <VideoSettingsPanel config={config} onConfigChange={onConfigChange} theme={theme} className="space-y-3" />
     </CanvasSettingsPopover>;
 }

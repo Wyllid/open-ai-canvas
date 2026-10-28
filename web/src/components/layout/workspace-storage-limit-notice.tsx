@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useQueryClient } from "@tanstack/react-query";
 import { App, Button } from "antd";
 import axios from "axios";
@@ -32,8 +33,8 @@ export function WorkspaceStorageLimitNotice() {
                     const readOnly = reason === "storage_read_only";
                     notification.warning({
                         key: NOTICE_KEY,
-                        title: readOnly ? "账号已进入只读状态" : "账号存储空间不足",
-                        description: readOnly ? "已超出容量且宽限期已结束。删除素材腾出空间或请管理员调整容量后即可恢复编辑。" : "已暂停上传和生成。可以清理素材，或请管理员调整容量。",
+                        title: readOnly ? tr("账号已进入只读状态") : tr("账号存储空间不足"),
+                        description: readOnly ? tr("已超出容量且宽限期已结束。删除素材腾出空间或请管理员调整容量后即可恢复编辑。") : tr("已暂停上传和生成。可以清理素材，或请管理员调整容量。"),
                         actions: (
                             <span style={{ display: "inline-flex", gap: "var(--space-2, 8px)" }}>
                                 <Button
@@ -43,7 +44,7 @@ export function WorkspaceStorageLimitNotice() {
                                         navigate("/assets");
                                     }}
                                 >
-                                    清理素材
+                                    {tr("清理素材")}
                                 </Button>
                             </span>
                         ),

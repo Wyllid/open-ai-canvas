@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useState } from "react";
 import { App, Button } from "antd";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -41,7 +42,7 @@ export function CanvasWorkspaceAssetPanel({ onInsert, onManage, onProjectAssets 
             const payloads = assetPickerItemsToInsertPayloads([asset.id], [{ id: asset.id, title: asset.title, category: asset.category || "other", kindLabel: asset.kind, asset }]);
             await onInsert(payloads);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "插入素材失败");
+            message.error(error instanceof Error ? error.message : tr("插入素材失败"));
         } finally {
             setInserting(null);
         }
@@ -50,7 +51,7 @@ export function CanvasWorkspaceAssetPanel({ onInsert, onManage, onProjectAssets 
         <>
             <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3">
                 <Images className="size-4" />
-                <strong className="text-sm">素材库</strong>
+                <strong className="text-sm">{tr("素材库")}</strong>
                 <span className="text-muted-foreground">{query.data?.pages[0]?.total ?? 0}</span>
             </header>
             <div className="sidebar-subtabs border-b border-border p-2">
@@ -63,32 +64,33 @@ export function CanvasWorkspaceAssetPanel({ onInsert, onManage, onProjectAssets 
             <div className="space-y-2 border-b border-border p-3">
                 <div className="flex items-center justify-between gap-2">
                     <Select
-                        aria-label="素材类型"
+                        aria-label={tr("素材类型")}
                         value={kind}
                         onChange={setKind}
                         options={[
-                            { value: "all", label: "全部" },
-                            { value: "image", label: "图片" },
-                            { value: "video", label: "视频" },
-                            { value: "audio", label: "音频" },
-                            { value: "text", label: "文本" },
+                            { value: "all", label: tr("全部") },
+                            { value: "image", label: tr("图片") },
+                            { value: "video", label: tr("视频") },
+                            { value: "audio", label: tr("音频") },
+                            { value: "text", label: tr("文本") },
                         ]}
                     />
-                    <Button type="text" aria-label="刷新资产" loading={query.isFetching} icon={<RefreshCw className="size-4" />} onClick={() => void query.refetch()} />
+                    <Button type="text" aria-label={tr("刷新资产")} loading={query.isFetching} icon={<RefreshCw className="size-4" />} onClick={() => void query.refetch()} />
                 </div>
-                <input className="w-full rounded-md border border-border bg-transparent px-2 py-2 text-sm" aria-label="搜索资产名称或标签" placeholder="搜索名称/标签" value={input} onChange={(event) => setInput(event.target.value)} />
+                <input className="w-full rounded-md border border-border bg-transparent px-2 py-2 text-sm" aria-label={tr("搜索资产名称或标签")} placeholder={tr("搜索名称/标签")} value={input} onChange={(event) => setInput(event.target.value)} />
             </div>
             <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
                 {!userId ? (
-                    <p className="p-3 text-sm">登录后查看资产。</p>
+                    <p className="p-3 text-sm">{tr("登录后查看资产。")}</p>
                 ) : query.isPending ? (
                     <p role="status" className="p-3 text-sm">
-                        正在加载资产…
+                        {tr("正在加载资产…")}
                     </p>
                 ) : null}
                 {query.isError ? (
                     <div role="alert" className="p-3 text-sm">
-                        资产读取失败，已加载的内容仍保留。<Button onClick={() => void query.refetch()}>重试</Button>
+                        {tr("资产读取失败，已加载的内容仍保留。")}
+                        <Button onClick={() => void query.refetch()}>{tr("重试")}</Button>
                     </div>
                 ) : null}
                 {assets.map((asset) => {
@@ -111,8 +113,8 @@ export function CanvasWorkspaceAssetPanel({ onInsert, onManage, onProjectAssets 
                             <Button
                                 type="text"
                                 size="small"
-                                aria-label={`插入画布：${asset.title}`}
-                                title={insertable ? "插入画布" : "此类型请在素材库中查看"}
+                                aria-label={tr("插入画布：{0}", asset.title)}
+                                title={insertable ? tr("插入画布") : tr("此类型请在素材库中查看")}
                                 disabled={!insertable || Boolean(inserting)}
                                 loading={inserting === asset.id}
                                 icon={<Plus className="size-4" />}
@@ -121,20 +123,20 @@ export function CanvasWorkspaceAssetPanel({ onInsert, onManage, onProjectAssets 
                         </div>
                     );
                 })}
-                {query.isSuccess && !assets.length ? <WorkspaceState icon="canvas" compact title="没有匹配的资产" description="换个分类或搜索条件试试。" /> : null}
+                {query.isSuccess && !assets.length ? <WorkspaceState icon="canvas" compact title={tr("没有匹配的资产")} description={tr("换个分类或搜索条件试试。")} /> : null}
                 {query.hasNextPage ? (
                     <Button block loading={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>
-                        加载更多
+                        {tr("加载更多")}
                     </Button>
                 ) : null}
             </div>
             <footer className="flex shrink-0 gap-2 border-t border-border p-2">
                 <Button size="small" onClick={onManage}>
-                    管理素材
+                    {tr("管理素材")}
                 </Button>
                 {onProjectAssets ? (
                     <Button size="small" onClick={onProjectAssets}>
-                        项目素材
+                        {tr("项目素材")}
                     </Button>
                 ) : null}
             </footer>

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Dropdown, Input, InputNumber, Progress } from "antd";
 import { AppModal } from "@/components/ui/product/app-modal";
 import { Tooltip } from "@/components/ui/base/tooltip";
@@ -313,7 +314,7 @@ export function CanvasTimelineDialog({
 
     const deleteSelectedClip = () => {
         if (!selectedClipId) {
-            message.info("请先点击选中一个片段");
+            message.info(tr("请先点击选中一个片段"));
             return;
         }
         applyDraft((current) => ({
@@ -337,7 +338,7 @@ export function CanvasTimelineDialog({
         const trackId = kind === "video" ? DEFAULT_VIDEO_TRACK_ID : DEFAULT_AUDIO_TRACK_ID;
         const targetTrack = draft.tracks.find((track) => track.id === trackId);
         if (!targetTrack || targetTrack.locked) {
-            message.warning(kind === "video" ? "视频轨已锁定或不存在" : "音频轨已锁定或不存在");
+            message.warning(kind === "video" ? tr("视频轨已锁定或不存在") : tr("音频轨已锁定或不存在"));
             return;
         }
         const durationMs = targetNode.metadata?.durationMs && targetNode.metadata.durationMs > 0 ? Math.round(targetNode.metadata.durationMs) : 4_000;
@@ -356,14 +357,14 @@ export function CanvasTimelineDialog({
             trackId,
             startMs,
             durationMs,
-            title: targetNode.title || (kind === "video" ? "视频片段" : "音频片段"),
+            title: targetNode.title || (kind === "video" ? tr("视频片段") : tr("音频片段")),
             sourceStartMs: 0,
             sourceDurationMs: durationMs,
             ...(kind === "audio" ? { volume: 1, fadeInMs: 0, fadeOutMs: 0 } : {}),
         };
         applyDraft((current) => ({ ...current, clips: [...current.clips, clip] }));
         setSelectedClipId(clip.id);
-        message.success(`已添加「${clip.title}」到时间线`);
+        message.success(tr("已添加「{0}」到时间线", clip.title));
     };
 
     // 把“添加节点”能力暴露给页面层（素材库/本地上传创建节点后回填到草稿）。
@@ -379,13 +380,13 @@ export function CanvasTimelineDialog({
     const addDirectMediaToTimeline = (media: TimelineDirectMedia) => {
         const kind = media.kind === "video" ? "video" : media.kind === "audio" ? "audio" : null;
         if (!kind) {
-            message.info("图片/文本素材暂不支持直接入轨，请先在画布中添加节点");
+            message.info(tr("图片/文本素材暂不支持直接入轨，请先在画布中添加节点"));
             return;
         }
         const trackId = kind === "video" ? DEFAULT_VIDEO_TRACK_ID : DEFAULT_AUDIO_TRACK_ID;
         const targetTrack = draft.tracks.find((track) => track.id === trackId);
         if (!targetTrack || targetTrack.locked) {
-            message.warning(kind === "video" ? "视频轨已锁定或不存在" : "音频轨已锁定或不存在");
+            message.warning(kind === "video" ? tr("视频轨已锁定或不存在") : tr("音频轨已锁定或不存在"));
             return;
         }
         const durationMs = media.durationMs && media.durationMs > 0 ? Math.round(media.durationMs) : 4_000;
@@ -402,7 +403,7 @@ export function CanvasTimelineDialog({
             trackId,
             startMs: placement.startMs,
             durationMs,
-            title: media.title || (kind === "video" ? "视频片段" : "音频片段"),
+            title: media.title || (kind === "video" ? tr("视频片段") : tr("音频片段")),
             sourceStartMs: 0,
             sourceDurationMs: durationMs,
             directMedia: media,
@@ -410,7 +411,7 @@ export function CanvasTimelineDialog({
         };
         applyDraft((current) => ({ ...current, clips: [...current.clips, clip] }));
         setSelectedClipId(clip.id);
-        message.success(`已添加「${clip.title}」到时间线`);
+        message.success(tr("已添加「{0}」到时间线", clip.title));
     };
 
     // 把“直连媒体入轨”能力暴露给页面层（时间线作用域插入不重复落画布）。
@@ -426,12 +427,12 @@ export function CanvasTimelineDialog({
     const splitClipAtPlayhead = () => {
         const clip = draft.clips.find((item) => (item.kind === "video" || item.kind === "audio") && playheadMs > item.startMs && playheadMs < item.startMs + item.durationMs);
         if (!clip) {
-            message.info("请先将播放头移动到片段内部，再执行分割");
+            message.info(tr("请先将播放头移动到片段内部，再执行分割"));
             return;
         }
         const cutMs = playheadMs - clip.startMs;
         if (cutMs < MIN_CLIP_DURATION_MS || clip.durationMs - cutMs < MIN_CLIP_DURATION_MS) {
-            message.warning("分割点太靠近片段边缘");
+            message.warning(tr("分割点太靠近片段边缘"));
             return;
         }
         const left: TimelineClip = { ...clip, id: `${clip.id}-left-${Date.now()}`, durationMs: Math.round(cutMs) };
@@ -445,14 +446,14 @@ export function CanvasTimelineDialog({
         };
         applyDraft((current) => ({ ...current, clips: [...current.clips.filter((item) => item.id !== clip.id), left, right] }));
         setSelectedClipId(left.id);
-        message.success("已在播放头处分割片段");
+        message.success(tr("已在播放头处分割片段"));
     };
 
     const handleLocalUpload = async (files: FileList | null) => {
         const list = files ? Array.from(files) : [];
         if (!list.length) return;
         if (!onUploadLocalFiles) {
-            message.warning("本地上传暂未接线");
+            message.warning(tr("本地上传暂未接线"));
             return;
         }
         const medias = await onUploadLocalFiles(list);
@@ -479,14 +480,14 @@ export function CanvasTimelineDialog({
         subtitleNodeIds.forEach((subNodeId) => {
             onSaveSubtitles(subNodeId, buildSubtitleEntriesForNode(subNodeId, normalized));
         });
-        message.success("时间线已保存");
+        message.success(tr("时间线已保存"));
         onClose();
     };
 
     // 组装导出：把当前草稿按片段顺序合成一个 MP4 Blob（导出下载与生成新片段共用）。
     const runExport = async (): Promise<Blob> => {
         const videoClips = draft.clips.filter((clip) => clip.kind === "video");
-        if (!videoClips.length) throw new Error("时间线没有视频片段，无法导出");
+        if (!videoClips.length) throw new Error(tr("时间线没有视频片段，无法导出"));
         const sources: TimelineRenderSource[] = [];
         for (const clip of videoClips) {
             const sourceNode = nodes.find((item) => item.id === clip.nodeId);
@@ -500,10 +501,10 @@ export function CanvasTimelineDialog({
                 url: sourceNode?.metadata?.content || media?.url || undefined,
             });
         }
-        if (!sources.length) throw new Error("找不到可导出的视频素材，请确认视频节点包含媒体");
+        if (!sources.length) throw new Error(tr("找不到可导出的视频素材，请确认视频节点包含媒体"));
         setExporting(true);
         setExportPercent(0);
-        setExportDetail("准备导出");
+        setExportDetail(tr("准备导出"));
         try {
             return await exportTimelineToMp4(normalizeTimelineProject(draft), sources, {
                 onProgress: ({ percent, detail }) => {
@@ -521,25 +522,25 @@ export function CanvasTimelineDialog({
     const handleExport = async () => {
         try {
             const blob = await runExport();
-            saveAs(blob, (node.title || "成片") + ".mp4");
-            message.success("成片导出完成");
+            saveAs(blob, (node.title || tr("成片")) + ".mp4");
+            message.success(tr("成片导出完成"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "导出失败");
+            message.error(error instanceof Error ? error.message : tr("导出失败"));
         }
     };
 
     // 组装能力闭环：合成结果不落地下载，而是作为新视频节点放回画布，可继续编辑字幕与样式。
     const handleCreateAssembledNode = async () => {
         if (!onCreateAssembledNode) {
-            message.warning("保存回画布暂未接线");
+            message.warning(tr("保存回画布暂未接线"));
             return;
         }
         try {
             const blob = await runExport();
-            const created = await onCreateAssembledNode(blob, (node.title || "成片") + "-新片段");
-            if (created) message.success("已生成新视频片段并放到画布，可继续编辑字幕与样式");
+            const created = await onCreateAssembledNode(blob, (node.title || tr("成片")) + tr("-新片段"));
+            if (created) message.success(tr("已生成新视频片段并放到画布，可继续编辑字幕与样式"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "生成新片段失败");
+            message.error(error instanceof Error ? error.message : tr("生成新片段失败"));
         }
     };
 
@@ -628,8 +629,8 @@ export function CanvasTimelineDialog({
                 <Clapperboard className="size-4" />
             </span>
             <div className="min-w-0">
-                <div className="truncate text-[var(--fs-heading-lg)] font-semibold leading-6 tracking-[-0.02em]">多轨时间线</div>
-                <div className="truncate text-xs opacity-45">第二期 · 轨道编辑与素材编排</div>
+                <div className="truncate text-[var(--fs-heading-lg)] font-semibold leading-6 tracking-[-0.02em]">{tr("多轨时间线")}</div>
+                <div className="truncate text-xs opacity-45">{tr("第二期 · 轨道编辑与素材编排")}</div>
             </div>
         </div>
     );
@@ -654,15 +655,15 @@ export function CanvasTimelineDialog({
                     <span className="min-w-24 rounded-md border px-2 py-1 text-xs font-semibold tabular-nums" style={{ borderColor: theme.toolbar.border, background: theme.node.fill, color: theme.accent.primary }}>
                         {formatTimelineTime(playheadMs)}
                     </span>
-                    <Tooltip title={snapEnabled ? "关闭吸附" : "开启吸附"}>
+                    <Tooltip title={snapEnabled ? tr("关闭吸附") : tr("开启吸附")}>
                         <Button size="small" icon={<Scissors className="size-3.5" />} onClick={() => setSnapEnabled((value) => !value)}>
-                            {snapEnabled ? "吸附开" : "吸附关"}
+                            {snapEnabled ? tr("吸附开") : tr("吸附关")}
                         </Button>
                     </Tooltip>
                     <Button size="small" icon={<ZoomOut className="size-3.5" />} onClick={() => setZoomLevel((value) => zoomOut(value))} />
                     <Button size="small" icon={<ZoomIn className="size-3.5" />} onClick={() => setZoomLevel((value) => zoomIn(value))} />
                     <Button size="small" icon={<Maximize2 className="size-3.5" />} onClick={() => setZoomLevel(getFitTimelineZoom(durationMs, viewportWidth))}>
-                        适应
+                        {tr("适应")}
                     </Button>
                     {addGroupCollapsed ? (
                         <Dropdown
@@ -674,14 +675,14 @@ export function CanvasTimelineDialog({
                                         ? [
                                               {
                                                   key: "add",
-                                                  label: "添加素材",
+                                                  label: tr("添加素材"),
                                                   icon: <Plus className="size-3.5" />,
                                                   children: addableNodes.map((item) => ({
                                                       key: item.id,
                                                       label: (
                                                           <span className="inline-flex max-w-56 items-center gap-2 truncate">
                                                               {item.type === "video" ? <Video className="size-3.5" /> : <Music2 className="size-3.5" />}
-                                                              {item.title || "未命名素材"}
+                                                              {item.title || tr("未命名素材")}
                                                           </span>
                                                       ),
                                                       onClick: () => addNodeToTimeline(item),
@@ -689,15 +690,15 @@ export function CanvasTimelineDialog({
                                               },
                                           ]
                                         : []),
-                                    { key: "upload", label: "上传本地", icon: <Upload className="size-3.5" />, onClick: () => uploadInputRef.current?.click() },
-                                    { key: "library", label: "素材库", icon: <Library className="size-3.5" />, disabled: !onOpenAssetLibrary, onClick: () => onOpenAssetLibrary?.() },
-                                    { key: "assets", label: "项目资产", icon: <FolderOpen className="size-3.5" />, disabled: !onOpenProjectAssets, onClick: () => onOpenProjectAssets?.() },
+                                    { key: "upload", label: tr("上传本地"), icon: <Upload className="size-3.5" />, onClick: () => uploadInputRef.current?.click() },
+                                    { key: "library", label: tr("素材库"), icon: <Library className="size-3.5" />, disabled: !onOpenAssetLibrary, onClick: () => onOpenAssetLibrary?.() },
+                                    { key: "assets", label: tr("项目资产"), icon: <FolderOpen className="size-3.5" />, disabled: !onOpenProjectAssets, onClick: () => onOpenProjectAssets?.() },
                                 ],
                             }}
                         >
                             <span ref={moreBtnRef}>
                                 <Button size="small" icon={<MoreHorizontal className="size-3.5" />}>
-                                    更多
+                                    {tr("更多")}
                                 </Button>
                             </span>
                         </Dropdown>
@@ -713,7 +714,7 @@ export function CanvasTimelineDialog({
                                         label: (
                                             <span className="inline-flex max-w-56 items-center gap-2 truncate">
                                                 {item.type === "video" ? <Video className="size-3.5" /> : <Music2 className="size-3.5" />}
-                                                {item.title || "未命名素材"}
+                                                {item.title || tr("未命名素材")}
                                             </span>
                                         ),
                                         onClick: () => addNodeToTimeline(item),
@@ -721,34 +722,34 @@ export function CanvasTimelineDialog({
                                 }}
                             >
                                 <Button size="small" icon={<Plus className="size-3.5" />} disabled={!addableNodes.length}>
-                                    添加素材
+                                    {tr("添加素材")}
                                 </Button>
                             </Dropdown>
                             <Button size="small" icon={<Upload className="size-3.5" />} onClick={() => uploadInputRef.current?.click()}>
-                                上传本地
+                                {tr("上传本地")}
                             </Button>
                             <Button size="small" icon={<Library className="size-3.5" />} disabled={!onOpenAssetLibrary} onClick={() => onOpenAssetLibrary?.()}>
-                                素材库
+                                {tr("素材库")}
                             </Button>
                             <Button size="small" icon={<FolderOpen className="size-3.5" />} disabled={!onOpenProjectAssets} onClick={() => onOpenProjectAssets?.()}>
-                                项目资产
+                                {tr("项目资产")}
                             </Button>
                         </>
                     )}
                     <div ref={addGroupProbeRef} aria-hidden="true" className="invisible pointer-events-none absolute left-0 top-0 flex items-center gap-2">
                         <Dropdown trigger={["click"]} placement="bottomLeft" disabled={!addableNodes.length} menu={{ items: [] }}>
                             <Button size="small" icon={<Plus className="size-3.5" />}>
-                                添加素材
+                                {tr("添加素材")}
                             </Button>
                         </Dropdown>
                         <Button size="small" icon={<Upload className="size-3.5" />}>
-                            上传本地
+                            {tr("上传本地")}
                         </Button>
                         <Button size="small" icon={<Library className="size-3.5" />}>
-                            素材库
+                            {tr("素材库")}
                         </Button>
                         <Button size="small" icon={<FolderOpen className="size-3.5" />}>
-                            项目资产
+                            {tr("项目资产")}
                         </Button>
                     </div>
                     <input
@@ -763,23 +764,23 @@ export function CanvasTimelineDialog({
                         }}
                     />
                     <Button size="small" icon={<Scissors className="size-3.5" />} onClick={splitClipAtPlayhead}>
-                        分割
+                        {tr("分割")}
                     </Button>
                     <div className="ml-auto flex items-center gap-2">
                         <Button size="small" type="primary" icon={<Clapperboard className="size-3.5" />} loading={exporting} disabled={!hasVideoClips} onClick={() => void handleExport()}>
-                            导出成片
+                            {tr("导出成片")}
                         </Button>
                         <Button size="small" icon={<Wand2 className="size-3.5" />} loading={exporting} disabled={!hasVideoClips} onClick={() => void handleCreateAssembledNode()}>
-                            生成新片段
+                            {tr("生成新片段")}
                         </Button>
                         <Button size="small" danger icon={<Trash2 className="size-3.5" />} disabled={!selectedClipId} onClick={deleteSelectedClip}>
-                            删除片段
+                            {tr("删除片段")}
                         </Button>
                         <Button size="small" disabled={!draft.clips.length} onClick={onClose}>
-                            取消
+                            {tr("取消")}
                         </Button>
                         <Button size="small" type="primary" disabled={!draft.clips.length} onClick={handleSave}>
-                            保存
+                            {tr("保存")}
                         </Button>
                     </div>
                 </div>
@@ -834,17 +835,23 @@ export function CanvasTimelineDialog({
                     <div className="border-t px-4 py-2" style={{ borderColor: theme.toolbar.border, background: theme.toolbar.panel }}>
                         <div className="mb-2 flex items-center gap-2 text-xs">
                             <span className="font-semibold" style={{ color: theme.accent.primary }}>
-                                字幕编辑
+                                {tr("字幕编辑")}
                             </span>
-                            <span className="opacity-45">修改后保存将同步写回对应视频节点的字幕数据</span>
+                            <span className="opacity-45">{tr("修改后保存将同步写回对应视频节点的字幕数据")}</span>
                             {onOpenSubtitleDialog ? (
                                 <Button size="small" className="ml-auto" icon={<Captions className="size-3.5" />} onClick={() => onOpenSubtitleDialog(selectedSubtitleClip.nodeId)}>
-                                    精细编辑（SRT/高亮/样式）
+                                    {tr("精细编辑（SRT/高亮/样式）")}
                                 </Button>
                             ) : null}
                         </div>
                         <div className="flex items-start gap-3">
-                            <Input.TextArea autoSize={{ minRows: 1, maxRows: 3 }} value={selectedSubtitleClip.text || ""} placeholder="字幕文本" className="flex-1" onChange={(event) => updateClip(selectedSubtitleClip.id, { text: event.target.value })} />
+                            <Input.TextArea
+                                autoSize={{ minRows: 1, maxRows: 3 }}
+                                value={selectedSubtitleClip.text || ""}
+                                placeholder={tr("字幕文本")}
+                                className="flex-1"
+                                onChange={(event) => updateClip(selectedSubtitleClip.id, { text: event.target.value })}
+                            />
                             <div className="flex shrink-0 items-center gap-2 text-xs">
                                 <InputNumber size="small" min={0} step={100} value={selectedSubtitleClip.startMs} onChange={(startMs) => updateClip(selectedSubtitleClip.id, { startMs: startMs ?? 0 })} className="w-28" />
                                 <span className="opacity-40">→</span>
@@ -856,7 +863,7 @@ export function CanvasTimelineDialog({
                                     onChange={(endMs) => updateClip(selectedSubtitleClip.id, { durationMs: Math.max(MIN_CLIP_DURATION_MS, (endMs ?? 0) - selectedSubtitleClip.startMs) })}
                                     className="w-28"
                                 />
-                                <span className="opacity-40">毫秒</span>
+                                <span className="opacity-40">{tr("毫秒")}</span>
                             </div>
                         </div>
                     </div>
@@ -866,15 +873,15 @@ export function CanvasTimelineDialog({
                     <div className="border-t px-4 py-2" style={{ borderColor: theme.toolbar.border, background: theme.toolbar.panel }}>
                         <div className="mb-2 flex items-center gap-2 text-xs">
                             <span className="font-semibold" style={{ color: theme.accent.primary }}>
-                                片段编辑
+                                {tr("片段编辑")}
                             </span>
                             <span className="min-w-0 flex-1 truncate opacity-45">{selectedMediaClip.title || trackLabel(selectedMediaClip.trackId)}</span>
                             <Button size="small" icon={<Scissors className="size-3.5" />} onClick={splitClipAtPlayhead}>
-                                在播放头分割
+                                {tr("在播放头分割")}
                             </Button>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
-                            <span className="opacity-50">起点</span>
+                            <span className="opacity-50">{tr("起点")}</span>
                             <InputNumber
                                 size="small"
                                 min={selectedMediaMinStartMs}
@@ -884,7 +891,7 @@ export function CanvasTimelineDialog({
                                 value={selectedMediaClip.startMs}
                                 onChange={(value) => updateSelectedMediaNumbers({ startMs: Math.max(selectedMediaMinStartMs, Math.min(selectedMediaMaxStartMs, value ?? selectedMediaClip.startMs)) })}
                             />
-                            <span className="opacity-50">时长</span>
+                            <span className="opacity-50">{tr("时长")}</span>
                             <InputNumber
                                 size="small"
                                 min={MIN_CLIP_DURATION_MS}
@@ -894,7 +901,7 @@ export function CanvasTimelineDialog({
                                 value={selectedMediaClip.durationMs}
                                 onChange={(value) => updateSelectedMediaNumbers({ durationMs: Math.max(MIN_CLIP_DURATION_MS, Math.min(selectedMediaMaxDurationMs, value ?? selectedMediaClip.durationMs)) })}
                             />
-                            <span className="opacity-50">源内起点</span>
+                            <span className="opacity-50">{tr("源内起点")}</span>
                             <InputNumber
                                 size="small"
                                 min={0}
@@ -904,20 +911,20 @@ export function CanvasTimelineDialog({
                                 value={selectedMediaClip.sourceStartMs ?? 0}
                                 onChange={(value) => updateSelectedMediaNumbers({ sourceStartMs: Math.max(0, Math.min(selectedMediaMaxSourceStartMs, value ?? (selectedMediaClip.sourceStartMs || 0))) })}
                             />
-                            <span className="opacity-50">源内结束</span>
+                            <span className="opacity-50">{tr("源内结束")}</span>
                             <span className="tabular-nums" style={{ color: theme.accent.primary }}>
                                 {formatTimelineTime((selectedMediaClip.sourceStartMs || 0) + selectedMediaClip.durationMs)}
                             </span>
-                            <span className="ml-auto hidden opacity-45 sm:inline">数值微调精确裁剪，播放头处可分割；拖拽手柄快速裁剪</span>
+                            <span className="ml-auto hidden opacity-45 sm:inline">{tr("数值微调精确裁剪，播放头处可分割；拖拽手柄快速裁剪")}</span>
                         </div>
                     </div>
                 ) : null}
 
                 <div className="flex items-center gap-3 border-t px-4 py-2" style={{ borderColor: theme.toolbar.border, background: theme.toolbar.panel }}>
                     <span className="text-xs opacity-60">
-                        总时长 {formatTimelineTime(durationMs)} · {draft.clips.length} 个片段 · {draft.tracks.length} 条轨道
+                        {tr("总时长")} {formatTimelineTime(durationMs)} · {tr("{0} 个片段 · {1} 条轨道", draft.clips.length, draft.tracks.length)}
                     </span>
-                    <span className="ml-auto truncate text-xs opacity-45">拖拽片段移动，左右边缘裁剪，字幕片段来自视频节点的字幕数据</span>
+                    <span className="ml-auto truncate text-xs opacity-45">{tr("拖拽片段移动，左右边缘裁剪，字幕片段来自视频节点的字幕数据")}</span>
                 </div>
             </div>
         </AppModal>

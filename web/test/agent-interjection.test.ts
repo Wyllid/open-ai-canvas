@@ -40,13 +40,13 @@ test("输入框运行中同时给出「发送（插话）」与「停止」", as
     expect(composer).toContain("const canStop = Boolean(running && onStop);");
     expect(composer).toContain("const canSubmit = !disabled && !submitDisabled && !sending && Boolean(prompt.trim() || attachments.length);");
     expect(composer).not.toContain("const canStop = Boolean(sending && onStop);");
-    expect(composer).toContain('aria-label="停止本轮"');
+    expect(composer).toContain('aria-label={tr("停止本轮")}');
     // 插话/未送达要有可见标记
     expect(composer).toContain('interjection?: "sent" | "delivered" | "undelivered" | "withdrawn";');
-    expect(composer).toContain('item.interjection === "undelivered" ? "插话未送达"');
+    expect(composer).toContain('item.interjection === "undelivered" ? tr("插话未送达")');
     // 撤回插话是独立入口，只在等待送达时出现；停止按钮不能是唯一的"取消"手段。
     expect(composer).toContain('item.interjection === "sent" && onWithdrawInterjection');
-    expect(composer).toContain('aria-label="撤回这句插话"');
+    expect(composer).toContain('aria-label={tr("撤回这句插话")}');
 });
 
 test("撤回插话走独立接口，不停止本轮", async () => {

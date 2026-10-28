@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { cn } from "@/lib/utils";
@@ -117,11 +118,11 @@ export function FluidOrb({ size = 56, color = "#6d5dfc", className }: FluidOrbPr
 
         const compile = (type: number, source: string) => {
             const shader = gl.createShader(type);
-            if (!shader) throw new Error("无法创建 Fluid Orb shader");
+            if (!shader) throw new Error(tr("无法创建 Fluid Orb shader"));
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                const detail = gl.getShaderInfoLog(shader) || "未知 shader 错误";
+                const detail = gl.getShaderInfoLog(shader) || tr("未知 shader 错误");
                 gl.deleteShader(shader);
                 throw new Error(detail);
             }
@@ -138,11 +139,11 @@ export function FluidOrb({ size = 56, color = "#6d5dfc", className }: FluidOrbPr
             vertexShader = compile(gl.VERTEX_SHADER, VERTEX_SHADER);
             fragmentShader = compile(gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
             program = gl.createProgram();
-            if (!program) throw new Error("无法创建 Fluid Orb program");
+            if (!program) throw new Error(tr("无法创建 Fluid Orb program"));
             gl.attachShader(program, vertexShader);
             gl.attachShader(program, fragmentShader);
             gl.linkProgram(program);
-            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program) || "Fluid Orb link 失败");
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program) || tr("Fluid Orb link 失败"));
             gl.useProgram(program);
 
             buffer = gl.createBuffer();

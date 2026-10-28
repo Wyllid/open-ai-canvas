@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // @ 引用候选菜单：分组列表、预览与定位。
 
 import { type CanvasResourceReference } from "@/lib/canvas/canvas-resource-references";
@@ -105,8 +106,8 @@ export function MentionMenu({
                 <Search aria-hidden />
                 <input
                     value={query}
-                    placeholder={labels?.search ?? "搜索节点、素材或技能"}
-                    aria-label="搜索引用素材"
+                    placeholder={labels?.search ?? tr("搜索节点、素材或技能")}
+                    aria-label={tr("搜索引用素材")}
                     onChange={(event) => onQueryChange(event.target.value)}
                     onPointerDown={(event) => event.stopPropagation()}
                     onKeyDown={(event) => {
@@ -140,7 +141,7 @@ export function MentionMenu({
                         {connectedNodes.length ? (
                             <section className="canvas-resource-mention-section">
                                 <h4>
-                                    <span>{labels?.connected ?? "画布节点"}</span>
+                                    <span>{labels?.connected ?? tr("画布节点")}</span>
                                     <small>{connectedNodes.length}</small>
                                 </h4>
                                 <MentionReferenceList references={connectedNodes} activeReferenceId={activeReferenceId} onSelect={selectReference} />
@@ -149,7 +150,7 @@ export function MentionMenu({
                         {skillReferences.length ? (
                             <section className="canvas-resource-mention-section">
                                 <h4>
-                                    <span>技能库</span>
+                                    <span>{tr("技能库")}</span>
                                     <small>{skillReferences.length}</small>
                                 </h4>
                                 <MentionReferenceList references={skillReferences} activeReferenceId={activeReferenceId} onSelect={selectReference} />
@@ -158,7 +159,7 @@ export function MentionMenu({
                         {categoryItems.length ? (
                             <section className="canvas-resource-mention-section">
                                 <h4>
-                                    <span>素材库</span>
+                                    <span>{tr("素材库")}</span>
                                     <small>{assetReferences.length}</small>
                                 </h4>
                                 {categoryItems.map((item) => (
@@ -187,7 +188,7 @@ export function MentionReferenceList({ references, activeReferenceId, onSelect }
         activeRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }, [activeReferenceId]);
 
-    if (!references.length) return <div className="canvas-resource-mention-empty">没有匹配的引用</div>;
+    if (!references.length) return <div className="canvas-resource-mention-empty">{tr("没有匹配的引用")}</div>;
     return references.map((reference) => (
         <button
             key={reference.id}
@@ -210,14 +211,14 @@ export function MentionReferenceList({ references, activeReferenceId, onSelect }
             <span className="canvas-resource-mention-copy">
                 <span className="canvas-resource-mention-title-row">
                     <strong title={reference.label}>{reference.label}</strong>
-                    {reference.kind === "skill" ? <em>技能</em> : null}
+                    {reference.kind === "skill" ? <em>{tr("技能")}</em> : null}
                 </span>
                 {reference.kind === "skill" ? (
                     <span className="canvas-resource-mention-meta">
-                        <span>{reference.skill?.description || reference.text || "工作流技能"}</span>
+                        <span>{reference.skill?.description || reference.text || tr("工作流技能")}</span>
                         <small>
                             {reference.skill?.version ? `v${reference.skill.version}` : ""}
-                            {reference.skill?.fileCount ? ` · ${reference.skill.fileCount} 文件` : ""}
+                            {reference.skill?.fileCount ? tr(" · {0} 文件", reference.skill.fileCount) : ""}
                         </small>
                     </span>
                 ) : reference.text && reference.text !== reference.title ? (

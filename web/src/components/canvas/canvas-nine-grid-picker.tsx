@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useState } from "react";
 import type { MenuProps } from "antd";
 import { CanvasAnchoredDropdown as Dropdown } from "./canvas-anchored-dropdown";
@@ -86,7 +87,7 @@ export function CanvasNineGridPicker({
         >
             <button type="button" className="canvas-node-composer-header-action canvas-node-fixed-chip" aria-expanded={actualOpen} aria-haspopup="menu" onClick={() => setOpen(true)} onPointerDown={(event) => event.stopPropagation()}>
                 <NineGridToolIcon iconName={icon} className="size-4 shrink-0" />
-                <span className="truncate">预设</span>
+                <span className="truncate">{tr("预设")}</span>
             </button>
         </Dropdown>
     );

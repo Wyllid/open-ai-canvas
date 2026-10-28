@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { runBackendCanvasGenerationTask } from "@/lib/canvas/canvas-project-generation";
 import type { AiConfig } from "@/stores/use-config-store";
 import type { SrtEntry, SubtitleHighlight } from "@/types/timeline";
@@ -94,8 +95,8 @@ export async function generateSubtitleHighlights(entries: SrtEntry[], options: S
         throw new DOMException("Aborted", "AbortError");
     }
     if (firstError.current) {
-        const message = firstError.current instanceof Error ? firstError.current.message : "未知错误";
-        throw new Error(`字幕关键词高亮生成失败：${message}`);
+        const message = firstError.current instanceof Error ? firstError.current.message : tr("未知错误");
+        throw new Error(tr("字幕关键词高亮生成失败：{0}", message));
     }
 
     return results.flat();

@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { useUserStore } from "@/stores/use-user-store";
 import { FEED_TABS, SUB_TAB_TAGS, toAbsoluteUrl } from "@/lib/canvas/canvas-tool-presentation";
 type FeedTab = ToolScope;
@@ -19,10 +20,10 @@ type ToolSubTab = "style" | "effect" | "motion" | "nine_grid";
 
 // 工具类型与后端一致。
 const TOOL_SUB_TABS: Array<{ id: ToolSubTab; type: ToolType; label: string }> = [
-    { id: "style", type: "style", label: "风格" },
-    { id: "nine_grid", type: "nine_grid", label: "九宫格" },
-    { id: "effect", type: "effect", label: "特效" },
-    { id: "motion", type: "motion", label: "运镜" },
+    { id: "style", type: "style", label: tr("风格") },
+    { id: "nine_grid", type: "nine_grid", label: tr("九宫格") },
+    { id: "effect", type: "effect", label: tr("特效") },
+    { id: "motion", type: "motion", label: tr("运镜") },
 ];
 
 const TOOL_PAGE_SIZE = 40;
@@ -87,11 +88,11 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
         setCoverUploading(true);
         try {
             const image = await uploadImage(file);
-            if (image.pendingRemoteUpload) throw new Error(image.remoteUploadError || "图片暂存本机，尚未上传到云端，请稍后重试");
+            if (image.pendingRemoteUpload) throw new Error(image.remoteUploadError || tr("图片暂存本机，尚未上传到云端，请稍后重试"));
             createForm.setFieldValue("cover", toAbsoluteUrl(image.url));
-            message.success("封面已上传");
+            message.success(tr("封面已上传"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "封面上传失败");
+            message.error(error instanceof Error ? error.message : tr("封面上传失败"));
         } finally {
             setCoverUploading(false);
         }
@@ -101,11 +102,11 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
         setMediaUploading(true);
         try {
             const uploaded = await uploadMediaFile(file, "video");
-            if (uploaded.pendingRemoteUpload) throw new Error(uploaded.remoteUploadError || "视频暂存本机，尚未上传到云端，请稍后重试");
+            if (uploaded.pendingRemoteUpload) throw new Error(uploaded.remoteUploadError || tr("视频暂存本机，尚未上传到云端，请稍后重试"));
             createForm.setFieldValue("mediaUrl", toAbsoluteUrl(uploaded.url));
-            message.success("演示视频已上传");
+            message.success(tr("演示视频已上传"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "视频上传失败");
+            message.error(error instanceof Error ? error.message : tr("视频上传失败"));
         } finally {
             setMediaUploading(false);
         }
@@ -122,7 +123,7 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
 
     const tagChips = useMemo(() => {
         const tags = subTab === "style" ? SUB_TAB_TAGS.style : subTab === "motion" ? SUB_TAB_TAGS.motion : [];
-        return [{ id: "", label: "全部" }, ...tags];
+        return [{ id: "", label: tr("全部") }, ...tags];
     }, [subTab]);
 
     const tagOptions = useMemo(() => {
@@ -157,16 +158,16 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
     const favoriteMutation = useMutation({
         mutationFn: ({ id, favorite }: { id: number; favorite: boolean }) => setToolFavorite(id, favorite),
         onSuccess: () => void invalidateTools(),
-        onError: (error) => message.error(error instanceof Error ? error.message : "收藏状态更新失败"),
+        onError: (error) => message.error(error instanceof Error ? error.message : tr("收藏状态更新失败")),
     });
 
     const deleteMutation = useMutation({
         mutationFn: deleteTool,
         onSuccess: () => {
             void invalidateTools();
-            message.success("工具已删除");
+            message.success(tr("工具已删除"));
         },
-        onError: (error) => message.error(error instanceof Error ? error.message : "工具删除失败"),
+        onError: (error) => message.error(error instanceof Error ? error.message : tr("工具删除失败")),
     });
 
     const createMutation = useMutation({
@@ -183,20 +184,20 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
                 visibility: values.visibility,
             }),
         onSuccess: () => {
-            message.success("工具已创建");
+            message.success(tr("工具已创建"));
             setCreateOpen(false);
             setFeedTab("custom");
             void invalidateTools();
         },
-        onError: (error) => message.error(error instanceof Error ? error.message : "工具创建失败"),
+        onError: (error) => message.error(error instanceof Error ? error.message : tr("工具创建失败")),
     });
 
     function confirmDelete(tool: ToolSummary) {
         modal.confirm({
-            title: `删除“${tool.label}”？`,
-            content: "删除后不可恢复，该工具的收藏记录也会一同移除。",
-            okText: "删除",
-            cancelText: "取消",
+            title: tr("删除“{0}”？", tool.label),
+            content: tr("删除后不可恢复，该工具的收藏记录也会一同移除。"),
+            okText: tr("删除"),
+            cancelText: tr("取消"),
             okButtonProps: { danger: true },
             onOk: () => deleteMutation.mutateAsync(tool.id),
         });
@@ -208,16 +209,16 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
         if (toolsQuery.hasNextPage && !toolsQuery.isFetchingNextPage) void toolsQuery.fetchNextPage();
     }
 
-    const emptyTitle = feedTab === "favorites" ? "还没有收藏工具" : feedTab === "custom" ? "还没有自定义工具" : "没有匹配工具";
-    const emptyDescription = feedTab === "custom" ? "点击右上角“+”新建一个工具。" : "换一个分类或关键词继续搜索。";
+    const emptyTitle = feedTab === "favorites" ? tr("还没有收藏工具") : feedTab === "custom" ? tr("还没有自定义工具") : tr("没有匹配工具");
+    const emptyDescription = feedTab === "custom" ? tr("点击右上角“+”新建一个工具。") : tr("换一个分类或关键词继续搜索。");
     const preview = previewTool ? resolveToolPreview(previewTool) : null;
 
     return (
         <>
             <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-2">
                 <Wrench className="size-3.5 shrink-0" />
-                <span className="truncate text-xs font-semibold">工具</span>
-                <span className="tabular-nums text-foreground/32">{totalCount.toLocaleString("zh-CN")}</span>
+                <span className="truncate text-xs font-semibold">{tr("工具")}</span>
+                <span className="tabular-nums text-foreground/32">{totalCount.toLocaleString(currentLocale())}</span>
             </header>
 
             <div className="sidebar-subtabs shrink-0 border-b border-border/70">
@@ -245,15 +246,15 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
                         </button>
                     ))}
                     <span className="asset-head-actions">
-                        <button type="button" className="icon-btn tip-down" data-tip={`新建${subTabLabel}`} aria-label={`新建${subTabLabel}`} onClick={() => setCreateOpen(true)}>
+                        <button type="button" className="icon-btn tip-down" data-tip={`新建${subTabLabel}`} aria-label={tr("新建{0}", subTabLabel)} onClick={() => setCreateOpen(true)}>
                             <Plus className="size-3.5" />
                         </button>
                     </span>
                 </div>
                 <div className="asset-filter-row mt-2">
-                    <input className="asset-search" placeholder="搜索名称/标签" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} aria-label="搜索工具" />
+                    <input className="asset-search" placeholder={tr("搜索名称/标签")} value={searchInput} onChange={(event) => setSearchInput(event.target.value)} aria-label={tr("搜索工具")} />
                     {searchInput ? (
-                        <button type="button" className="grid size-5 shrink-0 place-items-center rounded text-foreground/32 hover:bg-surface-hover hover:text-foreground" onClick={() => setSearchInput("")} aria-label="清空搜索">
+                        <button type="button" className="grid size-5 shrink-0 place-items-center rounded text-foreground/32 hover:bg-surface-hover hover:text-foreground" onClick={() => setSearchInput("")} aria-label={tr("清空搜索")}>
                             <X className="size-3" />
                         </button>
                     ) : null}
@@ -291,7 +292,7 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
                         {toolsQuery.isFetchingNextPage ? (
                             <div className="flex items-center justify-center gap-2 py-3 text-[var(--fs-label)] text-foreground/45">
                                 <Loader2 className="size-3.5 animate-spin" />
-                                正在加载…
+                                {tr("正在加载…")}
                             </div>
                         ) : null}
                     </>
@@ -303,7 +304,7 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
             {previewTool && preview ? (
                 preview.kind === "video" ? (
                     <AppModal flush open title={previewTool.label} onCancel={() => setPreviewTool(null)} footer={null} width="min(1200px, calc(100vw - 32px))">
-                        <VideoPlayer src={preview.src} title={previewTool.label || "视频预览"} className="max-h-[84vh] max-w-full bg-black" />
+                        <VideoPlayer src={preview.src} title={previewTool.label || tr("视频预览")} className="max-h-[84vh] max-w-full bg-black" />
                     </AppModal>
                 ) : (
                     <CanvasImagePreview src={preview.src} alt={previewTool.label} onClose={() => setPreviewTool(null)} />
@@ -312,58 +313,58 @@ export function CanvasWorkspaceToolPanel({ onInsert }: CanvasWorkspaceToolPanelP
 
             <AppModal
                 open={createOpen}
-                title={`新建${subTabLabel}`}
-                okText="创建"
-                cancelText="取消"
+                title={tr("新建{0}", subTabLabel)}
+                okText={tr("创建")}
+                cancelText={tr("取消")}
                 confirmLoading={createMutation.isPending}
                 onCancel={() => setCreateOpen(false)}
                 onOk={() => createForm.submit()}
                 afterClose={() => createForm.resetFields()}
             >
                 <Form<CreateToolFormValues> form={createForm} layout="vertical" requiredMark={false} initialValues={{ visibility: "private" }} onFinish={(values) => createMutation.mutate(values)} className="max-h-[72vh] overflow-y-auto p-6 px-8">
-                    <Form.Item name="label" label="名称" rules={[{ required: true, whitespace: true, message: "请输入工具名称" }, { max: 120 }]}>
-                        <Input maxLength={120} showCount placeholder="例如：电影感胶片" />
+                    <Form.Item name="label" label={tr("名称")} rules={[{ required: true, whitespace: true, message: tr("请输入工具名称") }, { max: 120 }]}>
+                        <Input maxLength={120} showCount placeholder={tr("例如：电影感胶片")} />
                     </Form.Item>
                     <div className="grid grid-cols-2 gap-3">
-                        <Form.Item name="tag" label="标签">
-                            {tagOptions.length ? <Select allowClear showSearch options={tagOptions} placeholder="选择标签" /> : <Input maxLength={64} placeholder="可选" />}
+                        <Form.Item name="tag" label={tr("标签")}>
+                            {tagOptions.length ? <Select allowClear showSearch options={tagOptions} placeholder={tr("选择标签")} /> : <Input maxLength={64} placeholder={tr("可选")} />}
                         </Form.Item>
-                        <p className="text-xs text-muted-foreground">预览仅支持本人上传的资源；公开工具请移除私人预览。</p>
-                        <Form.Item name="visibility" label="可见性">
+                        <p className="text-xs text-muted-foreground">{tr("预览仅支持本人上传的资源；公开工具请移除私人预览。")}</p>
+                        <Form.Item name="visibility" label={tr("可见性")}>
                             <Radio.Group
                                 optionType="button"
                                 buttonStyle="solid"
                                 options={[
-                                    { label: "私有", value: "private" },
-                                    { label: "公开", value: "public" },
+                                    { label: tr("私有"), value: "private" },
+                                    { label: tr("公开"), value: "public" },
                                 ]}
                             />
                         </Form.Item>
                     </div>
-                    <Form.Item name="desc" label="描述" rules={[{ max: 500 }]}>
+                    <Form.Item name="desc" label={tr("描述")} rules={[{ max: 500 }]}>
                         <Input.TextArea rows={2} maxLength={500} showCount autoSize={{ minRows: 2, maxRows: 4 }} />
                     </Form.Item>
-                    <Form.Item name="prompt" label="提示词" rules={[{ required: true, whitespace: true, message: "请输入提示词" }, { max: 8000 }]}>
-                        <Input.TextArea rows={5} maxLength={8000} showCount placeholder="该工具应用到生成节点时使用的提示词" />
+                    <Form.Item name="prompt" label={tr("提示词")} rules={[{ required: true, whitespace: true, message: tr("请输入提示词") }, { max: 8000 }]}>
+                        <Input.TextArea rows={5} maxLength={8000} showCount placeholder={tr("该工具应用到生成节点时使用的提示词")} />
                     </Form.Item>
-                    <Form.Item label="封面图">
+                    <Form.Item label={tr("封面图")}>
                         <Space.Compact block>
-                            <Form.Item name="cover" noStyle className="flex-1 min-w-0" rules={[{ type: "url", message: "请输入合法 URL" }]}>
-                                <Input placeholder="上传图片或粘贴 URL" allowClear disabled={coverUploading} />
+                            <Form.Item name="cover" noStyle className="flex-1 min-w-0" rules={[{ type: "url", message: tr("请输入合法 URL") }]}>
+                                <Input placeholder={tr("上传图片或粘贴 URL")} allowClear disabled={coverUploading} />
                             </Form.Item>
                             <Button icon={<Upload className="size-3.5" />} loading={coverUploading} onClick={() => coverInputRef.current?.click()}>
-                                上传
+                                {tr("上传")}
                             </Button>
                         </Space.Compact>
                     </Form.Item>
                     {HOVER_VIDEO_TYPES.has(activeType) ? (
-                        <Form.Item label="演示视频">
+                        <Form.Item label={tr("演示视频")}>
                             <Space.Compact block>
-                                <Form.Item name="mediaUrl" noStyle className="flex-1 min-w-0" rules={[{ type: "url", message: "请输入合法 URL" }]}>
-                                    <Input placeholder="上传视频或粘贴 URL" allowClear disabled={mediaUploading} />
+                                <Form.Item name="mediaUrl" noStyle className="flex-1 min-w-0" rules={[{ type: "url", message: tr("请输入合法 URL") }]}>
+                                    <Input placeholder={tr("上传视频或粘贴 URL")} allowClear disabled={mediaUploading} />
                                 </Form.Item>
                                 <Button icon={<Upload className="size-3.5" />} loading={mediaUploading} onClick={() => mediaInputRef.current?.click()}>
-                                    上传
+                                    {tr("上传")}
                                 </Button>
                             </Space.Compact>
                         </Form.Item>
@@ -476,18 +477,18 @@ const ToolPresetCard = memo(function ToolPresetCard({
 
     const menuItems: MenuProps["items"] = useMemo(() => {
         const items: NonNullable<MenuProps["items"]> = [];
-        items.push({ key: "insert", icon: <Plus className="size-3.5" />, label: "插入画布", onClick: () => onInsert?.(tool) });
-        items.push({ key: "view", icon: <Eye className="size-3.5" />, label: "查看", onClick: () => onView?.(tool) });
+        items.push({ key: "insert", icon: <Plus className="size-3.5" />, label: tr("插入画布"), onClick: () => onInsert?.(tool) });
+        items.push({ key: "view", icon: <Eye className="size-3.5" />, label: tr("查看"), onClick: () => onView?.(tool) });
         items.push({ type: "divider" as const });
         items.push({
             key: "favorite",
             icon: <Star className={tool.favorited ? "size-3.5 fill-current" : "size-3.5"} />,
-            label: tool.favorited ? "取消收藏" : "收藏",
+            label: tool.favorited ? tr("取消收藏") : tr("收藏"),
             onClick: () => onToggleFavorite?.(tool),
         });
         if (tool.source === "user" && tool.ownerId === useUserStore.getState().user?.id) {
             items.push({ type: "divider" as const });
-            items.push({ key: "delete", danger: true, icon: <Trash2 className="size-3.5" />, label: "删除", onClick: () => onDelete?.(tool) });
+            items.push({ key: "delete", danger: true, icon: <Trash2 className="size-3.5" />, label: tr("删除"), onClick: () => onDelete?.(tool) });
         }
         return items;
     }, [tool, onInsert, onView, onToggleFavorite, onDelete]);
@@ -537,8 +538,8 @@ const ToolPresetCard = memo(function ToolPresetCard({
                     <button
                         type="button"
                         className="grid size-5 place-items-center rounded-[var(--r-sm)] bg-black/40 text-white backdrop-blur-sm hover:bg-black/55"
-                        aria-label="查看"
-                        title="查看"
+                        aria-label={tr("查看")}
+                        title={tr("查看")}
                         onClick={(e) => {
                             e.stopPropagation();
                             onView?.(tool);
@@ -550,8 +551,8 @@ const ToolPresetCard = memo(function ToolPresetCard({
                         type="button"
                         disabled={favoritePending}
                         className="grid size-5 place-items-center rounded-[var(--r-sm)] bg-black/40 text-white backdrop-blur-sm hover:bg-black/55 disabled:opacity-60"
-                        aria-label={tool.favorited ? "取消收藏" : "收藏"}
-                        title={tool.favorited ? "取消收藏" : "收藏"}
+                        aria-label={tool.favorited ? tr("取消收藏") : tr("收藏")}
+                        title={tool.favorited ? tr("取消收藏") : tr("收藏")}
                         aria-pressed={tool.favorited}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -564,8 +565,8 @@ const ToolPresetCard = memo(function ToolPresetCard({
                         <button
                             type="button"
                             className="grid size-5 place-items-center rounded-[var(--r-sm)] bg-black/40 text-white backdrop-blur-sm hover:bg-black/55"
-                            aria-label="更多操作"
-                            title="更多"
+                            aria-label={tr("更多操作")}
+                            title={tr("更多")}
                             onClick={(e) => {
                                 e.stopPropagation();
                             }}

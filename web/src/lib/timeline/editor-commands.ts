@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 编辑器命令协议（ADR-0002）：时间线唯一修改入口。
 // 命令 = 可序列化 { op, payload }，handler 为纯函数（禁止依赖组件实例），
 // 未知 op 或非法 payload 一律抛错（fail-closed），保证可回放、可撤销、可黄金文件测试。
@@ -221,11 +222,11 @@ function handleRemoveSubtitle(state: TimelineProject, payload: unknown): Timelin
 
 /** 轨道种类的基础标签；新增轨道 label = 基础标签 + 同种类现有轨道数 + 1。 */
 export const TRACK_KIND_BASE_LABELS: Record<TimelineTrackKind, string> = {
-    video: "视频",
-    image: "图片",
-    text: "文本",
-    audio: "音频",
-    subtitle: "字幕",
+    video: tr("视频"),
+    image: tr("图片"),
+    text: tr("文本"),
+    audio: tr("音频"),
+    subtitle: tr("字幕"),
 };
 
 function handleAddTrack(state: TimelineProject, payload: unknown): TimelineProject {

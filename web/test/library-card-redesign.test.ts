@@ -40,11 +40,11 @@ describe("canvas library card", () => {
     test("footer shows project ownership (or free canvas) with relative update time", () => {
         expect(card).toContain("formatRelativeTime(project.updatedAt)");
         expect(card).toContain("title={updatedTitle}");
-        expect(card).toContain('{projectName || "自由画布"}');
+        expect(card).toContain('{projectName || tr("自由画布")}');
         expect(card).toContain("canvas-collection-badge");
-        expect(page).toContain('projectName={project.projectId ? projectNames.get(project.projectId) || "未同步项目" : undefined}');
+        expect(page).toContain('projectName={project.projectId ? projectNames.get(project.projectId) || tr("未同步项目") : undefined}');
         expect(page).not.toContain("已加载全部");
-        expect(page).toContain('aria-label="正在加载更多画布"');
+        expect(page).toContain('aria-label={tr("正在加载更多画布")}');
     });
     test("page header no longer offers deleting every loaded canvas", () => {
         expect(page).not.toContain("删除当前已加载画布");

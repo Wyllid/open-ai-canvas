@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { canvasThemes, type CanvasBackgroundMode, type CanvasColorTheme } from "@/lib/canvas-theme";
 import { scopedLocalStorage } from "@/lib/user-scope";
 
@@ -25,12 +26,12 @@ export type CanvasAppearance = Omit<CanvasAppearanceSelection, "mode"> & {
 };
 
 export const CANVAS_APPEARANCE_PRESETS: ReadonlyArray<{ id: CanvasAppearancePresetId; label: string; values: CanvasCustomAppearance }> = [
-    { id: "light", label: "经典浅色", values: { baseTheme: "light", backgroundColor: "#F0F0F0", backgroundBrightness: 0, gridColor: "#000000", gridOpacity: 23 } },
-    { id: "pink", label: "粉色", values: { baseTheme: "light", backgroundColor: "#F3DCE5", backgroundBrightness: 0, gridColor: "#000000", gridOpacity: 23 } },
-    { id: "sand", label: "米色", values: { baseTheme: "light", backgroundColor: "#EEE5D8", backgroundBrightness: 0, gridColor: "#000000", gridOpacity: 23 } },
-    { id: "mint", label: "浅绿", values: { baseTheme: "light", backgroundColor: "#DFE9E6", backgroundBrightness: 0, gridColor: "#000000", gridOpacity: 23 } },
-    { id: "dark", label: "经典深色", values: { baseTheme: "dark", backgroundColor: "#000000", backgroundBrightness: 0, gridColor: "#FFFFFF", gridOpacity: 32 } },
-    { id: "slate", label: "柔和深灰", values: { baseTheme: "dark", backgroundColor: "#101418", backgroundBrightness: 0, gridColor: "#CFD8E3", gridOpacity: 30 } },
+    { id: "light", label: tr("经典浅色"), values: { baseTheme: "light", backgroundColor: "#F0F0F0", backgroundBrightness: 0, gridColor: "#000000", gridOpacity: 23 } },
+    { id: "pink", label: tr("粉色"), values: { baseTheme: "light", backgroundColor: "#F3DCE5", backgroundBrightness: 0, gridColor: "#000000", gridOpacity: 23 } },
+    { id: "sand", label: tr("米色"), values: { baseTheme: "light", backgroundColor: "#EEE5D8", backgroundBrightness: 0, gridColor: "#000000", gridOpacity: 23 } },
+    { id: "mint", label: tr("浅绿"), values: { baseTheme: "light", backgroundColor: "#DFE9E6", backgroundBrightness: 0, gridColor: "#000000", gridOpacity: 23 } },
+    { id: "dark", label: tr("经典深色"), values: { baseTheme: "dark", backgroundColor: "#000000", backgroundBrightness: 0, gridColor: "#FFFFFF", gridOpacity: 32 } },
+    { id: "slate", label: tr("柔和深灰"), values: { baseTheme: "dark", backgroundColor: "#101418", backgroundBrightness: 0, gridColor: "#CFD8E3", gridOpacity: 30 } },
 ];
 
 export type CanvasAppearanceDefault = {

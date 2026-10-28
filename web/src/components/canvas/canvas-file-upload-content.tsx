@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CSSProperties } from "react";
 import { AlertCircle, ImageUp, FileText, Film, Music2 } from "lucide-react";
 import { CanvasNodeType, type CanvasNodeData } from "@/types/canvas";
@@ -12,12 +13,12 @@ export function CanvasFileUploadContent({ node, theme, reduceMotion = false }: {
     const failed = node.metadata?.fileUpload === "error";
     const percent = node.metadata?.fileUploadProgress;
     const saving = !failed && percent === 100;
-    const label = node.type === CanvasNodeType.Image ? "图片" : node.type === CanvasNodeType.Video ? "视频" : node.type === CanvasNodeType.Audio ? "音频" : "文本";
+    const label = node.type === CanvasNodeType.Image ? tr("图片") : node.type === CanvasNodeType.Video ? tr("视频") : node.type === CanvasNodeType.Audio ? tr("音频") : tr("文本");
     const Icon = failed ? AlertCircle : node.type === CanvasNodeType.Video ? Film : node.type === CanvasNodeType.Audio ? Music2 : node.type === CanvasNodeType.Text ? FileText : ImageUp;
     const previewUrl = failed ? "" : uploadPreviewUrl(node.id);
-    const detail = failed ? node.metadata?.errorDetails || "请重新选择文件上传" : saving ? "文件已传输，正在保存与处理" : percent !== undefined ? `已上传 ${percent}%` : "正在准备文件";
+    const detail = failed ? node.metadata?.errorDetails || tr("请重新选择文件上传") : saving ? tr("文件已传输，正在保存与处理") : percent !== undefined ? tr("已上传 {0}%", percent) : tr("正在准备文件");
     const style = { "--upload-surface": theme.node.fill, "--upload-text": theme.node.text, "--upload-muted": theme.node.muted } as CSSProperties;
-    const progressbar = !failed ? <span role="progressbar" aria-label={`${label}上传进度`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-valuetext={detail} className="sr-only" /> : null;
+    const progressbar = !failed ? <span role="progressbar" aria-label={tr("{0}上传进度", label)} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-valuetext={detail} className="sr-only" /> : null;
 
     if (previewUrl) {
         // 有本地预览时不再叠加任何卡片：整张画面从磨砂逐渐变清晰，进度只用角落的小标签表达。
@@ -34,9 +35,9 @@ export function CanvasFileUploadContent({ node, theme, reduceMotion = false }: {
                 <div className="canvas-file-upload-frost" aria-hidden="true" style={{ opacity: uploadVeilOpacity(percent) }} />
                 <span className="canvas-file-upload-chip" aria-hidden="true">
                     <span className="canvas-file-upload-chip-dot" />
-                    {saving ? "处理中" : percent !== undefined ? `${percent}%` : "准备中"}
+                    {saving ? tr("处理中") : percent !== undefined ? `${percent}%` : tr("准备中")}
                 </span>
-                <span className="sr-only" role="status" aria-live="polite" aria-busy="true">{`正在上传${label}，${detail}`}</span>
+                <span className="sr-only" role="status" aria-live="polite" aria-busy="true">{tr("正在上传{0}，{1}", label, detail)}</span>
                 {progressbar}
             </div>
         );
@@ -48,10 +49,10 @@ export function CanvasFileUploadContent({ node, theme, reduceMotion = false }: {
             <div className="canvas-file-upload-frost" aria-hidden="true" style={{ opacity: uploadVeilOpacity(percent) }} />
             <div className="canvas-file-upload-copy" role="status" aria-live="polite" aria-busy={!failed}>
                 <Icon className="size-5" aria-hidden="true" />
-                <span className="canvas-file-upload-label">{failed ? `${label}上传未完成` : `正在上传${label}`}</span>
+                <span className="canvas-file-upload-label">{failed ? tr("{0}上传未完成", label) : tr("正在上传{0}", label)}</span>
                 <span className="canvas-file-upload-detail">{detail}</span>
                 {progressbar}
-                {failed && upload ? <button type="button" data-canvas-no-zoom className="canvas-file-upload-retry" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); upload(node); }}>重新选择文件</button> : null}
+                {failed && upload ? <button type="button" data-canvas-no-zoom className="canvas-file-upload-retry" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); upload(node); }}>{tr("重新选择文件")}</button> : null}
             </div>
         </div>
     );

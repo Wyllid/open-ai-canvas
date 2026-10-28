@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // Export only diagnostics explicitly supplied by the chat, never app config or storage.
 export function redactAgentDiagnostics(value: unknown): unknown {
     if (Array.isArray(value)) return value.map(redactAgentDiagnostics);
@@ -17,5 +18,5 @@ export function redactAgentDiagnostics(value: unknown): unknown {
 }
 
 export function buildAgentDebugExport(diagnostics: Record<string, unknown>) {
-    return JSON.stringify(redactAgentDiagnostics({ format: "canvas-agent-debug", version: 1, exportedAt: new Date().toISOString(), notice: "包含对话和提示词；已尽力过滤凭证与签名参数，分享前仍请检查隐私内容。", ...diagnostics }), null, 2);
+    return JSON.stringify(redactAgentDiagnostics({ format: "canvas-agent-debug", version: 1, exportedAt: new Date().toISOString(), notice: tr("包含对话和提示词；已尽力过滤凭证与签名参数，分享前仍请检查隐私内容。"), ...diagnostics }), null, 2);
 }

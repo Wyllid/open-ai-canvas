@@ -103,7 +103,8 @@ func segmentVideoChoice(segment model.DramaSegment, fallback DramaModelChoice) D
 func (s *Service) prepareDramaSegment(settings DramaSettings, draft dramaSegmentDraft, segment model.DramaSegment, previous *model.DramaSegment, casts map[string]model.DramaCast) (DramaSegmentRequest, []any, error) {
 	profile, err := s.dramaVideoProfile(segmentVideoChoice(segment, settings.Models.Video))
 	if err != nil {
-		return DramaSegmentRequest{}, nil, err
+		// The episode page renders this preview even when no video model resolves; keep references a list.
+		return DramaSegmentRequest{References: []DramaSegmentReference{}}, nil, err
 	}
 	request := DramaSegmentRequest{Seconds: production.SnapVideoSeconds(draft.view.DurationMs, profile.Durations), MaxVideoSeconds: profile.maxSeconds(), References: []DramaSegmentReference{}}
 	if draft.view.DurationMs > int64(request.MaxVideoSeconds)*1000 {

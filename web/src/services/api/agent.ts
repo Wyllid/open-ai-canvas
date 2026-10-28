@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { http, apiBaseURL } from "@/services/api/request";
 import { consumeTaskTextStream, createTaskTextStreamParser } from "@/services/api/task-text-stream";
 import { getActiveUserScope } from "@/lib/user-scope";
@@ -121,7 +122,7 @@ export class AgentStreamError extends Error {
     readonly status: number;
 
     constructor(status: number) {
-        super(`Agent 事件流不可用 (${status})`);
+        super(tr("Agent 事件流不可用 ({0})", status));
         this.name = "AgentStreamError";
         this.status = status;
     }
@@ -129,6 +130,8 @@ export class AgentStreamError extends Error {
 
 export type CreateAgentRunInput = {
     reasoningMode?: AgentReasoningMode;
+    /** Interface language; the agent replies and writes canvas text in it. */
+    locale?: "en" | "pt-BR" | "zh-CN";
     profileRevision?: string;
     /** 空字符串 = 平台级对话（未进入画布），后端不开放画布工具。 */
     canvasId: string;
@@ -152,7 +155,7 @@ async function submitAgentRequest(path: string, input: CreateAgentRunInput) {
     const body = JSON.parse(JSON.stringify(input)) as CreateAgentRunInput;
     const scope = getActiveUserScope();
     for (let attempt = 0; ; attempt++) {
-        if (getActiveUserScope() !== scope) throw new DOMException("账号已切换，已停止原账号的请求重试", "AbortError");
+        if (getActiveUserScope() !== scope) throw new DOMException(tr("账号已切换，已停止原账号的请求重试"), "AbortError");
         try {
             return await http.post<{ run: AgentRun }>(path, body, { timeout: 15_000 });
         } catch (cause) {
@@ -312,7 +315,7 @@ export function subscribeAgentEvents(runId: string, onEvent: (event: AgentEvent)
                                     emit("run_status", statusPayload);
                                 }
                                 terminal = !run.cleanupPending && ["completed", "failed", "cancelled", "rejected"].includes(run.status);
-                            } else if (item.event === "error") throw new Error("Agent 状态读取失败");
+                            } else if (item.event === "error") throw new Error(tr("Agent 状态读取失败"));
                         }, done);
                         // A repeated initial snapshot is not a healthy connection.
                         // Sustained heartbeat traffic or advancing events reset the budget.
@@ -325,7 +328,7 @@ export function subscribeAgentEvents(runId: string, onEvent: (event: AgentEvent)
                     reader.releaseLock();
                 }
                 if (terminal) return;
-                throw new Error("Agent 连接已中断，运行仍保留，可重新连接");
+                throw new Error(tr("Agent 连接已中断，运行仍保留，可重新连接"));
             } catch (error) {
                 if (controller.signal.aborted) return;
                 if (++failures >= 5) {

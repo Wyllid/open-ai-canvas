@@ -180,14 +180,11 @@ describe("spec tier write validation", () => {
     });
 });
 
-test("admin lazy routes share a persistent boundary instead of replaying page loaders", async () => {
-    const router = await Bun.file(new URL("../src/router.tsx", import.meta.url)).text();
-    const shell = await Bun.file(new URL("../src/pages/admin/components/admin-shell.tsx", import.meta.url)).text();
+test("platform pages load inside one settings modal boundary instead of replaying page loaders", async () => {
+    const modal = await Bun.file(new URL("../src/components/settings/settings-modal.tsx", import.meta.url)).text();
     const pages = await Bun.file(new URL("../src/pages/admin/admin-route-pages.tsx", import.meta.url)).text();
     const css = await Bun.file(new URL("../src/styles/admin-ui.css", import.meta.url)).text();
-    const admin = router.slice(router.indexOf('path: "/admin"'), router.indexOf('{ path: "*"'));
-    expect(admin.match(/deferred\(/g)).toHaveLength(1);
-    expect(shell).toMatch(/<Suspense[^]*?<Outlet \/>\s*<\/Suspense>/);
+    expect(modal.match(/<Suspense/g)).toHaveLength(1);
     expect(pages).not.toContain("<Suspense");
     expect(css).not.toContain("admin-page-enter");
 });

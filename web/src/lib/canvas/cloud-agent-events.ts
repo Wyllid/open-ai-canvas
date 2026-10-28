@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 // 画布 Agent 事件流的归约：把后端推送的 AgentEvent 逐条合并进面板的消息列表。
 //
 // 事件可能重复（断线重连会重放最近一段）也可能乱序到达，因此所有写入都按事件 ID
@@ -31,13 +32,13 @@ function compactTokenLabel(value: unknown) {
     if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return "";
     if (value >= 1_000_000) return `${Math.round(value / 100_000) / 10}M`;
     if (value >= 1_000) return `${Math.round(value / 100) / 10}K`;
-    return Math.round(value).toLocaleString("zh-CN");
+    return Math.round(value).toLocaleString(currentLocale());
 }
 
 function compactionCompletedText(payload: Record<string, unknown>) {
     const before = compactTokenLabel(payload.tokensBefore);
     const after = compactTokenLabel(payload.estimatedTokensAfter);
-    return before && after ? `上下文压缩完成（${before} → ${after} Token）` : "上下文压缩完成";
+    return before && after ? tr("上下文压缩完成（{0} → {1} Token）", before, after) : tr("上下文压缩完成");
 }
 
 export function applyAgentEvent(
@@ -89,7 +90,7 @@ export function applyAgentEvent(
                 appendUniqueMessage(current, {
                     id: event.eventId,
                     role: "system",
-                    text: text || "你已在画布节点上直接提交了生成，本次审批已自动关闭；Agent 不会重复提交。",
+                    text: text || tr("你已在画布节点上直接提交了生成，本次审批已自动关闭；Agent 不会重复提交。"),
                 }),
             );
             return;
@@ -99,14 +100,14 @@ export function applyAgentEvent(
                 appendUniqueMessage(current, {
                     id: event.eventId,
                     role: "system",
-                    text: text || "已拒绝本次操作，未写入画布。你可以告诉 Agent 修改方向后重新申请。",
+                    text: text || tr("已拒绝本次操作，未写入画布。你可以告诉 Agent 修改方向后重新申请。"),
                 }),
             );
         }
         return;
     }
     if (event.type === "progress_summary") {
-        setMessages((current) => appendUniqueMessage(current, { id: event.eventId, role: "system", text: text || "Agent 正在整理执行计划" }));
+        setMessages((current) => appendUniqueMessage(current, { id: event.eventId, role: "system", text: text || tr("Agent 正在整理执行计划") }));
         return;
     }
     if (event.type === "assistant_delta") {
@@ -138,10 +139,10 @@ export function applyAgentEvent(
     }
     if (event.type === "user_interjection_dropped") {
         const messageId = String(payload.messageId || event.eventId);
-        const reason = String(payload.reason || "本轮已结束");
+        const reason = String(payload.reason || tr("本轮已结束"));
         setMessages((current) => {
             const marked = current.map((item) => (item.id === messageId ? { ...item, interjection: "undelivered" as const } : item));
-            return appendUniqueMessage(marked, { id: `interjection-dropped-${messageId}`, role: "system", text: `${reason}，这条插话没有送到模型。需要的话重新发一次，它会作为新一轮。` });
+            return appendUniqueMessage(marked, { id: `interjection-dropped-${messageId}`, role: "system", text: tr("{0}，这条插话没有送到模型。需要的话重新发一次，它会作为新一轮。", reason) });
         });
         setPrompt?.((current) => (current.trim() ? current : text));
         return;
@@ -160,7 +161,7 @@ export function applyAgentEvent(
         return;
     }
     if (event.type === "run_cancelled") {
-        setMessages((current) => appendUniqueMessage(current, { id: event.eventId, role: "system", text: text || "已停止本轮" }));
+        setMessages((current) => appendUniqueMessage(current, { id: event.eventId, role: "system", text: text || tr("已停止本轮") }));
         return;
     }
     if (event.type === "context_compaction_requested") {
@@ -170,7 +171,7 @@ export function applyAgentEvent(
             appendUniqueMessage(current, {
                 id,
                 role: "system",
-                text: "正在整理上下文",
+                text: tr("正在整理上下文"),
                 compaction: { status: "pending", compactionId, reason: String(payload.reason || "") },
             }),
         );
@@ -203,7 +204,7 @@ export function applyAgentEvent(
         const explicitId = typeof payload.compactionId === "string" && payload.compactionId.trim() ? `compaction-${event.runId}-${payload.compactionId}` : undefined;
         const fallbackId = compactionMessageID(event, payload);
         const aborted = payload.cancelled === true || payload.aborted === true;
-        const errorText = String(payload.errorMessage || payload.text || "上下文压缩失败");
+        const errorText = String(payload.errorMessage || payload.text || tr("上下文压缩失败"));
         setMessages((current) => {
             const existing = explicitId
                 ? current.findIndex((item) => item.id === explicitId)
@@ -301,11 +302,11 @@ export function applyAgentEvent(
         if (payload.operation === "generate_media_submit" || payload.operation === "generate_media_complete") return;
         const { canvasPatch: _patch, ...detail } = payload;
         const id = payload.callId ? `canvas-${event.runId}-${payload.callId}` : event.eventId;
-        setMessages((current) => upsertCloudAgentCanvasMutation(current, { id, role: "tool", title: "canvas_apply_ops", text: String(payload.text || "画布操作已完成"), detail: { ...detail, runId: event.runId, eventType: event.type } }));
+        setMessages((current) => upsertCloudAgentCanvasMutation(current, { id, role: "tool", title: "canvas_apply_ops", text: String(payload.text || tr("画布操作已完成")), detail: { ...detail, runId: event.runId, eventType: event.type } }));
         return;
     }
     if (event.type.startsWith("tool_") && agentToolRetry(payload)) {
-        const message: CloudAgentChatMessage = { id: event.eventId, role: "tool", title: String(payload.toolName || "工具执行"), text, detail: { ...payload, eventType: event.type } };
+        const message: CloudAgentChatMessage = { id: event.eventId, role: "tool", title: String(payload.toolName || tr("工具执行")), text, detail: { ...payload, eventType: event.type } };
         setMessages((current) => mergeAgentToolRetry(current, message));
         if (event.type === "tool_failed") return;
     }
@@ -324,7 +325,7 @@ export function applyAgentEvent(
                 id: event.eventId,
                 role: "tool",
                 title: "previs_preview",
-                text: text || "已请求预演台生成白模预演",
+                text: text || tr("已请求预演台生成白模预演"),
                 detail: { ...payload, eventType: event.type },
             }),
         );
@@ -332,7 +333,7 @@ export function applyAgentEvent(
     }
     if (event.type === "tool_completed" && typeof payload.callId === "string" && CANVAS_MUTATION_TOOLS.has(String(payload.toolName || ""))) {
         const id = `canvas-${event.runId}-${payload.callId}`;
-        const message: CloudAgentChatMessage = { id, role: "tool", title: String(payload.toolName), text: text || "画布操作已完成", detail: { ...payload, runId: event.runId, eventType: event.type, completionEventType: event.type } };
+        const message: CloudAgentChatMessage = { id, role: "tool", title: String(payload.toolName), text: text || tr("画布操作已完成"), detail: { ...payload, runId: event.runId, eventType: event.type, completionEventType: event.type } };
         setMessages((current) => upsertCloudAgentCanvasMutation(current, message));
         return;
     }
@@ -342,7 +343,7 @@ export function applyAgentEvent(
         return;
     }
     if (event.type.startsWith("tool_")) {
-        const message: CloudAgentChatMessage = { id: event.eventId, role: "tool", title: String(payload.toolName || payload.title || "工具执行"), text: text || event.type, detail: { ...payload, eventType: event.type } };
+        const message: CloudAgentChatMessage = { id: event.eventId, role: "tool", title: String(payload.toolName || payload.title || tr("工具执行")), text: text || event.type, detail: { ...payload, eventType: event.type } };
         if (payload.toolName === "generate_media") {
             setMessages((current) => upsertMediaToolTrace(current, message));
         } else {

@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { Alert, App, Button, Input, Modal } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Download, Eye, Search, Trash2 } from "lucide-react";
@@ -54,7 +55,7 @@ export default function StorageResourcesPanel() {
             .then(setStats)
             .catch((error) => {
                 if (error instanceof DOMException && error.name === "AbortError") return;
-                message.error(error instanceof Error ? error.message : "读取存储统计失败");
+                message.error(error instanceof Error ? error.message : tr("读取存储统计失败"));
             });
         return () => controller.abort();
     }, [refreshKey]);
@@ -84,7 +85,7 @@ export default function StorageResourcesPanel() {
             })
             .catch((error) => {
                 if (error instanceof DOMException && error.name === "AbortError") return;
-                if (sequence === requestSequence.current) message.error(error instanceof Error ? error.message : "读取资源列表失败");
+                if (sequence === requestSequence.current) message.error(error instanceof Error ? error.message : tr("读取资源列表失败"));
             })
             .finally(() => sequence === requestSequence.current && setLoading(false));
         return () => controller.abort();
@@ -93,7 +94,7 @@ export default function StorageResourcesPanel() {
     const columns = useMemo<ColumnsType<AdminStorageResource>>(
         () => [
             {
-                title: "资源",
+                title: tr("资源"),
                 width: 260,
                 render: (_, resource) => (
                     <div className="min-w-0">
@@ -107,7 +108,7 @@ export default function StorageResourcesPanel() {
                 ),
             },
             {
-                title: "用户",
+                title: tr("用户"),
                 width: 170,
                 render: (_, resource) => (
                     <div className="min-w-0">
@@ -118,27 +119,27 @@ export default function StorageResourcesPanel() {
                     </div>
                 ),
             },
-            { title: "类型", dataIndex: "kind", width: 92, render: (value) => kindLabel(value) },
-            { title: "状态", dataIndex: "status", width: 104, render: (value) => <AdminStatusBadge label={statusLabel(value)} tone={statusTone(value)} /> },
-            { title: "存储", dataIndex: "provider", width: 110, render: (value) => providerLabel(value) },
-            { title: "大小", dataIndex: "size", width: 110, render: (value) => <span className="tabular-nums">{formatBytes(value)}</span> },
-            { title: "规格", width: 135, render: (_, resource) => resourceDimensions(resource) },
-            { title: "创建时间", dataIndex: "createdAt", width: 170, render: formatTime },
+            { title: tr("类型"), dataIndex: "kind", width: 92, render: (value) => kindLabel(value) },
+            { title: tr("状态"), dataIndex: "status", width: 104, render: (value) => <AdminStatusBadge label={statusLabel(value)} tone={statusTone(value)} /> },
+            { title: tr("存储"), dataIndex: "provider", width: 110, render: (value) => providerLabel(value) },
+            { title: tr("大小"), dataIndex: "size", width: 110, render: (value) => <span className="tabular-nums">{formatBytes(value)}</span> },
+            { title: tr("规格"), width: 135, render: (_, resource) => resourceDimensions(resource) },
+            { title: tr("创建时间"), dataIndex: "createdAt", width: 170, render: formatTime },
             {
-                title: "操作",
+                title: tr("操作"),
                 width: 220,
                 align: "right",
                 fixed: "right",
                 render: (_, resource) => (
                     <div className="flex justify-end gap-1">
                         <Button type="text" size="small" icon={<Eye className="size-3.5" />} disabled={resource.status !== "ready"} onClick={() => setPreviewing(resource)}>
-                            预览
+                            {tr("预览")}
                         </Button>
                         <Button type="text" size="small" icon={<Download className="size-3.5" />} loading={downloadingId === resource.id} disabled={resource.status !== "ready"} onClick={() => void download(resource)}>
-                            下载
+                            {tr("下载")}
                         </Button>
                         <Button type="text" danger size="small" icon={<Trash2 className="size-3.5" />} disabled={deleting} onClick={() => confirmDelete([resource.id])}>
-                            删除
+                            {tr("删除")}
                         </Button>
                     </div>
                 ),
@@ -153,7 +154,7 @@ export default function StorageResourcesPanel() {
             const blob = await downloadAdminResource(resource);
             saveAs(blob, fileName(resource.objectKey) || resource.id);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "下载资源失败");
+            message.error(error instanceof Error ? error.message : tr("下载资源失败"));
         } finally {
             setDownloadingId("");
         }
@@ -162,10 +163,10 @@ export default function StorageResourcesPanel() {
     const confirmDelete = (resourceIds: string[]) => {
         const uniqueIds = Array.from(new Set(resourceIds));
         modal.confirm({
-            title: uniqueIds.length > 1 ? `删除选中的 ${uniqueIds.length} 个资源？` : "删除这个资源？",
-            content: "系统会先批量检查公告、素材、画布、项目、工作流和镜头产物引用。仍被引用的资源会保留；无引用资源的记录、清理任务和审计事件会在同一事务提交。",
-            okText: uniqueIds.length > 1 ? "检查并删除" : "确认删除",
-            cancelText: "取消",
+            title: uniqueIds.length > 1 ? tr("删除选中的 {0} 个资源？", uniqueIds.length) : tr("删除这个资源？"),
+            content: tr("系统会先批量检查公告、素材、画布、项目、工作流和镜头产物引用。仍被引用的资源会保留；无引用资源的记录、清理任务和审计事件会在同一事务提交。"),
+            okText: uniqueIds.length > 1 ? tr("检查并删除") : tr("确认删除"),
+            cancelText: tr("取消"),
             okButtonProps: { danger: true },
             onOk: async () => {
                 setDeleting(true);
@@ -173,16 +174,16 @@ export default function StorageResourcesPanel() {
                     const result = await deleteAdminResources(uniqueIds);
                     setSelectedIds([]);
                     setRefreshKey((value) => value + 1);
-                    if (result.deleted.length > 0) message.success(`已删除 ${result.deleted.length} 个资源`);
+                    if (result.deleted.length > 0) message.success(tr("已删除 {0} 个资源", result.deleted.length));
                     if (result.blocked.length > 0) {
                         modal.warning({
-                            title: result.deleted.length > 0 ? "部分资源未删除" : "资源未删除",
+                            title: result.deleted.length > 0 ? tr("部分资源未删除") : tr("资源未删除"),
                             content: <DeleteBlockedSummary blocked={result.blocked} />,
-                            okText: "知道了",
+                            okText: tr("知道了"),
                         });
                     }
                 } catch (error) {
-                    message.error(error instanceof Error ? error.message : "删除资源失败");
+                    message.error(error instanceof Error ? error.message : tr("删除资源失败"));
                     throw error;
                 } finally {
                     setDeleting(false);
@@ -194,38 +195,38 @@ export default function StorageResourcesPanel() {
     return (
         <div className="space-y-4 pt-4">
             <div className="grid overflow-hidden rounded-md border border-border sm:grid-cols-2 xl:grid-cols-4">
-                <AdminStatTile label="资源记录" value={stats ? stats.resourceCount.toLocaleString() : "--"} detail={stats ? `可用 ${stats.readyCount.toLocaleString()} 项` : undefined} />
-                <AdminStatTile label="逻辑体积" value={stats ? formatBytes(stats.logicalBytes) : "--"} detail="包含失败与待处理记录" />
-                <AdminStatTile label="实际可用体积" value={stats ? formatBytes(stats.physicalBytes) : "--"} detail="仅统计已就绪资源" />
-                <AdminStatTile label="存储分布" value={stats ? formatBytes(stats.remoteBytes) : "--"} detail={stats ? `本地 ${formatBytes(stats.localBytes)} · 远端` : undefined} />
+                <AdminStatTile label={tr("资源记录")} value={stats ? stats.resourceCount.toLocaleString() : "--"} detail={stats ? tr("可用 {0} 项", stats.readyCount.toLocaleString()) : undefined} />
+                <AdminStatTile label={tr("逻辑体积")} value={stats ? formatBytes(stats.logicalBytes) : "--"} detail={tr("包含失败与待处理记录")} />
+                <AdminStatTile label={tr("实际可用体积")} value={stats ? formatBytes(stats.physicalBytes) : "--"} detail={tr("仅统计已就绪资源")} />
+                <AdminStatTile label={tr("存储分布")} value={stats ? formatBytes(stats.remoteBytes) : "--"} detail={stats ? tr("本地 {0} · 远端", formatBytes(stats.localBytes)) : undefined} />
             </div>
             {stats?.offload && (stats.offload.pending > 0 || stats.offload.failed > 0) ? <OffloadAlert offload={stats.offload} /> : null}
             <AdminDataTable
                 toolbar={
                     <div className="admin-storage-resource-filters">
                         <AdminSearchInput
-                            aria-label="搜索资源"
+                            aria-label={tr("搜索资源")}
                             autoComplete="off"
                             allowClear
                             className="app-list-search"
                             prefix={<Search className="size-4 text-foreground/40" />}
                             value={keyword}
-                            placeholder="资源 ID 或对象路径"
+                            placeholder={tr("资源 ID 或对象路径")}
                             onValueChange={(value) => updateUrl({ filter: value, page: 1 }, true)}
                         />
-                        <AdminSearchInput aria-label="按用户名、昵称、邮箱或用户 ID 筛选" autoComplete="off" allowClear className="w-64" value={userQuery} placeholder="用户名 / 昵称 / 邮箱 / 用户 ID" onValueChange={(value) => updateUrl({ user: value, userId: "", page: 1 }, true)} />
-                        <Select aria-label="筛选资源类型" className="w-32" value={kind} onChange={(value) => updateUrl({ kind: value, page: 1 })} options={kindOptions} />
-                        <Select aria-label="筛选资源状态" className="w-32" value={status} onChange={(value) => updateUrl({ status: value, page: 1 })} options={statusOptions} />
-                        <Select aria-label="筛选存储类型" className="w-36" value={provider} onChange={(value) => updateUrl({ provider: value, page: 1 })} options={providerOptions} />
+                        <AdminSearchInput aria-label={tr("按用户名、昵称、邮箱或用户 ID 筛选")} autoComplete="off" allowClear className="w-64" value={userQuery} placeholder={tr("用户名 / 昵称 / 邮箱 / 用户 ID")} onValueChange={(value) => updateUrl({ user: value, userId: "", page: 1 }, true)} />
+                        <Select aria-label={tr("筛选资源类型")} className="w-32" value={kind} onChange={(value) => updateUrl({ kind: value, page: 1 })} options={kindOptions} />
+                        <Select aria-label={tr("筛选资源状态")} className="w-32" value={status} onChange={(value) => updateUrl({ status: value, page: 1 })} options={statusOptions} />
+                        <Select aria-label={tr("筛选存储类型")} className="w-36" value={provider} onChange={(value) => updateUrl({ provider: value, page: 1 })} options={providerOptions} />
                     </div>
                 }
                 toolbarActiveFilters={
                     <>
-                        {keyword ? <AdminFilterChip label={`搜索：${keyword}`} onRemove={() => updateUrl({ filter: "", page: 1 })} /> : null}
-                        {userQuery ? <AdminFilterChip label={`用户：${userQuery}`} onRemove={() => updateUrl({ user: "", userId: "", page: 1 })} /> : null}
-                        {kind !== "all" ? <AdminFilterChip label={`类型：${kindLabel(kind)}`} onRemove={() => updateUrl({ kind: "all", page: 1 })} /> : null}
-                        {status !== "all" ? <AdminFilterChip label={`状态：${statusLabel(status)}`} onRemove={() => updateUrl({ status: "all", page: 1 })} /> : null}
-                        {provider !== "all" ? <AdminFilterChip label={`存储：${providerLabel(provider)}`} onRemove={() => updateUrl({ provider: "all", page: 1 })} /> : null}
+                        {keyword ? <AdminFilterChip label={tr("搜索：{0}", keyword)} onRemove={() => updateUrl({ filter: "", page: 1 })} /> : null}
+                        {userQuery ? <AdminFilterChip label={tr("用户：{0}", userQuery)} onRemove={() => updateUrl({ user: "", userId: "", page: 1 })} /> : null}
+                        {kind !== "all" ? <AdminFilterChip label={tr("类型：{0}", kindLabel(kind))} onRemove={() => updateUrl({ kind: "all", page: 1 })} /> : null}
+                        {status !== "all" ? <AdminFilterChip label={tr("状态：{0}", statusLabel(status))} onRemove={() => updateUrl({ status: "all", page: 1 })} /> : null}
+                        {provider !== "all" ? <AdminFilterChip label={tr("存储：{0}", providerLabel(provider))} onRemove={() => updateUrl({ provider: "all", page: 1 })} /> : null}
                     </>
                 }
                 toolbarActive={hasFilters}
@@ -233,7 +234,7 @@ export default function StorageResourcesPanel() {
                 batchActions={
                     <AdminBatchBar count={selectedIds.length} onClear={() => setSelectedIds([])}>
                         <Button danger size="small" icon={<Trash2 className="size-3.5" />} loading={deleting} onClick={() => confirmDelete(selectedIds)}>
-                            批量删除
+                            {tr("批量删除")}
                         </Button>
                     </AdminBatchBar>
                 }
@@ -250,25 +251,25 @@ export default function StorageResourcesPanel() {
                         preserveSelectedRowKeys: true,
                         onChange: (keys) => {
                             const next = keys.map(String);
-                            if (next.length > 100) message.warning("单次最多选择 100 个资源");
+                            if (next.length > 100) message.warning(tr("单次最多选择 100 个资源"));
                             setSelectedIds(next.slice(0, 100));
                         },
                     },
                     pagination: false,
                     scroll: { x: 1390 },
                 }}
-                empty={<AdminTableEmpty filtered={hasFilters} title={hasFilters ? undefined : "暂无资源记录"} description={hasFilters ? undefined : "资源上传或生成后会显示在这里。"} />}
+                empty={<AdminTableEmpty filtered={hasFilters} title={hasFilters ? undefined : tr("暂无资源记录")} description={hasFilters ? undefined : tr("资源上传或生成后会显示在这里。")} />}
                 footer={<PaginationBar alwaysShow current={page} pageSize={pageSize} total={total} onChange={(nextPage, nextSize) => updateUrl({ page: nextSize !== pageSize ? 1 : nextPage, pageSize: nextSize })} />}
             />
             <Modal
-                title={previewing ? fileName(previewing.objectKey) || "资源预览" : "资源预览"}
+                title={previewing ? fileName(previewing.objectKey) || tr("资源预览") : tr("资源预览")}
                 open={Boolean(previewing)}
                 width={880}
                 onCancel={() => setPreviewing(null)}
                 footer={
                     previewing ? (
                         <Button icon={<Download className="size-4" />} loading={downloadingId === previewing.id} onClick={() => void download(previewing)}>
-                            下载原文件
+                            {tr("下载原文件")}
                         </Button>
                     ) : null
                 }
@@ -293,7 +294,7 @@ function DeleteBlockedSummary({ blocked }: { blocked: Array<{ id: string; reason
                                 .slice(0, 4)
                                 .map((reference) => `${reference.kind}「${reference.title || reference.id}」`)
                                 .join("、")}
-                            {item.references.length > 4 ? ` 等 ${item.references.length} 处` : ""}
+                            {item.references.length > 4 ? tr(" 等 {0} 处", item.references.length) : ""}
                         </div>
                     ) : null}
                 </div>
@@ -304,7 +305,7 @@ function DeleteBlockedSummary({ blocked }: { blocked: Array<{ id: string; reason
 
 function ResourcePreview({ resource }: { resource: AdminStorageResource }) {
     const url = adminResourceFileUrl(resource.id);
-    if (resource.kind === "image" || resource.mimeType.startsWith("image/")) return <img className="mx-auto max-h-[65vh] max-w-full object-contain" src={url} alt={fileName(resource.objectKey) || "资源预览"} />;
+    if (resource.kind === "image" || resource.mimeType.startsWith("image/")) return <img className="mx-auto max-h-[65vh] max-w-full object-contain" src={url} alt={fileName(resource.objectKey) || tr("资源预览")} />;
     if (resource.kind === "video" || resource.mimeType.startsWith("video/")) return <video className="mx-auto max-h-[65vh] max-w-full bg-black" src={url} controls playsInline />;
     if (resource.kind === "audio" || resource.mimeType.startsWith("audio/"))
         return (
@@ -312,30 +313,30 @@ function ResourcePreview({ resource }: { resource: AdminStorageResource }) {
                 <audio className="w-full" src={url} controls />
             </div>
         );
-    return <div className="rounded-md border border-border bg-muted/20 px-5 py-10 text-center text-sm text-foreground/55">该文件类型不支持内嵌预览，请下载后查看。</div>;
+    return <div className="rounded-md border border-border bg-muted/20 px-5 py-10 text-center text-sm text-foreground/55">{tr("该文件类型不支持内嵌预览，请下载后查看。")}</div>;
 }
 
 const kindOptions = [
-    { label: "全部类型", value: "all" },
-    { label: "图片", value: "image" },
-    { label: "视频", value: "video" },
-    { label: "音频", value: "audio" },
-    { label: "文件", value: "file" },
-    { label: "Live2D 模型", value: "live2d" },
+    { label: tr("全部类型"), value: "all" },
+    { label: tr("图片"), value: "image" },
+    { label: tr("视频"), value: "video" },
+    { label: tr("音频"), value: "audio" },
+    { label: tr("文件"), value: "file" },
+    { label: tr("Live2D 模型"), value: "live2d" },
 ];
 const statusOptions = [
-    { label: "全部状态", value: "all" },
-    { label: "待处理", value: "pending" },
-    { label: "已就绪", value: "ready" },
-    { label: "失败", value: "failed" },
-    { label: "已删除", value: "deleted" },
+    { label: tr("全部状态"), value: "all" },
+    { label: tr("待处理"), value: "pending" },
+    { label: tr("已就绪"), value: "ready" },
+    { label: tr("失败"), value: "failed" },
+    { label: tr("已删除"), value: "deleted" },
 ];
 const providerOptions = [
-    { label: "全部存储", value: "all" },
-    { label: "本地", value: "local" },
-    { label: "阿里云 OSS", value: "aliyun" },
-    { label: "腾讯云 COS", value: "tencent" },
-    { label: "七牛云 Kodo", value: "qiniu" },
+    { label: tr("全部存储"), value: "all" },
+    { label: tr("本地"), value: "local" },
+    { label: tr("阿里云 OSS"), value: "aliyun" },
+    { label: tr("腾讯云 COS"), value: "tencent" },
+    { label: tr("七牛云 Kodo"), value: "qiniu" },
     { label: "S3", value: "s3" },
 ];
 
@@ -354,16 +355,16 @@ function fileName(objectKey: string) {
     return objectKey.split("/").filter(Boolean).at(-1) || "";
 }
 function kindLabel(kind: string) {
-    return ({ image: "图片", video: "视频", audio: "音频", file: "文件", live2d: "Live2D" } as Record<string, string>)[kind] || kind || "未知";
+    return ({ image: tr("图片"), video: tr("视频"), audio: tr("音频"), file: tr("文件"), live2d: "Live2D" } as Record<string, string>)[kind] || kind || tr("未知");
 }
 function statusLabel(status: string) {
-    return ({ pending: "待处理", ready: "已就绪", failed: "失败", deleted: "已删除" } as Record<string, string>)[status] || status || "未知";
+    return ({ pending: tr("待处理"), ready: tr("已就绪"), failed: tr("失败"), deleted: tr("已删除") } as Record<string, string>)[status] || status || tr("未知");
 }
 function statusTone(status: string): "neutral" | "success" | "warning" | "error" {
     return status === "ready" ? "success" : status === "pending" ? "warning" : status === "failed" ? "error" : "neutral";
 }
 function providerLabel(provider: string) {
-    return ({ local: "本地", aliyun: "阿里云 OSS", tencent: "腾讯云 COS", qiniu: "七牛云 Kodo", s3: "S3" } as Record<string, string>)[provider] || provider || "本地";
+    return ({ local: tr("本地"), aliyun: tr("阿里云 OSS"), tencent: tr("腾讯云 COS"), qiniu: tr("七牛云 Kodo"), s3: "S3" } as Record<string, string>)[provider] || provider || tr("本地");
 }
 function formatBytes(bytes: number) {
     if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
@@ -374,7 +375,7 @@ function formatBytes(bytes: number) {
 }
 function formatTime(value: string) {
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? "--" : date.toLocaleString("zh-CN", { hour12: false });
+    return Number.isNaN(date.getTime()) ? "--" : date.toLocaleString(currentLocale(), { hour12: false });
 }
 function resourceDimensions(resource: AdminStorageResource) {
     if (resource.width > 0 && resource.height > 0)
@@ -389,13 +390,13 @@ function resourceDimensions(resource: AdminStorageResource) {
 function formatDuration(durationMs: number) {
     const seconds = Math.round(durationMs / 1000);
     const minutes = Math.floor(seconds / 60);
-    return minutes > 0 ? `${minutes}:${String(seconds % 60).padStart(2, "0")}` : `${seconds} 秒`;
+    return minutes > 0 ? `${minutes}:${String(seconds % 60).padStart(2, "0")}` : tr("{0} 秒", seconds);
 }
 
 function OffloadAlert({ offload }: { offload: AdminStorageStats["offload"] }) {
-    const parts = [`${offload.pending.toLocaleString()} 个作品（${formatBytes(offload.pendingBytes)}）等待同步到对象存储`];
-    if (offload.oldestPending) parts.push(`最早一条保存于 ${new Date(offload.oldestPending).toLocaleString("zh-CN", { hour12: false })}`);
-    if (offload.lastErrorCode) parts.push(`最近错误 ${offload.lastErrorCode}`);
-    const failed = offload.failed > 0 ? `另有 ${offload.failed.toLocaleString()} 个作品的本地文件丢失，无法自动同步，请在请求日志中按任务排查。` : undefined;
-    return <Alert type={offload.failed > 0 ? "error" : "warning"} showIcon message="对象存储写入失败，部分作品暂存在服务器" description={[parts.join("；") + "。用户访问不受影响，存储恢复后会自动同步。", failed].filter(Boolean).join(" ")} />;
+    const parts = [tr("{0} 个作品（{1}）等待同步到对象存储", offload.pending.toLocaleString(), formatBytes(offload.pendingBytes))];
+    if (offload.oldestPending) parts.push(tr("最早一条保存于 {0}", new Date(offload.oldestPending).toLocaleString(currentLocale(), { hour12: false })));
+    if (offload.lastErrorCode) parts.push(tr("最近错误 {0}", offload.lastErrorCode));
+    const failed = offload.failed > 0 ? tr("另有 {0} 个作品的本地文件丢失，无法自动同步，请在请求日志中按任务排查。", offload.failed.toLocaleString()) : undefined;
+    return <Alert type={offload.failed > 0 ? "error" : "warning"} showIcon message={tr("对象存储写入失败，部分作品暂存在服务器")} description={[parts.join("；") + tr("。用户访问不受影响，存储恢复后会自动同步。"), failed].filter(Boolean).join(" ")} />;
 }

@@ -19,7 +19,7 @@ test("workspace keeps a permanent rail and independent task/history entries", ()
     expect(source).not.toContain('id: "tools"');
     expect(source).not.toContain("CanvasWorkspaceToolPanel");
     expect(source).not.toContain("onInsertTool");
-    expect(source).toContain('aria-label="画布左侧菜单"');
+    expect(source).toContain('aria-label={tr("画布左侧菜单")}');
     expect(source).toContain("aria-pressed={open && tab === id}");
     expect(source).toContain("<CanvasWorkspaceHistoryPanel");
     expect(source).toContain("<CanvasWorkspaceAssetPanel");
@@ -46,7 +46,7 @@ test("image style and presets remain visible without the prompt template picker"
     expect(source).toContain("{showPromptTemplates ? <CanvasPresetPicker");
     expect(source).toContain("if (showPromptTemplates &&");
     expect(source).not.toContain('aria-label="生成工具"');
-    expect(component("canvas-choose-image-style-picker.tsx")).toContain('resolvedLabel || "风格"');
+    expect(component("canvas-choose-image-style-picker.tsx")).toContain('resolvedLabel || tr("风格")');
 });
 
 test("history explicitly describes its bounded dataset", () => {

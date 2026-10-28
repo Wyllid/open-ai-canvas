@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 // 对象存储设置的表单模型：表单值与接口载荷互转、变更检测与草稿校验。
 //
 // 服务器访问地址只校验 http/https 格式，允许本机、局域网与 HTTP 地址（产品约定，勿收紧）。
@@ -142,27 +143,27 @@ export function hasStorageChanges(values: Partial<OSSFormValues>, setting: Admin
 export function validateStorageDraft(values: OSSFormValues, setting: AdminOSSSetting) {
     const draft = normalizeStoragePayload(values, setting);
     if (!draft.enabled) return validatePublicBaseURL(draft.publicBaseUrl);
-    if (!draft.bucket) return "请填写对象存储 Bucket";
+    if (!draft.bucket) return tr("请填写对象存储 Bucket");
     if (!draft.endpoint)
-        return draft.provider === "tencent" ? "请填写腾讯云 COS Region 或 Endpoint" : draft.provider === "qiniu" ? "请填写七牛云 Kodo 上传 Endpoint" : draft.provider === "s3" ? "请填写 S3 Endpoint 服务根 URL" : "请填写阿里云 OSS Endpoint";
-    if (draft.provider === "s3" && !draft.region) return "请填写 S3 Region";
-    if (!isHTTPURL(draft.endpoint)) return "Endpoint 必须是完整的 http/https 地址";
-    if (draft.cdnBaseUrl && !isValidCDNBaseURL(draft.cdnBaseUrl)) return "CDN 或绑定域名只能填写 http/https 根地址，不能包含认证、路径、查询参数或片段";
-    if (!draft.accessKeyId) return `请填写 ${accessKeyIdLabel(draft.provider)}`;
-    if (!draft.accessKeySecret && !(setting.provider === draft.provider && setting.hasAccessKeySecret)) return `请填写 ${accessKeySecretLabel(draft.provider)}`;
+        return draft.provider === "tencent" ? tr("请填写腾讯云 COS Region 或 Endpoint") : draft.provider === "qiniu" ? tr("请填写七牛云 Kodo 上传 Endpoint") : draft.provider === "s3" ? tr("请填写 S3 Endpoint 服务根 URL") : tr("请填写阿里云 OSS Endpoint");
+    if (draft.provider === "s3" && !draft.region) return tr("请填写 S3 Region");
+    if (!isHTTPURL(draft.endpoint)) return tr("Endpoint 必须是完整的 http/https 地址");
+    if (draft.cdnBaseUrl && !isValidCDNBaseURL(draft.cdnBaseUrl)) return tr("CDN 或绑定域名只能填写 http/https 根地址，不能包含认证、路径、查询参数或片段");
+    if (!draft.accessKeyId) return tr("请填写 {0}", accessKeyIdLabel(draft.provider));
+    if (!draft.accessKeySecret && !(setting.provider === draft.provider && setting.hasAccessKeySecret)) return tr("请填写 {0}", accessKeySecretLabel(draft.provider));
     return "";
 }
 
 export function validatePublicBaseURL(value: string) {
-    if (!value) return "服务器本地存储需要填写服务器访问地址";
+    if (!value) return tr("服务器本地存储需要填写服务器访问地址");
     try {
         const parsed = new URL(value);
-        if (!parsed.hostname || !["http:", "https:"].includes(parsed.protocol)) return "服务器访问地址必须是完整的 http/https 地址";
-        if (parsed.search || parsed.hash) return "服务器访问地址不能包含查询参数或片段";
-        if (parsed.pathname.replace(/\/+$/, "").endsWith("/api")) return "服务器访问地址请填写站点根地址，不要包含 /api";
+        if (!parsed.hostname || !["http:", "https:"].includes(parsed.protocol)) return tr("服务器访问地址必须是完整的 http/https 地址");
+        if (parsed.search || parsed.hash) return tr("服务器访问地址不能包含查询参数或片段");
+        if (parsed.pathname.replace(/\/+$/, "").endsWith("/api")) return tr("服务器访问地址请填写站点根地址，不要包含 /api");
         return "";
     } catch {
-        return "服务器访问地址必须是完整的 http/https 地址";
+        return tr("服务器访问地址必须是完整的 http/https 地址");
     }
 }
 
@@ -204,14 +205,14 @@ export function storageConfigurationReady(mode: StorageMode, values: StoragePayl
 }
 
 export function storageProviderLabel(provider?: StorageMode) {
-    return provider === "s3" ? "S3 兼容存储" : provider === "tencent" ? "腾讯云 COS" : provider === "qiniu" ? "七牛云 Kodo" : provider === "aliyun" ? "阿里云 OSS" : "服务器本地";
+    return provider === "s3" ? tr("S3 兼容存储") : provider === "tencent" ? tr("腾讯云 COS") : provider === "qiniu" ? tr("七牛云 Kodo") : provider === "aliyun" ? tr("阿里云 OSS") : tr("服务器本地");
 }
 
 export function providerGuidance(mode: Exclude<StorageMode, "local">) {
-    if (mode === "s3") return "使用预设快速填写 Region 与 Endpoint，也可以选择自定义；自托管 S3 仍受服务端私网主机白名单约束。";
-    if (mode === "tencent") return "腾讯云可只填写 Region，由服务端生成标准 COS Endpoint；也可填写完整 Endpoint 覆盖。";
-    if (mode === "qiniu") return "七牛上传必须配置上传 Endpoint；绑定域名可选，留空时资源由当前后端使用 AK/SK 代理读取。";
-    return "阿里云需要完整 OSS Endpoint、Bucket 和访问密钥；CDN 域名可选。";
+    if (mode === "s3") return tr("使用预设快速填写 Region 与 Endpoint，也可以选择自定义；自托管 S3 仍受服务端私网主机白名单约束。");
+    if (mode === "tencent") return tr("腾讯云可只填写 Region，由服务端生成标准 COS Endpoint；也可填写完整 Endpoint 覆盖。");
+    if (mode === "qiniu") return tr("七牛上传必须配置上传 Endpoint；绑定域名可选，留空时资源由当前后端使用 AK/SK 代理读取。");
+    return tr("阿里云需要完整 OSS Endpoint、Bucket 和访问密钥；CDN 域名可选。");
 }
 
 export function accessKeyIdLabel(mode: Exclude<StorageMode, "local"> | AdminOSSSetting["provider"]) {
@@ -268,5 +269,5 @@ export function hasValidSettingTime(value?: string) {
 
 export function formatSettingTime(value: string | undefined, fallback: string) {
     if (!hasValidSettingTime(value)) return fallback;
-    return `更新于 ${new Date(value as string).toLocaleString("zh-CN", { hour12: false })}`;
+    return tr("更新于 {0}", new Date(value as string).toLocaleString(currentLocale(), { hour12: false }));
 }

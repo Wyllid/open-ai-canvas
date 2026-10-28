@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 画布节点的运行状态内容：生成中（含已耗时）、失败（重试/重新加载资源）与未知节点兜底。
 
 import { type GenerationTask } from "@/services/api/task-center";
@@ -22,9 +23,9 @@ export function LoadingContent({ node, theme, onOpenTaskDetails }: Pick<CanvasNo
     const submissionUncertain = Boolean(taskId) && isGenerationTaskSubmissionUncertain(displayTask);
     const showsProgress = Boolean(taskId) && generationTaskShowsProgress(displayTask);
     const progress = showsProgress && typeof node.metadata?.taskProgress === "number" ? Math.max(0, Math.min(100, Math.round(node.metadata.taskProgress))) : null;
-    const statusLabel = taskId ? generationTaskStatusLabel(displayTask) : "等待任务状态";
+    const statusLabel = taskId ? generationTaskStatusLabel(displayTask) : tr("等待任务状态");
     const workflow = node.metadata?.imageLayerWorkflow;
-    const stageLabel = workflow ? (workflow.stage === "planning" ? "拆解规划中" : `拆解中，共 ${workflow.total} 张图`) : node.metadata?.experimentalLayerPlan?.progress || (taskId ? generationTaskStageLabel(displayTask) : "正在创建任务");
+    const stageLabel = workflow ? (workflow.stage === "planning" ? tr("拆解规划中") : tr("拆解中，共 {0} 张图", workflow.total)) : node.metadata?.experimentalLayerPlan?.progress || (taskId ? generationTaskStageLabel(displayTask) : tr("正在创建任务"));
     const elapsed = useTaskElapsed(workflow?.startedAt || node.metadata?.taskCreatedAt, taskTerminalStatus(node.metadata?.taskStatus) ? node.metadata?.taskCompletedAt : undefined);
     return (
         <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-5 text-center" style={{ color: theme.node.activeStroke }}>
@@ -63,7 +64,7 @@ export function LoadingContent({ node, theme, onOpenTaskDetails }: Pick<CanvasNo
                             }}
                         >
                             <FileText className="size-3" />
-                            详情
+                            {tr("详情")}
                         </button>
                     </div>
                 </div>
@@ -110,7 +111,7 @@ export function ErrorContent({ node, theme, onRetry, onReloadResource }: Pick<Ca
                 </div>
             ) : moderationFailure ? (
                 <div className="rounded-[var(--r-sm)] px-3 py-2 text-[var(--fs-label)] leading-4" style={{ background: theme.toolbar.itemHover, color: theme.node.muted }}>
-                    修改节点提示词后，可重新点击生成。
+                    {tr("修改节点提示词后，可重新点击生成。")}
                 </div>
             ) : node.metadata?.resourceReloadAvailable ? (
                 <div className="flex flex-wrap justify-center gap-2">
@@ -125,7 +126,7 @@ export function ErrorContent({ node, theme, onRetry, onReloadResource }: Pick<Ca
                         onMouseDown={(event) => event.stopPropagation()}
                     >
                         <Download className="size-3.5" />
-                        重新加载资源
+                        {tr("重新加载资源")}
                     </button>
                     <button
                         type="button"
@@ -138,7 +139,7 @@ export function ErrorContent({ node, theme, onRetry, onReloadResource }: Pick<Ca
                         onMouseDown={(event) => event.stopPropagation()}
                     >
                         <RefreshCw className="size-3.5" />
-                        重新生成
+                        {tr("重新生成")}
                     </button>
                 </div>
             ) : (
@@ -153,7 +154,7 @@ export function ErrorContent({ node, theme, onRetry, onReloadResource }: Pick<Ca
                     onMouseDown={(event) => event.stopPropagation()}
                 >
                     <RefreshCw className="size-3.5" />
-                    {node.metadata?.taskCanRecoverMedia ? "重试保存（不重新生成）" : node.metadata?.isBatchRoot ? "重新生成失败项" : "重新生成"}
+                    {node.metadata?.taskCanRecoverMedia ? tr("重试保存（不重新生成）") : node.metadata?.isBatchRoot ? tr("重新生成失败项") : tr("重新生成")}
                 </button>
             )}
         </div>
@@ -163,7 +164,7 @@ export function ErrorContent({ node, theme, onRetry, onReloadResource }: Pick<Ca
 export function UnknownNodeContent({ theme }: Pick<CanvasNodeContentProps, "theme">) {
     return (
         <div className="flex h-full w-full items-center justify-center text-sm" style={{ color: theme.node.placeholder }}>
-            未知节点
+            {tr("未知节点")}
         </div>
     );
 }

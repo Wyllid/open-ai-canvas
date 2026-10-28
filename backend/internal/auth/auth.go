@@ -21,8 +21,8 @@ import (
 
 const SessionCookieName = "open_ai_canvas_session"
 
-// Sessions live for a year so the browser keeps the user signed in; the cookie stays HttpOnly.
-const sessionMaxAge = 365 * 24 * time.Hour
+// sessionMaxAge bounds how long a stolen cookie stays useful; the admin signs in again after it.
+const sessionMaxAge = 30 * 24 * time.Hour
 
 var usernamePattern = regexp.MustCompile(`^[a-zA-Z0-9_-]{3,32}$`)
 
@@ -276,10 +276,15 @@ func (s *Service) Login(req LoginRequest) (result *AuthSessionResult, err error)
 			err = s.recordLoginFailure(event, err)
 		}
 	}()
+	if err := s.rejectWeakAdminPasswordRemote(req.LoginContext.IP); err != nil {
+		return nil, err
+	}
 	account := strings.TrimSpace(req.Username)
 	user, err := s.repo.UserByAccount(account)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Spend the same bcrypt time as a wrong password so response timing does not reveal usernames.
+			verifyPassword(req.Password, dummyPasswordHash)
 			return nil, kernel.Unauthorized("用户名、邮箱或密码不正确")
 		}
 		return nil, err
@@ -399,6 +404,12 @@ func HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hash), err
 }
+
+// dummyPasswordHash is a bcrypt hash of a random value, compared against when the account does not exist.
+var dummyPasswordHash = func() string {
+	hash, _ := bcrypt.GenerateFromPassword([]byte("local-studio-unknown-account"), bcrypt.DefaultCost)
+	return string(hash)
+}()
 
 func verifyPassword(password string, hash string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { canvasNodeToAsset } from "@/lib/canvas/canvas-node-asset";
 import { refreshResource, resourceIdFromStorageKey } from "@/services/api/resources";
 import { ApiError } from "@/services/api/request";
@@ -175,7 +176,7 @@ export async function repairMissingCanvasVideoPreviews(projectIds?: Set<string>,
             }
         }));
     }
-    if (getActiveUserScope() !== scope) throw new Error("账号已切换，已停止修复视频封面");
+    if (getActiveUserScope() !== scope) throw new Error(tr("账号已切换，已停止修复视频封面"));
     if (!invalidIds.size) return { clearedPreviews: 0, updatedProjects: 0 };
 
     let clearedPreviews = 0;

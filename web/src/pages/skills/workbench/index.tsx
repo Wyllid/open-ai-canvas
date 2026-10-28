@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button } from "antd";
 import { ArrowLeft, Code2, Columns2, Command, ExternalLink, Eye, FileWarning, Info, LoaderCircle, Lock, PanelLeft, Plus, RefreshCw, Save, Undo2, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
@@ -95,8 +96,8 @@ function readExpanded(skillId: string): Set<string> | null {
 
 function sourceLabel(source: string) {
     if (source === "github") return "GitHub";
-    if (source === "zip") return "技能包";
-    if (source === "builtin") return "内置技能";
+    if (source === "zip") return tr("技能包");
+    if (source === "builtin") return tr("内置技能");
     return "Markdown";
 }
 
@@ -176,7 +177,7 @@ export default function SkillWorkbenchPage() {
                 setFocusedPath((current) => current || SKILL_ENTRY_PATH);
             })
             .catch((error) => {
-                if (generation === generationRef.current) setLoadError(errorMessage(error, "技能文件加载失败"));
+                if (generation === generationRef.current) setLoadError(errorMessage(error, tr("技能文件加载失败")));
             })
             .finally(() => {
                 if (generation === generationRef.current) setLoading(false);
@@ -269,7 +270,7 @@ export default function SkillWorkbenchPage() {
                 })
                 .catch((error) => {
                     if (generation !== generationRef.current) return;
-                    setFileStates((current) => new Map(current).set(origin, { status: "error", message: errorMessage(error, "文件读取失败") }));
+                    setFileStates((current) => new Map(current).set(origin, { status: "error", message: errorMessage(error, tr("文件读取失败")) }));
                 });
         },
         [baseContents, baseFiles, entryByPath, fileStates, skill],
@@ -365,12 +366,12 @@ export default function SkillWorkbenchPage() {
             const target = joinPath(parentPath(input.path), raw);
             const invalid = validateSkillPath(target);
             if (invalid) return invalid;
-            if (target === SKILL_ENTRY_PATH) return "SKILL.md 是技能入口，不能被替换";
+            if (target === SKILL_ENTRY_PATH) return tr("SKILL.md 是技能入口，不能被替换");
             const ignore = (path: string) => (input.type === "file" ? path === input.path : isDescendantPath(path, input.path));
             const conflict = pathConflict(target, filePaths, input.type === "folder" ? new Set([...folders].filter((path) => path !== input.path && !isDescendantPath(path, input.path))) : folders, ignore);
             if (conflict) return conflict;
-            if (input.type === "folder" && isDescendantPath(target, input.path)) return "不能移动到自身内部";
-            if (input.type === "file" && isTextEditablePath(input.path) && !isTextEditablePath(target) && dirtyPaths.has(input.path)) return "有未保存修改的文本文件不能改为二进制扩展名";
+            if (input.type === "folder" && isDescendantPath(target, input.path)) return tr("不能移动到自身内部");
+            if (input.type === "file" && isTextEditablePath(input.path) && !isTextEditablePath(target) && dirtyPaths.has(input.path)) return tr("有未保存修改的文本文件不能改为二进制扩展名");
             renamePrefix(input.path, target, input.type === "folder");
             setExplorerInput(null);
             return null;
@@ -387,8 +388,8 @@ export default function SkillWorkbenchPage() {
             setExplorerInput(null);
             return null;
         }
-        if (!isTextEditablePath(target)) return "这里只能新建文本文件；图片等二进制资源请通过 ZIP 安装";
-        if (filePaths.size >= SKILL_MAX_FILES) return `技能包最多 ${SKILL_MAX_FILES} 个文件`;
+        if (!isTextEditablePath(target)) return tr("这里只能新建文本文件；图片等二进制资源请通过 ZIP 安装");
+        if (filePaths.size >= SKILL_MAX_FILES) return tr("技能包最多 {0} 个文件", SKILL_MAX_FILES);
         setEntries((current) => [...current, { path: target, origin: null }]);
         setBuffers((current) => new Map(current).set(target, ""));
         setExplorerInput(null);
@@ -409,11 +410,11 @@ export default function SkillWorkbenchPage() {
         if (readOnly || row.path === SKILL_ENTRY_PATH) return;
         const affected = row.type === "file" ? [row.path] : entries.filter((entry) => isDescendantPath(entry.path, row.path)).map((entry) => entry.path);
         modal.confirm({
-            title: row.type === "file" ? `删除“${baseName(row.path)}”？` : `删除文件夹“${baseName(row.path)}”？`,
-            content: row.type === "file" ? "保存后才会从技能包中移除；保存前可通过“放弃修改”恢复。" : `将移除其中 ${affected.length} 个文件。保存后生效，保存前可通过“放弃修改”恢复。`,
-            okText: "删除",
+            title: row.type === "file" ? tr("删除“{0}”？", baseName(row.path)) : tr("删除文件夹“{0}”？", baseName(row.path)),
+            content: row.type === "file" ? tr("保存后才会从技能包中移除；保存前可通过“放弃修改”恢复。") : tr("将移除其中 {0} 个文件。保存后生效，保存前可通过“放弃修改”恢复。", affected.length),
+            okText: tr("删除"),
             okButtonProps: { danger: true },
-            cancelText: "取消",
+            cancelText: tr("取消"),
             onOk: () => {
                 const removed = new Set(affected);
                 setEntries((current) => current.filter((entry) => !removed.has(entry.path)));
@@ -450,11 +451,11 @@ export default function SkillWorkbenchPage() {
     const discardAll = () => {
         if (!pendingCount) return;
         modal.confirm({
-            title: "放弃全部未保存的修改？",
-            content: `${pendingCount} 处修改（含新建、改名和删除）将恢复到当前版本。`,
-            okText: "放弃修改",
+            title: tr("放弃全部未保存的修改？"),
+            content: tr("{0} 处修改（含新建、改名和删除）将恢复到当前版本。", pendingCount),
+            okText: tr("放弃修改"),
             okButtonProps: { danger: true },
-            cancelText: "继续编辑",
+            cancelText: tr("继续编辑"),
             onOk: resetToBaseline,
         });
     };
@@ -463,19 +464,19 @@ export default function SkillWorkbenchPage() {
     const save = async () => {
         if (!skill || readOnly || saving) return;
         if (!pendingCount) {
-            message.info("没有需要保存的修改");
+            message.info(tr("没有需要保存的修改"));
             return;
         }
         for (const entry of entries) {
             const text = buffers.get(entry.path);
             if (text !== undefined && utf8ByteLength(text) > SKILL_TEXT_LIMIT_BYTES) {
-                message.error(`${entry.path} 超过 512KB，无法保存`);
+                message.error(tr("{0} 超过 512KB，无法保存", entry.path));
                 return;
             }
         }
         const operations: SkillFileOperation[] = buildSaveOperations({ basePaths: baseFiles.keys(), entries, buffers, baseContents });
         if (!operations.length) {
-            message.info("没有需要保存的修改");
+            message.info(tr("没有需要保存的修改"));
             return;
         }
         setSaving(true);
@@ -500,22 +501,22 @@ export default function SkillWorkbenchPage() {
             setBuffers(new Map());
             setExplicitFolders((current) => new Set([...current].filter((folder) => ![...files.keys()].some((path) => isDescendantPath(path, folder)))));
             setTabs((current) => current.filter((tab) => files.has(tab.path)).map((tab) => ({ ...tab, preview: false })));
-            message.success(result.changed ? `已保存，生成版本 ${result.skill.version || ""}`.trim() : "内容没有变化，未生成新版本");
+            message.success(result.changed ? tr("已保存，生成版本 {0}", result.skill.version || "").trim() : tr("内容没有变化，未生成新版本"));
         } catch (error) {
             if (error instanceof ApiError && error.reason === SKILL_VERSION_CONFLICT_REASON) {
                 modal.confirm({
-                    title: "技能已在其他地方更新",
-                    content: "当前编辑基于旧版本，无法直接保存。重新加载会丢弃这里的未保存修改；也可以先复制需要保留的内容再重新加载。",
-                    okText: "重新加载",
+                    title: tr("技能已在其他地方更新"),
+                    content: tr("当前编辑基于旧版本，无法直接保存。重新加载会丢弃这里的未保存修改；也可以先复制需要保留的内容再重新加载。"),
+                    okText: tr("重新加载"),
                     okButtonProps: { danger: true },
-                    cancelText: "继续编辑",
+                    cancelText: tr("继续编辑"),
                     onOk: () => setReloadKey((value) => value + 1),
                 });
                 return;
             }
             const operationIndex = error instanceof ApiError ? Number(error.details?.operationIndex) : NaN;
             const target = Number.isInteger(operationIndex) ? operations[operationIndex]?.path : "";
-            message.error(target ? `${errorMessage(error, "保存失败")}（${target}）` : errorMessage(error, "保存失败"));
+            message.error(target ? `${errorMessage(error, tr("保存失败"))}（${target}）` : errorMessage(error, tr("保存失败")));
         } finally {
             setSaving(false);
         }
@@ -559,11 +560,11 @@ export default function SkillWorkbenchPage() {
         if (blocker.state !== "blocked" || blockerPromptRef.current) return;
         blockerPromptRef.current = true;
         modal.confirm({
-            title: "离开前放弃未保存的修改？",
-            content: `还有 ${pendingCount} 处修改没有保存，离开后这些修改会丢失。`,
-            okText: "放弃并离开",
+            title: tr("离开前放弃未保存的修改？"),
+            content: tr("还有 {0} 处修改没有保存，离开后这些修改会丢失。", pendingCount),
+            okText: tr("放弃并离开"),
             okButtonProps: { danger: true },
-            cancelText: "继续编辑",
+            cancelText: tr("继续编辑"),
             onOk: () => {
                 blockerPromptRef.current = false;
                 blocker.proceed();
@@ -582,9 +583,9 @@ export default function SkillWorkbenchPage() {
         try {
             const result = await addSkill(skill.skillId);
             setSkill((current) => (current ? { ...current, ...result.skill } : result.skill));
-            message.success("已加入我的技能");
+            message.success(tr("已加入我的技能"));
         } catch (error) {
-            message.error(errorMessage(error, "加入技能失败"));
+            message.error(errorMessage(error, tr("加入技能失败")));
         } finally {
             setAdding(false);
         }
@@ -595,10 +596,10 @@ export default function SkillWorkbenchPage() {
         setSyncing(true);
         try {
             const result = await syncSkill(skill.skillId);
-            message.success(result.skill.versionId === skill.versionId ? "已是最新版本" : "已同步最新版本");
+            message.success(result.skill.versionId === skill.versionId ? tr("已是最新版本") : tr("已同步最新版本"));
             setReloadKey((value) => value + 1);
         } catch (error) {
-            message.error(errorMessage(error, "GitHub 技能同步失败"));
+            message.error(errorMessage(error, tr("GitHub 技能同步失败")));
         } finally {
             setSyncing(false);
         }
@@ -645,7 +646,7 @@ export default function SkillWorkbenchPage() {
             <WorkspacePage fluid scroll={false} className="skill-wb-page">
                 <div className="skill-wb-center" role="status">
                     <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                    <span>正在打开技能工作台…</span>
+                    <span>{tr("正在打开技能工作台…")}</span>
                 </div>
             </WorkspacePage>
         );
@@ -653,17 +654,24 @@ export default function SkillWorkbenchPage() {
 
     const breadcrumbs = activePath ? activePath.split("/") : [];
     const rawURL = activeOrigin ? skillFileRawURL(skill.skillId, activeOrigin) : "";
-    const statusText = readOnly ? "只读" : saving ? "正在保存…" : pendingCount ? `${pendingCount} 处未保存修改` : "已保存";
+    const statusText = readOnly ? tr("只读") : saving ? tr("正在保存…") : pendingCount ? tr("{0} 处未保存修改", pendingCount) : tr("已保存");
 
     return (
         <WorkspacePage fluid scroll={false} className="skill-wb-page">
             <div className="skill-wb" style={{ "--skill-wb-explorer-width": `${layout.width}px` } as CSSProperties} data-explorer={explorerOpen ? "open" : "closed"}>
                 <header className="skill-wb-header">
                     <Button type="text" className="skill-wb-back" icon={<ArrowLeft className="size-4" />} onClick={() => navigate("/skills")}>
-                        技能库
+                        {tr("技能库")}
                     </Button>
                     <span className="skill-wb-header-divider" aria-hidden="true" />
-                    <button type="button" className="skill-wb-icon-button" aria-label={explorerOpen ? "隐藏资源管理器" : "显示资源管理器"} aria-pressed={explorerOpen} title={`资源管理器 (${modKey}+B)`} onClick={() => setExplorerOpen((value) => !value)}>
+                    <button
+                        type="button"
+                        className="skill-wb-icon-button"
+                        aria-label={explorerOpen ? tr("隐藏资源管理器") : tr("显示资源管理器")}
+                        aria-pressed={explorerOpen}
+                        title={tr("资源管理器 ({0}+B)", modKey)}
+                        onClick={() => setExplorerOpen((value) => !value)}
+                    >
                         <PanelLeft className="size-4" />
                     </button>
                     <div className="skill-wb-title">
@@ -673,28 +681,29 @@ export default function SkillWorkbenchPage() {
                         {readOnly ? (
                             <span className="skill-wb-chip is-readonly">
                                 <Lock className="size-3" aria-hidden="true" />
-                                只读
+                                {tr("只读")}
                             </span>
                         ) : null}
                     </div>
                     <div className="skill-wb-header-actions">
                         <Button className="skill-wb-quick-trigger" icon={<Command className="size-4" />} onClick={() => setQuickOpen(true)}>
-                            <span>快速打开</span>
+                            <span>{tr("快速打开")}</span>
                             <Kbd>{modKey} P</Kbd>
                         </Button>
                         {skill.isOwner ? (
                             <Button icon={<Info className="size-4" />} onClick={() => setInfoOpen(true)}>
-                                技能信息
+                                {tr("技能信息")}
                             </Button>
                         ) : null}
                         {!readOnly && pendingCount ? (
                             <Button icon={<Undo2 className="size-4" />} onClick={discardAll}>
-                                放弃修改
+                                {tr("放弃修改")}
                             </Button>
                         ) : null}
                         {!readOnly ? (
                             <Button type="primary" loading={saving} disabled={!pendingCount} icon={<Save className="size-4" />} onClick={() => void save()}>
-                                保存{pendingCount ? `（${pendingCount}）` : ""}
+                                {tr("保存")}
+                                {pendingCount ? `（${pendingCount}）` : ""}
                             </Button>
                         ) : null}
                     </div>
@@ -705,19 +714,23 @@ export default function SkillWorkbenchPage() {
                         <Lock className="size-4 shrink-0" aria-hidden="true" />
                         {skill.isOwner && skill.sourceType === "github" ? (
                             <>
-                                <span>GitHub 技能以仓库内容为准，这里仅供浏览。请在仓库修改后执行同步。</span>
+                                <span>{tr("GitHub 技能以仓库内容为准，这里仅供浏览。请在仓库修改后执行同步。")}</span>
                                 <Button size="small" loading={syncing} icon={<RefreshCw className="size-3.5" />} onClick={() => void synchronize()}>
-                                    同步
+                                    {tr("同步")}
                                 </Button>
                             </>
                         ) : (
                             <>
                                 <span>
-                                    只读模式：这是{skill.effectiveUser.name ? `“${skill.effectiveUser.name}”` : "其他作者"}的{skill.sourceType === "builtin" ? "内置" : ""}技能，可以浏览全部文件，但不能修改。
+                                    {tr("只读模式：这是")}
+                                    {skill.effectiveUser.name ? `“${skill.effectiveUser.name}”` : tr("其他作者")}
+                                    {tr("的")}
+                                    {skill.sourceType === "builtin" ? tr("内置") : ""}
+                                    {tr("技能，可以浏览全部文件，但不能修改。")}
                                 </span>
                                 {!skill.isAdded ? (
                                     <Button size="small" loading={adding} icon={<Plus className="size-3.5" />} onClick={() => void joinSkill()}>
-                                        加入我的技能
+                                        {tr("加入我的技能")}
                                     </Button>
                                 ) : null}
                             </>
@@ -754,7 +767,7 @@ export default function SkillWorkbenchPage() {
                                 className="skill-wb-resizer"
                                 role="separator"
                                 aria-orientation="vertical"
-                                aria-label="调整资源管理器宽度"
+                                aria-label={tr("调整资源管理器宽度")}
                                 aria-valuemin={MIN_EXPLORER}
                                 aria-valuemax={MAX_EXPLORER}
                                 aria-valuenow={layout.width}
@@ -770,7 +783,7 @@ export default function SkillWorkbenchPage() {
                     ) : null}
 
                     <main className="skill-wb-main">
-                        <div className="skill-wb-tabs thin-scrollbar" role="tablist" aria-label="已打开的文件">
+                        <div className="skill-wb-tabs thin-scrollbar" role="tablist" aria-label={tr("已打开的文件")}>
                             {tabs.map((tab) => {
                                 const dirty = dirtyPaths.has(tab.path);
                                 const active = tab.path === activePath;
@@ -803,8 +816,8 @@ export default function SkillWorkbenchPage() {
                                         <button
                                             type="button"
                                             className="skill-wb-tab-close"
-                                            aria-label={dirty ? `${baseName(tab.path)} 有未保存修改，关闭标签` : `关闭 ${baseName(tab.path)}`}
-                                            title={dirty ? "未保存（关闭标签不会丢失修改）" : "关闭"}
+                                            aria-label={dirty ? tr("{0} 有未保存修改，关闭标签", baseName(tab.path)) : tr("关闭 {0}", baseName(tab.path))}
+                                            title={dirty ? tr("未保存（关闭标签不会丢失修改）") : tr("关闭")}
                                             onClick={() => closeTab(tab.path)}
                                         >
                                             <span className="skill-wb-tab-dot" aria-hidden="true" />
@@ -817,7 +830,7 @@ export default function SkillWorkbenchPage() {
 
                         {activePath ? (
                             <div className="skill-wb-crumbs">
-                                <nav className="skill-wb-crumb-list" aria-label="文件路径">
+                                <nav className="skill-wb-crumb-list" aria-label={tr("文件路径")}>
                                     {breadcrumbs.map((segment, index) => {
                                         const path = breadcrumbs.slice(0, index + 1).join("/");
                                         const last = index === breadcrumbs.length - 1;
@@ -845,24 +858,24 @@ export default function SkillWorkbenchPage() {
                                             </span>
                                         );
                                     })}
-                                    {dirtyPaths.has(activePath) ? <span className="skill-wb-crumb-dirty">未保存</span> : null}
+                                    {dirtyPaths.has(activePath) ? <span className="skill-wb-crumb-dirty">{tr("未保存")}</span> : null}
                                 </nav>
                                 {activeIsMarkdown ? (
                                     <SegmentedControl
                                         size="sm"
-                                        ariaLabel="Markdown 视图"
+                                        ariaLabel={tr("Markdown 视图")}
                                         value={markdownMode}
                                         onChange={(value) => setLayout((current) => ({ ...current, markdownMode: value }))}
                                         options={[
-                                            { value: "edit", icon: <Code2 className="size-3.5" />, label: "编辑" },
-                                            { value: "split", icon: <Columns2 className="size-3.5" />, label: "分栏" },
-                                            { value: "preview", icon: <Eye className="size-3.5" />, label: "预览" },
+                                            { value: "edit", icon: <Code2 className="size-3.5" />, label: tr("编辑") },
+                                            { value: "split", icon: <Columns2 className="size-3.5" />, label: tr("分栏") },
+                                            { value: "preview", icon: <Eye className="size-3.5" />, label: tr("预览") },
                                         ]}
                                     />
                                 ) : null}
                                 {rawURL ? (
-                                    <Tooltip title="打开已保存的原始文件">
-                                        <a className="skill-wb-icon-button" href={rawURL} target="_blank" rel="noreferrer" aria-label="打开已保存的原始文件">
+                                    <Tooltip title={tr("打开已保存的原始文件")}>
+                                        <a className="skill-wb-icon-button" href={rawURL} target="_blank" rel="noreferrer" aria-label={tr("打开已保存的原始文件")}>
                                             <ExternalLink className="size-4" />
                                         </a>
                                     </Tooltip>
@@ -883,7 +896,7 @@ export default function SkillWorkbenchPage() {
                                 />
                             </div>
                             {activeIsMarkdown && markdownMode !== "edit" ? (
-                                <div className="skill-wb-preview-pane thin-scrollbar" aria-label="Markdown 预览">
+                                <div className="skill-wb-preview-pane thin-scrollbar" aria-label={tr("Markdown 预览")}>
                                     <SkillMarkdown source={activeText ?? ""} currentPath={activePath} filePaths={filePaths} onNavigate={(path) => openFile(path)} />
                                 </div>
                             ) : null}
@@ -891,20 +904,23 @@ export default function SkillWorkbenchPage() {
                                 <div className="skill-wb-placeholder">
                                     <EmptyState
                                         icon={Code2}
-                                        title="选择一个文件开始"
-                                        description={readOnly ? "从左侧资源管理器选择文件浏览。" : "从左侧资源管理器选择文件，或新建文件。修改后统一保存为一个新版本。"}
+                                        title={tr("选择一个文件开始")}
+                                        description={readOnly ? tr("从左侧资源管理器选择文件浏览。") : tr("从左侧资源管理器选择文件，或新建文件。修改后统一保存为一个新版本。")}
                                         action={
                                             <div className="skill-wb-shortcuts">
                                                 <span>
-                                                    <Kbd>{modKey} P</Kbd>快速打开
+                                                    <Kbd>{modKey} P</Kbd>
+                                                    {tr("快速打开")}
                                                 </span>
                                                 {!readOnly ? (
                                                     <span>
-                                                        <Kbd>{modKey} S</Kbd>保存
+                                                        <Kbd>{modKey} S</Kbd>
+                                                        {tr("保存")}
                                                     </span>
                                                 ) : null}
                                                 <span>
-                                                    <Kbd>{modKey} B</Kbd>资源管理器
+                                                    <Kbd>{modKey} B</Kbd>
+                                                    {tr("资源管理器")}
                                                 </span>
                                             </div>
                                         }
@@ -927,12 +943,12 @@ export default function SkillWorkbenchPage() {
                                     ) : activeState?.status === "binary" || activeState?.status === "error" ? (
                                         <EmptyState
                                             icon={FileWarning}
-                                            title={activeState.status === "error" ? "无法在线编辑" : "二进制文件"}
-                                            description={activeState.status === "error" ? activeState.message : "该文件不是文本，只能只读查看或下载。"}
+                                            title={activeState.status === "error" ? tr("无法在线编辑") : tr("二进制文件")}
+                                            description={activeState.status === "error" ? activeState.message : tr("该文件不是文本，只能只读查看或下载。")}
                                             action={
                                                 rawURL ? (
                                                     <a className="skill-wb-link" href={rawURL} target="_blank" rel="noreferrer">
-                                                        打开原始文件
+                                                        {tr("打开原始文件")}
                                                         <ExternalLink className="size-3.5" aria-hidden="true" />
                                                     </a>
                                                 ) : undefined
@@ -941,7 +957,9 @@ export default function SkillWorkbenchPage() {
                                     ) : (
                                         <div className="skill-wb-center" role="status">
                                             <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                                            <span>正在读取 {baseName(activePath)}…</span>
+                                            <span>
+                                                {tr("正在读取")} {baseName(activePath)}…
+                                            </span>
                                         </div>
                                     )}
                                 </div>
@@ -954,24 +972,26 @@ export default function SkillWorkbenchPage() {
                                 {statusText}
                             </span>
                             <span className="skill-wb-status-item" title={skill.versionId}>
-                                版本 v{skill.version || "1"}
+                                {tr("版本 v")}
+                                {skill.version || "1"}
                             </span>
                             {loading ? (
                                 <span className="skill-wb-status-item">
                                     <LoaderCircle className="size-3 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                                    同步中
+                                    {tr("同步中")}
                                 </span>
                             ) : null}
                             <span className="skill-wb-status-spacer" />
                             {activeIsText ? (
                                 <span className="skill-wb-status-item">
-                                    行 {cursor.line}，列 {cursor.column}
+                                    {tr("行")} {cursor.line}
+                                    {tr("，列")} {cursor.column}
                                 </span>
                             ) : null}
                             {activeEntry ? <span className="skill-wb-status-item">{formatSkillBytes(activeSize)}</span> : null}
                             {activeIsText ? <span className="skill-wb-status-item">UTF-8</span> : null}
-                            {activeIsText ? <span className="skill-wb-status-item">空格：2</span> : null}
-                            {activeEntry ? <span className="skill-wb-status-item">{activeIsText ? languageLabel(activePath) : activeMeta?.mimeType || "二进制"}</span> : null}
+                            {activeIsText ? <span className="skill-wb-status-item">{tr("空格：2")}</span> : null}
+                            {activeEntry ? <span className="skill-wb-status-item">{activeIsText ? languageLabel(activePath) : activeMeta?.mimeType || tr("二进制")}</span> : null}
                         </footer>
                     </main>
                 </div>

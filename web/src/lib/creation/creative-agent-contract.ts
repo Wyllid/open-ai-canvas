@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CanvasWorkflowInput } from "../canvas/canvas-workflow-builder";
 import { CREATIVE_SCENARIOS, type CreativeScenarioId } from "./creative-scenarios";
 export { CREATIVE_SCENARIOS, type CreativeScenario, type CreativeScenarioId } from "./creative-scenarios";
@@ -43,7 +44,7 @@ export function isCreativeFieldKnown(brief: CreativeBrief, field: string): boole
 
 /** 交互身份与版本只能由控制器生成；模型返回的 ID、状态和来源信息一律不可信。 */
 export function normalizeCreativeQuestions(raw: unknown, scenario: CreativeScenarioId, brief: CreativeBrief, identity: { interactionId: string; revision: number }, assets: CreativeAssetOption[] = []): CreativeQuestionRequest {
-    if (!identity.interactionId.trim() || !Number.isInteger(identity.revision) || identity.revision < 1) throw new Error("无效的交互版本");
+    if (!identity.interactionId.trim() || !Number.isInteger(identity.revision) || identity.revision < 1) throw new Error(tr("无效的交互版本"));
     const questions: CreativeQuestion[] = [];
     const used = new Set<string>();
     // 交互字段必须来自当前场景合同，避免模型临时造字段后形成无法持久化、无法消费的隐式协议。
@@ -68,21 +69,21 @@ export function normalizeCreativeQuestions(raw: unknown, scenario: CreativeScena
 }
 
 export function assertCreativeInteractionCurrent(current: CreativeInteractionIdentity, submitted: { interactionId: string; revision: number }) {
-    if (current.status !== "pending" || current.interactionId !== submitted.interactionId || current.revision !== submitted.revision) throw new Error("此交互已过期，请使用当前版本");
+    if (current.status !== "pending" || current.interactionId !== submitted.interactionId || current.revision !== submitted.revision) throw new Error(tr("此交互已过期，请使用当前版本"));
 }
 
 export function validateCreativeAnswers(request: CreativeQuestionRequest, answers: CreativeAnswers, assets: CreativeAssetOption[] = []): { questionId: string; message: string } | null {
     for (const question of request.questions) {
         const field = normalizeCreativeField(question.field);
-        if (!field) return { questionId: question.id, message: "问题字段无效，请让助手重新整理问题" };
+        if (!field) return { questionId: question.id, message: tr("问题字段无效，请让助手重新整理问题") };
         const answer = answers[question.id];
         const selected = answer?.selected ?? [];
         const custom = answer?.custom?.trim() ?? "";
         const allowed = new Set((question.type === "asset" ? assets : question.options).map((option) => option.id));
-        if (selected.some((id) => !allowed.has(id))) return { questionId: question.id, message: "选项或素材已不可用，请重新选择" };
-        if ((question.type === "single" && selected.length > 1) || (question.type === "text" && selected.length > 0)) return { questionId: question.id, message: "回答类型不匹配" };
-        if (custom && !question.allowCustom) return { questionId: question.id, message: "此问题不接受自定义回答" };
-        if (question.required && !selected.length && !custom) return { questionId: question.id, message: "请先回答此问题" };
+        if (selected.some((id) => !allowed.has(id))) return { questionId: question.id, message: tr("选项或素材已不可用，请重新选择") };
+        if ((question.type === "single" && selected.length > 1) || (question.type === "text" && selected.length > 0)) return { questionId: question.id, message: tr("回答类型不匹配") };
+        if (custom && !question.allowCustom) return { questionId: question.id, message: tr("此问题不接受自定义回答") };
+        if (question.required && !selected.length && !custom) return { questionId: question.id, message: tr("请先回答此问题") };
     }
     return null;
 }
@@ -94,7 +95,7 @@ export function applyCreativeAnswers(request: CreativeQuestionRequest, submitted
     const next = { ...brief };
     for (const question of request.questions) {
         const field = normalizeCreativeField(question.field);
-        if (!field) throw new Error("问题字段无效，请让助手重新整理问题");
+        if (!field) throw new Error(tr("问题字段无效，请让助手重新整理问题"));
         const answer = answers[question.id];
         if (!answer) continue;
         const options = question.type === "asset" ? assets : question.options;

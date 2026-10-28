@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CanvasTheme } from "@/lib/canvas-theme";
 
 type SandboxedFrameProps = {
@@ -23,7 +24,7 @@ type SandboxedFrameProps = {
 export function SandboxedFrame({ srcDoc, theme, allowScripts = false }: SandboxedFrameProps) {
     return (
         <iframe
-            title="节点预览"
+            title={tr("节点预览")}
             className="h-full w-full border-0"
             sandbox={allowScripts ? "allow-scripts" : ""}
             srcDoc={srcDoc}

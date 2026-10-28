@@ -387,53 +387,23 @@
     color: var(--foreground);
 }
 
-.auth-scene-hero {
-    background: var(--auth-panel-bg);
-    color: var(--foreground);
+/* Self-hosted sign-in: a quiet backdrop behind one centered card. */
+.auth-scene-backdrop {
+    background:
+        radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, var(--auth-accent) 10%, transparent), transparent 70%),
+        linear-gradient(color-mix(in srgb, var(--foreground) 5%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
+        linear-gradient(90deg, color-mix(in srgb, var(--foreground) 5%, transparent) 1px, transparent 1px) 0 0 / 32px 32px;
+    mask-image: radial-gradient(70% 60% at 50% 40%, #000 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(70% 60% at 50% 40%, #000 30%, transparent 100%);
 }
 
-.auth-scene-hero-overlay {
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--auth-panel-bg) 40%, transparent),
-        transparent 42%,
-        color-mix(in srgb, var(--auth-panel-bg) 76%, transparent)
-    );
-    pointer-events: none;
-}
-
-.auth-scene-brand,
-.auth-scene-brand:hover {
-    color: inherit;
-}
-
-.auth-scene-hero-control {
-    border: 1px solid color-mix(in srgb, var(--foreground) 16%, transparent);
-    background: color-mix(in srgb, var(--auth-panel-bg) 78%, transparent);
-    color: color-mix(in srgb, var(--foreground) 82%, transparent);
-}
-
-.auth-scene-hero-control:hover {
-    background: color-mix(in srgb, var(--auth-panel-bg) 92%, transparent);
-}
-
-.auth-scene-hero-muted {
-    color: color-mix(in srgb, var(--foreground) 64%, transparent);
-}
-
-.auth-scene-hero-title {
-    color: var(--foreground);
-}
-
-.auth-scene-form-pane {
-    background: var(--auth-panel-bg);
-}
-
-.auth-scene-video-blend {
-    background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--auth-panel-bg) 68%, transparent) 58%, var(--auth-panel-bg) 100%);
+.auth-scene-mark {
+    background: var(--foreground);
+    color: var(--background);
 }
 
 .auth-scene-card {
+    border: var(--control-border-width) solid var(--border);
     background: var(--auth-card-bg);
     box-shadow: var(--elevation-card-hover);
 }
@@ -653,69 +623,6 @@
     color: var(--auth-muted);
     font-size: var(--fs-micro, 11px);
     letter-spacing: 0.01em;
-}
-
-.site-compliance-footer {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    color: color-mix(in srgb, var(--foreground) 48%, transparent);
-    font-size: var(--fs-label);
-    line-height: 1.6;
-    text-align: center;
-}
-
-.site-compliance-footer > span {
-    min-width: 0;
-    max-width: 100%;
-    overflow-wrap: anywhere;
-}
-
-.site-compliance-footer a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    color: inherit;
-    text-decoration: none;
-    transition: color var(--motion-instant) ease-out;
-}
-
-.site-compliance-footer a:hover,
-.site-compliance-footer a:focus-visible {
-    color: var(--foreground);
-}
-
-.site-compliance-footer a:focus-visible {
-    outline: 1px solid color-mix(in srgb, var(--ring) 68%, transparent);
-    outline-offset: 3px;
-}
-
-.site-compliance-footer svg {
-    width: 11px;
-    height: 11px;
-}
-
-.site-compliance-footer.is-auth {
-    min-height: 54px;
-    border-top: var(--control-border-width) solid var(--border);
-    background: color-mix(in srgb, var(--auth-panel-bg) 88%, transparent);
-    color: var(--auth-muted);
-    backdrop-filter: blur(14px);
-}
-
-.site-compliance-footer.is-auth a:hover,
-.site-compliance-footer.is-auth a:focus-visible {
-    color: var(--foreground);
-}
-
-@media (max-width: 640px) {
-    .site-compliance-footer {
-        flex-direction: column;
-        gap: var(--space-1);
-    }
 }
 
 /* 动效计算函数（实际 duration = base * motion-scale）*/
@@ -11303,7 +11210,8 @@ html:not(.dark) .creation-duration-menu strong { color: #20242a; }
    选中态用 control-selected 角色，而不是主操作色：它表达「当前视图」而非主要命令。 */
 .previs-mode-switch {
     display: flex;
-    min-width: 0;
+    /* Keep the mode buttons at their own width: the header scrolls sideways instead of letting them overlap the next control. */
+    flex: none;
     align-items: center;
     gap: var(--space-half);
 }
@@ -14542,7 +14450,7 @@ html:not(.dark) .creation-history-drawer-root {
     .creation-empty-workspace > .creation-empty-suggest { margin-top: 20px; }
 }
 
-/* ===== 素材库 · 重构（影策影视资产） =====
+/* ===== 素材库 · 重构（Local Studio影视资产） =====
    与画布库共用 studio-band 毛玻璃页头与 frame 外壳；类型化封面、accent 反白筛选、
    批量操作条、banner+欢迎卡空态、资产档案抽屉。全局保持黑白单色。 */
 /* 页头右侧一行：紧凑容量计量 + 命令组。容量是只读信息，不画成控件外框。 */
@@ -16611,6 +16519,8 @@ html:not(.dark) .creation-home .creation-user-message-copy-wrap { box-shadow: 0 
 
 .app-user-workspace .creation-empty-suggest .suggest-copy strong,
 .app-user-workspace .creation-empty-suggest .creation-hero-prompt-copy strong {
+    /* 列内省略，长译文不压到相邻卡片。 */
+    max-width: 100%;
     overflow: hidden;
     font-size: 12px;
     text-overflow: ellipsis;

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 编辑器插件执行期权限校验，默认拒绝未知插件和缺失权限。
 // v2 插件贡献 editorSlots 或代发 timeline 命令时，manifest.permissions 必须覆盖对应能力域；
 // v1 插件不贡献 editorSlots，因此不经过这条插槽权限路径。本模块只做纯判定，
@@ -55,9 +56,9 @@ export function pluginMayRenderEditorSlot(pluginId: string, slot: EditorSlotKind
 export function assertEditorPermission(pluginId: string, permission: EditorPluginPermission): void {
     const permissions = pluginPermissions(pluginId);
     if (permissions === null) {
-        throw new Error(`插件 ${pluginId} 未注册，无法代发 ${permission} 命令`);
+        throw new Error(tr("插件 {0} 未注册，无法代发 {1} 命令", pluginId, permission));
     }
     if (!permissions.has(permission)) {
-        throw new Error(`插件 ${pluginId} 缺少 ${permission} 权限，命令已被拒绝`);
+        throw new Error(tr("插件 {0} 缺少 {1} 权限，命令已被拒绝", pluginId, permission));
     }
 }

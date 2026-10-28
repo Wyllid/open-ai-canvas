@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useMemo } from "react";
 
 import { projectCharacterToInsertPayload } from "@/components/canvas/canvas-project-asset-modal";
@@ -39,7 +40,7 @@ type Props = {
     onClose: () => void;
 };
 
-const categoryLabels: Record<string, string> = { all: "全部素材", ...ASSET_CATEGORY_LABELS, archived: "回收站" };
+const categoryLabels: Record<string, string> = { all: tr("全部素材"), ...ASSET_CATEGORY_LABELS, archived: tr("回收站") };
 
 export function AssetPickerModal({ open, multiple = true, onInsert, onClose }: Props) {
     const assets = useAssetStore((state) => state.assets);
@@ -52,7 +53,7 @@ export function AssetPickerModal({ open, multiple = true, onInsert, onClose }: P
                 title: asset.title,
                 category: normalizeAssetCategory(asset.category),
                 archived: asset.status === "archived",
-                kindLabel: asset.kind === "image" ? "图片" : asset.kind === "video" ? "视频" : asset.kind === "audio" ? "音频" : "文本",
+                kindLabel: asset.kind === "image" ? tr("图片") : asset.kind === "video" ? tr("视频") : asset.kind === "audio" ? tr("音频") : tr("文本"),
                 mediaKind: asset.kind,
                 asset,
                 searchText: (asset.tags || []).join(" "),
@@ -74,8 +75,8 @@ export function AssetPickerModal({ open, multiple = true, onInsert, onClose }: P
             folders={externalAssetSources.folders}
             footerNote={externalAssetSources.error || undefined}
             multiple={multiple}
-            confirmLabel={(count) => `插入已选素材${count ? `（${count}）` : ""}`}
-            emptyDescription="先在素材库中添加图片、视频、音频、文本或角色卡。"
+            confirmLabel={(count) => tr("插入已选素材{0}", count ? `（${count}）` : "")}
+            emptyDescription={tr("先在素材库中添加图片、视频、音频、文本或角色卡。")}
             onClose={onClose}
             onConfirm={async (ids, pickedItems) => {
                 await onInsert(await assetPickerSelectionToInsertPayloads(ids, pickedItems || items));
@@ -104,11 +105,11 @@ export function assetPickerItemsToInsertPayloads(ids: string[], items: AssetLibr
     const itemsById = new Map(items.map((item) => [item.id, item]));
     return ids.map((id) => {
         const pickerItem = itemsById.get(id);
-        if (!pickerItem) throw new Error("所选素材已不存在，请重新选择");
+        if (!pickerItem) throw new Error(tr("所选素材已不存在，请重新选择"));
         if (pickerItem.external) return externalAssetToInsertPayload(pickerItem.external);
         const asset = pickerItem.asset;
         if (!asset || (asset.kind !== "text" && asset.kind !== "image" && asset.kind !== "video" && asset.kind !== "audio")) {
-            throw new Error(`“${pickerItem.title}”不是可插入画布的素材`);
+            throw new Error(tr("“{0}”不是可插入画布的素材", pickerItem.title));
         }
         return localAssetToInsertPayload(asset);
     });
@@ -137,10 +138,10 @@ function localAssetToInsertPayload(asset: InsertableAsset): InsertAssetPayload {
 export function externalAssetToInsertPayload(reference: ExternalAssetPickerReference): InsertAssetPayload {
     const item = reference.item;
     const url = item.fileUrl || "";
-    if (!url) throw new Error(`“${item.title}”暂时无法读取，请先在 Eagle 中确认文件可用`);
+    if (!url) throw new Error(tr("“{0}”暂时无法读取，请先在 Eagle 中确认文件可用", item.title));
     const assetId = `external:${reference.sourceId}:${item.id}`;
-    if (item.kind === "image") return { kind: "image", dataUrl: url, url, title: item.title || "素材图片", width: item.width, height: item.height, bytes: item.bytes, mimeType: item.mimeType, assetId };
+    if (item.kind === "image") return { kind: "image", dataUrl: url, url, title: item.title || tr("素材图片"), width: item.width, height: item.height, bytes: item.bytes, mimeType: item.mimeType, assetId };
     if (item.kind === "video") return { kind: "video", url, title: item.title, width: item.width, height: item.height, bytes: item.bytes, mimeType: item.mimeType, assetId };
     if (item.kind === "audio") return { kind: "audio", url, title: item.title, bytes: item.bytes, mimeType: item.mimeType, assetId };
-    throw new Error(`“${item.title}”不是可插入画布的媒体文件`);
+    throw new Error(tr("“{0}”不是可插入画布的媒体文件", item.title));
 }

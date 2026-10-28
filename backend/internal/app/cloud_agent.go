@@ -25,7 +25,9 @@ const cloudAgentOperation = "cloud_agent"
 // turns reference the previous run, not a mutable in-memory conversation. This
 // reuses transactional billing, worker leases, cancellation and text replay.
 type CloudAgentRequest struct {
-	ReasoningMode         string   `json:"reasoningMode,omitempty"`
+	ReasoningMode string `json:"reasoningMode,omitempty"`
+	// Locale is the interface language ("en", "pt-BR" or "zh-CN"); the agent replies in it.
+	Locale                string   `json:"locale,omitempty"`
 	ProfileRevision       string   `json:"profileRevision,omitempty"`
 	CanvasID              string   `json:"canvasId"`
 	Prompt                string   `json:"prompt"`
@@ -186,6 +188,9 @@ func validateCloudAgentRequest(req *CloudAgentRequest) error {
 		}
 		req.FocusNodeIDs[i] = id
 		seenFocus[id] = true
+	}
+	if _, ok := cloudAgentReplyLanguages[req.Locale]; !ok {
+		return BadAuthRequest("界面语言参数无效")
 	}
 	if req.LogicalModelID != "" {
 		if req.ChannelID != "" || req.ChannelModelKey != "" {

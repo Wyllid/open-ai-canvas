@@ -13,6 +13,9 @@ import (
 
 var ErrProfileAuthorization = errors.New("账号或身份验证状态已变化，请重新登录或验证")
 
+// ErrUsernameTaken reports that another account already uses the requested username.
+var ErrUsernameTaken = errors.New("username taken")
+
 const ProfileReauthenticationTTL = 5 * time.Minute
 
 func ProfileCredentialHash(passwordHash string) string {
@@ -171,4 +174,36 @@ func (r *Repository) LinuxDOReauthenticationState(stateHash string) (bool, error
 		return false, err
 	}
 	return state.ReauthUserID != "" && state.ReauthSessionID != "", nil
+}
+
+// ChangeLocalAccount renames the account and, when newHash is set, replaces its password.
+// Every session of the account is revoked so the change takes effect on all devices.
+func (r *Repository) ChangeLocalAccount(expected *model.User, session *model.AuthSession, username string, displayName string, newHash string, now time.Time) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := lockProfileUser(tx, expected.ID); err != nil {
+			return err
+		}
+		if err := profileAuthorization(tx, expected, session, now, false); err != nil {
+			return err
+		}
+		var taken int64
+		if err := tx.Model(&model.User{}).Where("lower(username) = lower(?) AND id <> ?", username, expected.ID).Count(&taken).Error; err != nil {
+			return err
+		}
+		if taken > 0 {
+			return ErrUsernameTaken
+		}
+		updates := map[string]any{"username": username, "display_name": displayName, "updated_at": now}
+		if newHash != "" {
+			updates["password_hash"] = newHash
+		}
+		result := tx.Model(&model.User{}).Where("id = ? AND password_hash = ? AND status = ?", expected.ID, expected.PasswordHash, model.UserStatusActive).Updates(updates)
+		if result.Error != nil {
+			return result.Error
+		}
+		if result.RowsAffected != 1 {
+			return ErrProfileAuthorization
+		}
+		return tx.Where("user_id = ?", expected.ID).Delete(&model.AuthSession{}).Error
+	})
 }

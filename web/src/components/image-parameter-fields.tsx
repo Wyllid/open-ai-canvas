@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Input, InputNumber, Switch } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { ImageSizePresetsEditor } from "./image-size-presets-editor";
@@ -45,14 +46,14 @@ export function ImageParameterInput({
                             return (
                                 <button type="button" key={`${typeof option}:${option}`} disabled={disabled} aria-pressed={value === option} onClick={() => onChange(option)}>
                                     {width > 0 && height > 0 ? <span aria-hidden="true" className="image-size-ratio-icon" style={{ width: 24 * Math.min(1, width / height), height: 24 * Math.min(1, height / width) }} /> : null}
-                                    <span>{typeof option === "boolean" ? (option ? "开启" : "关闭") : String(option)}</span>
+                                    <span>{typeof option === "boolean" ? (option ? tr("开启") : tr("关闭")) : String(option)}</span>
                                 </button>
                             );
                         })}
                     </div>
                     {!field.required && field.default === undefined ? (
                         <button type="button" className="image-size-auto" disabled={disabled} aria-pressed={value === undefined} onClick={() => onChange(undefined)}>
-                            跟随模型默认
+                            {tr("跟随模型默认")}
                         </button>
                     ) : null}
                 </div>
@@ -65,8 +66,8 @@ export function ImageParameterInput({
                 disabled={disabled}
                 allowClear={!field.required}
                 value={value === undefined ? undefined : String(value)}
-                placeholder="跟随模型默认"
-                options={field.values.map((v) => ({ value: String(v), label: typeof v === "boolean" ? (v ? "开启" : "关闭") : String(v) }))}
+                placeholder={tr("跟随模型默认")}
+                options={field.values.map((v) => ({ value: String(v), label: typeof v === "boolean" ? (v ? tr("开启") : tr("关闭")) : String(v) }))}
                 onChange={(next) => onChange(field.values!.find((v) => String(v) === next))}
             />
         );
@@ -91,7 +92,7 @@ export function ImageParameterInput({
                 max={field.max}
                 step={field.step ?? (field.type === "integer" ? 1 : undefined)}
                 precision={field.type === "integer" ? 0 : undefined}
-                placeholder="跟随模型默认"
+                placeholder={tr("跟随模型默认")}
                 onChange={(next) => changeDraft(next ?? undefined)}
             />
         );
@@ -102,7 +103,7 @@ export function ImageParameterInput({
             value={typeof draft === "string" ? draft : ""}
             status={invalid ? "error" : undefined}
             maxLength={field.maxLength}
-            placeholder="跟随模型默认"
+            placeholder={tr("跟随模型默认")}
             onFocus={() => {
                 editing.current = true;
             }}
@@ -164,7 +165,7 @@ export function ImageParameterFields({
                     const countVal = Number(values.count ?? config.count ?? 1);
                     return (
                         <div className="space-y-2" key="count">
-                            <div className="text-xs font-medium">生成张数</div>
+                            <div className="text-xs font-medium">{tr("生成张数")}</div>
                             <div className="grid grid-cols-4 gap-2">
                                 {Array.from({ length: Math.min(3, max) }, (_, i) => i + 1).map((val) => (
                                     <button
@@ -225,7 +226,7 @@ export function ImageParameterSchemaEditor({ definitions, parameters, disabled, 
     if (!parameters.length) return null;
     return (
         <div className="space-y-3">
-            <p className="text-xs leading-relaxed text-foreground/55">选择此模型支持的参数和范围。生成界面同步显示启用项，标记“可计价”的参数可用于规格价格。</p>
+            <p className="text-xs leading-relaxed text-foreground/55">{tr("选择此模型支持的参数和范围。生成界面同步显示启用项，标记“可计价”的参数可用于规格价格。")}</p>
             {parameters.map((field) => {
                 const definition = definitions.find((p) => p.name === field.name) || field;
                 const isResolution = field.name === "imageResolution" && field.type === "string";
@@ -250,9 +251,9 @@ export function ImageParameterSchemaEditor({ definitions, parameters, disabled, 
                         <div className="flex items-center justify-between gap-3">
                             <div>
                                 <span className="text-sm font-medium">{field.label}</span>
-                                {definition.pricing ? <span className="ml-2 text-xs text-foreground/50">可计价</span> : null}
+                                {definition.pricing ? <span className="ml-2 text-xs text-foreground/50">{tr("可计价")}</span> : null}
                             </div>
-                            <Switch aria-label={`启用${field.label}`} checked={field.enabled !== false} disabled={disabled || definition.required} onChange={(enabled) => update(field.name, { enabled })} />
+                            <Switch aria-label={tr("启用{0}", field.label)} checked={field.enabled !== false} disabled={disabled || definition.required} onChange={(enabled) => update(field.name, { enabled })} />
                         </div>
                         {field.description ? <p className="text-xs text-foreground/55">{field.description}</p> : null}
                         {field.enabled !== false ? (
@@ -260,10 +261,10 @@ export function ImageParameterSchemaEditor({ definitions, parameters, disabled, 
                                 {definition.values?.length || field.type === "string" ? (
                                     <div className="space-y-2 text-xs">
                                         <label className="block space-y-2">
-                                            <span>支持值{!definition.values?.length ? "（留空允许自由输入）" : ""}</span>
+                                            <span>{tr("支持值")}{!definition.values?.length ? tr("（留空允许自由输入）") : ""}</span>
                                             <Select
                                                 className="w-full"
-                                                ariaLabel={`${field.label}支持值`}
+                                                ariaLabel={tr("{0}支持值", field.label)}
                                                 mode={definition.values?.length ? "multiple" : "tags"}
                                                 disabled={disabled}
                                                 value={(field.values || []).map(String)}
@@ -272,13 +273,13 @@ export function ImageParameterSchemaEditor({ definitions, parameters, disabled, 
                                                     value: String(v),
                                                 }))}
                                                 tokenSeparators={[",", "，"]}
-                                                placeholder={isResolution ? "输入后按回车，或点击下方档位" : undefined}
+                                                placeholder={isResolution ? tr("输入后按回车，或点击下方档位") : undefined}
                                                 onChange={updateValues}
                                             />
                                         </label>
                                         {quickResolutionChoices.length ? (
                                             <div className="image-size-presets-editor">
-                                                <div className="image-size-default-options" role="group" aria-label="分辨率快捷选择">
+                                                <div className="image-size-default-options" role="group" aria-label={tr("分辨率快捷选择")}>
                                                     {quickResolutionChoices.map((tier) => {
                                                         const selected = (field.values || []).includes(tier);
                                                         return (
@@ -294,7 +295,7 @@ export function ImageParameterSchemaEditor({ definitions, parameters, disabled, 
                                                         );
                                                     })}
                                                 </div>
-                                                <p className="image-size-hint">点选模型支持的档位，再次点击可移除。{!definition.values?.length ? "其他档位可在上方输入后按回车添加。" : ""}</p>
+                                                <p className="image-size-hint">{tr("点选模型支持的档位，再次点击可移除。")}{!definition.values?.length ? tr("其他档位可在上方输入后按回车添加。") : ""}</p>
                                             </div>
                                         ) : null}
                                     </div>
@@ -302,10 +303,10 @@ export function ImageParameterSchemaEditor({ definitions, parameters, disabled, 
                                 {(field.type === "number" || field.type === "integer") && !definition.values?.length ? (
                                     <div className="grid grid-cols-2 gap-2">
                                         <label className="space-y-2 text-xs">
-                                            <span>最小值</span>
+                                            <span>{tr("最小值")}</span>
                                             <InputNumber
                                                 className="w-full"
-                                                aria-label={`${field.label}最小值`}
+                                                aria-label={tr("{0}最小值", field.label)}
                                                 disabled={disabled}
                                                 min={definition.min}
                                                 max={field.max}
@@ -314,10 +315,10 @@ export function ImageParameterSchemaEditor({ definitions, parameters, disabled, 
                                             />
                                         </label>
                                         <label className="space-y-2 text-xs">
-                                            <span>最大值</span>
+                                            <span>{tr("最大值")}</span>
                                             <InputNumber
                                                 className="w-full"
-                                                aria-label={`${field.label}最大值`}
+                                                aria-label={tr("{0}最大值", field.label)}
                                                 disabled={disabled}
                                                 min={field.min}
                                                 max={definition.max}
@@ -328,7 +329,7 @@ export function ImageParameterSchemaEditor({ definitions, parameters, disabled, 
                                     </div>
                                 ) : null}
                                 <div className="space-y-2 text-xs">
-                                    <span>默认值</span>
+                                    <span>{tr("默认值")}</span>
                                     <ImageParameterInput field={field} value={field.default} disabled={disabled} onChange={(value) => update(field.name, { default: value })} />
                                 </div>
                             </div>
@@ -372,7 +373,7 @@ export function ImageParameterSizeEditor({ profile, definition, disabled, onChan
         const value = draft.trim().replace(/\s/g, "").replace("：", ":");
         const parts = value.split(":").map(Number);
         if (parts.length !== 2 || parts.some((v) => !Number.isFinite(v) || v <= 0)) {
-            setError("请输入正数比例，例如 17:11");
+            setError(tr("请输入正数比例，例如 17:11"));
             return;
         }
         if (!profile.size.values.includes(value)) toggle(value);
@@ -385,20 +386,20 @@ export function ImageParameterSizeEditor({ profile, definition, disabled, onChan
         <section className="admin-capability-parameter-card admin-image-size-card space-y-3 rounded-lg border border-border p-4">
             <div className="flex items-center justify-between gap-3">
                 <div>
-                    <h3 className="text-sm font-medium">尺寸参数</h3>
-                    <p className="text-xs text-foreground/55">{grouped ? "按分辨率配置可用画幅，直接点选或输入比例" : "直接点选支持的比例"}</p>
+                    <h3 className="text-sm font-medium">{tr("尺寸参数")}</h3>
+                    <p className="text-xs text-foreground/55">{grouped ? tr("按分辨率配置可用画幅，直接点选或输入比例") : tr("直接点选支持的比例")}</p>
                 </div>
-                <Switch aria-label={`启用${field.label}`} disabled={disabled || definition.required} checked={field.enabled !== false} onChange={(enabled) => updateField({ enabled })} />
+                <Switch aria-label={tr("启用{0}", field.label)} disabled={disabled || definition.required} checked={field.enabled !== false} onChange={(enabled) => updateField({ enabled })} />
             </div>
             {!grouped && pixelSize && singleTier === undefined && (profile.size.presets?.length ?? 0) > 0 ? (
                 <p role="alert" className="image-size-error">
-                    已有多组尺寸，请先开启分辨率并设置默认档位，再关闭分辨率。
+                    {tr("已有多组尺寸，请先开启分辨率并设置默认档位，再关闭分辨率。")}
                 </p>
             ) : null}
             {field.enabled !== false ? (
                 grouped && !tiers.length ? (
                     <p role="status" className="image-size-hint">
-                        请先在上方分辨率中选择支持的档位，再配置各档位的比例和尺寸。
+                        {tr("请先在上方分辨率中选择支持的档位，再配置各档位的比例和尺寸。")}
                     </p>
                 ) : grouped || pixelSize ? (
                     <ImageSizePresetsEditor
@@ -413,7 +414,7 @@ export function ImageParameterSizeEditor({ profile, definition, disabled, onChan
                 ) : (
                     <>
                         <div className="image-size-picker">
-                            <div className="image-size-ratios" role="group" aria-label="支持的宽高比">
+                            <div className="image-size-ratios" role="group" aria-label={tr("支持的宽高比")}>
                                 {ratios.map((ratio) => (
                                     <button type="button" key={ratio} disabled={disabled} aria-pressed={profile.size.values.includes(ratio)} onClick={() => toggle(ratio)}>
                                         {ratio}
@@ -423,16 +424,16 @@ export function ImageParameterSizeEditor({ profile, definition, disabled, onChan
                         </div>
                         {!definition.values?.length ? (
                             <div className="image-size-preset-add">
-                                <Input aria-label="自定义比例" placeholder="其他比例，如 17:11" value={draft} disabled={disabled} onChange={(e) => setDraft(e.target.value)} onPressEnter={addRatio} />
+                                <Input aria-label={tr("自定义比例")} placeholder={tr("其他比例，如 17:11")} value={draft} disabled={disabled} onChange={(e) => setDraft(e.target.value)} onPressEnter={addRatio} />
                                 <button type="button" disabled={disabled || !draft.trim()} onClick={addRatio}>
-                                    添加
+                                    {tr("添加")}
                                 </button>
                             </div>
                         ) : null}
                         {error ? <p role="alert">{error}</p> : null}
                         <div className="image-size-defaults">
-                            <strong>默认输出</strong>
-                            <div className="image-size-default-options" role="group" aria-label="默认输出">
+                            <strong>{tr("默认输出")}</strong>
+                            <div className="image-size-default-options" role="group" aria-label={tr("默认输出")}>
                                 {profile.size.values.map((value) => (
                                     <button type="button" key={value} disabled={disabled} aria-pressed={value === profile.size.default} onClick={() => updateField({ default: value })}>
                                         {value}
@@ -466,8 +467,8 @@ export function ImagePixelMappingEditor({ profile, disabled, onChange }: { profi
     return (
         <section className="rounded-lg border border-border p-4 space-y-3">
             <div>
-                <h3 className="text-sm font-medium">比例对应的像素尺寸</h3>
-                <p className="mt-1 text-xs leading-relaxed text-foreground/55">此接口接收像素。按已启用的分辨率和比例填写尺寸，保存后用于请求换算。</p>
+                <h3 className="text-sm font-medium">{tr("比例对应的像素尺寸")}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-foreground/55">{tr("此接口接收像素。按已启用的分辨率和比例填写尺寸，保存后用于请求换算。")}</p>
             </div>
             <div className="space-y-2">
                 {rows.map((preset, index) => (
@@ -476,12 +477,12 @@ export function ImagePixelMappingEditor({ profile, disabled, onChange }: { profi
                             {preset.tier ? `${preset.tier.toUpperCase()} · ` : ""}
                             {preset.ratio}
                         </span>
-                        <InputNumber className="w-full" aria-label={`${preset.tier} ${preset.ratio} 宽度`} min={1} precision={0} disabled={disabled} value={preset.width || null} placeholder="宽度" onChange={(v) => update(index, "width", v)} />
-                        <InputNumber className="w-full" aria-label={`${preset.tier} ${preset.ratio} 高度`} min={1} precision={0} disabled={disabled} value={preset.height || null} placeholder="高度" onChange={(v) => update(index, "height", v)} />
+                        <InputNumber className="w-full" aria-label={tr("{0} {1} 宽度", preset.tier, preset.ratio)} min={1} precision={0} disabled={disabled} value={preset.width || null} placeholder={tr("宽度")} onChange={(v) => update(index, "width", v)} />
+                        <InputNumber className="w-full" aria-label={tr("{0} {1} 高度", preset.tier, preset.ratio)} min={1} precision={0} disabled={disabled} value={preset.height || null} placeholder={tr("高度")} onChange={(v) => update(index, "height", v)} />
                     </div>
                 ))}
             </div>
-            <p className="text-xs text-foreground/60">尺寸以供应商支持范围为准，也可将画幅支持值直接配置为像素尺寸。</p>
+            <p className="text-xs text-foreground/60">{tr("尺寸以供应商支持范围为准，也可将画幅支持值直接配置为像素尺寸。")}</p>
         </section>
     );
 }
@@ -566,7 +567,7 @@ function ImageCountStepper({
             <input
                 type="text"
                 inputMode="numeric"
-                aria-label="自定义生成张数"
+                aria-label={tr("自定义生成张数")}
                 value={draftValue}
                 onChange={handleInputChange}
                 onBlur={handleInputBlur}
@@ -588,8 +589,8 @@ function ImageCountStepper({
                     onClick={handleStepUp}
                     disabled={value >= max && isSelected}
                     className="flex flex-1 w-full items-center justify-center hover:bg-black/15 dark:hover:bg-white/15 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    title="增加 1 张"
-                    aria-label="增加 1 张"
+                    title={tr("增加 1 张")}
+                    aria-label={tr("增加 1 张")}
                 >
                     <ChevronUp className="size-2.5 opacity-70" />
                 </button>
@@ -599,8 +600,8 @@ function ImageCountStepper({
                     onClick={handleStepDown}
                     disabled={value <= 1 && isSelected}
                     className="flex flex-1 w-full items-center justify-center hover:bg-black/15 dark:hover:bg-white/15 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    title="减少 1 张"
-                    aria-label="减少 1 张"
+                    title={tr("减少 1 张")}
+                    aria-label={tr("减少 1 张")}
                 >
                     <ChevronDown className="size-2.5 opacity-70" />
                 </button>

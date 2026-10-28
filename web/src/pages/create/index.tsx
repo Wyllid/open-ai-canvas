@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { App, Spin } from "antd";
 import { Tooltip } from "@/components/ui/base/tooltip";
@@ -329,7 +330,7 @@ export default function CreatePage() {
             console.warn("创作任务状态同步失败", error);
             if (!taskSyncWarningRef.current) {
                 taskSyncWarningRef.current = true;
-                toast.warning("任务状态暂时无法同步，请稍后刷新");
+                toast.warning(tr("任务状态暂时无法同步，请稍后刷新"));
             }
         };
         let applyChain = Promise.resolve();
@@ -434,7 +435,7 @@ export default function CreatePage() {
                 id: asset.id,
                 title: asset.title,
                 category: asset.category || "other",
-                kindLabel: asset.kind === "video" ? "视频" : asset.kind === "audio" ? "音频" : "图片",
+                kindLabel: asset.kind === "video" ? tr("视频") : asset.kind === "audio" ? tr("音频") : tr("图片"),
                 asset,
                 searchText: (asset.tags || []).join(" "),
                 disabledReason: creationLibraryDisabledReason(mode, asset.kind, videoReferenceLimits),
@@ -476,8 +477,8 @@ export default function CreatePage() {
         }));
         const assetIds = settled.flatMap((entry) => entry.status === "fulfilled" && entry.value ? [entry.value] : []);
         const failed = settled.filter((entry) => entry.status === "rejected");
-        if (assetIds.length) toast.success(`${assetIds.length} 个素材已上传到素材库并自动选中`);
-        if (failed.length) toast.error(`${failed.length} 个素材上传失败，请重试`);
+        if (assetIds.length) toast.success(tr("{0} 个素材已上传到素材库并自动选中", assetIds.length));
+        if (failed.length) toast.error(tr("{0} 个素材上传失败，请重试", failed.length));
         return assetIds;
     };
 
@@ -493,7 +494,7 @@ export default function CreatePage() {
             const reconciled = mode === "video" && videoReferenceLimits
                 ? reconcileCreationAttachmentLimits(candidates, [], videoReferenceLimits)
                 : reconcileCreationAttachmentLimit(candidates, [], maxReferences);
-            if (reconciled.attachments.length < candidates.length) toast.warning("部分素材超出当前模型的参考内容上限，未添加到创作中");
+            if (reconciled.attachments.length < candidates.length) toast.warning(tr("部分素材超出当前模型的参考内容上限，未添加到创作中"));
             return reconciled.attachments;
         });
         setLibraryOpen(false);
@@ -529,8 +530,8 @@ export default function CreatePage() {
     const replaceAttachmentReference = useCallback((targetAttachmentId: string, replacement: CreationAttachment) => {
         const currentAttachments = attachmentsRef.current;
         const target = currentAttachments.find((attachment) => attachment.id === targetAttachmentId);
-        if (!target) throw new Error("要替换的参考图不存在");
-        if (creationAttachmentKind(target) !== "image" || creationAttachmentKind(replacement) !== "image") throw new Error("目前只支持替换提示词中的图片引用");
+        if (!target) throw new Error(tr("要替换的参考图不存在"));
+        if (creationAttachmentKind(target) !== "image" || creationAttachmentKind(replacement) !== "image") throw new Error(tr("目前只支持替换提示词中的图片引用"));
         if (target.id === replacement.id) return false;
 
         const result = replaceCreationAttachmentReference(promptRef.current, currentAttachments, targetAttachmentId, replacement);
@@ -543,9 +544,9 @@ export default function CreatePage() {
 
     const replaceReferenceFromTrack = useCallback((targetAttachmentId: string, replacement: CreationAttachment) => {
         try {
-            if (replaceAttachmentReference(targetAttachmentId, replacement)) toast.success("参考图已替换，槽位不变，提示词无需修改");
+            if (replaceAttachmentReference(targetAttachmentId, replacement)) toast.success(tr("参考图已替换，槽位不变，提示词无需修改"));
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "参考图替换失败");
+            toast.error(error instanceof Error ? error.message : tr("参考图替换失败"));
         }
     }, [replaceAttachmentReference, toast]);
 
@@ -553,17 +554,17 @@ export default function CreatePage() {
         if (busy || referenceReplacementBusy) return;
         const file = files.find((item) => item.type.startsWith("image/"));
         if (!file) {
-            toast.warning("请拖入图片文件进行替换");
+            toast.warning(tr("请拖入图片文件进行替换"));
             return;
         }
         setReferenceReplacementBusy(true);
         try {
             const { asset, attachment } = await uploadCreationAsset(file);
-            if (creationAttachmentKind(attachment) !== "image") throw new Error("上传结果不是可用图片");
+            if (creationAttachmentKind(attachment) !== "image") throw new Error(tr("上传结果不是可用图片"));
             if (asset) addAsset(asset);
-            if (replaceAttachmentReference(targetAttachmentId, attachment)) toast.success("参考图已替换，槽位不变，提示词无需修改");
+            if (replaceAttachmentReference(targetAttachmentId, attachment)) toast.success(tr("参考图已替换，槽位不变，提示词无需修改"));
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "参考图上传或替换失败");
+            toast.error(error instanceof Error ? error.message : tr("参考图上传或替换失败"));
         } finally {
             setReferenceReplacementBusy(false);
         }
@@ -577,7 +578,7 @@ export default function CreatePage() {
         if (!submitToken) {
             // 以前这里是静默返回：上一条还在生成时点发送毫无反应，只能靠猜。
             releaseRetryLock();
-            toast.warning("上一条还在提交中，稍等片刻再发送");
+            toast.warning(tr("上一条还在提交中，稍等片刻再发送"));
             return;
         }
         const releaseSubmitGate = () => submitGateRef.current.release(submitToken);
@@ -594,13 +595,13 @@ export default function CreatePage() {
             return;
         }
         if (!selectedModel) {
-            toast.warning(`请先在设置中配置${modeLabels[mode]}模型`);
+            toast.warning(tr("请先在设置中配置{0}模型", modeLabels[mode]));
             releaseRetryLock();
             releaseSubmitGate();
             return;
         }
         if (mode === "video" && !videoDurationAllowed(videoProfile, Number(seconds))) {
-            toast.error("当前模型不支持所选视频时长，请重新选择");
+            toast.error(tr("当前模型不支持所选视频时长，请重新选择"));
             releaseRetryLock();
             releaseSubmitGate();
             return;
@@ -609,7 +610,7 @@ export default function CreatePage() {
             ? reconcileCreationAttachmentLimits(attachments, mentionReferences, videoReferenceLimits)
             : reconcileCreationAttachmentLimit(attachments, mentionReferences, maxReferences);
         if (reconciledAttachments.attachments !== attachments) {
-            toast.warning("参考内容正在按当前模型能力调整，请稍后重试");
+            toast.warning(tr("参考内容正在按当前模型能力调整，请稍后重试"));
             releaseRetryLock();
             releaseSubmitGate();
             return;
@@ -630,7 +631,7 @@ export default function CreatePage() {
         try {
             runtime = await loadCreationRuntime();
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "生成运行时加载失败");
+            toast.error(error instanceof Error ? error.message : tr("生成运行时加载失败"));
             releaseRetryLock();
             releaseSubmitGate();
             return;
@@ -644,7 +645,7 @@ export default function CreatePage() {
                 selectedSkillIds: skillReferences.map((skill) => skill.skillId),
             });
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "技能上下文加载失败");
+            toast.error(error instanceof Error ? error.message : tr("技能上下文加载失败"));
             releaseRetryLock();
             releaseSubmitGate();
             return;
@@ -721,7 +722,7 @@ export default function CreatePage() {
                     onTextDelta: textStreaming ? (value) => updateOriginAssistant((item) => ({ ...item, content: value })) : undefined,
                     ...retryContext,
                 }));
-                if (!result.text?.trim()) throw new Error("后端任务没有返回文本");
+                if (!result.text?.trim()) throw new Error(tr("后端任务没有返回文本"));
                 updateOriginAssistant((item) => ({ ...item, content: result.text || "", reasoning: result.reasoning }));
             } else if (mode === "image") {
                 const taskCount = Math.max(1, Math.min(imageProfile.maxOutputs, Math.floor(Number(count) || 1)));
@@ -748,13 +749,13 @@ export default function CreatePage() {
                 });
                 const taskFailures = settled.filter((entry): entry is PromiseRejectedResult => entry.status === "rejected");
                 const storedImages = await Promise.allSettled(generatedTasks.map(async ({ result, taskId, batchIndex }) => {
-                    if (!taskId) throw new Error("生成任务缺少稳定任务标识");
+                    if (!taskId) throw new Error(tr("生成任务缺少稳定任务标识"));
                     const task = completedCreationGenerationTask(runtime, { taskId, task: boundTasks.get(taskId), mode: "image", prompt: expandedPrompt, result, conversationId: activeConversation.id, messageId: assistantMessage.id, batchIndex, batchCount: taskCount });
                     const materialized = await runtime.consumeGenerationTaskMessage(task, assistantMessage.id, async ({ resultUrls, resultStorageKeys, effectKey }) => {
-                        await updateOriginAssistant((item) => runtime.applyGenerationConsumerEffect(item, effectKey, (current) => ({ ...current, status: "done" as const, content: "图片已生成", ...(resultUrls.length ? { resultUrls: Array.from(new Set([...(current.resultUrls || []), ...resultUrls])) } : {}), ...(resultStorageKeys.length ? { resultStorageKeys: Array.from(new Set([...(current.resultStorageKeys || []), ...resultStorageKeys])) } : {}) })).value);
+                        await updateOriginAssistant((item) => runtime.applyGenerationConsumerEffect(item, effectKey, (current) => ({ ...current, status: "done" as const, content: tr("图片已生成"), ...(resultUrls.length ? { resultUrls: Array.from(new Set([...(current.resultUrls || []), ...resultUrls])) } : {}), ...(resultStorageKeys.length ? { resultStorageKeys: Array.from(new Set([...(current.resultStorageKeys || []), ...resultStorageKeys])) } : {}) })).value);
                     }, { signal: requestLifecycle.signal });
                     const urls = runtime.generationTaskMaterializedUrls(materialized);
-                    if (!urls.length) throw new Error("图片结果资源不可用");
+                    if (!urls.length) throw new Error(tr("图片结果资源不可用"));
                     return urls;
                 }));
                 const resultUrls = storedImages.flatMap((entry) => entry.status === "fulfilled" ? entry.value : []);
@@ -762,10 +763,10 @@ export default function CreatePage() {
                 const failedCount = taskFailures.length + resourceFailures.length;
                 if (!resultUrls.length) {
                     const reason = taskFailures[0]?.reason || resourceFailures[0]?.reason;
-                    throw reason instanceof Error ? reason : new Error("后端任务没有返回图片");
+                    throw reason instanceof Error ? reason : new Error(tr("后端任务没有返回图片"));
                 }
-                if (failedCount) toast.warning(`${resultUrls.length} 张图片已生成，${failedCount} 张生成失败`);
-                updateOriginAssistant((item) => ({ ...item, content: failedCount ? `${resultUrls.length} 张图片已生成，${failedCount} 张失败` : "图片已生成" }));
+                if (failedCount) toast.warning(tr("{0} 张图片已生成，{1} 张生成失败", resultUrls.length, failedCount));
+                updateOriginAssistant((item) => ({ ...item, content: failedCount ? tr("{0} 张图片已生成，{1} 张失败", resultUrls.length, failedCount) : tr("图片已生成") }));
             } else {
                 const result = await runtime.runGenerationOperationOnce(retryContext?.clientOperationId, () => runtime.runBackendGenerationTask({
                     mode: "video",
@@ -779,23 +780,23 @@ export default function CreatePage() {
                     onTaskUpdate: bindTask,
                     ...retryContext,
                 }));
-                if (!result.video?.dataUrl) throw new Error("后端任务没有返回视频");
+                if (!result.video?.dataUrl) throw new Error(tr("后端任务没有返回视频"));
                 const taskId = Array.from(boundTaskIds)[0];
-                if (!taskId) throw new Error("生成任务缺少稳定任务标识");
+                if (!taskId) throw new Error(tr("生成任务缺少稳定任务标识"));
                 const task = completedCreationGenerationTask(runtime, { taskId, task: boundTasks.get(taskId), mode: "video", prompt: expandedPrompt, result, conversationId: activeConversation.id, messageId: assistantMessage.id });
                 const materialized = await runtime.consumeGenerationTaskMessage(task, assistantMessage.id, async ({ resultUrls, resultStorageKeys, effectKey }) => {
-                    await updateOriginAssistant((item) => runtime.applyGenerationConsumerEffect(item, effectKey, (current) => ({ ...current, status: "done" as const, content: "视频已生成", resultUrls, ...(resultStorageKeys.length ? { resultStorageKeys } : {}) })).value);
+                    await updateOriginAssistant((item) => runtime.applyGenerationConsumerEffect(item, effectKey, (current) => ({ ...current, status: "done" as const, content: tr("视频已生成"), resultUrls, ...(resultStorageKeys.length ? { resultStorageKeys } : {}) })).value);
                 }, { signal: requestLifecycle.signal });
-                if (!runtime.generationTaskMaterializedUrls(materialized)[0]) throw new Error("视频结果资源不可用");
+                if (!runtime.generationTaskMaterializedUrls(materialized)[0]) throw new Error(tr("视频结果资源不可用"));
             }
             updateOriginAssistant((item) => ({ ...item, status: "done" }));
         } catch (error) {
             if (runtime.isGenerationTaskCancelled(error, requestLifecycle.signal)) {
-                updateOriginAssistant((item) => ({ ...item, status: "cancelled", content: "已停止" }));
+                updateOriginAssistant((item) => ({ ...item, status: "cancelled", content: tr("已停止") }));
                 return;
             }
             const message = generationErrorMessage(error);
-            updateOriginAssistant((item) => ({ ...item, status: "error", error: message, generationErrorCode: item.generationErrorCode || generationErrorCode(error), generationOperation: item.generationOperation || (mode === "video" ? videoOperation : mode), createdAt: assistantMessage.createdAt, content: "生成失败" }));
+            updateOriginAssistant((item) => ({ ...item, status: "error", error: message, generationErrorCode: item.generationErrorCode || generationErrorCode(error), generationOperation: item.generationOperation || (mode === "video" ? videoOperation : mode), createdAt: assistantMessage.createdAt, content: tr("生成失败") }));
         } finally {
             for (const taskId of boundTaskIds) activeGenerationTaskIdsRef.current.delete(taskId);
             requestLifecycle.release();
@@ -840,7 +841,7 @@ export default function CreatePage() {
                 const resultUrls = item.resultUrls || [];
                 if (!resultStorageKeys.length && !resultUrls.length) return [];
                 const ids = creationResultAssetIds(assets, { messageId: item.id, taskIds: item.taskIds || [], resultUrls, resultStorageKeys });
-                if (ids.length !== Math.max(resultStorageKeys.length, resultUrls.length)) throw new Error("部分生成素材还未保存完成，请稍后转入画布。");
+                if (ids.length !== Math.max(resultStorageKeys.length, resultUrls.length)) throw new Error(tr("部分生成素材还未保存完成，请稍后转入画布。"));
                 return ids;
             });
             const referenceKeys = new Set(source.messages.flatMap((item) => (item.attachments || []).map((attachment) => attachment.storageKey).filter(Boolean)));
@@ -854,7 +855,7 @@ export default function CreatePage() {
             setConversations(next);
             await saveCreationConversations(next);
             if (scope !== getActiveUserScope()) return;
-            if (result.syncError) toast.warning("会话已保存在本机，云端同步尚未完成。");
+            if (result.syncError) toast.warning(tr("会话已保存在本机，云端同步尚未完成。"));
             const params = new URLSearchParams({ conversation: result.sessionId });
             if (assetIds.length) {
                 params.set("mode", "handoff");
@@ -862,7 +863,7 @@ export default function CreatePage() {
             }
             navigate(`/canvas/${result.id}?${params.toString()}`);
         } catch (cause) {
-            if (scope === getActiveUserScope()) toast.error(cause instanceof Error ? cause.message : "转入画布失败，原会话已保留");
+            if (scope === getActiveUserScope()) toast.error(cause instanceof Error ? cause.message : tr("转入画布失败，原会话已保留"));
         } finally { openingCanvasRef.current = false; setOpeningCanvas(false); }
     };
 
@@ -876,15 +877,15 @@ export default function CreatePage() {
     };
 
     const confirmDeleteConversation = (conversation: CreationConversation) => {
-        const title = conversation.title.trim() || "新创作";
+        const title = conversation.title.trim() || tr("新创作");
         const label = title.length > 32 ? `${title.slice(0, 32)}...` : title;
         modal.confirm({
             className: "workspace-modal workspace-modal-compact",
-            title: "删除历史对话？",
-            content: `确定删除「${label}」吗？这只会删除历史对话记录，不会删除已上传或生成的任何素材。此操作不可撤销。`,
-            okText: "删除对话",
+            title: tr("删除历史对话？"),
+            content: tr("确定删除「{0}」吗？这只会删除历史对话记录，不会删除已上传或生成的任何素材。此操作不可撤销。", label),
+            okText: tr("删除对话"),
             okButtonProps: { danger: true },
-            cancelText: "保留",
+            cancelText: tr("保留"),
             onOk: async () => {
                 try {
                     const remaining = removeCreationConversationSnapshot(conversationsRef.current, conversation.id);
@@ -902,9 +903,9 @@ export default function CreatePage() {
                         setAttachments([]);
                         setDraftReferences([]);
                     }
-                    toast.success("历史对话已删除，素材仍保留");
+                    toast.success(tr("历史对话已删除，素材仍保留"));
                 } catch (error) {
-                    toast.error(error instanceof Error ? error.message : "历史对话删除失败");
+                    toast.error(error instanceof Error ? error.message : tr("历史对话删除失败"));
                     throw error;
                 }
             },
@@ -917,7 +918,7 @@ export default function CreatePage() {
         const next = updateCreationConversationSnapshot(conversationsRef.current, conversation.id, (item) => ({ ...item, title: nextTitle }));
         conversationsRef.current = next;
         setConversations(next);
-        void saveCreationConversations(next).catch((error) => toast.error(error instanceof Error ? error.message : "对话重命名保存失败"));
+        void saveCreationConversations(next).catch((error) => toast.error(error instanceof Error ? error.message : tr("对话重命名保存失败")));
     };
 
     const restoreMessageDraft = (item: CreationMessage) => {
@@ -949,7 +950,7 @@ export default function CreatePage() {
             updateActive((conversation) => {
                 const messages = conversation.messages.filter((message) => !removedIds.has(message.id));
                 const firstPrompt = messages.find((message) => message.role === "user")?.content.trim();
-                return { ...conversation, title: firstPrompt ? firstPrompt.slice(0, 24) : "新创作", updatedAt: new Date().toISOString(), messages };
+                return { ...conversation, title: firstPrompt ? firstPrompt.slice(0, 24) : tr("新创作"), updatedAt: new Date().toISOString(), messages };
             });
         };
         if (!retryOf) {
@@ -1065,21 +1066,21 @@ export default function CreatePage() {
                         initial={{ opacity: 0, y: -12, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: .98 }}
                         transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 360, damping: 32, mass: .8 }}>
                         <Sparkles aria-hidden="true" />
-                        <input aria-label="快捷编辑提示词" placeholder="继续描述你的创作想法…" value={prompt} disabled={busy || referenceReplacementBusy} onChange={(event) => setPrompt(event.target.value)} />
-                        <Tooltip title="展开完整创作区"><button type="button" aria-label="展开完整创作区" onClick={() => {
+                        <input aria-label={tr("快捷编辑提示词")} placeholder={tr("继续描述你的创作想法…")} value={prompt} disabled={busy || referenceReplacementBusy} onChange={(event) => setPrompt(event.target.value)} />
+                        <Tooltip title={tr("展开完整创作区")}><button type="button" aria-label={tr("展开完整创作区")} onClick={() => {
                             threadScrollRef.current?.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
                             composerFocusRef.current?.focus({ preventScroll: true });
                         }}><Maximize2 /></button></Tooltip>
                     </motion.div> : null}
                 </AnimatePresence>
                 <main ref={threadScrollRef} onScroll={handleThreadScroll} className="creation-home-scroll creation-scrollbar">
-                <section ref={launchpadRef} className="creation-launchpad" aria-label="开始创作">
+                <section ref={launchpadRef} className="creation-launchpad" aria-label={tr("开始创作")}>
                     <header className="creation-start-heading">
                         <div>
-                            <h1>和{brandName}聊聊创作想法</h1>
-                            <p>从一个画面、一个角色或一句话开始。</p>
+                            <h1>{tr("和{0}聊聊创作想法", brandName)}</h1>
+                            <p>{tr("从一个画面、一个角色或一句话开始。")}</p>
                         </div>
-                        <button type="button" className="creation-history-entry" aria-label="查看历史对话" aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)}><History aria-hidden="true" /><span>历史对话</span></button>
+                        <button type="button" className="creation-history-entry" aria-label={tr("查看历史对话")} aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)}><History aria-hidden="true" /><span>{tr("历史对话")}</span></button>
                     </header>
                     <div className={cn("creation-composer-stage is-home-mode", agentMode && "is-agent-mode")}>
                         <CreationModeTabs mode={mode} agentActive={agentMode} onAgentSelect={() => setAgentMode(true)} onModeChange={(next) => { setAgentMode(false); selectMode(next); }} />
@@ -1091,12 +1092,12 @@ export default function CreatePage() {
                     />
                 </section>
                 <CreationRecentCanvases onRequireLogin={() => setLoginDialogOpen(true)} />
-                <Suspense fallback={<div className="creation-hall-loading" role="status">正在准备灵感大厅…</div>}>
+                <Suspense fallback={<div className="creation-hall-loading" role="status">{tr("正在准备灵感大厅…")}</div>}>
                     <InspirationHall onUse={(item) => startPrompt(item.mode, fillablePrompt(item))} />
                 </Suspense>
                 {inspirationSourcesVisible ? <div className="creation-source-notice">
                     <details>
-                        <summary>素材来源</summary>
+                        <summary>{tr("素材来源")}</summary>
                         {declaredInspirationSources().map((source) => (
                             <p key={source.name ?? source.label}>
                                 {source.notice}
@@ -1140,7 +1141,7 @@ export default function CreatePage() {
             categoryLabels={{ ...creationAssetCategoryLabels, ...externalAssetSources.categoryLabels }}
             folders={externalAssetSources.folders}
             initialSelectedIds={attachments.flatMap((item) => item.id.startsWith("asset:") ? [item.id.slice(6)] : item.id.startsWith("external:") ? [item.id] : [])}
-            upload={{ accept: creationUploadAccept(mode), description: mode === "text" ? "支持图片、视频、音频和常用文档；媒体会保存到素材库" : `支持图片${mode === "video" ? "、视频和音频" : ""}，上传后保存到素材库`, onUpload: uploadLibraryAssets, external: { accept: "image/*", description: "写入当前 Eagle 文件夹；Eagle 当前支持图片文件", onUpload: (files, folderId) => externalAssetSources.uploadExternalFiles(files, folderId) } }}
+            upload={{ accept: creationUploadAccept(mode), description: mode === "text" ? tr("支持图片、视频、音频和常用文档；媒体会保存到素材库") : tr("支持图片{0}，上传后保存到素材库", mode === "video" ? tr("、视频和音频") : ""), onUpload: uploadLibraryAssets, external: { accept: "image/*", description: tr("写入当前 Eagle 文件夹；Eagle 当前支持图片文件"), onUpload: (files, folderId) => externalAssetSources.uploadExternalFiles(files, folderId) } }}
             onClose={() => setLibraryOpen(false)}
             onConfirm={handleLibrarySelect}
         /></Suspense> : null}

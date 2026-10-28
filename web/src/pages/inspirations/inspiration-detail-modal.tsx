@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Button } from "antd";
 import { Copy, ExternalLink, Heart, Pencil, Trash2, Wand2 } from "lucide-react";
 import { useState } from "react";
@@ -71,22 +72,22 @@ export function InspirationDetailModal({
                                 {item.description ? <p className="mt-1 text-xs leading-5 text-foreground/58">{item.description}</p> : null}
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
-                                <Tooltip title={favorite ? "取消收藏" : "收藏"}>
-                                    <button type="button" data-icon-only className="inspiration-icon-button" aria-label={favorite ? "取消收藏灵感" : "收藏灵感"} aria-pressed={favorite} onClick={() => onToggleFavorite(item)}>
+                                <Tooltip title={favorite ? tr("取消收藏") : tr("收藏")}>
+                                    <button type="button" data-icon-only className="inspiration-icon-button" aria-label={favorite ? tr("取消收藏灵感") : tr("收藏灵感")} aria-pressed={favorite} onClick={() => onToggleFavorite(item)}>
                                         <span aria-hidden="true">
                                             <Heart className="size-4" fill={favorite ? "currentColor" : "none"} />
                                         </span>
                                     </button>
                                 </Tooltip>
-                                <Tooltip title="编辑">
-                                    <button type="button" data-icon-only className="inspiration-icon-button" aria-label="编辑灵感" onClick={() => onEdit(item)}>
+                                <Tooltip title={tr("编辑")}>
+                                    <button type="button" data-icon-only className="inspiration-icon-button" aria-label={tr("编辑灵感")} onClick={() => onEdit(item)}>
                                         <span aria-hidden="true">
                                             <Pencil className="size-4" />
                                         </span>
                                     </button>
                                 </Tooltip>
-                                <Tooltip title={custom ? "删除" : "从库中隐藏"}>
-                                    <button type="button" data-icon-only className="inspiration-icon-button" aria-label={custom ? "删除灵感" : "隐藏灵感"} onClick={() => onDelete(item)}>
+                                <Tooltip title={custom ? tr("删除") : tr("从库中隐藏")}>
+                                    <button type="button" data-icon-only className="inspiration-icon-button" aria-label={custom ? tr("删除灵感") : tr("隐藏灵感")} onClick={() => onDelete(item)}>
                                         <span aria-hidden="true">
                                             <Trash2 className="size-4" />
                                         </span>
@@ -97,18 +98,18 @@ export function InspirationDetailModal({
 
                         <div className="flex flex-col gap-2">
                             {showSources ? (
-                                <MetaRow label="来源">
-                                    {source?.name ?? (item.sourceId && item.sourceId !== "original" ? (source?.label ?? "未标注来源") : "原创")}
+                                <MetaRow label={tr("来源")}>
+                                    {source?.name ?? (item.sourceId && item.sourceId !== "original" ? (source?.label ?? tr("未标注来源")) : tr("原创"))}
                                     {item.credit ? ` · ${item.credit}` : ""}
                                 </MetaRow>
                             ) : null}
-                            <MetaRow label="分类">{categoryLabel(item)}</MetaRow>
-                            <MetaRow label="类型">
+                            <MetaRow label={tr("分类")}>{categoryLabel(item)}</MetaRow>
+                            <MetaRow label={tr("类型")}>
                                 {modeLabels[item.mode]}
                                 {item.ratio ? ` · ${item.ratio}` : ""}
                             </MetaRow>
                             {item.tags?.length ? (
-                                <MetaRow label="标签">
+                                <MetaRow label={tr("标签")}>
                                     <span className="flex flex-wrap gap-2">
                                         {item.tags.map((tag) => (
                                             <span key={tag} className="inspiration-chip">
@@ -119,20 +120,20 @@ export function InspirationDetailModal({
                                 </MetaRow>
                             ) : null}
                             {showSources && item.sourceUrl ? (
-                                <MetaRow label="原页">
+                                <MetaRow label={tr("原页")}>
                                     <a className="inline-flex items-center gap-1 text-primary hover:underline" href={item.sourceUrl} target="_blank" rel="noreferrer">
-                                        查看上游内容 <ExternalLink className="size-3" />
+                                        {tr("查看上游内容")} <ExternalLink className="size-3" />
                                     </a>
                                 </MetaRow>
                             ) : null}
                         </div>
 
-                        <PromptSection label={item.promptZh ? "提示词 · 中文" : "提示词"} text={item.promptZh || item.prompt} onCopy={onCopy} />
-                        {item.promptZh && item.prompt !== item.promptZh ? <PromptSection label="提示词 · 原文" text={item.prompt} onCopy={onCopy} /> : null}
+                        <PromptSection label={item.promptZh ? tr("提示词 · 中文") : tr("提示词")} text={item.promptZh || item.prompt} onCopy={onCopy} />
+                        {item.promptZh && item.prompt !== item.promptZh ? <PromptSection label={tr("提示词 · 原文")} text={item.prompt} onCopy={onCopy} /> : null}
                     </div>
 
                     <div className="flex shrink-0 items-center justify-end gap-2 border-t border-foreground/8 px-5 py-3">
-                        <Button onClick={onClose}>关闭</Button>
+                        <Button onClick={onClose}>{tr("关闭")}</Button>
                         <Button
                             type="primary"
                             icon={<Wand2 className="size-4" />}
@@ -142,7 +143,7 @@ export function InspirationDetailModal({
                                 onUse(item);
                             }}
                         >
-                            用这个创意创作
+                            {tr("用这个创意创作")}
                         </Button>
                     </div>
                 </div>
@@ -162,7 +163,7 @@ function PromptSection({ label, text, onCopy }: { label: string; text: string; o
             <div className="flex items-center justify-between gap-2">
                 <h3 className="text-xs font-medium text-foreground/58">{label}</h3>
                 <Button size="small" icon={<Copy className="size-3.5" />} onClick={() => onCopy(text, label)}>
-                    复制
+                    {tr("复制")}
                 </Button>
             </div>
             <div className="inspiration-prompt-block">{text}</div>

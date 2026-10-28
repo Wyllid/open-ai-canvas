@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { App, Button } from "antd";
 import { AntTooltip as Tooltip } from "@/components/ui/base/tooltip/ant-tooltip";
@@ -9,23 +10,23 @@ import { getDramaJob, type DramaJob, type DramaJobAttempt, type DramaJobTask } f
 import { MediaThumb, useResourceMediaUrl } from "../drama-shared";
 
 export const JOB_KIND_LABEL: Record<DramaJob["kind"], string> = {
-    bible: "作品圣经",
-    plan: "分集规划",
-    cast_image: "参考图",
-    script: "剧本与分镜",
-    segment_prompt: "段视频提示词",
-    segment_video: "段视频",
-    render: "合成成片",
+    bible: tr("作品圣经"),
+    plan: tr("分集规划"),
+    cast_image: tr("参考图"),
+    script: tr("剧本与分镜"),
+    segment_prompt: tr("段视频提示词"),
+    segment_video: tr("段视频"),
+    render: tr("合成成片"),
 };
 
 export const JOB_STATUS_LABEL: Record<string, string> = {
-    queued: "排队中",
-    running: "生成中",
-    succeeded: "已完成",
-    failed: "失败",
-    canceled: "已取消",
-    cancelled: "已取消",
-    rejected: "提交被拒绝",
+    queued: tr("排队中"),
+    running: tr("生成中"),
+    succeeded: tr("已完成"),
+    failed: tr("失败"),
+    canceled: tr("已取消"),
+    cancelled: tr("已取消"),
+    rejected: tr("提交被拒绝"),
 };
 
 export function JobStatusIcon({ status }: { status: string }) {
@@ -42,7 +43,7 @@ export function formatJobTime(value?: string) {
     if (Number.isNaN(date.getTime())) return "—";
     const today = new Date();
     const sameDay = date.toDateString() === today.toDateString();
-    return date.toLocaleString("zh-CN", sameDay ? { hour: "2-digit", minute: "2-digit", second: "2-digit" } : { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleString(currentLocale(), sameDay ? { hour: "2-digit", minute: "2-digit", second: "2-digit" } : { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
 function elapsed(start?: string, end?: string) {
@@ -50,17 +51,17 @@ function elapsed(start?: string, end?: string) {
     const ms = new Date(end).getTime() - new Date(start).getTime();
     if (!Number.isFinite(ms) || ms < 0) return "";
     const seconds = Math.round(ms / 1000);
-    return seconds >= 60 ? `${Math.floor(seconds / 60)} 分 ${seconds % 60} 秒` : `${seconds} 秒`;
+    return seconds >= 60 ? tr("{0} 分 {1} 秒", Math.floor(seconds / 60), seconds % 60) : tr("{0} 秒", seconds);
 }
 
 const PARAM_LABEL: Record<string, string> = {
-    size: "尺寸",
-    imageResolution: "分辨率",
-    quality: "质量",
-    count: "张数",
-    videoSeconds: "时长（秒）",
-    vquality: "清晰度",
-    videoGenerateAudio: "同步生成声音",
+    size: tr("尺寸"),
+    imageResolution: tr("分辨率"),
+    quality: tr("质量"),
+    count: tr("张数"),
+    videoSeconds: tr("时长（秒）"),
+    vquality: tr("清晰度"),
+    videoGenerateAudio: tr("同步生成声音"),
 };
 
 export function JobDetailModal({ projectId, job, onClose, onLocate }: { projectId: string; job?: DramaJob; onClose: () => void; onLocate: (job: DramaJob) => void }) {
@@ -97,34 +98,38 @@ export function JobDetailModal({ projectId, job, onClose, onLocate }: { projectI
                                     onClose();
                                 }}
                             >
-                                定位到镜头
+                                {tr("定位到镜头")}
                             </Button>
                         ) : null}
                     </header>
                     <dl className="drama-jobd-facts">
                         <div>
-                            <dt>加入队列</dt>
+                            <dt>{tr("加入队列")}</dt>
                             <dd>{formatJobTime(current.createdAt)}</dd>
                         </div>
                         <div>
-                            <dt>开始</dt>
+                            <dt>{tr("开始")}</dt>
                             <dd>{formatJobTime(current.startedAt)}</dd>
                         </div>
                         <div>
-                            <dt>结束</dt>
+                            <dt>{tr("结束")}</dt>
                             <dd>
                                 {formatJobTime(current.finishedAt)}
-                                {elapsed(current.startedAt, current.finishedAt) ? <small>用时 {elapsed(current.startedAt, current.finishedAt)}</small> : null}
+                                {elapsed(current.startedAt, current.finishedAt) ? (
+                                    <small>
+                                        {tr("用时")} {elapsed(current.startedAt, current.finishedAt)}
+                                    </small>
+                                ) : null}
                             </dd>
                         </div>
                         <div>
-                            <dt>重试</dt>
-                            <dd>{current.attempt} 次</dd>
+                            <dt>{tr("重试")}</dt>
+                            <dd>{tr("{0} 次", current.attempt)}</dd>
                         </div>
                     </dl>
                     <div className="drama-jobd-body thin-scrollbar">
-                        {query.isLoading ? <div className="drama-jobd-empty">正在读取请求记录…</div> : null}
-                        {detail && !detail.attempts.length ? <div className="drama-jobd-empty">还没有提交过请求，正在排队。</div> : null}
+                        {query.isLoading ? <div className="drama-jobd-empty">{tr("正在读取请求记录…")}</div> : null}
+                        {detail && !detail.attempts.length ? <div className="drama-jobd-empty">{tr("还没有提交过请求，正在排队。")}</div> : null}
                         {detail?.attempts.map((attempt, index) => (
                             <AttemptCard key={`${attempt.taskId || "rejected"}-${attempt.at}`} attempt={attempt} index={detail.attempts.length - index} latest={index === 0} />
                         ))}
@@ -140,13 +145,13 @@ function AttemptCard({ attempt, index, latest }: { attempt: DramaJobAttempt; ind
     const task = attempt.task;
     const copy = (text: string) =>
         void navigator.clipboard.writeText(text).then(
-            () => message.success("已复制"),
-            () => message.error("复制失败"),
+            () => message.success(tr("已复制")),
+            () => message.error(tr("复制失败")),
         );
     return (
         <article className={`drama-jobd-attempt ${latest ? "is-latest" : ""}`}>
             <header>
-                <span className="drama-jobd-attempt-index">第 {index} 次</span>
+                <span className="drama-jobd-attempt-index">{tr("第 {0} 次", index)}</span>
                 <JobStatusIcon status={attempt.status} />
                 <strong>{JOB_STATUS_LABEL[attempt.status] || attempt.status}</strong>
                 {task?.stage && attempt.status !== "succeeded" ? <span className="drama-jobd-muted">{task.stage}</span> : null}
@@ -157,7 +162,7 @@ function AttemptCard({ attempt, index, latest }: { attempt: DramaJobAttempt; ind
             </header>
             <dl className="drama-jobd-grid">
                 <div>
-                    <dt>模型</dt>
+                    <dt>{tr("模型")}</dt>
                     <dd title={task?.model}>{task?.modelLabel || "—"}</dd>
                 </div>
                 {task
@@ -173,21 +178,22 @@ function AttemptCard({ attempt, index, latest }: { attempt: DramaJobAttempt; ind
                 <div className="drama-jobd-error">
                     <AlertCircle className="size-4 shrink-0" />
                     <p>{attempt.error}</p>
-                    <Tooltip title="复制错误信息">
-                        <Button size="small" type="text" icon={<Copy className="size-3.5" />} aria-label="复制错误信息" onClick={() => copy(attempt.error!)} />
+                    <Tooltip title={tr("复制错误信息")}>
+                        <Button size="small" type="text" icon={<Copy className="size-3.5" />} aria-label={tr("复制错误信息")} onClick={() => copy(attempt.error!)} />
                     </Tooltip>
                 </div>
             ) : null}
             {task?.prompt ? (
                 <details className="drama-disclosure">
                     <summary>
-                        提示词<span className="drama-jobd-muted">{task.prompt.length} 字</span>
+                        {tr("提示词")}
+                        <span className="drama-jobd-muted">{tr("{0} 字", task.prompt.length)}</span>
                         <Button
                             size="small"
                             type="text"
                             className="!ml-auto"
                             icon={<Copy className="size-3.5" />}
-                            aria-label="复制提示词"
+                            aria-label={tr("复制提示词")}
                             onClick={(event) => {
                                 event.preventDefault();
                                 copy(task.prompt);
@@ -208,13 +214,20 @@ function AttemptResult({ task }: { task: DramaJobTask }) {
         return (
             <details className="drama-disclosure">
                 <summary>
-                    返回结果<span className="drama-jobd-muted">{task.resultText.length} 字</span>
+                    {tr("返回结果")}
+                    <span className="drama-jobd-muted">{tr("{0} 字", task.resultText.length)}</span>
                 </summary>
                 <pre className="drama-jobd-pre thin-scrollbar">{task.resultText}</pre>
             </details>
         );
     }
-    if (!ids.length) return task.mediaStage ? <p className="drama-jobd-muted">结果保存阶段：{task.mediaStage}</p> : null;
+    if (!ids.length)
+        return task.mediaStage ? (
+            <p className="drama-jobd-muted">
+                {tr("结果保存阶段：")}
+                {task.mediaStage}
+            </p>
+        ) : null;
     return (
         <div className="drama-jobd-results">
             {ids.map((id) =>
@@ -222,7 +235,7 @@ function AttemptResult({ task }: { task: DramaJobTask }) {
                     <ResultVideo key={id} id={id} />
                 ) : (
                     <div key={id} className="drama-jobd-thumb">
-                        <MediaThumb resourceId={id} alt="生成结果" />
+                        <MediaThumb resourceId={id} alt={tr("生成结果")} />
                     </div>
                 ),
             )}

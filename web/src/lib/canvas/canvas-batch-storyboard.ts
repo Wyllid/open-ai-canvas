@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { createStoryboardRow } from "@/lib/canvas/canvas-project-domain";
 import type { CanvasBatchRow, CanvasBatchTableData, CanvasNodeData, StoryboardRow } from "@/types/canvas";
 
@@ -38,7 +39,9 @@ function cellValue(table: CanvasBatchTableData, row: CanvasBatchRow, field: Stor
     const cells = row.cells || {};
     if (cells[`storyboard-${field}`] !== undefined) return cells[`storyboard-${field}`];
     const columns = table.textColumns || [];
-    const aliases = [field, ...(FIELD_ALIASES[field] || [])].map(normalize);
+    // 表头可能是中文原文，也可能是当前界面语言的译文。
+    const names = FIELD_ALIASES[field] || [];
+    const aliases = [field, ...names, ...names.map((name) => tr(name))].map(normalize);
     const column = columns.find((item) => aliases.some((alias) => normalize(item.label).includes(alias) || alias.includes(normalize(item.label))));
     if (column && cells[column.id] !== undefined) return cells[column.id] || "";
     const candidate = Object.entries(cells).find(([key]) => aliases.some((alias) => normalize(key).includes(alias) || alias.includes(normalize(key))));

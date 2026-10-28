@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { motion, useReducedMotion } from "motion/react";
 import { ScrollText } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -23,10 +24,12 @@ export function AppChangelogDialog({ open, onClose }: { open: boolean; onClose: 
                         <ScrollText className="size-4" />
                     </span>
                     <div className="app-changelog-heading-copy">
-                        <div className="app-changelog-heading-title">{custom ? "更新公告" : "更新日志"}</div>
-                        <div className="app-changelog-heading-description">{custom ? "按版本查看本站发布的更新与功能介绍" : "按版本查看产品能力、交互与稳定性变化"}</div>
+                        <div className="app-changelog-heading-title">{custom ? tr("更新公告") : tr("更新日志")}</div>
+                        <div className="app-changelog-heading-description">{custom ? tr("按版本查看本站发布的更新与功能介绍") : tr("按版本查看产品能力、交互与稳定性变化")}</div>
                     </div>
-                    <span className="app-changelog-current-version">当前版本 {version}</span>
+                    <span className="app-changelog-current-version">
+                        {tr("当前版本")} {version}
+                    </span>
                 </div>
             }
             open={open}
@@ -54,8 +57,8 @@ export function AppChangelogDialog({ open, onClose }: { open: boolean; onClose: 
                                 return (
                                     <h3 className={`app-changelog-section-heading${latest ? " is-latest" : ""}`}>
                                         <span className="app-changelog-section-marker" aria-hidden="true" />
-                                        <span>{latest ? "开发中" : label}</span>
-                                        {latest ? <span className="app-changelog-latest-badge">最新</span> : null}
+                                        <span>{latest ? tr("开发中") : label}</span>
+                                        {latest ? <span className="app-changelog-latest-badge">{tr("最新")}</span> : null}
                                     </h3>
                                 );
                             },

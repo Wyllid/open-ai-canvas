@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useRef, useState } from "react";
 import { Columns2 } from "lucide-react";
 
@@ -32,7 +33,7 @@ export function CompareNodeContent({ node, theme }: CompareNodeContentProps) {
         return (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center" style={{ color: theme.node.muted }}>
                 <Columns2 className="size-5 opacity-60" />
-                <span style={{ fontSize: "var(--fs-label)" }}>{images.length === 1 ? "再连一张图片即可对比" : "连接两张图片进行对比"}</span>
+                <span style={{ fontSize: "var(--fs-label)" }}>{images.length === 1 ? tr("再连一张图片即可对比") : tr("连接两张图片进行对比")}</span>
             </div>
         );
     }

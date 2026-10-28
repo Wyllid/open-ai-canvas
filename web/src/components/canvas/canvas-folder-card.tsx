@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Input } from "antd";
 import { CanvasAnchoredDropdown as Dropdown } from "./canvas-anchored-dropdown";
 import { Clock3, Download, FolderKanban, Layers3, LoaderCircle, MoreHorizontal, Pencil, Shapes, Trash2 } from "lucide-react";
@@ -37,7 +38,7 @@ export function CanvasFolderCard({ project, projectName, onClick, onPrefetch, op
     const setDeleteIds = useCanvasUiStore((state) => state.setDeleteProjectIds);
     const editing = editingId === project.id;
     const selected = selectedIds.includes(project.id);
-    const updatedTitle = `更新于 ${formatAbsoluteDateTime(project.updatedAt)} · 创建于 ${formatAbsoluteDateTime(project.createdAt)}`;
+    const updatedTitle = tr("更新于 {0} · 创建于 {1}", formatAbsoluteDateTime(project.updatedAt), formatAbsoluteDateTime(project.createdAt));
 
     const saveTitle = async () => {
         if (!editing) return;
@@ -46,14 +47,14 @@ export function CanvasFolderCard({ project, projectName, onClick, onPrefetch, op
             await loadCanvasProjectForEditing(project.id);
             renameProject(project.id, editingTitle);
             await saveRemoteUserDataNow(project.id);
-        } catch (error) { message.error(error instanceof Error ? error.message : "重命名失败"); }
+        } catch (error) { message.error(error instanceof Error ? error.message : tr("重命名失败")); }
     };
     const exportProject = async () => {
         try {
             const fullProject = await loadCanvasProjectForEditing(project.id);
-            if (!fullProject) throw new Error("画布不存在");
-            await exportCanvasProjects([fullProject], project.title || "画布");
-        } catch (error) { message.error(error instanceof Error ? error.message : "导出失败"); }
+            if (!fullProject) throw new Error(tr("画布不存在"));
+            await exportCanvasProjects([fullProject], project.title || tr("画布"));
+        } catch (error) { message.error(error instanceof Error ? error.message : tr("导出失败")); }
     };
 
     const handleOpenKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -66,17 +67,17 @@ export function CanvasFolderCard({ project, projectName, onClick, onPrefetch, op
 
     return (
         <article className={cn("product-collection-card canvas-collection-card", selected && "is-selected", editing && "is-editing", opening && "is-opening")} onPointerEnter={onPrefetch} onPointerDown={onPrefetch} onFocusCapture={onPrefetch}>
-            <div className="canvas-collection-open" role="button" tabIndex={0} aria-label={`打开画布 ${project.title}`} aria-busy={opening} onClick={() => !editing && !opening && onClick()} onKeyDown={handleOpenKeyDown}>
+            <div className="canvas-collection-open" role="button" tabIndex={0} aria-label={tr("打开画布 {0}", project.title)} aria-busy={opening} onClick={() => !editing && !opening && onClick()} onKeyDown={handleOpenKeyDown}>
                 <div className="canvas-collection-preview">
                     <div className="canvas-collection-preview-media" aria-hidden="true">
                         <ProjectPreview project={{ id: project.id, nodes: project.previewNodes }} preferLatestImage quiet mosaic />
                     </div>
-                    <span className="canvas-collection-badge" title={`${project.nodeCount} 个节点`}>
+                    <span className="canvas-collection-badge" title={tr("{0} 个节点", project.nodeCount)}>
                         <Layers3 aria-hidden="true" />
                         <span>{project.nodeCount}</span>
-                        <span className="sr-only">个节点</span>
+                        <span className="sr-only">{tr("个节点")}</span>
                     </span>
-                    {opening ? <div className="canvas-collection-opening"><LoaderCircle className="size-5 animate-spin" aria-hidden="true" /><span>正在打开</span></div> : null}
+                    {opening ? <div className="canvas-collection-opening"><LoaderCircle className="size-5 animate-spin" aria-hidden="true" /><span>{tr("正在打开")}</span></div> : null}
                 </div>
                 <div className="canvas-collection-body">
                     <div className="canvas-collection-heading-row">
@@ -85,7 +86,7 @@ export function CanvasFolderCard({ project, projectName, onClick, onPrefetch, op
                                 className="canvas-collection-title-input"
                                 size="small"
                                 value={editingTitle}
-                                aria-label="画布名称"
+                                aria-label={tr("画布名称")}
                                 onChange={(event) => setEditingTitle(event.target.value)}
                                 onClick={(event) => event.stopPropagation()}
                                 onBlur={saveTitle}
@@ -100,9 +101,9 @@ export function CanvasFolderCard({ project, projectName, onClick, onPrefetch, op
                         )}
                     </div>
                     <div className="canvas-collection-footer">
-                        <span className={cn("canvas-collection-project", !projectName && "is-free")} title={projectName ? `所属项目：${projectName}` : "未归属项目的自由画布"}>
+                        <span className={cn("canvas-collection-project", !projectName && "is-free")} title={projectName ? tr("所属项目：{0}", projectName) : tr("未归属项目的自由画布")}>
                             {projectName ? <FolderKanban aria-hidden="true" /> : <Shapes aria-hidden="true" />}
-                            <span>{projectName || "自由画布"}</span>
+                            <span>{projectName || tr("自由画布")}</span>
                         </span>
                         <time className="canvas-collection-updated" dateTime={project.updatedAt} title={updatedTitle}>
                             <Clock3 aria-hidden="true" />
@@ -116,8 +117,8 @@ export function CanvasFolderCard({ project, projectName, onClick, onPrefetch, op
                 <button
                     type="button"
                     className="product-icon-button canvas-collection-rename"
-                    aria-label={`重命名 ${project.title}`}
-                    title="重命名"
+                    aria-label={tr("重命名 {0}", project.title)}
+                    title={tr("重命名")}
                     onClick={(event) => {
                         event.stopPropagation();
                         startEditing(project.id, project.title);
@@ -132,7 +133,7 @@ export function CanvasFolderCard({ project, projectName, onClick, onPrefetch, op
                     type="checkbox"
                     checked={selected}
                     onChange={(event) => toggleSelected(project.id, event.target.checked)}
-                    aria-label={`选择 ${project.title}`}
+                    aria-label={tr("选择 {0}", project.title)}
                 />
             </span>
 
@@ -143,14 +144,14 @@ export function CanvasFolderCard({ project, projectName, onClick, onPrefetch, op
                     menu={{
                         onClick: ({ domEvent }) => domEvent.stopPropagation(),
                         items: [
-                            { key: "rename", icon: <Pencil className="size-3.5" />, label: "重命名", onClick: () => startEditing(project.id, project.title) },
-                            { key: "export", icon: <Download className="size-3.5" />, label: "导出画布", onClick: () => void exportProject() },
+                            { key: "rename", icon: <Pencil className="size-3.5" />, label: tr("重命名"), onClick: () => startEditing(project.id, project.title) },
+                            { key: "export", icon: <Download className="size-3.5" />, label: tr("导出画布"), onClick: () => void exportProject() },
                             { type: "divider" },
-                            { key: "delete", danger: true, icon: <Trash2 className="size-3.5" />, label: "删除", onClick: () => setDeleteIds([project.id]) },
+                            { key: "delete", danger: true, icon: <Trash2 className="size-3.5" />, label: tr("删除"), onClick: () => setDeleteIds([project.id]) },
                         ],
                     }}
                 >
-                    <button type="button" className="product-icon-button canvas-collection-more" aria-label={`${project.title} 画布操作`} title="更多操作" onClick={(event) => event.stopPropagation()}>
+                    <button type="button" className="product-icon-button canvas-collection-more" aria-label={tr("{0} 画布操作", project.title)} title={tr("更多操作")} onClick={(event) => event.stopPropagation()}>
                         <MoreHorizontal />
                     </button>
                 </Dropdown>

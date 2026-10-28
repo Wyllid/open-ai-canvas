@@ -461,10 +461,6 @@ export function listAdminUsers(params: AdminListParams = {}) {
     return http.get<{ users: AdminUser[]; total: number; page: number; pageSize: number }>("/admin/users", { params });
 }
 
-export function createAdminUser(input: { username: string; displayName: string; email?: string; password: string; role: LocalUser["role"]; status: LocalUser["status"] }) {
-    return http.post<{ user: AdminUser }>("/admin/users", input);
-}
-
 export function getAdminReferences() {
     return http.get<AdminReferenceData>("/admin/references");
 }

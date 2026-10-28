@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type VoiceRecordingState = "idle" | "recording" | "paused";
@@ -130,7 +131,7 @@ export function useVoiceRecording(options: UseVoiceRecordingOptions = {}): UseVo
                 }
             }, 100);
         } catch (err) {
-            const message = err instanceof Error ? err.message : "无法访问麦克风";
+            const message = err instanceof Error ? err.message : tr("无法访问麦克风");
             setError(message);
             setState("idle");
             cleanup();

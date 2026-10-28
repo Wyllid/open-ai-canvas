@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, Copy } from "lucide-react";
 
@@ -154,9 +155,9 @@ export function AiMessageCodeBlock({ children, className, isStreaming = false, .
         <div className="ai-message-codeblock">
             <div className="ai-message-codeblock-header">
                 <span className="ai-message-codeblock-lang">{language || "code"}</span>
-                <button type="button" className="ai-message-codeblock-copy" aria-label={copied ? "已复制" : "复制代码"} onClick={handleCopy}>
+                <button type="button" className="ai-message-codeblock-copy" aria-label={copied ? tr("已复制") : tr("复制代码")} onClick={handleCopy}>
                     {copied ? <Check /> : <Copy />}
-                    <span>{copied ? "已复制" : "复制"}</span>
+                    <span>{copied ? tr("已复制") : tr("复制")}</span>
                 </button>
             </div>
             {highlightHtml ? (

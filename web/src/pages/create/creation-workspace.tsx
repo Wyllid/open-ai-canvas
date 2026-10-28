@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { ImageSizePicker } from "@/components/image-size-picker";
 import { ImageParameterFields } from "@/components/image-parameter-fields";
 import { imageResolutionUsesQuality, imageSizePresets } from "@/lib/image-size-presets";
@@ -38,7 +39,7 @@ export { CreationEmptyBanner, CreationEmptySuggest, CreationFeaturedWorks } from
 
 const CanvasPromptOptimizerDrawer = lazy(() => import("@/components/canvas/canvas-prompt-optimizer-drawer").then((module) => ({ default: module.CanvasPromptOptimizerDrawer })));
 
-export const creationAssetCategoryLabels: Record<string, string> = { all: "全部素材", ...ASSET_CATEGORY_LABELS };
+export const creationAssetCategoryLabels: Record<string, string> = { all: tr("全部素材"), ...ASSET_CATEGORY_LABELS };
 
 export function CreationWorkspaceToolbar({ shots, onJumpToShot, onNewConversation, onOpenHistory, onContinueCanvas, openingCanvas }: { shots: CreationShotRailEntry[]; onJumpToShot: (shot: CreationShotRailEntry) => void; onNewConversation: () => void; onOpenHistory: () => void; onContinueCanvas: () => void; openingCanvas: boolean }) {
     const [railOpen, setRailOpen] = useState(false);
@@ -52,24 +53,24 @@ export function CreationWorkspaceToolbar({ shots, onJumpToShot, onNewConversatio
     const mount = useWorkspaceTopBarMount();
     const toolbar = <header className="creation-thread-toolbar">
         <div className="creation-toolbar-shots" ref={railRef}>
-            <button type="button" className="creation-rail-trigger" aria-expanded={railOpen} aria-haspopup="listbox" onClick={() => setRailOpen((open) => !open)}><Clapperboard />镜头时间线{shots.length > 0 ? <em className="creation-rail-count">{shots.length}</em> : null}</button>
-            {railOpen ? <div className="creation-rail-pop" role="listbox" aria-label="镜头时间线">
-                <div className="creation-rail-pop-head"><span className="creation-rail-pop-title">镜头时间线<small>{shots.length ? `共 ${shots.length} 镜` : "空轨道"}</small></span><button type="button" className="creation-rail-pop-close" aria-label="关闭镜头列表" onClick={() => setRailOpen(false)}><X /></button></div>
+            <button type="button" className="creation-rail-trigger" aria-expanded={railOpen} aria-haspopup="listbox" onClick={() => setRailOpen((open) => !open)}><Clapperboard />{tr("镜头时间线")}{shots.length > 0 ? <em className="creation-rail-count">{shots.length}</em> : null}</button>
+            {railOpen ? <div className="creation-rail-pop" role="listbox" aria-label={tr("镜头时间线")}>
+                <div className="creation-rail-pop-head"><span className="creation-rail-pop-title">{tr("镜头时间线")}<small>{shots.length ? tr("共 {0} 镜", shots.length) : tr("空轨道")}</small></span><button type="button" className="creation-rail-pop-close" aria-label={tr("关闭镜头列表")} onClick={() => setRailOpen(false)}><X /></button></div>
                 {shots.length ? <ol className="creation-rail-list">{shots.map((shot) => {
                     const resultStatus = shot.result?.status;
-                    const statusLabel = resultStatus === "done" ? "完成" : resultStatus === "error" ? "生成失败" : resultStatus === "pending" ? "生成中" : resultStatus === "cancelled" ? "已停止" : "待生成";
+                    const statusLabel = resultStatus === "done" ? tr("完成") : resultStatus === "error" ? tr("生成失败") : resultStatus === "pending" ? tr("生成中") : resultStatus === "cancelled" ? tr("已停止") : tr("待生成");
                     return <li key={shot.key}><button type="button" role="option" aria-selected="false" className="creation-rail-row" onClick={() => { setRailOpen(false); onJumpToShot(shot); }}>
                         <span className="creation-rail-row-shot">{formatShotOrdinal(shot.ordinal - 1)}</span>
-                        <span className="creation-rail-row-prompt">{shot.user.content || "视频镜头"}</span>
+                        <span className="creation-rail-row-prompt">{shot.user.content || tr("视频镜头")}</span>
                         <span className={`creation-rail-row-state is-${resultStatus || "idle"}`}>{statusLabel}</span>
                     </button></li>;
-                })}</ol> : <p className="creation-rail-empty">在下方发送一条视频消息，就会自动成为第 1 镜。</p>}
+                })}</ol> : <p className="creation-rail-empty">{tr("在下方发送一条视频消息，就会自动成为第 1 镜。")}</p>}
             </div> : null}
         </div>
         <div className="creation-toolbar-actions">
-            <Button size="small" loading={openingCanvas} onClick={onContinueCanvas}>画布中继续</Button>
-            <Tooltip title="新建创作"><button type="button" aria-label="新建创作" className="creation-toolbar-action" onClick={onNewConversation}><Plus /></button></Tooltip>
-            <Tooltip title="历史对话"><button type="button" aria-label="查看历史对话" className="creation-toolbar-action" onClick={onOpenHistory}><History /></button></Tooltip>
+            <Button size="small" loading={openingCanvas} onClick={onContinueCanvas}>{tr("画布中继续")}</Button>
+            <Tooltip title={tr("新建创作")}><button type="button" aria-label={tr("新建创作")} className="creation-toolbar-action" onClick={onNewConversation}><Plus /></button></Tooltip>
+            <Tooltip title={tr("历史对话")}><button type="button" aria-label={tr("查看历史对话")} className="creation-toolbar-action" onClick={onOpenHistory}><History /></button></Tooltip>
         </div>
     </header>;
     if (mount) return createPortal(toolbar, mount);
@@ -148,7 +149,7 @@ export function CreationComposer(props: ComposerProps) {
     const modelChannel = resolveModelChannel(props.config, props.model);
     const canOptimizePrompt = Boolean(props.promptOptimizerProvider) && (props.mode === "image" || props.mode === "video");
     const optimizerReferences = props.references.filter((reference) => reference.active && reference.kind !== "skill");
-    const actionLabel = props.referenceReplacementBusy ? "正在替换参考图" : interactionBusy || (props.generationActive && !canSubmit) ? "生成中" : "发送";
+    const actionLabel = props.referenceReplacementBusy ? tr("正在替换参考图") : interactionBusy || (props.generationActive && !canSubmit) ? tr("生成中") : tr("发送");
     // Send-button working state must span the WHOLE generation (not just the
     // submit-lock window): spinner + glow stay while a message is pending and
     // the composer is empty; typing a next prompt returns the arrow so the
@@ -156,15 +157,15 @@ export function CreationComposer(props: ComposerProps) {
     const showWorkingSpinner = interactionBusy || (props.generationActive && !canSubmit);
     const showWorkingGlow = props.generationActive && !canSubmit;
     const placeholder = props.mode === "text"
-        ? "描述你的故事、角色或想继续讨论的创意"
+        ? tr("描述你的故事、角色或想继续讨论的创意")
         : props.mode === "image"
-            ? "描述画面、人物、场景、构图与风格"
-            : "描述镜头内容、运动、光线与节奏";
-    const emptyPlaceholder = "输入你的镜头、画面或故事。也可以添加参考图开始创作";
+            ? tr("描述画面、人物、场景、构图与风格")
+            : tr("描述镜头内容、运动、光线与节奏");
+    const emptyPlaceholder = tr("输入你的镜头、画面或故事。也可以添加参考图开始创作");
     const imageReferencesSupported = props.imageProfile.references.maxImages > 0;
     const referencesSupported = props.mode === "image" ? imageReferencesSupported : props.mode !== "video" || props.maxReferences > 0;
     const canAddMoreReferences = referencesSupported && props.attachments.length < props.maxReferences;
-    const addReferenceLabel = interactionBusy ? (props.referenceReplacementBusy ? "正在替换参考图" : "生成中暂不能添加参考内容") : canAddMoreReferences ? "添加更多参考内容" : `已达到当前模型的参考内容上限（${props.maxReferences} 个）`;
+    const addReferenceLabel = interactionBusy ? (props.referenceReplacementBusy ? tr("正在替换参考图") : tr("生成中暂不能添加参考内容")) : canAddMoreReferences ? tr("添加更多参考内容") : tr("已达到当前模型的参考内容上限（{0} 个）", props.maxReferences);
     const referenceCounts = useMemo(() => props.attachments.reduce((counts, attachment) => {
         const kind = creationAttachmentKind(attachment);
         counts[kind] += 1;
@@ -270,26 +271,26 @@ export function CreationComposer(props: ComposerProps) {
         >
         <div className="creation-chat-writing-surface">
             <div className="creation-chat-editor">
-                <CanvasResourceMentionTextarea ref={props.composerFocusRef} value={props.prompt} references={props.references} mentionMenuWidth={400} sendOnEnter onFocus={props.onPromptFocus} onChange={props.setPrompt} onSubmit={props.onSubmit} containerClassName="creation-chat-mention-container" className="creation-chat-mention-editor creation-scrollbar" style={{ color: "var(--creation-text)" }} placeholder={props.placeholderOverride || (props.variant === "empty" ? emptyPlaceholder : placeholder)} aria-label="创作提示词，可使用 @ 引用当前参考内容或技能；回车发送，Shift+回车换行" spellCheck disabled={interactionBusy} activeDropReferenceId={dropTargetReferenceId} onReferenceFilesDrop={(reference, files) => { const target = props.references.find((item) => item.id === reference.id); if (target?.attachmentId) props.onReplaceReferenceFiles(target.attachmentId, files); }} />
+                <CanvasResourceMentionTextarea ref={props.composerFocusRef} value={props.prompt} references={props.references} mentionMenuWidth={400} sendOnEnter onFocus={props.onPromptFocus} onChange={props.setPrompt} onSubmit={props.onSubmit} containerClassName="creation-chat-mention-container" className="creation-chat-mention-editor creation-scrollbar" style={{ color: "var(--creation-text)" }} placeholder={props.placeholderOverride || (props.variant === "empty" ? emptyPlaceholder : placeholder)} aria-label={tr("创作提示词，可使用 @ 引用当前参考内容或技能；回车发送，Shift+回车换行")} spellCheck disabled={interactionBusy} activeDropReferenceId={dropTargetReferenceId} onReferenceFilesDrop={(reference, files) => { const target = props.references.find((item) => item.id === reference.id); if (target?.attachmentId) props.onReplaceReferenceFiles(target.attachmentId, files); }} />
                 {props.attachments.length ? <div className={`creation-reference-panel${trackState.isExpanded ? " is-expanded" : ""}`} aria-busy={interactionBusy}>
                     {trackState.isExpanded ? <div className="creation-reference-panel-header">
-                        <div className="creation-reference-filter-tabs" role="group" aria-label="筛选参考内容">
+                        <div className="creation-reference-filter-tabs" role="group" aria-label={tr("筛选参考内容")}>
                             {([
-                                { id: "all", label: "全部", count: props.attachments.length },
-                                { id: "image", label: "图片", count: referenceCounts.image },
-                                { id: "video", label: "视频", count: referenceCounts.video },
-                                { id: "audio", label: "音频", count: referenceCounts.audio },
-                                { id: "file", label: "文件", count: referenceCounts.file },
+                                { id: "all", label: tr("全部"), count: props.attachments.length },
+                                { id: "image", label: tr("图片"), count: referenceCounts.image },
+                                { id: "video", label: tr("视频"), count: referenceCounts.video },
+                                { id: "audio", label: tr("音频"), count: referenceCounts.audio },
+                                { id: "file", label: tr("文件"), count: referenceCounts.file },
                             ] as const).map((filter) => <button key={filter.id} type="button" aria-pressed={referenceFilter === filter.id} className={referenceFilter === filter.id ? "is-active" : undefined} onClick={() => setReferenceFilter(filter.id)}>{filter.label}{filter.count ? ` (${filter.count})` : ""}</button>)}
                         </div>
                         <div className="creation-reference-panel-actions">
-                            {props.attachments.length ? <button type="button" onClick={props.onClearAttachments} disabled={interactionBusy}>清空全部素材</button> : null}
-                            <Tooltip title="收起素材面板"><button type="button" className="creation-reference-panel-collapse" onClick={() => setReferencePanelExpanded(false)} aria-label="收起素材面板"><Minimize2 aria-hidden="true" /></button></Tooltip>
+                            {props.attachments.length ? <button type="button" onClick={props.onClearAttachments} disabled={interactionBusy}>{tr("清空全部素材")}</button> : null}
+                            <Tooltip title={tr("收起素材面板")}><button type="button" className="creation-reference-panel-collapse" onClick={() => setReferencePanelExpanded(false)} aria-label={tr("收起素材面板")}><Minimize2 aria-hidden="true" /></button></Tooltip>
                         </div>
                     </div> : null}
                     <div className="creation-reference-track-wrapper">
                         <div className="creation-reference-stack-shell">
-                            {trackState.canScrollLeft ? <button type="button" className="creation-reference-track-button is-left" onClick={() => scrollAttachmentTrack(-1)} aria-label="向左浏览参考内容" title="向左浏览参考内容"><ChevronLeft aria-hidden="true" /></button> : null}
+                            {trackState.canScrollLeft ? <button type="button" className="creation-reference-track-button is-left" onClick={() => scrollAttachmentTrack(-1)} aria-label={tr("向左浏览参考内容")} title={tr("向左浏览参考内容")}><ChevronLeft aria-hidden="true" /></button> : null}
                             <Reorder.Group<CreationAttachment[]>
                                 as="ul"
                                 ref={attachmentTrackRef}
@@ -299,7 +300,7 @@ export function CreationComposer(props: ComposerProps) {
                                 onReorder={reorderVisibleAttachments}
                                 layoutScroll
                                 role="list"
-                                aria-label="参考内容轨道"
+                                aria-label={tr("参考内容轨道")}
                                 onScroll={updateTrackScrollState}
                             >
                                 {visibleAttachments.map((item) => <Reorder.Item<CreationAttachment>
@@ -327,11 +328,11 @@ export function CreationComposer(props: ComposerProps) {
                                 >
                                     <CreationAttachmentThumbnail item={item} onPreview={previewAttachment} onRemove={props.onRemoveAttachment} />
                                 </Reorder.Item>)}
-                                {!visibleAttachments.length && props.attachments.length ? <li className="creation-reference-filter-empty">该类型暂无参考内容</li> : null}
-                                {referencesSupported ? <li className="creation-reference-add-slot"><Tooltip title={addReferenceLabel}><button type="button" className="creation-reference-add-button" onClick={props.onOpenLibrary} disabled={interactionBusy || !canAddMoreReferences} aria-label={addReferenceLabel}><Plus aria-hidden="true" /><span>参考内容</span></button></Tooltip></li> : null}
+                                {!visibleAttachments.length && props.attachments.length ? <li className="creation-reference-filter-empty">{tr("该类型暂无参考内容")}</li> : null}
+                                {referencesSupported ? <li className="creation-reference-add-slot"><Tooltip title={addReferenceLabel}><button type="button" className="creation-reference-add-button" onClick={props.onOpenLibrary} disabled={interactionBusy || !canAddMoreReferences} aria-label={addReferenceLabel}><Plus aria-hidden="true" /><span>{tr("参考内容")}</span></button></Tooltip></li> : null}
                             </Reorder.Group>
-                            {trackState.canScrollRight ? <button type="button" className="creation-reference-track-button is-right" onClick={() => scrollAttachmentTrack(1)} aria-label="向右浏览参考内容" title="向右浏览参考内容"><ChevronRight aria-hidden="true" /></button> : null}
-                            {!trackState.isExpanded && props.attachments.length ? <Tooltip title="查看全部"><button type="button" className="creation-reference-panel-expand" onClick={() => setReferencePanelExpanded(true)} aria-label={`查看全部 ${props.attachments.length} 个参考内容`} aria-expanded="false"><Maximize2 aria-hidden="true" /></button></Tooltip> : null}
+                            {trackState.canScrollRight ? <button type="button" className="creation-reference-track-button is-right" onClick={() => scrollAttachmentTrack(1)} aria-label={tr("向右浏览参考内容")} title={tr("向右浏览参考内容")}><ChevronRight aria-hidden="true" /></button> : null}
+                            {!trackState.isExpanded && props.attachments.length ? <Tooltip title={tr("查看全部")}><button type="button" className="creation-reference-panel-expand" onClick={() => setReferencePanelExpanded(true)} aria-label={tr("查看全部 {0} 个参考内容", props.attachments.length)} aria-expanded="false"><Maximize2 aria-hidden="true" /></button></Tooltip> : null}
                         </div>
                     </div>
                 </div> : null}
@@ -340,45 +341,45 @@ export function CreationComposer(props: ComposerProps) {
         <footer className="creation-chat-dock">
             <div className="creation-chat-controls">
                 {props.variant === "thread" ? <ModePicker mode={props.mode} onModeChange={props.onModeChange} /> : null}
-                {referencesSupported && !props.attachments.length ? <Tooltip title={addReferenceLabel}><button type="button" className="creation-chat-control" onClick={props.onOpenLibrary} disabled={interactionBusy || !canAddMoreReferences} aria-label={addReferenceLabel}><Plus aria-hidden="true" /><span>参考内容</span></button></Tooltip> : null}
+                {referencesSupported && !props.attachments.length ? <Tooltip title={addReferenceLabel}><button type="button" className="creation-chat-control" onClick={props.onOpenLibrary} disabled={interactionBusy || !canAddMoreReferences} aria-label={addReferenceLabel}><Plus aria-hidden="true" /><span>{tr("参考内容")}</span></button></Tooltip> : null}
                 <VoiceRecordingButton
                     className="creation-voice-trigger"
                     disabled={interactionBusy}
                     onTranscribed={(text) => props.setPrompt(props.prompt.trim() ? `${props.prompt} ${text}` : text)}
                 />
-                {canOptimizePrompt ? <Tooltip title="用 AI 优化提示词">
+                {canOptimizePrompt ? <Tooltip title={tr("用 AI 优化提示词")}>
                     <button
                         type="button"
                         className="creation-chat-control"
                         onClick={() => setPromptOptimizerOpen(true)}
-                        aria-label="优化提示词"
+                        aria-label={tr("优化提示词")}
                         aria-expanded={promptOptimizerOpen}
                         aria-haspopup="dialog"
                     >
                         <WandSparkles />
-                        <span>优化</span>
+                        <span>{tr("优化")}</span>
                     </button>
                 </Tooltip> : null}
-				<ModelPicker config={props.config} value={props.model} onChange={props.onModelChange} capability={props.mode} requirements={props.modelRequirements} className="creation-model-picker" placeholder={`选择${modeLabels[props.mode]}模型`} variant="creation" />
+				<ModelPicker config={props.config} value={props.model} onChange={props.onModelChange} capability={props.mode} requirements={props.modelRequirements} className="creation-model-picker" placeholder={tr("选择{0}模型", modeLabels[props.mode])} variant="creation" />
                 {props.mode === "video" || (props.mode === "image" && imageSettingsSupported) ? <GenerationSettingsMenu {...props} /> : null}
                 {props.mode === "video" ? <DurationMenu profile={props.videoProfile} seconds={props.seconds} onChange={props.setSeconds} /> : null}
                 {props.mode === "text" ? <>
-                    <Tooltip title={interactionBusy ? "生成中，此开关将在下次发送时生效" : (props.textStreaming ? "流式输出已开启" : "流式输出已关闭")}>
+                    <Tooltip title={interactionBusy ? tr("生成中，此开关将在下次发送时生效") : (props.textStreaming ? tr("流式输出已开启") : tr("流式输出已关闭"))}>
                         <button type="button" className="creation-chat-control" aria-pressed={props.textStreaming} disabled={interactionBusy} onClick={() => props.setTextStreaming(!props.textStreaming)}>
                             <Waves />
-                            <span>流式</span>
+                            <span>{tr("流式")}</span>
                             {props.textStreaming ? <span className="size-1.5 rounded-full bg-blue-400 shrink-0 shadow-sm" /> : null}
                         </button>
                     </Tooltip>
-                    <Tooltip title={interactionBusy ? "生成中，此开关将在下次发送时生效" : (props.textThinking ? "思考已开启，会展示模型返回的推理摘要" : "开启模型思考")}>
+                    <Tooltip title={interactionBusy ? tr("生成中，此开关将在下次发送时生效") : (props.textThinking ? tr("思考已开启，会展示模型返回的推理摘要") : tr("开启模型思考"))}>
                         <button type="button" className="creation-chat-control" aria-pressed={props.textThinking} disabled={interactionBusy} onClick={() => props.setTextThinking(!props.textThinking)}>
                             <Brain />
-                            <span>思考</span>
+                            <span>{tr("思考")}</span>
                             {props.textThinking ? <span className="size-1.5 rounded-full bg-blue-400 shrink-0 shadow-sm" /> : null}
                         </button>
                     </Tooltip>
                 </> : null}
-                {props.prompt.trim() || props.attachments.length || props.references.some((reference) => reference.active) ? <Tooltip title="清空提示词和参考内容"><button type="button" className="creation-chat-control is-clear" onClick={props.onClearComposer} disabled={interactionBusy} aria-label="清空提示词和参考内容"><Trash2 /><span>清空</span></button></Tooltip> : null}
+                {props.prompt.trim() || props.attachments.length || props.references.some((reference) => reference.active) ? <Tooltip title={tr("清空提示词和参考内容")}><button type="button" className="creation-chat-control is-clear" onClick={props.onClearComposer} disabled={interactionBusy} aria-label={tr("清空提示词和参考内容")}><Trash2 /><span>{tr("清空")}</span></button></Tooltip> : null}
             </div>
             <Button
                 type="text"
@@ -390,10 +391,10 @@ export function CreationComposer(props: ComposerProps) {
                 } as CSSProperties}
                 onClick={interactionBusy ? undefined : props.onSubmit}
                 aria-label={actionLabel}
-                title={!canSubmit && !interactionBusy ? "输入创作想法后即可生成" : actionLabel}
+                title={!canSubmit && !interactionBusy ? tr("输入创作想法后即可生成") : actionLabel}
             >
                 {showWorkingGlow ? <WorkingGlow active color="var(--creation-text)" radius="999px" /> : null}
-                <span className="creation-submit-action" aria-hidden>{showWorkingSpinner ? <LoaderCircle className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}<span>{showWorkingSpinner ? "生成中" : "开始创作"}</span></span>
+                <span className="creation-submit-action" aria-hidden>{showWorkingSpinner ? <LoaderCircle className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}<span>{showWorkingSpinner ? tr("生成中") : tr("开始创作")}</span></span>
             </Button>
         </footer>
         <CreationMediaPreviewModal url={previewUrl} type={previewType} onClose={() => setPreviewUrl("")} />
@@ -424,9 +425,9 @@ export function CreationComposer(props: ComposerProps) {
 export function CreationModeTabs({ mode, onModeChange, agentActive = false, onAgentSelect, orientation = "horizontal" }: { mode: CreationMode; onModeChange: (mode: CreationMode) => void; agentActive?: boolean; onAgentSelect?: () => void; orientation?: "horizontal" | "vertical" }) {
     const reducedMotion = useReducedMotion();
     const items: { mode: CreationMode; icon: ReactNode; label: string }[] = [
-        { mode: "video", icon: <Film />, label: "视频" },
-        { mode: "image", icon: <ImageIcon />, label: "图片" },
-        { mode: "text", icon: <MessageSquareText />, label: "文本" },
+        { mode: "video", icon: <Film />, label: tr("视频") },
+        { mode: "image", icon: <ImageIcon />, label: tr("图片") },
+        { mode: "text", icon: <MessageSquareText />, label: tr("文本") },
     ];
     const indicator = (pressed: boolean) => pressed ? (
         <motion.span
@@ -437,9 +438,9 @@ export function CreationModeTabs({ mode, onModeChange, agentActive = false, onAg
         />
     ) : null;
     return <LayoutGroup id={`creation-mode-tabs-${orientation}`}>
-        <div className="creation-mode-tabs" role="group" aria-label="创作模式" data-active-mode={agentActive ? "agent" : mode} data-orientation={orientation} style={{ gridTemplateColumns: orientation === "vertical" ? "minmax(0, 1fr)" : `repeat(${onAgentSelect ? 4 : 3}, minmax(0, 1fr))` }}>
+        <div className="creation-mode-tabs" role="group" aria-label={tr("创作模式")} data-active-mode={agentActive ? "agent" : mode} data-orientation={orientation} style={{ gridTemplateColumns: orientation === "vertical" ? "minmax(0, 1fr)" : `repeat(${onAgentSelect ? 4 : 3}, minmax(0, 1fr))` }}>
         {items.map((item) => (
-            <button key={item.mode} type="button" className="creation-mode-button" data-mode={item.mode} aria-pressed={!agentActive && item.mode === mode} aria-label={`${item.label}生成`} onClick={() => onModeChange(item.mode)}>
+            <button key={item.mode} type="button" className="creation-mode-button" data-mode={item.mode} aria-pressed={!agentActive && item.mode === mode} aria-label={tr("{0}生成", item.label)} onClick={() => onModeChange(item.mode)}>
                 {indicator(!agentActive && item.mode === mode)}
                 {item.icon}
                 <span>{item.label}</span>
@@ -456,8 +457,8 @@ function ModePicker({ mode, onModeChange }: { mode: CreationMode; onModeChange: 
 
 function GenerationSettingsMenu(props: ComposerProps) {
     const [open, setOpen] = useState(false);
-    const activeQualityOptions = props.imageProfile.quality.values.map((value) => qualityOptions.find((item) => item.value === value) || { value, label: imageQualityLabel(value), description: "模型支持的质量/分辨率" });
-    const qualityLabel = activeQualityOptions.find((item) => item.value === props.quality)?.label || qualityOptions.find((item) => item.value === props.quality)?.label || props.quality || "自动";
+    const activeQualityOptions = props.imageProfile.quality.values.map((value) => qualityOptions.find((item) => item.value === value) || { value, label: imageQualityLabel(value), description: tr("模型支持的质量/分辨率") });
+    const qualityLabel = activeQualityOptions.find((item) => item.value === props.quality)?.label || qualityOptions.find((item) => item.value === props.quality)?.label || props.quality || tr("自动");
     // 尺寸/比例/分辨率选项取同显示名分组内全部模型的并集，路由模型只决定发送参数。
     const mergedProfile = mergedImageCapabilityConfig(props.config, props.model || props.config.imageModel);
     const usesImageResolutionPicker = props.mode === "image" && supportsImageResolutionPresets(mergedProfile.size);
@@ -484,16 +485,16 @@ function GenerationSettingsMenu(props: ComposerProps) {
         const setters = { size: props.setRatio, quality: props.setQuality, imageResolution: props.setImageResolution, imageParameters: props.setImageParameters, count: props.setCount, transparentBackground: props.setTransparentBackground };
         setters[key](value);
     }} /></div> : <div className="creation-parameter-menu">
-        {props.mode === "image" ? <ImageSizePicker profile={mergedProfile} size={props.ratio} quality={props.quality} imageResolution={props.imageResolution} onChange={(size, quality, resolution) => { props.setRatio(size); if (quality) props.setQuality(quality); if (resolution) props.setImageResolution(resolution); }} /> : videoRatioSupported ? <SettingSection title="画幅" value={props.ratio}><div className="creation-choice-grid is-ratio">{ratios.map((value) => <button key={value} type="button" aria-pressed={value === props.ratio} className={value === props.ratio ? "is-selected" : ""} onClick={() => props.setRatio(value)}><span className="creation-ratio-preview"><span style={ratioPreviewStyle(value)} /></span><span>{value}</span></button>)}</div></SettingSection> : null}
-        {props.mode === "image" && referenceImageSizeValue ? <button type="button" className="creation-custom-trigger" onClick={selectReferenceImageSize}>使用参考图尺寸 · {referenceImageSizeLabel}</button> : null}
-        {props.mode === "video" ? (videoResolutionSupported ? <SettingSection title="清晰度" value={videoResolutionLabel(props.videoQuality)}><div className="creation-choice-grid is-resolution">{resolutions.map((option) => <button key={option.value} type="button" aria-pressed={option.value === props.videoQuality} className={option.value === props.videoQuality ? "is-selected" : ""} onClick={() => props.setVideoQuality(option.value)}>{option.label}</button>)}</div></SettingSection> : null) : <>
+        {props.mode === "image" ? <ImageSizePicker profile={mergedProfile} size={props.ratio} quality={props.quality} imageResolution={props.imageResolution} onChange={(size, quality, resolution) => { props.setRatio(size); if (quality) props.setQuality(quality); if (resolution) props.setImageResolution(resolution); }} /> : videoRatioSupported ? <SettingSection title={tr("画幅")} value={props.ratio}><div className="creation-choice-grid is-ratio">{ratios.map((value) => <button key={value} type="button" aria-pressed={value === props.ratio} className={value === props.ratio ? "is-selected" : ""} onClick={() => props.setRatio(value)}><span className="creation-ratio-preview"><span style={ratioPreviewStyle(value)} /></span><span>{value}</span></button>)}</div></SettingSection> : null}
+        {props.mode === "image" && referenceImageSizeValue ? <button type="button" className="creation-custom-trigger" onClick={selectReferenceImageSize}>{tr("使用参考图尺寸 ·")} {referenceImageSizeLabel}</button> : null}
+        {props.mode === "video" ? (videoResolutionSupported ? <SettingSection title={tr("清晰度")} value={videoResolutionLabel(props.videoQuality)}><div className="creation-choice-grid is-resolution">{resolutions.map((option) => <button key={option.value} type="button" aria-pressed={option.value === props.videoQuality} className={option.value === props.videoQuality ? "is-selected" : ""} onClick={() => props.setVideoQuality(option.value)}>{option.label}</button>)}</div></SettingSection> : null) : <>
 
-            {props.imageProfile.quality.supported && !imageResolutionUsesQuality(mergedProfile) ? <SettingSection title={activeQualityOptions.some((item) => item.value === "1k" || item.value === "2k") ? "分辨率" : "图片质量"} value={qualityLabel}><div className="creation-choice-grid is-quality">{activeQualityOptions.map((option) => <button key={option.value} type="button" aria-pressed={option.value === props.quality} className={option.value === props.quality ? "is-selected" : ""} onClick={() => props.setQuality(option.value)}><span>{option.label}</span><small>{option.description}</small></button>)}</div></SettingSection> : null}
-            {props.imageProfile.maxOutputs > 1 ? <SettingSection title="生成张数" value={`${props.count} 张`}><div className="creation-parameter-content"><div className="creation-choice-grid is-count">{countOptions.filter((option) => Number(option) <= props.imageProfile.maxOutputs).map((option) => <button key={option} type="button" aria-pressed={option === props.count} className={option === props.count ? "is-selected" : ""} onClick={() => props.setCount(option)}>{option}</button>)}</div><label className="creation-custom-value"><span>自定义</span><input inputMode="numeric" pattern="[0-9]*" value={props.count} onChange={(event) => props.setCount(String(Math.max(1, Math.min(props.imageProfile.maxOutputs, Number(event.target.value) || 1))))} aria-label={`生成张数，范围 1 到 ${props.imageProfile.maxOutputs}`} /><em>张</em></label></div></SettingSection> : null}
+            {props.imageProfile.quality.supported && !imageResolutionUsesQuality(mergedProfile) ? <SettingSection title={activeQualityOptions.some((item) => item.value === "1k" || item.value === "2k") ? tr("分辨率") : tr("图片质量")} value={qualityLabel}><div className="creation-choice-grid is-quality">{activeQualityOptions.map((option) => <button key={option.value} type="button" aria-pressed={option.value === props.quality} className={option.value === props.quality ? "is-selected" : ""} onClick={() => props.setQuality(option.value)}><span>{option.label}</span><small>{option.description}</small></button>)}</div></SettingSection> : null}
+            {props.imageProfile.maxOutputs > 1 ? <SettingSection title={tr("生成张数")} value={tr("{0} 张", props.count)}><div className="creation-parameter-content"><div className="creation-choice-grid is-count">{countOptions.filter((option) => Number(option) <= props.imageProfile.maxOutputs).map((option) => <button key={option} type="button" aria-pressed={option === props.count} className={option === props.count ? "is-selected" : ""} onClick={() => props.setCount(option)}>{option}</button>)}</div><label className="creation-custom-value"><span>{tr("自定义")}</span><input inputMode="numeric" pattern="[0-9]*" value={props.count} onChange={(event) => props.setCount(String(Math.max(1, Math.min(props.imageProfile.maxOutputs, Number(event.target.value) || 1))))} aria-label={tr("生成张数，范围 1 到 {0}", props.imageProfile.maxOutputs)} /><em>{tr("张")}</em></label></div></SettingSection> : null}
         </>}
     </div>;
     return <Popover open={open} onOpenChange={setOpen} trigger="click" placement="bottom" arrow={false} classNames={{ root: "creation-control-popover", container: "creation-control-popover-surface", content: "creation-control-popover-content" }} content={panel}>
-        <button type="button" className="creation-chat-control" aria-label={`生成设置：${summary}`}><SlidersHorizontal /><span>{summary}</span><ChevronDown className={open ? "is-open" : ""} /></button>
+        <button type="button" className="creation-chat-control" aria-label={tr("生成设置：{0}", summary)}><SlidersHorizontal /><span>{summary}</span><ChevronDown className={open ? "is-open" : ""} /></button>
     </Popover>;
 }
 
@@ -510,12 +511,12 @@ function DurationMenu({ profile, seconds, onChange }: { profile: VideoCapability
     const max = profile.duration.selection === "range" ? Math.max(min, profile.duration.max || min) : Math.max(...fallbackPreset);
     const step = Math.max(1, profile.duration.step || 1);
     const durationControl = profile.duration.selection === "range" ? <>
-        <input className="h-8 w-full" style={{ accentColor: "var(--creation-text)" }} type="range" min={min} max={max} step={step} value={value} aria-label="视频时长（秒）" onChange={(event) => onChange(event.target.value)} />
+        <input className="h-8 w-full" style={{ accentColor: "var(--creation-text)" }} type="range" min={min} max={max} step={step} value={value} aria-label={tr("视频时长（秒）")} onChange={(event) => onChange(event.target.value)} />
         <div className="flex justify-between px-0.5 text-[var(--fs-tiny)] text-[var(--creation-muted)]"><span>{min}s</span><span>{max}s</span></div>
-        <label className="creation-custom-value is-duration"><span>自定义时长</span><span className="creation-duration-custom-field"><input type="number" min={min} max={max} step={step} inputMode="numeric" value={seconds} onFocus={(event) => event.currentTarget.select()} onBlur={() => onChange(String(value))} onChange={(event) => onChange(event.target.value)} aria-label="自定义视频时长，单位秒" /><em>秒</em></span></label>
+        <label className="creation-custom-value is-duration"><span>{tr("自定义时长")}</span><span className="creation-duration-custom-field"><input type="number" min={min} max={max} step={step} inputMode="numeric" value={seconds} onFocus={(event) => event.currentTarget.select()} onBlur={() => onChange(String(value))} onChange={(event) => onChange(event.target.value)} aria-label={tr("自定义视频时长，单位秒")} /><em>{tr("秒")}</em></span></label>
     </> : <div className="creation-duration-choices">{presets.map((item) => <button key={item} type="button" className={item === value ? "is-selected" : ""} onClick={() => onChange(String(item))}>{item}s</button>)}</div>;
-    return <Popover open={open} onOpenChange={setOpen} trigger="click" placement="bottom" arrow={false} classNames={{ root: "creation-control-popover", container: "creation-control-popover-surface", content: "creation-control-popover-content" }} content={<div className="creation-duration-menu"><div className="creation-duration-heading"><span>时长</span><strong>{value} 秒</strong></div>{durationControl}</div>}>
-        <button type="button" className="creation-chat-control is-duration" aria-label={`视频时长：${value}秒`}><Clock3 /><span>{value}s</span><ChevronDown className={open ? "is-open" : ""} /></button>
+    return <Popover open={open} onOpenChange={setOpen} trigger="click" placement="bottom" arrow={false} classNames={{ root: "creation-control-popover", container: "creation-control-popover-surface", content: "creation-control-popover-content" }} content={<div className="creation-duration-menu"><div className="creation-duration-heading"><span>{tr("时长")}</span><strong>{tr("{0} 秒", value)}</strong></div>{durationControl}</div>}>
+        <button type="button" className="creation-chat-control is-duration" aria-label={tr("视频时长：{0}秒", value)}><Clock3 /><span>{value}s</span><ChevronDown className={open ? "is-open" : ""} /></button>
     </Popover>;
 }
 

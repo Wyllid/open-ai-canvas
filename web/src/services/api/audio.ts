@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { audioMimeType, normalizeAudioFormatValue, normalizeAudioSpeedValue, normalizeAudioVoiceValue } from "@/lib/audio-generation";
 import { createChannelTransport } from "@/services/api/channel-transport";
 import { uploadMediaFile, type UploadedFile } from "@/services/file-storage";
@@ -36,7 +37,7 @@ export async function requestAudioGeneration(config: AiConfig, prompt: string, o
         await assertAudioBlob(blob);
         return blob.type.startsWith("audio/") ? blob : new Blob([blob], { type: audioMimeType(format) });
     } catch (error) {
-        throw new Error(readAxiosError(error, "音频生成失败"));
+        throw new Error(readAxiosError(error, tr("音频生成失败")));
     }
 }
 
@@ -44,7 +45,7 @@ async function requestAsyncAudioGeneration(config: AiConfig, payload: Record<str
     const created = await audioTransport(config).postJson<Record<string, unknown>>(aiApiUrl(config, "/audio/tasks"), payload, options);
     let state = asyncAudioPayload(created);
     const taskId = asyncAudioTaskId(state);
-    if (!taskId) throw new Error("异步音频接口没有返回任务 ID");
+    if (!taskId) throw new Error(tr("异步音频接口没有返回任务 ID"));
     for (let attempt = 0; attempt < 120; attempt += 1) {
         if (asyncAudioSucceeded(state)) return downloadAsyncAudio(config, taskId, state, format, options);
         const status = String(state.status || "").toLowerCase();
@@ -55,7 +56,7 @@ async function requestAsyncAudioGeneration(config: AiConfig, payload: Record<str
         const polled = await audioTransport(config).get<Record<string, unknown>>(aiApiUrl(config, `/audio/tasks/${encodeURIComponent(taskId)}`), options);
         state = asyncAudioPayload(polled);
     }
-    throw new Error(`异步音频生成超时（任务 ${taskId}）`);
+    throw new Error(tr("异步音频生成超时（任务 {0}）", taskId));
 }
 
 function asyncAudioPayload(payload: Record<string, unknown>): Record<string, unknown> {
@@ -114,7 +115,7 @@ function asyncAudioError(payload: Record<string, unknown>) {
         const message = (error as Record<string, unknown>).message;
         if (typeof message === "string" && message.trim()) return message;
     }
-    return typeof payload.message === "string" && payload.message.trim() ? payload.message : "异步音频生成失败";
+    return typeof payload.message === "string" && payload.message.trim() ? payload.message : tr("异步音频生成失败");
 }
 
 function waitForAudioPoll(signal?: AbortSignal) {
@@ -141,15 +142,15 @@ export async function storeGeneratedAudio(blob: Blob, format = "mp3"): Promise<U
 }
 
 function assertAudioConfig(config: AiConfig, model: string) {
-    if (!model) throw new Error("请先配置音频模型");
-    if (!config.baseUrl.trim()) throw new Error("请先配置 Base URL");
-    if (!config.apiKey.trim()) throw new Error("请先配置 API Key");
-    if (config.apiFormat === "gemini") throw new Error("Gemini 调用格式暂不支持音频生成，请使用 OpenAI 格式渠道");
+    if (!model) throw new Error(tr("请先配置音频模型"));
+    if (!config.baseUrl.trim()) throw new Error(tr("请先配置 Base URL"));
+    if (!config.apiKey.trim()) throw new Error(tr("请先配置 API Key"));
+    if (config.apiFormat === "gemini") throw new Error(tr("Gemini 调用格式暂不支持音频生成，请使用 OpenAI 格式渠道"));
 }
 
 async function assertAudioBlob(blob: Blob) {
     const mimeType = blob.type.toLowerCase();
-    if (mimeType.startsWith("image/") || mimeType.startsWith("video/") || mimeType.startsWith("text/")) throw new Error(`上游返回了非音频内容：${mimeType}`);
+    if (mimeType.startsWith("image/") || mimeType.startsWith("video/") || mimeType.startsWith("text/")) throw new Error(tr("上游返回了非音频内容：{0}", mimeType));
     if (!mimeType.includes("json")) return;
     let payload: { code?: number; msg?: string; error?: { message?: string } };
     try {
@@ -157,11 +158,11 @@ async function assertAudioBlob(blob: Blob) {
     } catch {
         return;
     }
-    if (typeof payload.code === "number" && payload.code !== 0) throw new Error(payload.msg || "音频生成失败");
+    if (typeof payload.code === "number" && payload.code !== 0) throw new Error(payload.msg || tr("音频生成失败"));
     if (payload.error?.message) throw new Error(payload.error.message);
 }
 
 function readAxiosError(error: unknown, fallback: string) {
-    if (error instanceof DOMException && error.name === "AbortError") return "请求已取消";
+    if (error instanceof DOMException && error.name === "AbortError") return tr("请求已取消");
     return error instanceof Error ? error.message : fallback;
 }

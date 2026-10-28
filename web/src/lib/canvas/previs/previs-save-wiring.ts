@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { PrevisCloseDecision, PrevisSaveSnapshot } from "@/lib/canvas/previs/previs-save";
 
 export type PrevisSaveProgress = PrevisSaveSnapshot;
@@ -24,17 +25,17 @@ export type PrevisSaveIndicator = {
 
 export function describePrevisSaveStatus(progress: PrevisSaveProgress): PrevisSaveIndicator {
     const unconfirmed = progress.confirmedRevision < progress.revision;
-    if (progress.status === "error") return { label: "保存暂时未完成 · 未确认操作将在后台继续处理", tone: "danger", busy: false };
-    if (progress.status === "saving") return { label: "正在保存…", tone: "pending", busy: true };
-    if (progress.status === "dirty" || unconfirmed) return { label: "有未确认操作，后台处理中", tone: "pending", busy: false };
-    return { label: "已保存", tone: "idle", busy: false };
+    if (progress.status === "error") return { label: tr("保存暂时未完成 · 未确认操作将在后台继续处理"), tone: "danger", busy: false };
+    if (progress.status === "saving") return { label: tr("正在保存…"), tone: "pending", busy: true };
+    if (progress.status === "dirty" || unconfirmed) return { label: tr("有未确认操作，后台处理中"), tone: "pending", busy: false };
+    return { label: tr("已保存"), tone: "idle", busy: false };
 }
 
 export type PrevisCloseOutcome = { kind: "close" } | { kind: "blocked"; message: string };
 
 export function resolvePrevisCloseOutcome(decision: PrevisCloseDecision): PrevisCloseOutcome {
     if (decision === "close") return { kind: "close" };
-    return { kind: "blocked", message: "保存暂时未完成，编辑内容已保留，未确认操作会在后台自动处理。" };
+    return { kind: "blocked", message: tr("保存暂时未完成，编辑内容已保留，未确认操作会在后台自动处理。") };
 }
 
 export function shouldBlockPrevisUnload(progress: PrevisSaveProgress): boolean {

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useRef, useState } from "react";
 import { Select } from "@/components/ui/base/select";
 
@@ -19,9 +20,9 @@ export function CanvasSizePicker({ value, className, onChange }: CanvasSizePicke
     return (
         <div className={className} data-canvas-no-zoom onPointerDown={(event) => event.stopPropagation()}>
             <Select
-                ariaLabel="生成比例"
+                ariaLabel={tr("生成比例")}
                 className="canvas-compact-control canvas-control-select h-full w-full"
-                placeholder="比例"
+                placeholder={tr("比例")}
                 showSearch
                 value={value || undefined}
                 options={options}

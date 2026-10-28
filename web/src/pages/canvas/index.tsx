@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
@@ -95,8 +96,8 @@ export default function CanvasPage() {
         [forwardedQuery, navigate, preloadProject],
     );
     const createAndEnter = () => {
-        void createCanvasProjectWithRemoteSync(`自由画布 ${projects.length + 1}`).then(({ id, syncError }) => {
-            if (syncError) message.warning(syncError instanceof Error ? `画布已在本地创建，云端同步失败：${syncError.message}` : "画布已在本地创建，云端同步失败");
+        void createCanvasProjectWithRemoteSync(tr("自由画布 {0}", projects.length + 1)).then(({ id, syncError }) => {
+            if (syncError) message.warning(syncError instanceof Error ? tr("画布已在本地创建，云端同步失败：{0}", syncError.message) : tr("画布已在本地创建，云端同步失败"));
             enterProject(id);
         });
     };
@@ -112,13 +113,13 @@ export default function CanvasPage() {
     const visibleProjects = userId ? filteredProjects : filteredProjects.slice(0, loadedProjectCount);
     const hasMore = userId ? libraryQuery.hasNextPage : visibleProjects.length < filteredProjects.length;
     const selectedProjects = projects.filter((project) => selectedIds.includes(project.id));
-    const projectFilterLabel = projectFilter === "all" ? "全部画布" : projectFilter === "independent" ? "自由画布" : projectNames.get(projectFilter) || "项目画布";
-    const sortLabel = sort === "name" ? "按名称" : sort === "nodes" ? "按节点" : "最近更新";
-    const projectFilterItems = useMemo(() => [{ key: "all", label: "全部画布" }, { key: "independent", label: "自由画布" }, ...(projectQuery.data?.projects || []).map(({ project }) => ({ key: project.id, label: project.name }))], [projectQuery.data]);
+    const projectFilterLabel = projectFilter === "all" ? tr("全部画布") : projectFilter === "independent" ? tr("自由画布") : projectNames.get(projectFilter) || tr("项目画布");
+    const sortLabel = sort === "name" ? tr("按名称") : sort === "nodes" ? tr("按节点") : tr("最近更新");
+    const projectFilterItems = useMemo(() => [{ key: "all", label: tr("全部画布") }, { key: "independent", label: tr("自由画布") }, ...(projectQuery.data?.projects || []).map(({ project }) => ({ key: project.id, label: project.name }))], [projectQuery.data]);
     const sortItems = [
-        { key: "updated", label: "最近更新", icon: <Clock3 className="size-3.5" /> },
-        { key: "name", label: "按名称", icon: <ArrowDownAZ className="size-3.5" /> },
-        { key: "nodes", label: "按节点数量", icon: <ListFilter className="size-3.5" /> },
+        { key: "updated", label: tr("最近更新"), icon: <Clock3 className="size-3.5" /> },
+        { key: "name", label: tr("按名称"), icon: <ArrowDownAZ className="size-3.5" /> },
+        { key: "nodes", label: tr("按节点数量"), icon: <ListFilter className="size-3.5" /> },
     ];
     useEffect(() => {
         setLoadedProjectCount(50);
@@ -144,10 +145,10 @@ export default function CanvasPage() {
             for (const id of selectedIds) await loadCanvasProjectForEditing(id);
             selectedIds.forEach((id) => updateProject(id, { projectId }));
             await saveRemoteUserDataNow(selectedIds);
-            message.success(projectId ? "已加入项目" : "已移出项目，画布仍保留");
+            message.success(projectId ? tr("已加入项目") : tr("已移出项目，画布仍保留"));
             setAssociationOpen(false);
         } catch (error) {
-            message.error(error instanceof Error ? `画布关系保存失败：${error.message}` : "画布关系保存失败");
+            message.error(error instanceof Error ? tr("画布关系保存失败：{0}", error.message) : tr("画布关系保存失败"));
         }
     };
     const exportSelected = async () => {
@@ -155,25 +156,25 @@ export default function CanvasPage() {
             const selected = [];
             for (const id of selectedIds) {
                 const project = await loadCanvasProjectForEditing(id);
-                if (!project) throw new Error("画布不存在，无法导出");
+                if (!project) throw new Error(tr("画布不存在，无法导出"));
                 selected.push(project);
             }
-            await exportCanvasProjects(selected, `${brandName}画布-${selected.length}个画布`);
-        } catch (error) { message.error(error instanceof Error ? error.message : "导出失败"); }
+            await exportCanvasProjects(selected, tr("{0}画布-{1}个画布", brandName, selected.length));
+        } catch (error) { message.error(error instanceof Error ? error.message : tr("导出失败")); }
     };
     const importCanvas = async (file?: File) => {
         if (!file) return;
-        const hideLoading = message.loading({ content: "正在解压并准备导入画布...", duration: 0 });
+        const hideLoading = message.loading({ content: tr("正在解压并准备导入画布..."), duration: 0 });
         try {
             const zip = await readZip(file);
             const projectFile = zip.get("projects.json");
-            if (!projectFile) throw new Error("缺少 projects.json 元数据文件");
+            if (!projectFile) throw new Error(tr("缺少 projects.json 元数据文件"));
             const data = JSON.parse(await projectFile.text()) as CanvasExportFile;
-            if (!Array.isArray(data.projects)) throw new Error("projects.json 中缺少画布列表");
+            if (!Array.isArray(data.projects)) throw new Error(tr("projects.json 中缺少画布列表"));
             for (const item of data.projects) {
-                if (!Array.isArray(item.files)) throw new Error(`画布「${item.project?.title || "未命名画布"}」的媒体清单无效`);
+                if (!Array.isArray(item.files)) throw new Error(tr("画布「{0}」的媒体清单无效", item.project?.title || tr("未命名画布")));
                 const missing = item.files.find((entry) => !zip.get(entry.path));
-                if (missing) throw new Error(`压缩包缺少媒体文件：${missing.path}`);
+                if (missing) throw new Error(tr("压缩包缺少媒体文件：{0}", missing.path));
             }
             hideLoading();
             const remoteSyncEnabled = hasRemoteUserDataSyncSession();
@@ -183,7 +184,7 @@ export default function CanvasPage() {
                 const totalFiles = item.files.length;
                 const importedProjectId = importProject({
                     ...item.project,
-                    title: item.project.title || "导入画布",
+                    title: item.project.title || tr("导入画布"),
                     nodes: item.project.nodes || [],
                 });
 
@@ -193,7 +194,7 @@ export default function CanvasPage() {
                         total: totalFiles,
                         completed: 0,
                         phase: "uploading",
-                        message: "正在上传媒体至云端",
+                        message: tr("正在上传媒体至云端"),
                     });
                 }
 
@@ -353,7 +354,7 @@ export default function CanvasPage() {
 
                     useSyncProgressStore.getState().setProjectProgress(importedProjectId, {
                         phase: "saving",
-                        message: remoteSyncEnabled ? "正在保存画布结构" : "正在保存本地画布",
+                        message: remoteSyncEnabled ? tr("正在保存画布结构") : tr("正在保存本地画布"),
                     });
                     await flushCanvasStorePersistence();
                     if (remoteSyncEnabled) {
@@ -368,7 +369,7 @@ export default function CanvasPage() {
                 } catch (error) {
                     useSyncProgressStore.getState().setProjectProgress(importedProjectId, {
                         phase: "error",
-                        message: error instanceof Error ? error.message : "画布导入未完成",
+                        message: error instanceof Error ? error.message : tr("画布导入未完成"),
                     });
                     throw error;
                 } finally {
@@ -378,14 +379,14 @@ export default function CanvasPage() {
 
             await flushCanvasStorePersistence();
             if (remoteSyncWarning) {
-                message.warning(`已导入 ${data.projects.length} 个画布，云端同步未完成，将自动重试`);
+                message.warning(tr("已导入 {0} 个画布，云端同步未完成，将自动重试", data.projects.length));
             } else {
-                message.success(remoteSyncEnabled ? `已导入 ${data.projects.length} 个画布并完成云端同步` : `已导入 ${data.projects.length} 个画布并保存到本地`);
+                message.success(remoteSyncEnabled ? tr("已导入 {0} 个画布并完成云端同步", data.projects.length) : tr("已导入 {0} 个画布并保存到本地", data.projects.length));
             }
         } catch (error) {
             hideLoading();
             console.error("导入画布失败", error);
-            message.error(error instanceof Error ? `导入失败：${error.message}` : "导入失败，请选择有效的画布压缩包");
+            message.error(error instanceof Error ? tr("导入失败：{0}", error.message) : tr("导入失败，请选择有效的画布压缩包"));
         } finally {
             if (inputRef.current) inputRef.current.value = "";
         }
@@ -398,45 +399,45 @@ export default function CanvasPage() {
             enterProject(projects[0].id);
             return;
         }
-        void createCanvasProjectWithRemoteSync(`自由画布 ${projects.length + 1}`).then(({ id, syncError }) => {
-            if (syncError) message.warning(syncError instanceof Error ? `画布已在本地创建，云端同步失败：${syncError.message}` : "画布已在本地创建，云端同步失败");
+        void createCanvasProjectWithRemoteSync(tr("自由画布 {0}", projects.length + 1)).then(({ id, syncError }) => {
+            if (syncError) message.warning(syncError instanceof Error ? tr("画布已在本地创建，云端同步失败：{0}", syncError.message) : tr("画布已在本地创建，云端同步失败"));
             enterProject(id);
         });
     }, [hydrated, message, mode, projects, sessionHydrated, userId, libraryQuery.isSuccess]);
 
-    if (hydrated && !libraryQuery.isError && (mode === "new" || mode === "recent" || mode === "handoff")) return <main className="flex h-full items-center justify-center bg-background text-sm text-stone-500">正在打开画布...</main>;
+    if (hydrated && !libraryQuery.isError && (mode === "new" || mode === "recent" || mode === "handoff")) return <main className="flex h-full items-center justify-center bg-background text-sm text-stone-500">{tr("正在打开画布...")}</main>;
 
     return (
         <WorkspacePage className="studio-collection-page">
             <div className="studio-band">
                 <PageHeader
-                    title="我的画布"
-                    description="把镜头、素材和想法留在同一张画布里。"
-                    meta={<span className="app-projects-header-meta">{totalProjects} 个</span>}
+                    title={tr("我的画布")}
+                    description={tr("把镜头、素材和想法留在同一张画布里。")}
+                    meta={<span className="app-projects-header-meta">{tr("{0} 个", totalProjects)}</span>}
                     actions={
                         <div className="collection-header-actions">
                             <Button type="primary" disabled={!hydrated} icon={<Plus />} onClick={createAndEnter}>
-                                新建画布
+                                {tr("新建画布")}
                             </Button>
                             <Button disabled={!hydrated} icon={<FileUp />} onClick={() => inputRef.current?.click()}>
-                                导入
+                                {tr("导入")}
                             </Button>
                         </div>
                     }
                 />
 
                 <CollectionToolbar
-                    label="画布浏览工具"
+                    label={tr("画布浏览工具")}
                     active={Boolean(keyword || projectFilter !== "all" || sort !== "updated")}
                     onReset={() => { setKeyword(""); setProjectFilter("all"); setSort("updated"); }}
-                    trailing={<Button type="text" icon={<History />} onClick={() => setHistoryOpen(true)}>创作历史</Button>}
+                    trailing={<Button type="text" icon={<History />} onClick={() => setHistoryOpen(true)}>{tr("创作历史")}</Button>}
                 >
-                    <Input prefix={<Search />} value={keyword} allowClear placeholder="搜索画布" aria-label="搜索画布" onChange={(event) => setKeyword(event.target.value)} />
+                    <Input prefix={<Search />} value={keyword} allowClear placeholder={tr("搜索画布")} aria-label={tr("搜索画布")} onChange={(event) => setKeyword(event.target.value)} />
                     <Dropdown trigger={["click"]} placement="bottomLeft" menu={{ items: projectFilterItems, selectedKeys: [projectFilter], onClick: ({ key }) => setProjectFilter(String(key)) }}>
-                        <Button icon={<SlidersHorizontal />} aria-label="按所属项目筛选">{projectFilterLabel}</Button>
+                        <Button icon={<SlidersHorizontal />} aria-label={tr("按所属项目筛选")}>{projectFilterLabel}</Button>
                     </Dropdown>
                     <Dropdown trigger={["click"]} placement="bottomLeft" menu={{ items: sortItems, selectedKeys: [sort], onClick: ({ key }) => setSort(key as typeof sort) }}>
-                        <Button icon={sort === "updated" ? <Clock3 /> : sort === "name" ? <ArrowDownAZ /> : <ListFilter />} aria-label="画布排序">{sortLabel}</Button>
+                        <Button icon={sort === "updated" ? <Clock3 /> : sort === "name" ? <ArrowDownAZ /> : <ListFilter />} aria-label={tr("画布排序")}>{sortLabel}</Button>
                     </Dropdown>
                 </CollectionToolbar>
             </div>
@@ -444,7 +445,7 @@ export default function CanvasPage() {
             <div className="collection-content">
                 {selectedIds.length ? (
                     <div className="collection-selection-bar">
-                        <strong className="mr-auto font-medium">已选 {selectedIds.length} 个画布</strong>
+                        <strong className="mr-auto font-medium">{tr("已选 {0} 个画布", selectedIds.length)}</strong>
                         <Button
                             size="small"
                             disabled={!hydrated || projectQuery.isLoading}
@@ -453,7 +454,7 @@ export default function CanvasPage() {
                                 setAssociationOpen(true);
                             }}
                         >
-                            加入项目
+                            {tr("加入项目")}
                         </Button>
                         {selectedProjects.some((project) => project.projectId) ? (
                             <Button
@@ -464,29 +465,29 @@ export default function CanvasPage() {
                                     void associateSelected("");
                                 }}
                             >
-                                移出项目
+                                {tr("移出项目")}
                             </Button>
                         ) : null}
                         <Button size="small" disabled={!hydrated} icon={<Download className="size-3.5" />} onClick={() => void exportSelected()}>
-                            导出
+                            {tr("导出")}
                         </Button>
                         <Button size="small" danger disabled={!hydrated} onClick={() => setDeleteIds(selectedIds)}>
-                            删除
+                            {tr("删除")}
                         </Button>
                     </div>
                 ) : null}
 
                 {userId && libraryQuery.isError ? (
-                    <WorkspaceErrorState compact title="画布列表读取失败" description={libraryQuery.error instanceof Error ? libraryQuery.error.message : "请检查网络后重试。"} actionLabel="重试" onRetry={() => void libraryQuery.refetch()} />
+                    <WorkspaceErrorState compact title={tr("画布列表读取失败")} description={libraryQuery.error instanceof Error ? libraryQuery.error.message : tr("请检查网络后重试。")} actionLabel={tr("重试")} onRetry={() => void libraryQuery.refetch()} />
                 ) : !hydrated || (userId && libraryQuery.isPending) ? (
-                    <WorkspaceLoadingState label="正在恢复画布" detail="读取本地缓存与账号同步状态" />
+                    <WorkspaceLoadingState label={tr("正在恢复画布")} detail={tr("读取本地缓存与账号同步状态")} />
                 ) : visibleProjects.length ? (
                     <CollectionGrid className="canvas-collection-grid">
                         {visibleProjects.map((project) => (
                             <CanvasFolderCard
                                 key={project.id}
                                 project={project}
-                                projectName={project.projectId ? projectNames.get(project.projectId) || "未同步项目" : undefined}
+                                projectName={project.projectId ? projectNames.get(project.projectId) || tr("未同步项目") : undefined}
                                 onClick={() => enterProject(project.id)}
                                 onPrefetch={preloadProject}
                                 opening={openingProjectId === project.id}
@@ -497,16 +498,16 @@ export default function CanvasPage() {
                     keyword || projectFilter !== "all" ? (
                         <WorkspaceNoResultsState icon="canvas" query={keyword} onClear={() => { setKeyword(""); setProjectFilter("all"); }} />
                     ) : (
-                        <WorkspaceState icon="canvas" title="让第一个想法落在画布上" description="图片、分镜和灵感，都可以在这里自由组织。" action={<Button type="primary" icon={<Plus />} disabled={!hydrated} title={hydrated ? undefined : "正在恢复本地画布，完成后可新建"} onClick={createAndEnter}>新建画布</Button>} />
+                        <WorkspaceState icon="canvas" title={tr("让第一个想法落在画布上")} description={tr("图片、分镜和灵感，都可以在这里自由组织。")} action={<Button type="primary" icon={<Plus />} disabled={!hydrated} title={hydrated ? undefined : tr("正在恢复本地画布，完成后可新建")} onClick={createAndEnter}>{tr("新建画布")}</Button>} />
                     )
                 )}
                 {/* 无限滚动哨兵：只在加载中显示安静的 spinner、失败时给重试；全部加载后不再输出总数文案。 */}
                 {hydrated && visibleProjects.length && (hasMore || libraryQuery.isFetchNextPageError) ? (
                     <div ref={loadMoreRef} className="library-load-more" aria-live="polite" aria-busy={libraryQuery.isFetchingNextPage}>
                         {libraryQuery.isFetchNextPageError ? (
-                            <Button onClick={() => void libraryQuery.fetchNextPage()}>加载失败，重试</Button>
+                            <Button onClick={() => void libraryQuery.fetchNextPage()}>{tr("加载失败，重试")}</Button>
                         ) : libraryQuery.isFetchingNextPage ? (
-                            <LoaderCircle className="size-4 animate-spin" role="img" aria-label="正在加载更多画布" />
+                            <LoaderCircle className="size-4 animate-spin" role="img" aria-label={tr("正在加载更多画布")} />
                         ) : null}
                     </div>
                 ) : null}
@@ -514,19 +515,19 @@ export default function CanvasPage() {
 
             <input ref={inputRef} type="file" accept="application/zip,.zip" className="hidden" onChange={(event) => void importCanvas(event.target.files?.[0])} />
             <Modal
-                title="加入项目"
+                title={tr("加入项目")}
                 open={associationOpen}
-                okText="保存关联"
-                cancelText="取消"
+                okText={tr("保存关联")}
+                cancelText={tr("取消")}
                 okButtonProps={{ disabled: !associationProjectId, loading: projectQuery.isFetching }}
                 onCancel={() => setAssociationOpen(false)}
                 onOk={() => void associateSelected()}
             >
-                <p className="mb-3 text-sm text-foreground/60">选中的画布会保留原有节点和本地媒体，只增加项目关联。</p>
+                <p className="mb-3 text-sm text-foreground/60">{tr("选中的画布会保留原有节点和本地媒体，只增加项目关联。")}</p>
                 <Select
                     className="w-full"
                     value={associationProjectId || undefined}
-                    placeholder="选择项目"
+                    placeholder={tr("选择项目")}
                     options={(projectQuery.data?.projects || []).map((item) => ({ label: item.project.name, value: item.project.id }))}
                     onChange={setAssociationProjectId}
                 />

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { AlertCircle, LoaderCircle, Pause, Play } from "lucide-react";
 
@@ -159,19 +160,19 @@ export function CanvasAudioPlayer({ node, theme }: CanvasAudioPlayerProps) {
         window.addEventListener("pointermove", onPointerMove);
         window.addEventListener("pointerup", onPointerUp);
     };
-    const label = node.title || "音频";
+    const label = node.title || tr("音频");
 
     return (
         <div
             role="group"
-            aria-label={`${label}播放控件`}
+            aria-label={tr("{0}播放控件", label)}
             className="flex h-full w-full min-w-0 flex-col justify-between p-3 select-none"
             style={{ color: theme.node.text }}
         >
             {/* 上部波形可视与进度拖拽槽 */}
             <div
                 role="slider"
-                aria-label={`${label}音频波形进度`}
+                aria-label={tr("{0}音频波形进度", label)}
                 aria-valuemin={0}
                 aria-valuemax={Math.max(1, durationMs)}
                 aria-valuenow={snapshot.currentTimeMs}
@@ -224,7 +225,7 @@ export function CanvasAudioPlayer({ node, theme }: CanvasAudioPlayerProps) {
                     {isError ? (
                         <span className="flex items-center gap-1 text-[var(--accent-danger)]">
                             <AlertCircle className="size-3.5" />
-                            <span className="max-w-[130px] truncate">{snapshot.error || "播放失败"}</span>
+                            <span className="max-w-[130px] truncate">{snapshot.error || tr("播放失败")}</span>
                         </span>
                     ) : (
                         <span ref={timeDisplayRef}>
@@ -237,7 +238,7 @@ export function CanvasAudioPlayer({ node, theme }: CanvasAudioPlayerProps) {
                 <div className="absolute left-1/2 -translate-x-1/2">
                     <button
                         type="button"
-                        aria-label={isPlaying ? `暂停${label}` : `播放${label}`}
+                        aria-label={isPlaying ? tr("暂停{0}", label) : tr("播放{0}", label)}
                         className="grid size-8 place-items-center rounded-full border border-white/10 bg-[#2c2c2e] text-white shadow-md transition-[background-color,opacity] duration-150 hover:bg-[#38383a] disabled:cursor-not-allowed disabled:opacity-40"
                         disabled={isLoading || (!source.content && !source.storageKey)}
                         onPointerDown={stopCanvasEvent}

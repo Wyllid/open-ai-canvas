@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { modelCapabilityConfigFor, videoDurationAllowed } from "@/lib/model-capabilities";
 import { resolveModelRequestConfig } from "@/stores/use-config-store";
 import type { ReferenceAudio, ReferenceVideo } from "@/types/media";
@@ -12,25 +13,25 @@ export function assertVideoCapability(
     audioReferences: ReferenceAudio[],
     seconds: string,
 ) {
-    if (references.length > profile.references.maxImages || videoReferences.length > profile.references.maxVideos || audioReferences.length > profile.references.maxAudios) throw new Error("参考素材数量超过当前模型限制");
-    if (references.length < profile.references.minImages) throw new Error(`当前视频模型至少需要 ${profile.references.minImages} 张参考图`);
-    if (!videoDurationAllowed(profile, Number(seconds))) throw new Error("视频时长不在当前模型支持范围内");
-    if (profile.references.maxImageBytes > 0 && references.some((image) => (image.bytes || 0) > profile.references.maxImageBytes)) throw new Error("参考图片文件超过当前模型大小限制");
+    if (references.length > profile.references.maxImages || videoReferences.length > profile.references.maxVideos || audioReferences.length > profile.references.maxAudios) throw new Error(tr("参考素材数量超过当前模型限制"));
+    if (references.length < profile.references.minImages) throw new Error(tr("当前视频模型至少需要 {0} 张参考图", profile.references.minImages));
+    if (!videoDurationAllowed(profile, Number(seconds))) throw new Error(tr("视频时长不在当前模型支持范围内"));
+    if (profile.references.maxImageBytes > 0 && references.some((image) => (image.bytes || 0) > profile.references.maxImageBytes)) throw new Error(tr("参考图片文件超过当前模型大小限制"));
     for (const video of videoReferences) {
-        if (profile.references.maxVideoBytes > 0 && (video.bytes || 0) > profile.references.maxVideoBytes) throw new Error("参考视频文件超过当前模型大小限制");
-        if (profile.references.maxVideoDurationSeconds > 0 && (video.durationMs || 0) > profile.references.maxVideoDurationSeconds * 1000) throw new Error("参考视频时长超过当前模型限制");
+        if (profile.references.maxVideoBytes > 0 && (video.bytes || 0) > profile.references.maxVideoBytes) throw new Error(tr("参考视频文件超过当前模型大小限制"));
+        if (profile.references.maxVideoDurationSeconds > 0 && (video.durationMs || 0) > profile.references.maxVideoDurationSeconds * 1000) throw new Error(tr("参考视频时长超过当前模型限制"));
     }
     for (const audio of audioReferences) {
-        if (profile.references.maxAudioBytes > 0 && (audio.bytes || 0) > profile.references.maxAudioBytes) throw new Error("参考音频文件超过当前模型大小限制");
-        if (profile.references.maxAudioDurationSeconds > 0 && (audio.durationMs || 0) > profile.references.maxAudioDurationSeconds * 1000) throw new Error("参考音频时长超过当前模型限制");
+        if (profile.references.maxAudioBytes > 0 && (audio.bytes || 0) > profile.references.maxAudioBytes) throw new Error(tr("参考音频文件超过当前模型大小限制"));
+        if (profile.references.maxAudioDurationSeconds > 0 && (audio.durationMs || 0) > profile.references.maxAudioDurationSeconds * 1000) throw new Error(tr("参考音频时长超过当前模型限制"));
     }
 }
 
 export function assertVideoConfig(config: ResolvedAiConfig, model: string) {
-    if (!model) throw new Error("请先配置视频模型");
-    if (!config.baseUrl.trim()) throw new Error("请先配置 Base URL");
-    if (!config.apiKey.trim()) throw new Error("请先配置 API Key");
-    if (config.apiFormat === "gemini" && config.interfaceType !== "gemini-veo") throw new Error("当前 Gemini 文本协议不支持视频生成，请为该模型选择 Gemini Veo 协议");
+    if (!model) throw new Error(tr("请先配置视频模型"));
+    if (!config.baseUrl.trim()) throw new Error(tr("请先配置 Base URL"));
+    if (!config.apiKey.trim()) throw new Error(tr("请先配置 API Key"));
+    if (config.apiFormat === "gemini" && config.interfaceType !== "gemini-veo") throw new Error(tr("当前 Gemini 文本协议不支持视频生成，请为该模型选择 Gemini Veo 协议"));
 }
 
 export function normalizeVideoSeconds(value: string) {

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { type AxiosError, type AxiosRequestConfig } from "axios";
 
 import { apiClient } from "@/services/api/request";
@@ -42,12 +43,12 @@ export function initializeClientDiagnostics() {
         recordDiagnosticEvent({
             level: "error",
             category: "runtime",
-            message: event.message || "页面运行异常",
+            message: event.message || tr("页面运行异常"),
             stack: event.error instanceof Error ? event.error.stack : undefined,
         });
     });
     window.addEventListener("unhandledrejection", (event) => {
-        const reason = event.reason instanceof Error ? event.reason : new Error(String(event.reason || "未处理的 Promise 异常"));
+        const reason = event.reason instanceof Error ? event.reason : new Error(String(event.reason || tr("未处理的 Promise 异常")));
         recordDiagnosticEvent({ level: "error", category: "runtime", message: reason.message, stack: reason.stack });
     });
 
@@ -63,7 +64,7 @@ export function initializeClientDiagnostics() {
             return config;
         },
         (error) => {
-            recordDiagnosticEvent({ level: "error", category: "request", message: "请求发送前失败" });
+            recordDiagnosticEvent({ level: "error", category: "request", message: tr("请求发送前失败") });
             return Promise.reject(error);
         },
     );
@@ -98,7 +99,7 @@ export function initializeClientDiagnostics() {
                 level: "error",
                 category: "request",
                 code: body?.code !== undefined ? String(body.code) : response?.status ? "HTTP_" + response.status : "NETWORK_ERROR",
-                message: body?.msg || String(config?.method || "GET").toUpperCase() + " " + route + " 请求失败",
+                message: body?.msg || String(config?.method || "GET").toUpperCase() + " " + route + tr(" 请求失败"),
                 route,
                 durationMs: meta ? Math.max(0, Math.round(performance.now() - meta.startedAt)) : undefined,
                 httpStatus: response?.status,
@@ -126,7 +127,7 @@ export function recordDiagnosticEvent(input: DiagnosticEventInput) {
         level: input.level,
         category: input.category,
         code: redactClientText(input.code),
-        message: redactClientText(input.message) || "未命名诊断事件",
+        message: redactClientText(input.message) || tr("未命名诊断事件"),
         route: normalizeRoute(input.route || browserLocation()?.pathname || ""),
         durationMs: input.durationMs === undefined ? undefined : clampNumber(input.durationMs, 0, 86_400_000),
         httpStatus: input.httpStatus === undefined ? undefined : clampNumber(input.httpStatus, 0, 599),

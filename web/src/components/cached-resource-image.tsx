@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useRef, useState, type ImgHTMLAttributes, type ReactNode } from "react";
 
 import { getResourceAccess, resolveResourceAccessURL, resourceIdFromStorageKey, type ResourceAccessVariant } from "@/services/api/resources";
@@ -75,7 +76,7 @@ export function CachedResourceImage({ storageKey, src = "", fallback = null, loa
             } else if (localImageResource && storageKey) {
                 candidate = (await resolveImageUrl(storageKey, src)) || src;
             }
-            if (!candidate) throw new Error("图片地址为空");
+            if (!candidate) throw new Error(tr("图片地址为空"));
             try {
                 await prepareCanvasImage(candidate, controller.signal);
             } catch (error) {

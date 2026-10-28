@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { lazy, Suspense, type ReactNode } from "react";
 import { createBrowserRouter, Navigate, Outlet, useLocation } from "react-router";
 
@@ -8,35 +9,8 @@ import { CanvasRefreshShell } from "@/pages/canvas/canvas-refresh-shell";
 import { AuthScene } from "@/pages/auth/auth-scene";
 import RouteErrorPage from "@/pages/route-error";
 import { isGuestWorkspacePath } from "@/lib/guest-workspace";
+import { settingsSearch, settingsSectionFromAdminPath, settingsSectionFromLegacy } from "@/lib/settings-navigation";
 
-const AdminPage = lazy(() => import("@/pages/admin"));
-const AnalyticsPage = lazy(() => import("@/pages/admin/admin-route-pages").then((module) => ({ default: module.AnalyticsPage })));
-const AnnouncementsPage = lazy(() => import("@/pages/admin/admin-route-pages").then((module) => ({ default: module.AnnouncementsPage })));
-const BannerAnnouncementsPage = lazy(() => import("@/pages/admin/admin-route-pages").then((module) => ({ default: module.BannerAnnouncementsPage })));
-const StorageResourcesPage = lazy(() => import("@/pages/admin/admin-route-pages").then((module) => ({ default: module.StorageResourcesPage })));
-const AccessSettingsPage = lazy(() => import("@/pages/admin/admin-route-pages").then((module) => ({ default: module.AccessSettingsPage })));
-const EmailSettingsPage = lazy(() => import("@/pages/admin/admin-route-pages").then((module) => ({ default: module.EmailSettingsPage })));
-const FeatureAvailabilityPage = lazy(() => import("@/pages/admin/admin-route-pages").then((module) => ({ default: module.FeatureAvailabilityPage })));
-const AgentLessonsPage = lazy(() => import("@/pages/admin/admin-route-pages").then((module) => ({ default: module.AgentLessonsPage })));
-const ChannelsPage = lazy(() => import("@/pages/admin/channels/channels-page"));
-const LogicalModelsPage = lazy(() => import("@/pages/admin/logical-models/logical-models-page"));
-const AdminPluginsPage = lazy(() => import("@/pages/admin/plugins/plugins-page"));
-const SkillCurationPage = lazy(() => import("@/pages/admin/skill-curation-page"));
-const LogsPage = lazy(() => import("@/pages/admin/logs/logs-page"));
-const LoginLogsPage = lazy(() => import("@/pages/admin/login-logs/login-logs-page"));
-const RuntimePolicySettingsPage = lazy(() => import("@/pages/admin/settings/runtime-policy-settings-page"));
-const AppearanceSettingsPage = lazy(() => import("@/pages/admin/settings/appearance-settings-page"));
-const DrawingEngineSettingsPage = lazy(() => import("@/pages/admin/settings/drawing-engine-settings-page"));
-const StorageSettingsPage = lazy(() => import("@/pages/admin/settings/storage-settings-page"));
-const ArkPrivateAssetsSettingsPage = lazy(() => import("@/pages/admin/settings/ark-private-assets-settings-page"));
-const ResponseInterceptionSettingsPage = lazy(() => import("@/pages/admin/settings/response-interception-settings-page"));
-const ThirdPartySettingsPage = lazy(() => import("@/pages/admin/settings/libtv-settings-page"));
-const WorkbenchToolsPage = lazy(() => import("@/pages/admin/workbench-tools/workbench-tools-page"));
-const SystemUpdatePage = lazy(() => import("@/pages/admin/settings/system-update-page"));
-const SystemPerformancePage = lazy(() => import("@/pages/admin/settings/system-performance-page"));
-const StoryboardPromptsPage = lazy(() => import("@/pages/admin/storyboard-prompts/storyboard-prompts-page"));
-const AdminFeedbacksPage = lazy(() => import("@/pages/admin/feedbacks/feedbacks-page"));
-const UsersPage = lazy(() => import("@/pages/admin/users/users-page"));
 const AssetsPage = lazy(loadAssetsPage);
 const LoginPage = lazy(() => import("@/pages/auth/login"));
 const CanvasPage = lazy(loadCanvasPage);
@@ -54,7 +28,6 @@ const TasksPage = lazy(() => import("@/pages/tasks"));
 const ProjectsPage = lazy(loadProjectsPage);
 const ProjectDetailPage = lazy(loadProjectDetailPage);
 const ProjectCreatePage = lazy(loadProjectCreatePage);
-const SettingsPage = lazy(() => import("@/pages/settings"));
 const TestVoiceRecording = lazy(() => import("@/pages/test-voice-recording"));
 const UserLayout = lazy(() => import("@/layouts/user-layout"));
 const RequireFeature = lazy(() => import("@/components/auth/require-feature").then((module) => ({ default: module.RequireFeature })));
@@ -64,13 +37,28 @@ function deferred(element: ReactNode) {
 }
 
 function fullScreenDeferred(element: ReactNode) {
-    return <Suspense fallback={<FullScreenLoader label="正在打开创作空间" detail="准备当前页面" />}>{element}</Suspense>;
+    return <Suspense fallback={<FullScreenLoader label={tr("正在打开创作空间")} detail={tr("准备当前页面")} />}>{element}</Suspense>;
+}
+
+/** `/settings?section=` now opens the settings modal over the home page. */
+function LegacySettingsRedirect() {
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const section = settingsSectionFromLegacy(params.get("section"));
+    params.delete("section");
+    return <Navigate to={{ pathname: "/", search: settingsSearch(params.toString(), section) }} replace />;
+}
+
+/** The former admin console lives in the settings modal; old `/admin/...` links open the matching section. */
+function LegacyAdminRedirect() {
+    const location = useLocation();
+    return <Navigate to={{ pathname: "/", search: settingsSearch("", settingsSectionFromAdminPath(location.pathname)) }} replace />;
 }
 
 function AuthenticatedWorkspaceLayout() {
     const { pathname } = useLocation();
     const isCanvasProjectRoute = pathname.startsWith("/canvas/");
-    const fallback = isCanvasProjectRoute ? <CanvasRefreshShell /> : <FullScreenLoader label="正在打开创作空间" detail="准备当前页面" />;
+    const fallback = isCanvasProjectRoute ? <CanvasRefreshShell /> : <FullScreenLoader label={tr("正在打开创作空间")} detail={tr("准备当前页面")} />;
     return (
         <RequireAuth allowAnonymous={isGuestWorkspacePath(pathname)}>
             <Suspense fallback={fallback}>
@@ -160,7 +148,7 @@ export const router = createBrowserRouter([
                     </RequireAuth>
                 ),
             },
-            { path: "/settings", element: <RequireAuth>{deferred(<SettingsPage />)}</RequireAuth> },
+            { path: "/settings", element: <LegacySettingsRedirect /> },
             { path: "/test-voice-recording", element: <RequireAuth>{deferred(<TestVoiceRecording />)}</RequireAuth> },
             {
                 path: "/projects",
@@ -204,50 +192,8 @@ export const router = createBrowserRouter([
                     </RequireAuth>
                 ),
             },
-            {
-                path: "/admin",
-                element: <RequireAuth>{deferred(<AdminPage />)}</RequireAuth>,
-                children: [
-                    { index: true, element: <AnalyticsPage /> },
-                    { path: "users", element: <UsersPage /> },
-                    { path: "login-logs", element: <LoginLogsPage /> },
-                    { path: "feedbacks", element: <AdminFeedbacksPage /> },
-                    { path: "channels", element: <ChannelsPage /> },
-                    {
-                        path: "models",
-                        element: (
-                            <RequireFeature feature="frontendModelsEnabled">
-                                <LogicalModelsPage />
-                            </RequireFeature>
-                        ),
-                    },
-                    { path: "plugins", element: <AdminPluginsPage /> },
-                    { path: "workbench-tools", element: <WorkbenchToolsPage /> },
-                    { path: "skill-curation", element: <SkillCurationPage /> },
-                    { path: "prompt-templates", element: <StoryboardPromptsPage /> },
-                    { path: "storyboard-prompts", element: <Navigate to="/admin/prompt-templates" replace /> },
-                    { path: "announcements", element: <AnnouncementsPage /> },
-                    { path: "banner-announcements", element: <BannerAnnouncementsPage /> },
-                    { path: "agent-lessons", element: <AgentLessonsPage /> },
-                    { path: "resources", element: <StorageResourcesPage /> },
-                    { path: "logs", element: <LogsPage /> },
-                    { path: "settings", element: <Navigate to="runtime-policy" replace /> },
-                    { path: "settings/appearance", element: <AppearanceSettingsPage /> },
-                    { path: "settings/drawing-engine", element: <DrawingEngineSettingsPage /> },
-                    { path: "settings/concurrency", element: <Navigate to="/admin/settings/runtime-policy" replace /> },
-                    { path: "settings/runtime-policy", element: <RuntimePolicySettingsPage /> },
-                    { path: "settings/features", element: <FeatureAvailabilityPage /> },
-                    { path: "settings/access", element: <AccessSettingsPage /> },
-                    { path: "settings/email", element: <EmailSettingsPage /> },
-                    { path: "settings/storage", element: <StorageSettingsPage /> },
-                    { path: "settings/ark-private-assets", element: <ArkPrivateAssetsSettingsPage /> },
-                    { path: "settings/response-interception", element: <ResponseInterceptionSettingsPage /> },
-                    { path: "settings/third-party", element: <ThirdPartySettingsPage /> },
-                    { path: "settings/system-update", element: <SystemUpdatePage /> },
-                    { path: "settings/system-performance", element: <SystemPerformancePage /> },
-                    { path: "settings/libtv", element: <Navigate to="/admin/settings/third-party" replace /> },
-                ],
-            },
+            { path: "/admin", element: <LegacyAdminRedirect /> },
+            { path: "/admin/*", element: <LegacyAdminRedirect /> },
         ],
     },
     { path: "*", element: fullScreenDeferred(<NotFound />) },

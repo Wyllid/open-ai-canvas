@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CanvasNodeData } from "@/types/canvas";
 
 export type StoryboardGenerationContext = {
@@ -16,7 +17,7 @@ export function resolveStoryboardGenerationContext(nodes: CanvasNodeData[]): Sto
     // storyboard character cards and therefore participate in this check.
     const characterNodes = nodes.filter((node) => node.metadata?.workflowKind === "character" && node.metadata?.characterAssetId?.trim());
     const invalidCharacter = characterNodes.find((node) => !node.metadata?.characterAssetId?.trim() || !node.metadata?.characterVersionId?.trim() || !(node.metadata?.characterName || node.title).trim());
-    if (invalidCharacter) throw new Error(`角色卡“${invalidCharacter.metadata?.characterName || invalidCharacter.title || "未命名角色"}”版本未同步，请刷新角色资产后再生成分镜`);
+    if (invalidCharacter) throw new Error(tr("角色卡“{0}”版本未同步，请刷新角色资产后再生成分镜", invalidCharacter.metadata?.characterName || invalidCharacter.title || tr("未命名角色")));
 
     return {
         characters: characterNodes.map((node) => ({
@@ -33,7 +34,7 @@ export function inspectStoryboardReadiness(nodes: CanvasNodeData[]) {
     let generationContext: StoryboardGenerationContext | undefined;
     let blockingReason: string | undefined;
     try { generationContext = resolveStoryboardGenerationContext(nodes); }
-    catch (error) { blockingReason = error instanceof Error ? error.message : "分镜上下文未就绪"; }
+    catch (error) { blockingReason = error instanceof Error ? error.message : tr("分镜上下文未就绪"); }
     const styleNode = nodes.find((node) => node.metadata?.workflowKind === "styleboard");
     const styleReady = Boolean(styleNode?.metadata?.stylePresetId?.trim() && String(styleNode.metadata.content || styleNode.metadata.prompt || "").trim());
     const storyboards = nodes.filter((node) => node.type === "script").map((node) => {
@@ -46,8 +47,8 @@ export function inspectStoryboardReadiness(nodes: CanvasNodeData[]) {
         style: { ready: styleReady, nodeId: styleNode?.id, presetId: styleNode?.metadata?.stylePresetId, title: styleNode?.title },
         storyboards,
         nextActions: [
-            ...(!styleReady ? ["先 canvas_list_styles 读取真实画风，结合已确认风格调用 canvas_apply_style；该工具会复用或创建画风节点。仅在缺少关键风格取舍时询问用户。"] : []),
-            ...(storyboards.some((item) => !item.populated) ? ["先 canvas_read_storyboard 读取真实行 ID，再 canvas_edit_storyboard 更新空行并按需新增镜头；正文或标题不代表已填充分镜表。"] : []),
+            ...(!styleReady ? [tr("先 canvas_list_styles 读取真实画风，结合已确认风格调用 canvas_apply_style；该工具会复用或创建画风节点。仅在缺少关键风格取舍时询问用户。")] : []),
+            ...(storyboards.some((item) => !item.populated) ? [tr("先 canvas_read_storyboard 读取真实行 ID，再 canvas_edit_storyboard 更新空行并按需新增镜头；正文或标题不代表已填充分镜表。")] : []),
         ],
     };
 }

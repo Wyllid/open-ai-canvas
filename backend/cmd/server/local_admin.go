@@ -18,8 +18,8 @@ func ensureLocalAdmin(svc *service.Service) error {
 	if creds.Password == "" {
 		creds.Password = "admin"
 	}
-	if auth.IsLocalAdminPassword(creds.Password) {
-		slog.Warn("local admin uses the default password; set CANVAS_ADMIN_PASSWORD before exposing this server", "username", creds.Username)
+	if auth.IsWeakAdminPassword(creds.Password) {
+		slog.Warn("local admin password is the default or shorter than 12 characters; sign-in is limited to this machine and private networks until CANVAS_ADMIN_PASSWORD is strong", "username", creds.Username)
 	}
 	user, err := svc.EnsureLocalAdmin(creds)
 	if err != nil {

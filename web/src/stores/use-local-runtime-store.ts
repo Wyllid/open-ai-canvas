@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect } from "react";
 import { create } from "zustand";
 
@@ -77,7 +78,7 @@ export function createLocalRuntimeStore(dependencies: LocalRuntimeStoreDependenc
                         connecting: false,
                         runtime: null,
                         modules: [],
-                        error: "本机连接需要重新建立",
+                        error: tr("本机连接需要重新建立"),
                     });
                     return;
                 }
@@ -165,16 +166,16 @@ export function useLocalRuntimeBootstrap(enabled = true) {
 
 function connectionFailure(error: unknown, timedOut: boolean) {
     if (timedOut) {
-        return { connection: "unreachable" as const, error: "本机服务连接超时" };
+        return { connection: "unreachable" as const, error: tr("本机服务连接超时") };
     }
     if (error instanceof LocalRuntimeClientError) {
         if (error.code === "origin_not_trusted") {
-            return { connection: "origin_not_trusted" as const, error: "本机连接需要重新建立" };
+            return { connection: "origin_not_trusted" as const, error: tr("本机连接需要重新建立") };
         }
         if (["browser_key_invalid", "challenge_invalid", "origin_invalid", "runtime_incompatible", "runtime_response_invalid", "signature_invalid", "webcrypto_unavailable"].includes(error.code)) {
             return { connection: "incompatible" as const, error: error.message };
         }
         return { connection: "runtime_error" as const, error: error.message };
     }
-    return { connection: "unreachable" as const, error: "未发现本机服务，请确认本机服务已启用" };
+    return { connection: "unreachable" as const, error: tr("未发现本机服务，请确认本机服务已启用") };
 }

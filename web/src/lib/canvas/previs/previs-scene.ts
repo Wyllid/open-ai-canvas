@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 import { Color, Euler, Quaternion } from "three";
 
@@ -25,12 +26,12 @@ export const PREVIS_LEGACY_DEFAULT_ACTOR_COLOR = "#f1f3f5";
 export const PREVIS_ACTOR_COLORS = ["#2f7de1", "#d84949", "#dfae3f", "#34a276", "#8b5cf6", "#e879f9", "#f97316", "#06b6d4", "#84cc16", "#ec4899", "#a78bfa", "#fb7185", "#22d3ee", "#4ade80", "#facc15", "#f472b6", "#818cf8", "#34d399"] as const;
 
 export const PREVIS_ACTOR_ARCHETYPES = [
-    { value: "adult", label: "大人" },
-    { value: "child", label: "小孩" },
-    { value: "elderly", label: "老人" },
-    { value: "man", label: "男人" },
-    { value: "woman", label: "女人" },
-    { value: "monster", label: "怪兽" },
+    { value: "adult", label: tr("大人") },
+    { value: "child", label: tr("小孩") },
+    { value: "elderly", label: tr("老人") },
+    { value: "man", label: tr("男人") },
+    { value: "woman", label: tr("女人") },
+    { value: "monster", label: tr("怪兽") },
 ] as const;
 
 export function previsActorProfileForArchetype(archetype: PrevisActorArchetype = "adult"): PrevisActorProfile {
@@ -76,7 +77,7 @@ export function createPrevisScene(title = "未命名场景"): PrevisScene {
         objects: [createPrevisActor("演员 1", [0, 0, 0])],
         cameras: [camera],
         lights: [createPrevisLight("directional", "主光", [4, 6, 4], 2.4), createPrevisLight("directional", "轮廓光", [-4, 3, -2], 1.1), createPrevisLight("ambient", "环境光", [0, 0, 0], 0.65)],
-        shots: [{ id: shotId, name: "镜头 1", cameraId: camera.id, duration: 5, fps: 24, aspectRatio: "9:16", shotSize: "medium", cameraMove: "static", prompt: "" }],
+        shots: [{ id: shotId, name: tr("镜头 1"), cameraId: camera.id, duration: 5, fps: 24, aspectRatio: "9:16", shotSize: "medium", cameraMove: "static", prompt: "" }],
         activeShotId: shotId,
         createdAt: now,
         updatedAt: now,

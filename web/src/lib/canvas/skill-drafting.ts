@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { buildGenerationConfig } from "@/lib/canvas/canvas-project-generation";
 import { PromptTemplateOperation, promptTemplateTaskPlaceholder } from "@/lib/prompts";
 import { runBackendGenerationTask } from "@/services/api/generation-task";
@@ -34,7 +35,7 @@ export function parseSkillDraft(text: string): Partial<SkillDraft> {
         }
     }
     // 回退：首行作为名称，正文作为简介与指令，用户随后可自由编辑
-    const firstLine = trimmed.split(/\r?\n/)[0]?.trim().slice(0, 30) || "未命名技能";
+    const firstLine = trimmed.split(/\r?\n/)[0]?.trim().slice(0, 30) || tr("未命名技能");
     return {
         skillName: firstLine,
         description: trimmed.slice(0, MAX_DESCRIPTION_LENGTH),

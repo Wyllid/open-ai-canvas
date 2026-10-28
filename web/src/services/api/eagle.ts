@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { http, apiBaseURL } from "@/services/api/request";
 
 export type EagleFolder = {
@@ -64,7 +65,7 @@ export function eagleItemFileUrl(itemId: string, baseUrl: string) {
 export async function downloadEagleItem(itemId: string, baseUrl: string, signal?: AbortSignal) {
     const response = await fetch(`${String(apiBaseURL).replace(/\/+$/, "")}/plugins/eagle/items/${encodeURIComponent(itemId)}/file?baseUrl=${encodeURIComponent(baseUrl)}`, { credentials: "include", signal });
     if (!response.ok) {
-        let message = "读取 Eagle 素材失败";
+        let message = tr("读取 Eagle 素材失败");
         try {
             const body = await response.json() as { msg?: string };
             message = body.msg || message;

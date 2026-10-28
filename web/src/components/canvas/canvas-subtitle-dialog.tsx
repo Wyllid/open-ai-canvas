@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { App, Button, ColorPicker, Input, InputNumber, Progress, Segmented } from "antd";
 import { AppModal } from "@/components/ui/product/app-modal";
@@ -150,13 +151,13 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
             subtitleStyle: style,
             subtitleUpdatedAt: new Date().toISOString(),
         });
-        message.success(next.length ? "已删除该条字幕并同步到视频节点与时间线" : "字幕已清空并同步到视频节点与时间线");
+        message.success(next.length ? tr("已删除该条字幕并同步到视频节点与时间线") : tr("字幕已清空并同步到视频节点与时间线"));
     };
 
     const splitEntry = (position: number) => {
         const entry = entries[position];
         if (!entry || !entry.text.trim()) {
-            message.warning("该条字幕没有可切分的内容");
+            message.warning(tr("该条字幕没有可切分的内容"));
             return;
         }
         const segments = splitLongEntry(entry, Math.max(2, Math.ceil(entry.text.length / 2)));
@@ -179,14 +180,14 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
         const maxChars = style.maxCharsPerEntry || DEFAULT_MAX_CHARS_PER_ENTRY;
         const next = resegmentSrtEntries(entries, maxChars);
         if (next.length === entries.length) {
-            message.info(`所有字幕均未超过单条上限 ${maxChars} 字，无需切分；可在“字幕样式”中调低上限后重试`);
+            message.info(tr("所有字幕均未超过单条上限 {0} 字，无需切分；可在“字幕样式”中调低上限后重试", maxChars));
             return;
         }
         setEntries(next);
         const { remapped, dropped } = remapHighlightsAfterResegment(highlights, next);
         setHighlights(remapped);
-        message.success(`自动切分完成：${entries.length} 条 → ${next.length} 条`);
-        if (dropped.length) message.info(`已移除 ${dropped.length} 条未能匹配的旧高亮`);
+        message.success(tr("自动切分完成：{0} 条 → {1} 条", entries.length, next.length));
+        if (dropped.length) message.info(tr("已移除 {0} 条未能匹配的旧高亮", dropped.length));
     };
 
     const importSrt = (file: File) => {
@@ -194,13 +195,13 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
         reader.onload = () => {
             const parsed = parseSrt(String(reader.result || ""));
             if (!parsed.length) {
-                message.warning("未解析到有效字幕：文件需为 SRT 格式（序号 + 时间码 + 正文），纯文本请用“导入文本”");
+                message.warning(tr("未解析到有效字幕：文件需为 SRT 格式（序号 + 时间码 + 正文），纯文本请用“导入文本”"));
                 return;
             }
             const autoSegmented = style.autoResegment ? resegmentSrtEntries(parsed, style.maxCharsPerEntry || DEFAULT_MAX_CHARS_PER_ENTRY) : parsed;
             setEntries(renumber(autoSegmented));
             setHighlights([]);
-            message.success(autoSegmented.length > parsed.length ? `已导入 ${parsed.length} 条字幕，按单条上限自动切分为 ${autoSegmented.length} 条` : `已导入 ${parsed.length} 条字幕`);
+            message.success(autoSegmented.length > parsed.length ? tr("已导入 {0} 条字幕，按单条上限自动切分为 {1} 条", parsed.length, autoSegmented.length) : tr("已导入 {0} 条字幕", parsed.length));
         };
         reader.readAsText(file);
     };
@@ -214,7 +215,7 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                 .map((line) => line.trim())
                 .filter(Boolean);
             if (!lines.length) {
-                message.warning("文本中没有可导入的内容");
+                message.warning(tr("文本中没有可导入的内容"));
                 return;
             }
             const durationMs = node.metadata?.durationMs;
@@ -227,7 +228,7 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
             }));
             setEntries(entries);
             setHighlights([]);
-            message.success(durationMs && durationMs > 0 ? `已导入 ${entries.length} 条字幕，按视频时长 ${formatDurationMs(durationMs)} 平均分配` : `已导入 ${entries.length} 条字幕（视频时长未知，按每条 4 秒估算）`);
+            message.success(durationMs && durationMs > 0 ? tr("已导入 {0} 条字幕，按视频时长 {1} 平均分配", entries.length, formatDurationMs(durationMs)) : tr("已导入 {0} 条字幕（视频时长未知，按每条 4 秒估算）", entries.length));
         };
         reader.readAsText(file);
     };
@@ -235,7 +236,7 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
     const exportSrt = () => {
         const content = serializeSrtEntries(entries);
         if (!content) {
-            message.warning("暂无字幕可导出");
+            message.warning(tr("暂无字幕可导出"));
             return;
         }
         saveAs(new Blob([content], { type: "text/plain;charset=utf-8" }), `${node.title || "subtitle"}.srt`);
@@ -243,13 +244,13 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
 
     const runAiHighlight = async () => {
         if (!entries.length) {
-            message.warning("请先添加字幕内容");
+            message.warning(tr("请先添加字幕内容"));
             return;
         }
         if (!isAiConfigReady(config, config.textModel)) {
             // 未配置文本模型时本地回退：按终止标点取首段作为高亮，保证功能不中断。
             setHighlights(buildFallbackHighlights(entries));
-            message.info("未配置可用的文本模型，已使用本地标点高亮");
+            message.info(tr("未配置可用的文本模型，已使用本地标点高亮"));
             return;
         }
         const controller = new AbortController();
@@ -265,10 +266,10 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                 onProgress: setProgress,
             });
             setHighlights(nextHighlights);
-            message.success(`已生成 ${nextHighlights.length} 条关键词高亮`);
+            message.success(tr("已生成 {0} 条关键词高亮", nextHighlights.length));
         } catch (error) {
             if (error instanceof DOMException && error.name === "AbortError") return;
-            message.error(error instanceof Error ? error.message : "关键词高亮生成失败");
+            message.error(error instanceof Error ? error.message : tr("关键词高亮生成失败"));
         } finally {
             setRunning(false);
             setProgress(null);
@@ -289,13 +290,13 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
             subtitleStyle: style,
             subtitleUpdatedAt: new Date().toISOString(),
         });
-        message.success(normalized.length ? "字幕已保存" : "字幕已清空并保存");
+        message.success(normalized.length ? tr("字幕已保存") : tr("字幕已清空并保存"));
         onClose();
     };
 
     const formatDurationMs = (ms: number) => {
         const seconds = Math.round(ms / 1000);
-        return seconds >= 60 ? `${Math.floor(seconds / 60)}分${seconds % 60}秒` : `${seconds}秒`;
+        return seconds >= 60 ? tr("{0}分{1}秒", Math.floor(seconds / 60), seconds % 60) : tr("{0}秒", seconds);
     };
 
     const previewBlock = (
@@ -319,7 +320,7 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                             onError={() => setVideoError(true)}
                             onTimeUpdate={(event) => setCurrentTimeMs(Math.round(event.currentTarget.currentTime * 1000))}
                         />
-                        {videoError ? <div className="absolute inset-0 grid place-items-center text-xs opacity-70">视频预览加载失败，请检查素材是否仍然可用</div> : null}
+                        {videoError ? <div className="absolute inset-0 grid place-items-center text-xs opacity-70">{tr("视频预览加载失败，请检查素材是否仍然可用")}</div> : null}
                         {activeEntry ? (
                             <div className={`pointer-events-none absolute inset-x-0 flex justify-center px-4 ${activePositionClass}`}>
                                 <span className="rounded-lg px-2 py-0.5 text-center leading-7" style={{ background: "rgba(0,0,0,.62)", color: style.color, fontSize: style.fontSize, borderRadius: style.highlightRadius, maxWidth: "90%" }}>
@@ -329,39 +330,39 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                         ) : null}
                     </div>
                 ) : (
-                    <div className="grid h-40 w-full max-w-[640px] place-items-center px-4 text-center text-xs opacity-60">{videoError ? "视频预览加载失败，请检查素材是否仍然可用" : "暂无视频素材可预览，可先在节点上传或生成视频"}</div>
+                    <div className="grid h-40 w-full max-w-[640px] place-items-center px-4 text-center text-xs opacity-60">{videoError ? tr("视频预览加载失败，请检查素材是否仍然可用") : tr("暂无视频素材可预览，可先在节点上传或生成视频")}</div>
                 )}
             </div>
-            <div className="shrink-0 text-center text-xs opacity-40">点击字幕条目可跳转预览</div>
+            <div className="shrink-0 text-center text-xs opacity-40">{tr("点击字幕条目可跳转预览")}</div>
         </div>
     );
 
     const styleControls = (
         <>
             <label className="flex items-center justify-between gap-2 text-xs opacity-70">
-                <span>字号</span>
+                <span>{tr("字号")}</span>
                 <InputNumber size="small" min={12} max={40} value={style.fontSize} onChange={(fontSize) => setStyle((current) => ({ ...current, fontSize: fontSize ?? current.fontSize }))} className="w-20" />
             </label>
             <label className="flex items-center justify-between gap-2 text-xs opacity-70">
-                <span>颜色</span>
+                <span>{tr("颜色")}</span>
                 <ColorPicker size="small" value={style.color} onChange={(color) => setStyle((current) => ({ ...current, color: color.toHexString() }))} />
             </label>
             <div className="text-xs opacity-70">
-                <div className="mb-1">位置</div>
+                <div className="mb-1">{tr("位置")}</div>
                 <Segmented
                     block
                     size="small"
                     value={style.position}
                     options={[
-                        { label: "顶部", value: "top" },
-                        { label: "居中", value: "center" },
-                        { label: "底部", value: "bottom" },
+                        { label: tr("顶部"), value: "top" },
+                        { label: tr("居中"), value: "center" },
+                        { label: tr("底部"), value: "bottom" },
                     ]}
                     onChange={(position) => setStyle((current) => ({ ...current, position: position as SubtitlePosition }))}
                 />
             </div>
             <label className="flex items-center justify-between gap-2 text-xs opacity-70">
-                <span>单条上限</span>
+                <span>{tr("单条上限")}</span>
                 <span className="flex items-center gap-1">
                     <InputNumber
                         size="small"
@@ -371,33 +372,33 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                         onChange={(maxCharsPerEntry) => setStyle((current) => ({ ...current, maxCharsPerEntry: maxCharsPerEntry ?? DEFAULT_MAX_CHARS_PER_ENTRY }))}
                         className="w-20"
                     />
-                    <span className="opacity-40">字</span>
+                    <span className="opacity-40">{tr("字")}</span>
                 </span>
             </label>
             <div className="border-t pt-3" style={{ borderColor: theme.toolbar.border }}>
                 <div className="mb-2 flex items-center justify-between text-xs font-medium opacity-55">
-                    <span>关键词高亮</span>
+                    <span>{tr("关键词高亮")}</span>
                     <Switch size="sm" checked={style.highlightEnabled} onChange={(highlightEnabled) => setStyle((current) => ({ ...current, highlightEnabled }))} />
                 </div>
                 <div className="space-y-2">
                     <label className="flex items-center justify-between gap-2 text-xs opacity-70">
-                        <span>背景色</span>
+                        <span>{tr("背景色")}</span>
                         <ColorPicker size="small" value={style.highlightBackgroundColor} onChange={(color) => setStyle((current) => ({ ...current, highlightBackgroundColor: color.toHexString() }))} />
                     </label>
                     <label className="flex items-center justify-between gap-2 text-xs opacity-70">
-                        <span>文字色</span>
+                        <span>{tr("文字色")}</span>
                         <ColorPicker size="small" value={style.highlightTextColor} onChange={(color) => setStyle((current) => ({ ...current, highlightTextColor: color.toHexString() }))} />
                     </label>
                     <label className="flex items-center justify-between gap-2 text-xs opacity-70">
-                        <span>内边距 X</span>
+                        <span>{tr("内边距 X")}</span>
                         <InputNumber size="small" min={0} max={24} value={style.highlightPaddingX} onChange={(highlightPaddingX) => setStyle((current) => ({ ...current, highlightPaddingX: highlightPaddingX ?? 0 }))} className="w-20" />
                     </label>
                     <label className="flex items-center justify-between gap-2 text-xs opacity-70">
-                        <span>内边距 Y</span>
+                        <span>{tr("内边距 Y")}</span>
                         <InputNumber size="small" min={0} max={24} value={style.highlightPaddingY} onChange={(highlightPaddingY) => setStyle((current) => ({ ...current, highlightPaddingY: highlightPaddingY ?? 0 }))} className="w-20" />
                     </label>
                     <label className="flex items-center justify-between gap-2 text-xs opacity-70">
-                        <span>圆角</span>
+                        <span>{tr("圆角")}</span>
                         <InputNumber size="small" min={0} max={24} value={style.highlightRadius} onChange={(highlightRadius) => setStyle((current) => ({ ...current, highlightRadius: highlightRadius ?? 0 }))} className="w-20" />
                     </label>
                 </div>
@@ -414,7 +415,7 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                         <div
                             key={`${entry.index}-${idx}`}
                             className="cursor-pointer rounded-xl border p-2 transition-colors"
-                            title="点击跳转到该条字幕时间"
+                            title={tr("点击跳转到该条字幕时间")}
                             style={{ background: theme.node.fill, borderColor: activeEntry?.index === entry.index ? theme.accent.primary : theme.node.stroke }}
                             onClick={(event) => {
                                 const target = event.target as HTMLElement;
@@ -426,12 +427,12 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                                 <span className="grid size-6 shrink-0 place-items-center rounded-md text-xs font-semibold" style={{ background: theme.accent.primarySoft, color: theme.accent.primary }}>
                                     {idx + 1}
                                 </span>
-                                <InputNumber size="small" min={0} step={100} value={entry.startMs} onChange={(startMs) => updateEntry(idx, { startMs: startMs ?? 0 })} className="w-32" aria-label={`第 ${idx + 1} 条开始时间（毫秒）`} />
+                                <InputNumber size="small" min={0} step={100} value={entry.startMs} onChange={(startMs) => updateEntry(idx, { startMs: startMs ?? 0 })} className="w-32" aria-label={tr("第 {0} 条开始时间（毫秒）", idx + 1)} />
                                 <span className="text-xs opacity-40">→</span>
-                                <InputNumber size="small" min={0} step={100} value={entry.endMs} onChange={(endMs) => updateEntry(idx, { endMs: endMs ?? 0 })} className="w-32" aria-label={`第 ${idx + 1} 条结束时间（毫秒）`} />
+                                <InputNumber size="small" min={0} step={100} value={entry.endMs} onChange={(endMs) => updateEntry(idx, { endMs: endMs ?? 0 })} className="w-32" aria-label={tr("第 {0} 条结束时间（毫秒）", idx + 1)} />
                                 <button
                                     type="button"
-                                    title="切分这条字幕"
+                                    title={tr("切分这条字幕")}
                                     className="ml-auto grid size-7 place-items-center rounded-lg border transition-colors hover:opacity-75"
                                     style={{ borderColor: theme.toolbar.border }}
                                     disabled={running}
@@ -441,7 +442,7 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                                 </button>
                                 <button
                                     type="button"
-                                    title="删除这条字幕"
+                                    title={tr("删除这条字幕")}
                                     className="grid size-7 place-items-center rounded-lg border text-red-500 transition-colors hover:opacity-75"
                                     style={{ borderColor: theme.toolbar.border }}
                                     disabled={running}
@@ -450,10 +451,11 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                                     <Trash2 className="size-3.5" />
                                 </button>
                             </div>
-                            <Input.TextArea value={entry.text} autoSize={{ minRows: 1, maxRows: 3 }} placeholder="字幕文本" className="mt-2" onChange={(event) => updateEntry(idx, { text: event.target.value })} />
+                            <Input.TextArea value={entry.text} autoSize={{ minRows: 1, maxRows: 3 }} placeholder={tr("字幕文本")} className="mt-2" onChange={(event) => updateEntry(idx, { text: event.target.value })} />
                             {highlight ? (
                                 <div className="mt-2 text-xs" style={{ color: theme.accent.primary }}>
-                                    重点：{highlight.highlightText}
+                                    {tr("重点：")}
+                                    {highlight.highlightText}
                                 </div>
                             ) : null}
                         </div>
@@ -463,7 +465,7 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                 <div className="grid h-40 place-items-center text-center">
                     <div className="text-xs opacity-45">
                         <ListPlus className="mx-auto mb-2 size-8" />
-                        还没有字幕：导入 SRT 或文本文件，或点击工具栏“新增字幕”。
+                        {tr("还没有字幕：导入 SRT 或文本文件，或点击工具栏“新增字幕”。")}
                     </div>
                 </div>
             )}
@@ -476,8 +478,8 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                 <Captions className="size-4" />
             </span>
             <div className="min-w-0">
-                <div className="truncate text-[var(--fs-heading-lg)] font-semibold leading-6 tracking-[-0.02em]">字幕编辑</div>
-                <div className="truncate text-xs opacity-45">{node.title || "视频节点"}</div>
+                <div className="truncate text-[var(--fs-heading-lg)] font-semibold leading-6 tracking-[-0.02em]">{tr("字幕编辑")}</div>
+                <div className="truncate text-xs opacity-45">{node.title || tr("视频节点")}</div>
             </div>
         </div>
     );
@@ -509,19 +511,19 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                         }}
                     />
                     <Button size="small" icon={<FileUp className="size-3.5" />} onClick={() => fileInputRef.current?.click()}>
-                        导入 SRT
+                        {tr("导入 SRT")}
                     </Button>
                     <Button size="small" icon={<FileUp className="size-3.5" />} onClick={() => textInputRef.current?.click()}>
-                        导入文本
+                        {tr("导入文本")}
                     </Button>
                     <Button size="small" icon={<FileDown className="size-3.5" />} disabled={!entries.length} onClick={exportSrt}>
-                        导出 SRT
+                        {tr("导出 SRT")}
                     </Button>
                     <Button size="small" icon={<Scissors className="size-3.5" />} disabled={!entries.length || running} onClick={resegmentAll}>
-                        自动切分
+                        {tr("自动切分")}
                     </Button>
                     <Button size="small" icon={<Plus className="size-3.5" />} disabled={running} onClick={addEntry}>
-                        新增字幕
+                        {tr("新增字幕")}
                     </Button>
                     <Button
                         size="small"
@@ -530,11 +532,11 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                         disabled={!entries.length || running}
                         onClick={() =>
                             modal.confirm({
-                                title: "清空全部字幕",
-                                content: `将删除全部 ${entries.length} 条字幕及关键词高亮，此操作不可撤销。`,
-                                okText: "清空",
+                                title: tr("清空全部字幕"),
+                                content: tr("将删除全部 {0} 条字幕及关键词高亮，此操作不可撤销。", entries.length),
+                                okText: tr("清空"),
                                 okButtonProps: { danger: true },
-                                cancelText: "取消",
+                                cancelText: tr("取消"),
                                 onOk: () => {
                                     // 互通加固：清空全部立即持久化到节点并同步时间线，避免清空后直接关闭弹窗（未点保存）导致重开视频节点旧字幕复活。
                                     onSave(node.id, {
@@ -545,12 +547,12 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                                     });
                                     setEntries([]);
                                     setHighlights([]);
-                                    message.success("已清空全部字幕并同步到视频节点与时间线");
+                                    message.success(tr("已清空全部字幕并同步到视频节点与时间线"));
                                 },
                             })
                         }
                     >
-                        清空全部
+                        {tr("清空全部")}
                     </Button>
                     <Button
                         size="small"
@@ -559,13 +561,13 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                         disabled={!entries.length}
                         onClick={running ? cancelAiHighlight : () => void runAiHighlight()}
                     >
-                        {running ? "取消高亮" : "AI 关键词高亮"}
+                        {running ? tr("取消高亮") : tr("AI 关键词高亮")}
                     </Button>
                 </div>
 
                 {progress && running ? (
                     <div className="border-b px-4 py-2" style={{ borderColor: theme.toolbar.border }}>
-                        <Progress percent={progress.percent} size="small" format={() => `${progress.processedEntries}/${progress.totalEntries} 条 · 批次 ${progress.batchIndex}/${progress.batchTotal}`} />
+                        <Progress percent={progress.percent} size="small" format={() => tr("{0}/{1} 条 · 批次 {2}/{3}", progress.processedEntries, progress.totalEntries, progress.batchIndex, progress.batchTotal)} />
                     </div>
                 ) : null}
 
@@ -574,22 +576,20 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                         {entriesBlock}
                         {previewBlock}
                         <div className="thin-scrollbar min-h-0 space-y-3 overflow-y-auto pr-1">
-                            <div className="text-xs font-medium opacity-55">字幕样式</div>
+                            <div className="text-xs font-medium opacity-55">{tr("字幕样式")}</div>
                             {styleControls}
                         </div>
                     </div>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 border-t px-4 py-3" style={{ borderColor: theme.toolbar.border, background: theme.toolbar.panel }}>
-                    <div className="text-xs opacity-45">
-                        {entries.length} 条字幕 · 单条上限 {style.maxCharsPerEntry || DEFAULT_MAX_CHARS_PER_ENTRY} 字
-                    </div>
+                    <div className="text-xs opacity-45">{tr("{0} 条字幕 · 单条上限 {1} 字", entries.length, style.maxCharsPerEntry || DEFAULT_MAX_CHARS_PER_ENTRY)}</div>
                     <div className="flex items-center gap-2">
                         <Button disabled={running} onClick={onClose}>
-                            取消
+                            {tr("取消")}
                         </Button>
                         <Button type="primary" disabled={running} onClick={handleSave}>
-                            保存
+                            {tr("保存")}
                         </Button>
                     </div>
                 </div>

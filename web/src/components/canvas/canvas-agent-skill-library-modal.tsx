@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Alert, Button, Input } from "antd";
 import { Check, LoaderCircle, Plus, Search, Sparkles, Users } from "lucide-react";
@@ -134,10 +135,10 @@ export function CanvasAgentSkillLibraryModal({
     );
 
     const emptyText = tab === "enabled"
-        ? selectedCount === 0 ? "本轮还没有启用技能，可在“我的技能”中选择" : "没有匹配的已启用技能"
+        ? selectedCount === 0 ? tr("本轮还没有启用技能，可在“我的技能”中选择") : tr("没有匹配的已启用技能")
         : tab === "installed"
-            ? "还没有匹配的已加入技能，可前往“全部”添加"
-            : "没有匹配的公开技能，换个关键词或分类试试";
+            ? tr("还没有匹配的已加入技能，可前往“全部”添加")
+            : tr("没有匹配的公开技能，换个关键词或分类试试");
 
     const changeTab = (value: SkillLibraryTab) => {
         setTab(value);
@@ -169,8 +170,8 @@ export function CanvasAgentSkillLibraryModal({
             closable={false}
             modalRender={(modal) => (
                 <div className="canvas-agent-skill-library-frame">
-                    <button type="button" className="canvas-agent-skill-library-close" aria-label="关闭技能商店" onClick={onClose}>
-                        <kbd>ESC</kbd><span>关闭</span>
+                    <button type="button" className="canvas-agent-skill-library-close" aria-label={tr("关闭技能商店")} onClick={onClose}>
+                        <kbd>ESC</kbd><span>{tr("关闭")}</span>
                     </button>
                     {modal}
                 </div>
@@ -183,7 +184,7 @@ export function CanvasAgentSkillLibraryModal({
                 style={{ color: theme.node.text, background: theme.node.panel }}
                 data-canvas-no-zoom
                 data-canvas-wheel-scroll
-                aria-label="Agent Skills 技能库"
+                aria-label={tr("Agent Skills 技能库")}
             >
                 <aside className="canvas-agent-skill-library-sidebar">
                     <Input
@@ -191,17 +192,17 @@ export function CanvasAgentSkillLibraryModal({
                         prefix={<Search className="size-4" style={{ color: theme.node.muted }} aria-hidden="true" />}
                         value={search}
                         onChange={(event) => onSearch(event.target.value)}
-                        placeholder="搜索技能"
-                        aria-label="搜索技能名称、说明或作者"
+                        placeholder={tr("搜索技能")}
+                        aria-label={tr("搜索技能名称、说明或作者")}
                         className="canvas-agent-skill-library-search"
                     />
-                    <nav className="canvas-agent-skill-library-categories thin-scrollbar" aria-label="技能视图与分类">
-                        {curationState.error ? <Alert type="warning" title={curationState.error} action={<Button onClick={curationState.retry}>重试</Button>} /> : null}
+                    <nav className="canvas-agent-skill-library-categories thin-scrollbar" aria-label={tr("技能视图与分类")}>
+                        {curationState.error ? <Alert type="warning" title={curationState.error} action={<Button onClick={curationState.retry}>{tr("重试")}</Button>} /> : null}
                         {curationState.curation?.enabled ? (
-                            <div className="canvas-agent-skill-library-category-group" role="group" aria-label="平台分类">
-                                <div className="canvas-agent-skill-library-category-heading">平台分类</div>
-                                <SkillTab active={!platformCategory} label="全部分类" onClick={() => onPlatformCategoryChange("")} />
-                                <SkillTab active={platformCategory === "__uncategorized__"} label="未细分" onClick={() => onPlatformCategoryChange("__uncategorized__")} />
+                            <div className="canvas-agent-skill-library-category-group" role="group" aria-label={tr("平台分类")}>
+                                <div className="canvas-agent-skill-library-category-heading">{tr("平台分类")}</div>
+                                <SkillTab active={!platformCategory} label={tr("全部分类")} onClick={() => onPlatformCategoryChange("")} />
+                                <SkillTab active={platformCategory === "__uncategorized__"} label={tr("未细分")} onClick={() => onPlatformCategoryChange("__uncategorized__")} />
                                 {(curationState.curation.roots || []).map((root) => {
                                     const Icon = curationIcon(root.iconKey);
                                     const children = curationState.curation?.categories.filter((item) => item.rootTag === root.id) || [];
@@ -220,9 +221,9 @@ export function CanvasAgentSkillLibraryModal({
                             </div>
                         ) : null}
                         <div className="canvas-agent-skill-library-category-group">
-                            <div className="canvas-agent-skill-library-category-heading">我的技能分类</div>
-                            <SkillTab active={tab !== "market" && libraryCategoryId === "all"} label="全部分类" count={librarySource.length} onClick={() => selectLibraryCategory("all")} />
-                            <SkillTab active={tab !== "market" && libraryCategoryId === "__uncategorized__"} label="未分类" count={libraryCategoryCounts.get("__uncategorized__") || 0} onClick={() => selectLibraryCategory("__uncategorized__")} />
+                            <div className="canvas-agent-skill-library-category-heading">{tr("我的技能分类")}</div>
+                            <SkillTab active={tab !== "market" && libraryCategoryId === "all"} label={tr("全部分类")} count={librarySource.length} onClick={() => selectLibraryCategory("all")} />
+                            <SkillTab active={tab !== "market" && libraryCategoryId === "__uncategorized__"} label={tr("未分类")} count={libraryCategoryCounts.get("__uncategorized__") || 0} onClick={() => selectLibraryCategory("__uncategorized__")} />
                             {libraryCategories.map((item) => (
                                 <SkillTab
                                     key={item.id}
@@ -235,8 +236,8 @@ export function CanvasAgentSkillLibraryModal({
                         </div>
 
                         <div className="canvas-agent-skill-library-category-group">
-                            <div className="canvas-agent-skill-library-category-heading">技能广场分类</div>
-                            <SkillTab active={tab === "market" && category === "all"} label="全部技能" count={marketplaceCategoryTotal} onClick={() => changeTab("market")} />
+                            <div className="canvas-agent-skill-library-category-heading">{tr("技能广场分类")}</div>
+                            <SkillTab active={tab === "market" && category === "all"} label={tr("全部技能")} count={marketplaceCategoryTotal} onClick={() => changeTab("market")} />
                             {!curationState.curation?.enabled && categoryItems.map((item) => (
                                 <SkillTab
                                     key={item.value}
@@ -252,13 +253,13 @@ export function CanvasAgentSkillLibraryModal({
 
                 <div className="canvas-agent-skill-library-content">
                     <header className="canvas-agent-skill-library-header">
-                        <h2>技能商店</h2>
-                        <button type="button" className="canvas-agent-skill-library-count" onClick={() => changeTab("enabled")} aria-label={`查看本轮已启用的 ${selectedCount} 个技能，最多 8 个`}>
-                            已启用 <strong>{selectedCount}</strong><span> / 8</span>
+                        <h2>{tr("技能商店")}</h2>
+                        <button type="button" className="canvas-agent-skill-library-count" onClick={() => changeTab("enabled")} aria-label={tr("查看本轮已启用的 {0} 个技能，最多 8 个", selectedCount)}>
+                            {tr("已启用")} <strong>{selectedCount}</strong><span> / 8</span>
                         </button>
                     </header>
 
-                    <div ref={listRef} className="canvas-agent-skill-library-list thin-scrollbar" aria-label="技能列表" aria-busy={loading}>
+                    <div ref={listRef} className="canvas-agent-skill-library-list thin-scrollbar" aria-label={tr("技能列表")} aria-busy={loading}>
                         {visibleSkills.map((skill) => (
                             <SkillLibraryCard
                                 key={skill.skillId}
@@ -275,24 +276,24 @@ export function CanvasAgentSkillLibraryModal({
                         {loading && visibleSkills.length === 0 ? (
                             <div className="canvas-agent-skill-library-state" style={{ color: theme.node.muted }}>
                                 <LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                                正在读取技能库…
+                                {tr("正在读取技能库…")}
                             </div>
                         ) : null}
                         {!loading && visibleSkills.length === 0 ? (
                             <div className="canvas-agent-skill-library-state" style={{ color: theme.node.muted }}>
                                 <Sparkles className="size-6" aria-hidden="true" />
                                 <span>{emptyText}</span>
-                                {tab !== "market" ? <Button size="small" onClick={() => changeTab("market")}>浏览公开技能</Button> : null}
+                                {tab !== "market" ? <Button size="small" onClick={() => changeTab("market")}>{tr("浏览公开技能")}</Button> : null}
                             </div>
                         ) : null}
                         {tab === "market" && hasMore ? <div ref={loadMoreRef} className="col-span-full h-px" aria-hidden="true" /> : null}
                     </div>
 
                     <footer className="canvas-agent-skill-library-footer" style={{ color: theme.node.muted, borderColor: theme.node.stroke }}>
-                        <span>{tab === "enabled" ? `${visibleSkills.length} 个技能将在本轮生效` : tab === "installed" ? `${visibleSkills.length} 个已加入技能` : `已加载 ${marketSkills.length} 个公开技能`}</span>
+                        <span>{tab === "enabled" ? tr("{0} 个技能将在本轮生效", visibleSkills.length) : tab === "installed" ? tr("{0} 个已加入技能", visibleSkills.length) : tr("已加载 {0} 个公开技能", marketSkills.length)}</span>
                         {tab === "market" && hasMore ? (
-                            <Button size="small" disabled={loading} loading={loading} onClick={() => void onLoadMore()}>{loading ? "加载中" : "加载更多"}</Button>
-                        ) : <span>{tab === "market" ? "已加载全部" : "最多启用 8 个"}</span>}
+                            <Button size="small" disabled={loading} loading={loading} onClick={() => void onLoadMore()}>{loading ? tr("加载中") : tr("加载更多")}</Button>
+                        ) : <span>{tab === "market" ? tr("已加载全部") : tr("最多启用 8 个")}</span>}
                     </footer>
                 </div>
             </section>
@@ -326,8 +327,8 @@ function SkillLibraryCard({ skill, rootLabel, theme, categories, selected, canSe
         || skill.showcaseMedia?.find((item) => item.showcaseUrl);
     const coverUrl = cover?.showcaseUrl;
     const hasCover = Boolean(coverUrl && !coverFailed);
-    const categoryLabel = rootLabel || categories.find((item) => item.value === skill.tag)?.label || "其他";
-    const author = skill.effectiveUser?.name || "影策创作者";
+    const categoryLabel = rootLabel || categories.find((item) => item.value === skill.tag)?.label || tr("其他");
+    const author = skill.effectiveUser?.name || tr("Local Studio创作者");
     const addedCount = formatSkillCount(skill.addedCount || 0);
 
     useEffect(() => setCoverFailed(false), [coverUrl]);
@@ -352,7 +353,7 @@ function SkillLibraryCard({ skill, rootLabel, theme, categories, selected, canSe
                         <img src={coverUrl} alt="" loading="lazy" onError={() => setCoverFailed(true)} />
                     )}
                     <span className="canvas-agent-skill-card-category">{categoryLabel}</span>
-                    {selected ? <span className="canvas-agent-skill-card-selected" aria-label="本轮已启用"><Check className="size-4" aria-hidden="true" /></span> : null}
+                    {selected ? <span className="canvas-agent-skill-card-selected" aria-label={tr("本轮已启用")}><Check className="size-4" aria-hidden="true" /></span> : null}
                 </div>
             ) : null}
             <div className={`canvas-agent-skill-card-body ${hasCover ? "" : "is-text-only"}`}>
@@ -367,14 +368,14 @@ function SkillLibraryCard({ skill, rootLabel, theme, categories, selected, canSe
                                 className={selected ? "is-selected" : ""}
                                 disabled={!canSelect}
                                 aria-pressed={selected}
-                                title={!canSelect ? "本轮最多启用 8 个 Skills" : undefined}
+                                title={!canSelect ? tr("本轮最多启用 8 个 Skills") : undefined}
                                 onClick={onToggle}
                             >
-                                {selected ? "已启用" : "使用"}
+                                {selected ? tr("已启用") : tr("使用")}
                             </Button>
                         ) : (
-                            <Button size="small" icon={<Plus className="size-3.5" />} loading={installing} disabled={installing || !canSelect} title={!canSelect ? "本轮最多启用 8 个 Skills" : undefined} onClick={() => void install()}>
-                                加入
+                            <Button size="small" icon={<Plus className="size-3.5" />} loading={installing} disabled={installing || !canSelect} title={!canSelect ? tr("本轮最多启用 8 个 Skills") : undefined} onClick={() => void install()}>
+                                {tr("加入")}
                             </Button>
                         )}
                     </div>
@@ -384,12 +385,12 @@ function SkillLibraryCard({ skill, rootLabel, theme, categories, selected, canSe
                     {skill.version ? <><span aria-hidden="true">·</span><span className="canvas-agent-skill-card-version">v{skill.version}</span></> : null}
                     <span className="inline-flex shrink-0 items-center gap-1"><Users className="size-3.5" aria-hidden="true" />{addedCount}</span>
                 </div>
-                <p title={skill.description || "暂无技能说明"}>{skill.description || "暂无技能说明"}</p>
+                <p title={skill.description || tr("暂无技能说明")}>{skill.description || tr("暂无技能说明")}</p>
             </div>
         </article>
     );
 }
 
 function formatSkillCount(value: number) {
-    return new Intl.NumberFormat("zh-CN", { notation: "compact", maximumFractionDigits: 1 }).format(value);
+    return new Intl.NumberFormat(currentLocale(), { notation: "compact", maximumFractionDigits: 1 }).format(value);
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Canvas, useLoader, useThree } from "@react-three/fiber";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
@@ -85,10 +86,10 @@ export function CanvasNodeEmotionPanel({ dataUrl, imageWidth, imageHeight, chara
                         </motion.button>
                     ))}
                     <button type="button" className="flex h-8 shrink-0 items-center gap-2 rounded-[var(--dock-item-radius)] border px-2 text-[var(--fs-label)] font-medium opacity-70 transition hover:opacity-100" style={{ background: theme.spatial.surface, borderColor: theme.toolbar.border }} onClick={onManualSelect}>
-                        <ScanFace className="size-3.5" />手动框选
+                        <ScanFace className="size-3.5" />{tr("手动框选")}
                     </button>
                 </div>
-                <button type="button" aria-label="关闭情绪调节" className="grid size-7 shrink-0 place-items-center rounded-full transition hover:bg-black/5 dark:hover:bg-white/10" onClick={onClose}><X className="size-3.5" /></button>
+                <button type="button" aria-label={tr("关闭情绪调节")} className="grid size-7 shrink-0 place-items-center rounded-full transition hover:bg-black/5 dark:hover:bg-white/10" onClick={onClose}><X className="size-3.5" /></button>
             </div>
 
             <div className="grid h-[216px] grid-cols-[minmax(0,1fr)_212px] gap-2 p-2">
@@ -97,7 +98,7 @@ export function CanvasNodeEmotionPanel({ dataUrl, imageWidth, imageHeight, chara
             </div>
 
             <div className="flex min-h-11 items-center gap-2 border-t px-3" style={{ borderColor: theme.toolbar.border }}>
-                <span className="text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>情绪定位</span>
+                <span className="text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>{tr("情绪定位")}</span>
                 <AnimatePresence mode="wait" initial={false}>
                     <motion.span key={preset.id} initial={reducedMotion ? false : { opacity: 0, y: 4, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={reducedMotion ? undefined : { opacity: 0, y: -3, filter: "blur(3px)" }} transition={{ duration: reducedMotion ? 0 : 0.18 }} className="text-xs font-semibold">{preset.label}</motion.span>
                 </AnimatePresence>
@@ -111,7 +112,7 @@ export function CanvasNodeEmotionPanel({ dataUrl, imageWidth, imageHeight, chara
                     style={{ background: theme.node.activeStroke, color: theme.node.panel }}
                     onClick={onConfirm}
                 >
-                    <Sparkles className={`size-3.5 ${generating ? "animate-pulse" : ""}`} />{generating ? "准备生成" : "生成"}
+                    <Sparkles className={`size-3.5 ${generating ? "animate-pulse" : ""}`} />{generating ? tr("准备生成") : tr("生成")}
                 </motion.button>
             </div>
         </SpotlightSurface>
@@ -145,13 +146,13 @@ function EmotionPad({ preset, onChange }: { preset: CanvasEmotionPreset; onChang
     const selectedRow = 2 - preset.arousal;
     return (
         <div className="relative rounded-[var(--r-lg)] border px-6 pb-6 pt-[24px]" style={{ background: theme.toolbar.itemHover, borderColor: theme.toolbar.border }}>
-            <span className="pointer-events-none absolute inset-x-0 top-1.5 text-center text-[var(--fs-micro)]" style={{ color: theme.node.muted }}>激动</span>
-            <span className="pointer-events-none absolute inset-x-0 bottom-1.5 text-center text-[var(--fs-micro)]" style={{ color: theme.node.muted }}>平静</span>
-            <span className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-[var(--fs-micro)] [writing-mode:vertical-rl]" style={{ color: theme.node.muted }}>亲近</span>
-            <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[var(--fs-micro)] [writing-mode:vertical-rl]" style={{ color: theme.node.muted }}>疏离</span>
+            <span className="pointer-events-none absolute inset-x-0 top-1.5 text-center text-[var(--fs-micro)]" style={{ color: theme.node.muted }}>{tr("激动")}</span>
+            <span className="pointer-events-none absolute inset-x-0 bottom-1.5 text-center text-[var(--fs-micro)]" style={{ color: theme.node.muted }}>{tr("平静")}</span>
+            <span className="pointer-events-none absolute left-1 top-1/2 -translate-y-1/2 text-[var(--fs-micro)] [writing-mode:vertical-rl]" style={{ color: theme.node.muted }}>{tr("亲近")}</span>
+            <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[var(--fs-micro)] [writing-mode:vertical-rl]" style={{ color: theme.node.muted }}>{tr("疏离")}</span>
             <div
                 role="slider"
-                aria-label="情绪强度"
+                aria-label={tr("情绪强度")}
                 aria-valuetext={preset.label}
                 tabIndex={0}
                 className="relative grid size-full touch-none cursor-crosshair grid-cols-5 grid-rows-5 outline-none"
@@ -202,7 +203,7 @@ function EmotionHeadPreview({ preset }: { preset: CanvasEmotionPreset }) {
             </Canvas>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/55 to-transparent" />
             <AnimatePresence mode="wait" initial={false}>
-                <motion.span key={preset.id} initial={{ opacity: 0, filter: "blur(6px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} exit={{ opacity: 0, filter: "blur(5px)" }} transition={{ duration: aceternityMotion.duration.state }} className="pointer-events-none absolute bottom-2 left-2.5 text-[var(--fs-tiny)] font-medium text-white/72">实时预览 · {preset.label}</motion.span>
+                <motion.span key={preset.id} initial={{ opacity: 0, filter: "blur(6px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} exit={{ opacity: 0, filter: "blur(5px)" }} transition={{ duration: aceternityMotion.duration.state }} className="pointer-events-none absolute bottom-2 left-2.5 text-[var(--fs-tiny)] font-medium text-white/72">{tr("实时预览 ·")} {preset.label}</motion.span>
             </AnimatePresence>
         </div>
     );

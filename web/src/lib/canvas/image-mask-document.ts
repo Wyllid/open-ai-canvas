@@ -1,10 +1,11 @@
+import { tr } from "@/i18n";
 export type MaskPoint = readonly [number, number];
 export type MaskStroke = { diameter: number; erase: boolean; points: MaskPoint[] };
 
 /** A stroke document is the source of truth; previews and exported masks are separate renders. */
 export function paintMaskStrokes(canvas: HTMLCanvasElement, strokes: readonly MaskStroke[], color: string): CanvasRenderingContext2D {
     const brush = canvas.getContext("2d", { willReadFrequently: true });
-    if (!brush) throw new Error("无法创建遮罩画布");
+    if (!brush) throw new Error(tr("无法创建遮罩画布"));
     brush.clearRect(0, 0, canvas.width, canvas.height);
     brush.lineCap = "round";
     brush.lineJoin = "round";
@@ -29,7 +30,7 @@ export function paintMaskStrokes(canvas: HTMLCanvasElement, strokes: readonly Ma
 }
 
 export function invertSelectionAlpha(selection: Uint8ClampedArray): Uint8ClampedArray {
-    if (selection.length % 4 !== 0) throw new RangeError("遮罩像素数据无效");
+    if (selection.length % 4 !== 0) throw new RangeError(tr("遮罩像素数据无效"));
     let selected = false;
     const result = new Uint8ClampedArray(selection.length).fill(255);
     for (let pixel = 0; pixel < selection.length / 4; pixel++) {
@@ -37,7 +38,7 @@ export function invertSelectionAlpha(selection: Uint8ClampedArray): Uint8Clamped
         selected = true;
         result[pixel * 4 + 3] = 0;
     }
-    if (!selected) throw new Error("请先涂抹需要修改的区域");
+    if (!selected) throw new Error(tr("请先涂抹需要修改的区域"));
     return result;
 }
 
@@ -49,6 +50,6 @@ export function exportEditMask(width: number, height: number, strokes: readonly 
     pixels.data.set(invertSelectionAlpha(pixels.data));
     brush.putImageData(pixels, 0, 0);
     const png = surface.toDataURL("image/png");
-    if (!png.startsWith("data:image/png")) throw new Error("遮罩导出失败");
+    if (!png.startsWith("data:image/png")) throw new Error(tr("遮罩导出失败"));
     return png;
 }

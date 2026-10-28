@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { AgentMediaSettings } from "@/services/api/agent";
 import { isCanvasNodeGenerating } from "@/lib/canvas/canvas-node-task-state";
 import type { CanvasNodeData } from "@/types/canvas";
@@ -99,7 +100,7 @@ export function agentApprovalModelSelection(config: AiConfig, model: string): Pi
     const logicalModelId = logicalModelIDForConfig({ ...config, model });
     if (logicalModelId) return { logicalModelId };
     const channel = resolveModelChannel(config, model);
-    if (channel.scope !== "system") throw new Error("Agent 生成仅支持平台模型");
+    if (channel.scope !== "system") throw new Error(tr("Agent 生成仅支持平台模型"));
     return { channelId: channel.id, channelModelKey: modelOptionName(model) };
 }
 

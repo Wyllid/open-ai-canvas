@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Modal } from "antd";
 
 import { PREVIS_TEMPLATES, type PrevisTemplateId } from "@/lib/canvas/previs/previs-templates";
@@ -11,7 +12,7 @@ import { PREVIS_TEMPLATES, type PrevisTemplateId } from "@/lib/canvas/previs/pre
  */
 export function CanvasPrevisTemplateModal({ open, onClose, onSelect }: { open: boolean; onClose: () => void; onSelect: (templateId: PrevisTemplateId) => void }) {
     return (
-        <Modal open={open} onCancel={onClose} footer={null} width={560} title="选择镜头模板" destroyOnHidden>
+        <Modal open={open} onCancel={onClose} footer={null} width={560} title={tr("选择镜头模板")} destroyOnHidden>
             <div className="previs-template-grid">
                 {PREVIS_TEMPLATES.map((template) => (
                     <button

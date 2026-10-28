@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App } from "antd";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
@@ -23,7 +24,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         try {
             setReferences(await getAdminReferences());
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "读取后台基础数据失败");
+            message.error(error instanceof Error ? error.message : tr("读取后台基础数据失败"));
         } finally {
             setReferencesLoading(false);
         }
@@ -46,6 +47,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
 export function useAdminContext() {
     const value = useContext(AdminContext);
-    if (!value) throw new Error("useAdminContext 必须在 AdminProvider 内使用");
+    if (!value) throw new Error(tr("useAdminContext 必须在 AdminProvider 内使用"));
     return value;
 }

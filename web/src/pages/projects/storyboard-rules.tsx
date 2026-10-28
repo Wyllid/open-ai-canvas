@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useState } from "react";
 import { Dropdown, Input, InputNumber } from "antd";
 import { ChevronDown, Film, TriangleAlert } from "lucide-react";
@@ -31,12 +32,12 @@ export function EpisodeDurationInput({ value, onChange }: { value: number; onCha
     const commit = (raw: string) => {
         const parsed = parseEpisodeSeconds(raw);
         if (parsed === null) {
-            setError("可输入 90、5分钟、2:30");
+            setError(tr("可输入 90、5分钟、2:30"));
             setText(formatEpisodeSeconds(value));
             return;
         }
         const seconds = clampEpisodeSeconds(parsed);
-        setError(seconds !== parsed ? `单集时长需在 ${formatEpisodeSeconds(MIN_EPISODE_SECONDS)}–${formatEpisodeSeconds(MAX_EPISODE_SECONDS)} 之间，已调整` : "");
+        setError(seconds !== parsed ? tr("单集时长需在 {0}–{1} 之间，已调整", formatEpisodeSeconds(MIN_EPISODE_SECONDS), formatEpisodeSeconds(MAX_EPISODE_SECONDS)) : "");
         onChange(seconds);
         setText(formatEpisodeSeconds(seconds));
     };
@@ -55,7 +56,7 @@ export function EpisodeDurationInput({ value, onChange }: { value: number; onCha
                         label: (
                             <span className="drama-duration-option">
                                 <span>{formatEpisodeSeconds(seconds)}</span>
-                                <small>{seconds} 秒</small>
+                                <small>{tr("{0} 秒", seconds)}</small>
                             </span>
                         ),
                     })),
@@ -68,8 +69,8 @@ export function EpisodeDurationInput({ value, onChange }: { value: number; onCha
             >
                 <Input
                     value={text}
-                    placeholder="如 90、5分钟、2:30"
-                    aria-label="单集时长"
+                    placeholder={tr("如 90、5分钟、2:30")}
+                    aria-label={tr("单集时长")}
                     onChange={(event) => {
                         setText(event.target.value);
                         setError("");
@@ -83,38 +84,38 @@ export function EpisodeDurationInput({ value, onChange }: { value: number; onCha
                     suffix={<ChevronDown className={`size-3.5 opacity-50 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />}
                 />
             </Dropdown>
-            {error ? <small className="drama-field-error">{error}</small> : <small className="drama-field-hint">约 {Math.round((value / 60) * 10) / 10} 分钟 · 也可直接输入</small>}
+            {error ? <small className="drama-field-error">{error}</small> : <small className="drama-field-hint">{tr("约 {0} 分钟 · 也可直接输入", Math.round((value / 60) * 10) / 10)}</small>}
         </div>
     );
 }
 
 const SEGMENT_MODES: Array<{ value: DramaSegmentMode; label: string; detail: string }> = [
-    { value: "auto", label: "智能", detail: "按场景切换与冲突转折切段，单段不超过视频模型单次上限" },
-    { value: "fixed", label: "固定", detail: "每段固定秒数，跨场景也按时长切" },
-    { value: "range", label: "范围", detail: "每段在设定范围内，达到下限后在场景切换处断开" },
+    { value: "auto", label: tr("智能"), detail: tr("按场景切换与冲突转折切段，单段不超过视频模型单次上限") },
+    { value: "fixed", label: tr("固定"), detail: tr("每段固定秒数，跨场景也按时长切") },
+    { value: "range", label: tr("范围"), detail: tr("每段在设定范围内，达到下限后在场景切换处断开") },
 ];
 
 /** 剧情段切法的一句话说明，分镜规则卡与剧本页共用。 */
 export function segmentRuleLabel(limits: SegmentLimits) {
-    if (limits.mode === "fixed") return `每段 ${limits.max} 秒`;
-    if (limits.mode === "range") return `每段 ${limits.min}–${limits.max} 秒`;
-    return limits.max ? `智能切段 · 单段不超过 ${limits.max} 秒` : "智能切段";
+    if (limits.mode === "fixed") return tr("每段 {0} 秒", limits.max);
+    if (limits.mode === "range") return tr("每段 {0}–{1} 秒", limits.min, limits.max);
+    return limits.max ? tr("智能切段 · 单段不超过 {0} 秒", limits.max) : tr("智能切段");
 }
 const PACING: Array<{ value: DramaStoryboardSettings["pacing"]; label: string; detail: string }> = [
-    { value: "fast", label: "快节奏", detail: "2–4 秒短镜，冲突处密集切换" },
-    { value: "standard", label: "标准", detail: "2–5 秒为主，关键台词可到 6 秒" },
-    { value: "slow", label: "舒缓", detail: "4–8 秒长镜，营造情绪" },
+    { value: "fast", label: tr("快节奏"), detail: tr("2–4 秒短镜，冲突处密集切换") },
+    { value: "standard", label: tr("标准"), detail: tr("2–5 秒为主，关键台词可到 6 秒") },
+    { value: "slow", label: tr("舒缓"), detail: tr("4–8 秒长镜，营造情绪") },
 ];
 const DIALOGUE: Array<{ value: DramaStoryboardSettings["dialogue"]; label: string; detail: string }> = [
-    { value: "dense", label: "密集", detail: "约每 3 秒一句台词或旁白，单句不超过 12 字，适合爽剧、对手戏" },
-    { value: "standard", label: "标准", detail: "约每 4.5 秒一句，单句不超过 16 字" },
-    { value: "sparse", label: "克制", detail: "约每 7 秒一句，单句不超过 20 字，留给动作与氛围" },
+    { value: "dense", label: tr("密集"), detail: tr("约每 3 秒一句台词或旁白，单句不超过 12 字，适合爽剧、对手戏") },
+    { value: "standard", label: tr("标准"), detail: tr("约每 4.5 秒一句，单句不超过 16 字") },
+    { value: "sparse", label: tr("克制"), detail: tr("约每 7 秒一句，单句不超过 20 字，留给动作与氛围") },
 ];
 const TRANSITIONS: Array<{ value: DramaStoryboardSettings["transition"]; label: string; detail: string }> = [
-    { value: "auto", label: "智能", detail: "默认硬切，场景跳转用黑场，回忆用闪白" },
-    { value: "cut", label: TRANSITION_LABEL.cut, detail: "全部直接切换" },
-    { value: "fadeblack", label: TRANSITION_LABEL.fadeblack, detail: "每次切镜都经过黑场" },
-    { value: "fadewhite", label: TRANSITION_LABEL.fadewhite, detail: "每次切镜都短暂闪白" },
+    { value: "auto", label: tr("智能"), detail: tr("默认硬切，场景跳转用黑场，回忆用闪白") },
+    { value: "cut", label: TRANSITION_LABEL.cut, detail: tr("全部直接切换") },
+    { value: "fadeblack", label: TRANSITION_LABEL.fadeblack, detail: tr("每次切镜都经过黑场") },
+    { value: "fadewhite", label: TRANSITION_LABEL.fadewhite, detail: tr("每次切镜都短暂闪白") },
 ];
 
 const CONTINUITY: Array<{ value: DramaStoryboardSettings["continuity"]; label: string; detail: string }> = [
@@ -159,7 +160,7 @@ export function StoryboardRules({
     const set = (patch: Partial<DramaStoryboardSettings>) => onChange(normalizeStoryboard({ ...rules, ...patch }));
     const limits = segmentLimits(rules, maxVideoSeconds);
     const target = segmentTargetSeconds(limits);
-    const modelName = videoModelLabel || "视频模型";
+    const modelName = videoModelLabel || tr("视频模型");
     // 用户填的秒数超过模型单次上限时按上限执行，明确告诉用户而不是静默改值。
     const requested = rules.segmentMode === "fixed" ? rules.segmentSeconds : rules.segmentMode === "range" ? rules.segmentMaxSeconds : 0;
     const capped = Boolean(maxVideoSeconds && requested > maxVideoSeconds);
@@ -171,7 +172,7 @@ export function StoryboardRules({
             max={bounds.max}
             precision={0}
             value={value}
-            suffix="秒"
+            suffix={tr("秒")}
             aria-label={label}
             onChange={(next) => {
                 if (typeof next === "number") onValue(next);
@@ -182,44 +183,44 @@ export function StoryboardRules({
         <div className={`drama-sbrules ${bare ? "is-bare" : ""}`}>
             {onEpisodeSecondsChange ? (
                 <div className="drama-sbrules-row">
-                    <span className="drama-sbrules-label">单集时长</span>
+                    <span className="drama-sbrules-label">{tr("单集时长")}</span>
                     <div className="drama-sbrules-duration">
                         <EpisodeDurationInput value={episodeSeconds} onChange={onEpisodeSecondsChange} />
                     </div>
                 </div>
             ) : null}
             <div className="drama-sbrules-row">
-                <span className="drama-sbrules-label">剧情段</span>
+                <span className="drama-sbrules-label">{tr("剧情段")}</span>
                 <div className="drama-sbrules-segment">
-                    <Segmented label="剧情段切分" value={rules.segmentMode} options={SEGMENT_MODES} onChange={(segmentMode) => set({ segmentMode })} />
-                    {rules.segmentMode === "fixed" ? number(rules.segmentSeconds, (segmentSeconds) => set({ segmentSeconds }), "每段时长", { min: MIN_SEGMENT_SECONDS, max: MAX_SEGMENT_SECONDS }) : null}
+                    <Segmented label={tr("剧情段切分")} value={rules.segmentMode} options={SEGMENT_MODES} onChange={(segmentMode) => set({ segmentMode })} />
+                    {rules.segmentMode === "fixed" ? number(rules.segmentSeconds, (segmentSeconds) => set({ segmentSeconds }), tr("每段时长"), { min: MIN_SEGMENT_SECONDS, max: MAX_SEGMENT_SECONDS }) : null}
                     {rules.segmentMode === "range" ? (
                         <>
-                            {number(rules.segmentMinSeconds, (segmentMinSeconds) => set({ segmentMinSeconds }), "每段最短", { min: MIN_SEGMENT_SECONDS, max: rules.segmentMaxSeconds })}
-                            <span className="drama-sbrules-dash">至</span>
-                            {number(rules.segmentMaxSeconds, (segmentMaxSeconds) => set({ segmentMaxSeconds }), "每段最长", { min: rules.segmentMinSeconds, max: MAX_SEGMENT_SECONDS })}
+                            {number(rules.segmentMinSeconds, (segmentMinSeconds) => set({ segmentMinSeconds }), tr("每段最短"), { min: MIN_SEGMENT_SECONDS, max: rules.segmentMaxSeconds })}
+                            <span className="drama-sbrules-dash">{tr("至")}</span>
+                            {number(rules.segmentMaxSeconds, (segmentMaxSeconds) => set({ segmentMaxSeconds }), tr("每段最长"), { min: rules.segmentMinSeconds, max: MAX_SEGMENT_SECONDS })}
                         </>
                     ) : null}
                     <span className="drama-sbrules-hint">
                         {rules.segmentMode === "auto"
                             ? maxVideoSeconds
-                                ? `按场景与冲突切段，单段不超过 ${maxVideoSeconds} 秒（${modelName}上限）`
-                                : "按场景与冲突切段，单段不超过视频模型单次上限"
+                                ? tr("按场景与冲突切段，单段不超过 {0} 秒（{1}上限）", maxVideoSeconds, modelName)
+                                : tr("按场景与冲突切段，单段不超过视频模型单次上限")
                             : SEGMENT_MODES.find((item) => item.value === rules.segmentMode)?.detail}
                     </span>
                 </div>
             </div>
             <div className="drama-sbrules-row">
-                <span className="drama-sbrules-label">镜头节奏</span>
-                <Segmented label="镜头节奏" value={rules.pacing} options={PACING} onChange={(pacing) => set({ pacing })} />
+                <span className="drama-sbrules-label">{tr("镜头节奏")}</span>
+                <Segmented label={tr("镜头节奏")} value={rules.pacing} options={PACING} onChange={(pacing) => set({ pacing })} />
             </div>
             <div className="drama-sbrules-row">
-                <span className="drama-sbrules-label">对白密度</span>
-                <Segmented label="对白密度" value={rules.dialogue} options={DIALOGUE} onChange={(dialogue) => set({ dialogue })} />
+                <span className="drama-sbrules-label">{tr("对白密度")}</span>
+                <Segmented label={tr("对白密度")} value={rules.dialogue} options={DIALOGUE} onChange={(dialogue) => set({ dialogue })} />
             </div>
             <div className="drama-sbrules-row">
-                <span className="drama-sbrules-label">转场</span>
-                <Segmented label="镜头转场" value={rules.transition} options={TRANSITIONS} onChange={(transition) => set({ transition })} />
+                <span className="drama-sbrules-label">{tr("转场")}</span>
+                <Segmented label={tr("镜头转场")} value={rules.transition} options={TRANSITIONS} onChange={(transition) => set({ transition })} />
             </div>
             <div className="drama-sbrules-row">
                 <span className="drama-sbrules-label">Continuity</span>
@@ -228,19 +229,20 @@ export function StoryboardRules({
             </div>
             {rules.transition !== "cut" ? (
                 <div className="drama-sbrules-row">
-                    <span className="drama-sbrules-label">转场时长</span>
-                    <InputNumber className="drama-sbrules-number" min={150} max={1500} step={50} value={rules.transitionMs} onChange={(next) => set({ transitionMs: next || 400 })} suffix="毫秒" aria-label="转场时长" />
+                    <span className="drama-sbrules-label">{tr("转场时长")}</span>
+                    <InputNumber className="drama-sbrules-number" min={150} max={1500} step={50} value={rules.transitionMs} onChange={(next) => set({ transitionMs: next || 400 })} suffix={tr("毫秒")} aria-label={tr("转场时长")} />
                     <span className="drama-sbrules-hint">{TRANSITIONS.find((item) => item.value === rules.transition)?.detail}</span>
                 </div>
             ) : null}
             <div className="drama-sbrules-summary">
                 <Film className="size-3.5" />
                 <span>
-                    每集约 <b>{shotTarget(rules, episodeSeconds)}</b> 个镜头、至少 <b>{lineTarget(rules, episodeSeconds)}</b> 句台词
+                    {tr("每集约")} <b>{shotTarget(rules, episodeSeconds)}</b> {tr("个镜头、至少")} <b>{lineTarget(rules, episodeSeconds)}</b> {tr("句台词")}
                     {target ? (
                         <>
                             {" "}
-                            · {segmentRuleLabel(limits)}，{limits.mode === "auto" ? "至少" : "约"} <b>{Math.max(1, Math.ceil(episodeSeconds / target))}</b> 段 · 每段约 <b>{Math.max(1, Math.round(target / averageShotSeconds(rules)))}</b> 镜
+                            · {segmentRuleLabel(limits)}，{limits.mode === "auto" ? tr("至少") : tr("约")} <b>{Math.max(1, Math.ceil(episodeSeconds / target))}</b> {tr("段 · 每段约")} <b>{Math.max(1, Math.round(target / averageShotSeconds(rules)))}</b>{" "}
+                            {tr("镜")}
                         </>
                     ) : null}
                 </span>
@@ -248,7 +250,9 @@ export function StoryboardRules({
             {capped ? (
                 <p className="drama-sbrules-warn">
                     <TriangleAlert className="size-3.5 shrink-0" />
-                    {modelName}单次最长 {maxVideoSeconds} 秒，{rules.segmentMode === "fixed" ? `剧情段按 ${maxVideoSeconds} 秒切分` : `剧情段上限按 ${maxVideoSeconds} 秒执行`}。
+                    {modelName}
+                    {tr("单次最长 {0} 秒，", maxVideoSeconds)}
+                    {rules.segmentMode === "fixed" ? tr("剧情段按 {0} 秒切分", maxVideoSeconds) : tr("剧情段上限按 {0} 秒执行", maxVideoSeconds)}。
                 </p>
             ) : null}
         </div>

@@ -1,3 +1,4 @@
+import { tr, trMessage } from "@/i18n";
 export type CanvasAppearance = {
     agentName: string;
     launcherLabel: string;
@@ -15,14 +16,14 @@ export type CanvasAppearance = {
 
 export type AgentAvatarState = "idle" | "queued" | "running" | "waiting_approval" | "completed" | "failed" | "cancelled" | "rejected";
 export const AGENT_AVATAR_STATES: { id: AgentAvatarState; label: string }[] = [
-    { id: "idle", label: "待命" },
-    { id: "queued", label: "排队中" },
-    { id: "running", label: "运行中" },
-    { id: "waiting_approval", label: "等待审批" },
-    { id: "completed", label: "已完成" },
-    { id: "failed", label: "异常" },
-    { id: "cancelled", label: "已停止" },
-    { id: "rejected", label: "已拒绝" },
+    { id: "idle", label: tr("待命") },
+    { id: "queued", label: tr("排队中") },
+    { id: "running", label: tr("运行中") },
+    { id: "waiting_approval", label: tr("等待审批") },
+    { id: "completed", label: tr("已完成") },
+    { id: "failed", label: tr("异常") },
+    { id: "cancelled", label: tr("已停止") },
+    { id: "rejected", label: tr("已拒绝") },
 ];
 
 export type AgentAvatarBundleManifest = {
@@ -82,12 +83,12 @@ export function suggestedAgentAvatarClipStates(manifest: AgentAvatarBundleManife
 }
 
 export const DEFAULT_CANVAS_APPEARANCE: CanvasAppearance = {
-    agentName: "影策",
+    agentName: "Local Studio",
     launcherLabel: "Agent",
-    panelTitle: "画布助手",
-    welcomeTitle: "在这里，和{agentName}让灵感，慢慢成形",
-    welcomeDescription: "从一个想法开始，和{agentName}一起创作。",
-    inputPlaceholder: "输入操作指导；用 @ 引用画布节点，用 / 或 、 引用 Skills",
+    panelTitle: tr("画布助手"),
+    welcomeTitle: tr("在这里，和{agentName}让灵感，慢慢成形"),
+    welcomeDescription: tr("从一个想法开始，和{agentName}一起创作。"),
+    inputPlaceholder: tr("输入操作指导；用 @ 引用画布节点，用 / 或 、 引用 Skills"),
     avatarType: "bundle",
     live2dResourceId: "",
     live2dEntry: "",
@@ -105,6 +106,7 @@ export const DEFAULT_CANVAS_APPEARANCE: CanvasAppearance = {
     avatarHeight: 220,
 };
 
+/** Fills {agentName}; texts saved as the Chinese defaults are shown in the interface language. */
 export function agentCopy(template: string, name: string) {
-    return template.replaceAll("{agentName}", () => name);
+    return trMessage(template).replaceAll("{agentName}", () => name);
 }

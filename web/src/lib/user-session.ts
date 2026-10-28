@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { getFeatureAvailability, type AuthSessionPayload } from "@/services/api/auth";
 import { projectImageParameters, imageParametersForSpec } from "./image-parameters";
 import { getModelCatalog, type CapabilitySpec, type ModelCatalogResponse, type OptionConstraint, type PublicChannelCatalog, type PublicLogicalModel } from "@/services/api/logical-models";
@@ -134,7 +135,7 @@ async function hydrateUserSessionData(payload: AuthSessionPayload, generation: n
             category: "navigation",
             level: "info",
             code: "startup.workspace_background_ready",
-            message: "工作区后台状态初始化完成",
+            message: tr("工作区后台状态初始化完成"),
             durationMs: performance.now() - startedAt,
         });
     }
@@ -169,10 +170,10 @@ export async function refreshSystemChannels() {
 // 目录仅接受系统渠道模型，避免畸形响应被当成空目录写入配置。
 function modelCatalogChannels(catalog: ModelCatalogResponse): ModelChannel[] {
     if (catalog.source === "system") {
-        if (!Array.isArray(catalog.channels)) throw new Error("模型目录响应缺少系统渠道列表");
+        if (!Array.isArray(catalog.channels)) throw new Error(tr("模型目录响应缺少系统渠道列表"));
         return systemChannelModelChannels(catalog.channels);
     }
-    throw new Error("模型目录响应来源无效");
+    throw new Error(tr("模型目录响应来源无效"));
 }
 
 // 系统渠道模型转换为前端配置格式

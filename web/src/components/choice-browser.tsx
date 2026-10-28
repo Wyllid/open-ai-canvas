@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Input } from "antd";
 import { Search } from "lucide-react";
 import { useId, useState, type ReactNode } from "react";
@@ -19,7 +20,7 @@ export function ChoiceBrowser({
     onChange,
     options,
     label,
-    placeholder = "搜索名称、来源或请求路径",
+    placeholder = tr("搜索名称、来源或请求路径"),
     loading = false,
     error = "",
     disabled = false,
@@ -47,10 +48,20 @@ export function ChoiceBrowser({
 
     return (
         <div className="choice-browser">
-            <Input id={id} {...aria} allowClear aria-label={`搜索${label}`} disabled={unavailable} prefix={<Search className="size-3.5" aria-hidden="true" />} placeholder={placeholder} value={query} onChange={(event) => setQuery(event.target.value)} />
+            <Input
+                id={id}
+                {...aria}
+                allowClear
+                aria-label={tr("搜索{0}", label)}
+                disabled={unavailable}
+                prefix={<Search className="size-3.5" aria-hidden="true" />}
+                placeholder={placeholder}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+            />
             {loading || error || !options.length ? (
                 <div className="choice-browser-state" role={error ? "alert" : "status"}>
-                    {loading ? "正在读取可选项…" : error || "暂无可用选项"}
+                    {loading ? tr("正在读取可选项…") : error || tr("暂无可用选项")}
                 </div>
             ) : (
                 <div className="choice-browser-panels">
@@ -69,12 +80,12 @@ export function ChoiceBrowser({
                         ))}
                         {!visible.length && (
                             <div className="choice-browser-state" role="status">
-                                没有匹配的选项
+                                {tr("没有匹配的选项")}
                             </div>
                         )}
                     </div>
                     <div className="choice-browser-detail" aria-live="polite">
-                        <span>当前选择</span>
+                        <span>{tr("当前选择")}</span>
                         {selected ? (
                             <>
                                 <strong>{selected.label}</strong>
@@ -88,7 +99,7 @@ export function ChoiceBrowser({
                                 </dl>
                             </>
                         ) : (
-                            <p>{value ? `当前配置 ${value} 不在可用目录中，请重新选择。` : "选择左侧选项查看详情"}</p>
+                            <p>{value ? tr("当前配置 {0} 不在可用目录中，请重新选择。", value) : tr("选择左侧选项查看详情")}</p>
                         )}
                     </div>
                 </div>

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 export const CHARACTER_VOICE_FORMAT_LABEL = "MP3、WAV、M4A/AAC、FLAC、OGG/Opus、WebM";
 
 export const CHARACTER_VOICE_UPLOAD_ACCEPT = [
@@ -25,7 +26,7 @@ export function isSupportedCharacterVoiceFile(file: Pick<File, "name" | "type">)
 }
 
 export function characterVoiceTitleFromFileName(fileName: string) {
-    return fileName.replace(/\.(mp3|wav|m4a|aac|flac|ogg|oga|opus|webm|weba)$/i, "") || "上传声音";
+    return fileName.replace(/\.(mp3|wav|m4a|aac|flac|ogg|oga|opus|webm|weba)$/i, "") || tr("上传声音");
 }
 
 export function characterVoiceFormatName(mimeType?: string, fileName = "") {

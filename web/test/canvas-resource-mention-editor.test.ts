@@ -146,7 +146,7 @@ describe("canvas resource mention editor", () => {
         expect(chat).toContain('sendOnEnter={canSubmit ? "both" : false}');
         expect(chat).toContain("agent-composer-resize-handle");
         expect(chat).toContain("Enter 或 ⌘/Ctrl+Enter 发送");
-        expect(chat).toContain('title={canStop ? "插话：Agent 下一次开口时看到它"');
+        expect(chat).toContain('title={canStop ? tr("插话：Agent 下一次开口时看到它")');
         expect(css).toContain(".agent-composer-prompt-scroll");
         expect(css).not.toContain(".agent-tool-row:hover");
     });

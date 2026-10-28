@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AppModal } from "@/components/ui/product/app-modal";
 import { Command, Search } from "lucide-react";
@@ -52,8 +53,8 @@ export function CanvasShortcutsModal({ open, onClose }: { open: boolean; onClose
                             <Command />
                         </span>
                         <span>
-                            <strong>画布快捷键</strong>
-                            <small>快速找到键盘、鼠标和视图操作</small>
+                            <strong>{tr("画布快捷键")}</strong>
+                            <small>{tr("快速找到键盘、鼠标和视图操作")}</small>
                         </span>
                     </div>
                     <label className="canvas-shortcuts-search">
@@ -62,20 +63,20 @@ export function CanvasShortcutsModal({ open, onClose }: { open: boolean; onClose
                             ref={inputRef}
                             value={query}
                             onChange={(event) => setQuery(event.target.value)}
-                            placeholder="搜索按键或操作…"
-                            aria-label="搜索画布快捷键"
+                            placeholder={tr("搜索按键或操作…")}
+                            aria-label={tr("搜索画布快捷键")}
                         />
                         {query ? (
-                            <button type="button" onClick={() => setQuery("")} aria-label="清空搜索">
-                                清除
+                            <button type="button" onClick={() => setQuery("")} aria-label={tr("清空搜索")}>
+                                {tr("清除")}
                             </button>
                         ) : null}
                     </label>
                 </header>
 
                 <div className="canvas-shortcuts-body">
-                    <nav className="canvas-shortcuts-categories" aria-label="快捷键分类">
-                        <CategoryButton label="全部" count={CANVAS_SHORTCUTS.length} active={category === "all"} onClick={() => setCategory("all")} />
+                    <nav className="canvas-shortcuts-categories" aria-label={tr("快捷键分类")}>
+                        <CategoryButton label={tr("全部")} count={CANVAS_SHORTCUTS.length} active={category === "all"} onClick={() => setCategory("all")} />
                         {CANVAS_SHORTCUT_CATEGORIES.map((entry) => (
                             <CategoryButton
                                 key={entry.id}
@@ -97,16 +98,16 @@ export function CanvasShortcutsModal({ open, onClose }: { open: boolean; onClose
                         ) : (
                             <div className="canvas-shortcuts-empty">
                                 <Search aria-hidden />
-                                <strong>没有找到相关操作</strong>
-                                <span>试试搜索“粘贴”“缩放”或按键名称</span>
+                                <strong>{tr("没有找到相关操作")}</strong>
+                                <span>{tr("试试搜索“粘贴”“缩放”或按键名称")}</span>
                             </div>
                         )}
                     </main>
                 </div>
 
                 <footer className="canvas-shortcuts-footer">
-                    <span>共 {results.length} 个快捷键</span>
-                    <span className="canvas-shortcuts-close-hint"><Kbd>Esc</Kbd> 关闭</span>
+                    <span>{tr("共 {0} 个快捷键", results.length)}</span>
+                    <span className="canvas-shortcuts-close-hint"><Kbd>Esc</Kbd> {tr("关闭")}</span>
                 </footer>
             </div>
         </AppModal>
@@ -134,10 +135,10 @@ function ShortcutRow({ shortcut, showCategory }: { shortcut: CanvasShortcutItem;
                 </span>
                 <p>{shortcut.description}</p>
             </div>
-            <div className="canvas-shortcuts-keys" aria-label={shortcut.keys.map((combination) => combination.join(" 加 ")).join(" 或 ")}>
+            <div className="canvas-shortcuts-keys" aria-label={shortcut.keys.map((combination) => combination.join(tr(" 加 "))).join(tr(" 或 "))}>
                 {shortcut.keys.map((combination, combinationIndex) => (
                     <span key={`${shortcut.id}-${combination.join("-")}`} className="canvas-shortcuts-combination">
-                        {combinationIndex ? <em>或</em> : null}
+                        {combinationIndex ? <em>{tr("或")}</em> : null}
                         {combination.map((key, keyIndex) => (
                             <span key={`${key}-${keyIndex}`} className="canvas-shortcuts-key-part">
                                 {keyIndex ? <i>+</i> : null}

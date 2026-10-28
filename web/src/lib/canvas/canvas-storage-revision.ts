@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CanvasProject } from "@/stores/canvas/use-canvas-store";
 import type { CanvasAssistantSession, CanvasConnection, CanvasNodeData } from "@/types/canvas";
 import { normalizeAssetCategory } from "@/lib/asset-category";
@@ -79,7 +80,7 @@ export function parseCanvasStorageDocument(value: string | null, fallback: Canva
         journalTokens?: unknown;
         tombstones?: unknown;
     };
-    if (!Array.isArray(parsed.state?.projects)) throw new Error("画布持久状态无效");
+    if (!Array.isArray(parsed.state?.projects)) throw new Error(tr("画布持久状态无效"));
     return {
         state: { projects: normalizeProjectAssetCategories(parsed.state.projects as CanvasProject[]) },
         version: typeof parsed.version === "number" ? parsed.version : 0,

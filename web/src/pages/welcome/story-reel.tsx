@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useRef, type RefObject } from "react";
 import * as THREE from "three";
 import type { WelcomeLook } from "./story";
@@ -51,7 +52,7 @@ function imageTexture(image: HTMLImageElement, index: number, type: "film" | "sc
         ctx.fillRect(0, 0, 768, 512);
         ctx.fillStyle = "#f3f2ef";
         ctx.font = "20px sans-serif";
-        ctx.fillText(`${look.title} / 场 ${String(Math.floor(index / 4) + 1).padStart(2, "0")}`, 48, 65);
+        ctx.fillText(tr("{0} / 场 {1}", look.title, String(Math.floor(index / 4) + 1).padStart(2, "0")), 48, 65);
         ctx.font = "32px serif";
         ctx.fillText(look.screenplay[index], 48, 366, 672);
         ctx.font = "23px serif";
@@ -271,5 +272,5 @@ export default function StoryReel({ look, progress, paused, onReady, onError }: 
             renderer.dispose();
         };
     }, [progress, look]);
-    return <canvas ref={canvasRef} className="welcome-webgl" aria-label="随着故事章节旋转并展开的电影影像卷轴" />;
+    return <canvas ref={canvasRef} className="welcome-webgl" aria-label={tr("随着故事章节旋转并展开的电影影像卷轴")} />;
 }

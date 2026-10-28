@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { canvasNodeToAsset, declaredCanvasNodeAssetCategory, findCanvasNodeAsset, requiresMaterializedCanvasAsset, type CanvasAssetSource } from "@/lib/canvas/canvas-node-asset";
 import { canvasVideoAssetPreviewUrl } from "@/lib/canvas/canvas-media-preview";
 import { readImageMeta } from "@/lib/image-utils";
@@ -128,14 +129,14 @@ async function persistCanvasNodeAsset(options: EnsureCanvasNodeAssetOptions): Pr
     let created = false;
     if (!asset) {
         // 受管生成结果必须采用已登记的身份，不能以随机 ID 再建一份。
-        if (requiresMaterializedCanvasAsset(options.node, options.taskId)) throw new Error("生成素材尚未加载，请重新读取生成结果");
+        if (requiresMaterializedCanvasAsset(options.node, options.taskId)) throw new Error(tr("生成素材尚未加载，请重新读取生成结果"));
         const input = canvasNodeToAsset(options.node, { canvasId: options.canvasId, source: options.source, taskId: options.taskId });
-        if (!input) throw new Error("当前节点没有可保存的素材内容");
+        if (!input) throw new Error(tr("当前节点没有可保存的素材内容"));
         const assetId = store.addAsset(options.category ? { ...input, category: options.category } : input);
         asset = useAssetStore.getState().assets.find((item) => item.id === assetId);
         created = true;
     }
-    if (!asset) throw new Error("素材写入本地失败");
+    if (!asset) throw new Error(tr("素材写入本地失败"));
     if (declaredCategory && asset.category !== declaredCategory) {
         store.updateAsset(asset.id, { category: declaredCategory });
         asset = useAssetStore.getState().assets.find((item) => item.id === asset?.id) || asset;
@@ -269,7 +270,7 @@ async function performCanvasProjectAssetLink(job: PendingCanvasProjectAssetLink,
         ensureCurrentScope();
         asset = useAssetStore.getState().assets.find((candidate) => candidate.id === job.assetId);
     }
-    if (!asset) throw new Error("素材写入本地失败");
+    if (!asset) throw new Error(tr("素材写入本地失败"));
     const category = job.category as AssetCategory | undefined;
     const linkedProjectIds = Array.isArray(asset.metadata?.projectIds) ? asset.metadata.projectIds.filter((id): id is string => typeof id === "string") : [];
     if (linkedProjectIds.includes(job.domainProjectId)) {
@@ -317,7 +318,7 @@ async function retryPendingCanvasProjectAssetLinks(scope = getActiveUserScope())
             console.warn("云端项目资产关联需要处理", error);
             if (!isRetryableCanvasAssetSyncError(error)) {
                 for (const listener of projectAssetLinkFailureListeners) {
-                    listener({ domainProjectId: entry.domainProjectId, message: error instanceof Error ? error.message : "未知错误" });
+                    listener({ domainProjectId: entry.domainProjectId, message: error instanceof Error ? error.message : tr("未知错误") });
                 }
             }
         }
@@ -392,7 +393,7 @@ async function storedGenerationImage(result: NonNullable<BackendGenerationResult
     throwIfAborted(signal);
     if (result.storageKey) {
         const url = await resolveImageUrl(result.storageKey, result.dataUrl);
-        if (!url) throw new Error("图片结果资源不可用");
+        if (!url) throw new Error(tr("图片结果资源不可用"));
         const meta = result.width && result.height ? undefined : await readImageMeta(url, signal);
         throwIfAborted(signal);
         return {
@@ -416,7 +417,7 @@ async function storedGenerationImage(result: NonNullable<BackendGenerationResult
     throwIfAborted(signal);
     const url = await resolveImageUrl(storageKey);
     throwIfAborted(signal);
-    if (!url) throw new Error("图片结果资源不可用");
+    if (!url) throw new Error(tr("图片结果资源不可用"));
     const meta = result.width && result.height ? undefined : await readImageMeta(url, signal);
     throwIfAborted(signal);
     return {
@@ -443,7 +444,7 @@ async function storedGenerationMedia(dataUrl: string, effectKey: string, mediaTy
     throwIfAborted(signal);
     const url = await resolveMediaUrl(storageKey);
     throwIfAborted(signal);
-    if (!url) throw new Error(`${mediaType === "video" ? "视频" : "音频"}结果资源不可用`);
+    if (!url) throw new Error(tr("{0}结果资源不可用", mediaType === "video" ? tr("视频") : tr("音频")));
     return {
         url,
         storageKey,
@@ -456,14 +457,14 @@ async function storedGenerationMedia(dataUrl: string, effectKey: string, mediaTy
 }
 
 async function cachedRemoteGenerationVideo(video: NonNullable<BackendGenerationResult["video"]>, signal?: AbortSignal) {
-    if (!video.storageKey) throw new Error("生成视频缺少云端资源标识");
+    if (!video.storageKey) throw new Error(tr("生成视频缺少云端资源标识"));
     throwIfAborted(signal);
     const blob = await getCachedResourceBlob(video.storageKey);
     throwIfAborted(signal);
-    if (!blob) throw new Error("生成视频资源缓存失败，未标记为成功");
+    if (!blob) throw new Error(tr("生成视频资源缓存失败，未标记为成功"));
     const url = await resolveMediaUrl(video.storageKey, video.dataUrl);
     throwIfAborted(signal);
-    if (!url) throw new Error("生成视频资源地址为空，未标记为成功");
+    if (!url) throw new Error(tr("生成视频资源地址为空，未标记为成功"));
     return {
         url,
         storageKey: video.storageKey,
@@ -490,16 +491,16 @@ async function generationOutputAsset(input: Parameters<MaterializeGenerationTask
 
     if (input.output.mediaType === "image") {
         const image = result.images?.[input.output.outputIndex];
-        if (!image) throw new Error("生成任务缺少图片输出");
+        if (!image) throw new Error(tr("生成任务缺少图片输出"));
         const stored = await storedGenerationImage(image, input.effectKey, scope, input.signal);
         return {
             kind: "image",
-            title: "生成图片",
+            title: tr("生成图片"),
             category: "material",
             coverUrl: stored.url,
-            tags: ["生成"],
+            tags: [tr("生成")],
             status: "confirmed",
-            source: "生成任务",
+            source: tr("生成任务"),
             metadata,
             data: {
                 dataUrl: stored.url,
@@ -514,7 +515,7 @@ async function generationOutputAsset(input: Parameters<MaterializeGenerationTask
 
     if (input.output.mediaType === "video") {
         const video = result.video;
-        if (!video) throw new Error("生成任务缺少视频输出");
+        if (!video) throw new Error(tr("生成任务缺少视频输出"));
         const stored = video.storageKey
             ? await cachedRemoteGenerationVideo(video, input.signal)
             : await storedGenerationMedia(
@@ -531,15 +532,15 @@ async function generationOutputAsset(input: Parameters<MaterializeGenerationTask
                   scope,
                   input.signal,
               );
-        if (!stored.url) throw new Error("视频结果资源不可用");
+        if (!stored.url) throw new Error(tr("视频结果资源不可用"));
         return {
             kind: "video",
-            title: "生成视频",
+            title: tr("生成视频"),
             category: "material",
             coverUrl: canvasVideoAssetPreviewUrl(stored.url),
-            tags: ["生成"],
+            tags: [tr("生成")],
             status: "confirmed",
-            source: "生成任务",
+            source: tr("生成任务"),
             metadata,
             data: {
                 url: stored.url,
@@ -554,7 +555,7 @@ async function generationOutputAsset(input: Parameters<MaterializeGenerationTask
     }
 
     const audio = result.audio;
-    if (!audio) throw new Error("生成任务缺少音频输出");
+    if (!audio) throw new Error(tr("生成任务缺少音频输出"));
     const stored = audio.storageKey
         ? {
               url: await resolveMediaUrl(audio.storageKey, audio.dataUrl),
@@ -575,15 +576,15 @@ async function generationOutputAsset(input: Parameters<MaterializeGenerationTask
               scope,
               input.signal,
           );
-    if (!stored.url) throw new Error("音频结果资源不可用");
+    if (!stored.url) throw new Error(tr("音频结果资源不可用"));
     return {
         kind: "audio",
-        title: "生成音频",
+        title: tr("生成音频"),
         category: "material",
         coverUrl: "",
-        tags: ["生成"],
+        tags: [tr("生成")],
         status: "confirmed",
-        source: "生成任务",
+        source: tr("生成任务"),
         metadata,
         data: {
             url: stored.url,
@@ -670,7 +671,7 @@ export async function consumeGenerationTaskNode(
     }
     const materialized = await (dependencies.materialize ?? materializeGenerationTaskAssets)(task, dependencies.signal);
     const output = materialized.outputs?.find((candidate) => candidate.outputIndex === outputIndex);
-    if (!output?.materializedAssetId) throw new Error("生成任务输出尚未物化");
+    if (!output?.materializedAssetId) throw new Error(tr("生成任务输出尚未物化"));
     await (dependencies.attachNode ?? attachGenerationTaskNode)(
         materialized,
         nodeId,

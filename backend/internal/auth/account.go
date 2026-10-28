@@ -251,3 +251,69 @@ func (s *Service) ChangeProfileEmail(actor *model.User, cookie string, req Profi
 	}
 	return result, nil
 }
+
+// LocalAccountRequest changes the signed-in account's username and/or password from the settings.
+type LocalAccountRequest struct {
+	CurrentPassword string `json:"currentPassword"`
+	Username        string `json:"username"`
+	NewPassword     string `json:"newPassword"`
+}
+
+// ChangeLocalAccount renames the account and/or sets a new password after checking the current
+// one, then signs out every session. A new password must be strong, so remote sign-in opens.
+func (s *Service) ChangeLocalAccount(actor *model.User, cookie string, req LocalAccountRequest) error {
+	user, session, err := s.profileSession(actor, cookie)
+	if err != nil {
+		return err
+	}
+	if err := authorizeProfileChange(user, session, req.CurrentPassword); err != nil {
+		return err
+	}
+	username := NormalizeUsername(req.Username)
+	if username == "" {
+		username = user.Username
+	}
+	if username != user.Username {
+		if err := ValidateUsername(username); err != nil {
+			return err
+		}
+	}
+	newHash := ""
+	if req.NewPassword != "" {
+		if IsWeakAdminPassword(req.NewPassword) {
+			return kernel.BadAuthRequest("新密码至少 12 个字符，且不能使用默认密码")
+		}
+		if len([]byte(req.NewPassword)) > 72 {
+			return kernel.BadAuthRequest("密码的 UTF-8 长度不能超过 72 字节")
+		}
+		if verifyPassword(req.NewPassword, user.PasswordHash) {
+			return kernel.BadAuthRequest("新密码不能与当前密码相同")
+		}
+		if newHash, err = HashPassword(req.NewPassword); err != nil {
+			return err
+		}
+	}
+	if username == user.Username && newHash == "" {
+		return kernel.BadAuthRequest("没有需要保存的修改")
+	}
+	displayName := user.DisplayName
+	if displayName == "" || displayName == user.Username {
+		displayName = username
+	}
+	err = s.repo.ChangeLocalAccount(user, session, username, displayName, newHash, time.Now())
+	if errors.Is(err, repository.ErrUsernameTaken) {
+		return kernel.BadAuthRequest("该用户名已被其他账号使用")
+	}
+	if err := profileWriteError(err); err != nil {
+		return err
+	}
+	if newHash == "" {
+		return nil
+	}
+	binding, setting, err := s.localAdminBinding()
+	if err != nil || binding.UserID != user.ID || !binding.WeakPassword {
+		return err
+	}
+	binding.WeakPassword = false
+	return s.saveLocalAdminBinding(setting, binding, user.ID)
+}

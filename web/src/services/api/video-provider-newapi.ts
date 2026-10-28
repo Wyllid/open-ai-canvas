@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { modelCapabilityConfigFor, videoResolutionRequest } from "@/lib/model-capabilities";
 import { boolConfig } from "@/lib/seedance-video";
 import { getResourceInputURL } from "@/services/api/resources";
@@ -13,9 +14,9 @@ export async function createVideoGenerationsTask(deps: VideoProviderDeps, config
     const profile = modelCapabilityConfigFor(config, model).video!;
     const { maxImages, maxVideos, maxAudios } = profile.references;
     if (references.length > maxImages || videoReferences.length > maxVideos || audioReferences.length > maxAudios) {
-        throw new Error(`NewAPI Video Generations 当前模型最多支持 ${maxImages} 张参考图、${maxVideos} 个参考视频和 ${maxAudios} 个参考音频`);
+        throw new Error(tr("NewAPI Video Generations 当前模型最多支持 {0} 张参考图、{1} 个参考视频和 {2} 个参考音频", maxImages, maxVideos, maxAudios));
     }
-    if (audioReferences.length > 0 && videoReferences.length === 0) throw new Error("NewAPI Video Generations 的参考音频必须同时提供至少 1 个参考视频；纯音频生视频请切换到支持该模式的渠道");
+    if (audioReferences.length > 0 && videoReferences.length === 0) throw new Error(tr("NewAPI Video Generations 的参考音频必须同时提供至少 1 个参考视频；纯音频生视频请切换到支持该模式的渠道"));
     const [imageUrls, videoUrls, audioUrls] = await Promise.all([
         Promise.all(references.map((item) => resolveVideoGenerationsUrl(item.url || item.dataUrl, item.storageKey))),
         Promise.all(videoReferences.map((item) => resolveVideoGenerationsUrl(item.url, item.storageKey))),
@@ -36,10 +37,10 @@ export async function createVideoGenerationsTask(deps: VideoProviderDeps, config
     try {
         const created = deps.response.unwrapVideoResponse(await deps.transport.post<ApiVideoResponse>(deps.transport.apiUrl("/video/generations"), payload, options));
         const id = deps.response.videoTaskId(created);
-        if (!id) throw new Error("NewAPI Video Generations 没有返回任务 ID");
+        if (!id) throw new Error(tr("NewAPI Video Generations 没有返回任务 ID"));
         return { id, provider: "video-generations", model };
     } catch (error) {
-        throw new Error(deps.response.readAxiosError(error, "NewAPI Video Generations 任务创建失败"));
+        throw new Error(deps.response.readAxiosError(error, tr("NewAPI Video Generations 任务创建失败")));
     }
 }
 
@@ -50,13 +51,13 @@ export async function pollVideoGenerationsTask(deps: VideoProviderDeps, task: Vi
         const status = String(state.status || "").toUpperCase();
         if (status === "SUCCESS" || status === "SUCCEEDED" || status === "COMPLETED") {
             const url = String(state.result_url || state.video_url || state.url || "");
-            if (!url) return { status: "failed", error: "视频任务已完成但没有返回视频地址" };
+            if (!url) return { status: "failed", error: tr("视频任务已完成但没有返回视频地址") };
             return { status: "completed", result: await deps.response.videoResultFromUrl(url, options) };
         }
-        if (status === "FAILURE" || status === "FAILED" || status === "CANCELLED") return { status: "failed", error: String(state.fail_reason || state.error || "视频生成失败") };
+        if (status === "FAILURE" || status === "FAILED" || status === "CANCELLED") return { status: "failed", error: String(state.fail_reason || state.error || tr("视频生成失败")) };
         return { status: "pending" };
     } catch (error) {
-        throw new Error(deps.response.readAxiosError(error, "NewAPI Video Generations 任务查询失败"));
+        throw new Error(deps.response.readAxiosError(error, tr("NewAPI Video Generations 任务查询失败")));
     }
 }
 
@@ -68,7 +69,7 @@ function newAPIVideoResolutionRequest(profile: NonNullable<ReturnType<typeof mod
 async function resolveVideoGenerationsUrl(value: string | undefined, storageKey?: string) {
     if (storageKey?.startsWith("resource:")) return getResourceInputURL(storageKey);
     if (isPublicMediaUrl(value || "")) return String(value);
-    throw new Error("NewAPI Video Generations 的参考素材需要公网 URL；请先把素材保存到对象存储");
+    throw new Error(tr("NewAPI Video Generations 的参考素材需要公网 URL；请先把素材保存到对象存储"));
 }
 
 function isPublicMediaUrl(value: string) {

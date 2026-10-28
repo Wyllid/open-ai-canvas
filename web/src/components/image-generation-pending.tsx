@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { formatDuration } from "@/lib/image-utils";
@@ -5,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 type PendingImageProps = { className?: string; label?: string; compact?: boolean };
 
-export function ImageGenerationPending({ className, label = "正在生成图片", compact = false }: PendingImageProps) {
+export function ImageGenerationPending({ className, label = tr("正在生成图片"), compact = false }: PendingImageProps) {
     const [startedAt] = useState(() => Date.now());
     const [elapsed, setElapsed] = useState(0);
     useEffect(() => {
@@ -27,7 +28,7 @@ export function ImageGenerationPending({ className, label = "正在生成图片"
                 {label}
             </span>
             <time className="text-xs tabular-nums" dateTime={`PT${Math.floor(elapsed / 1000)}S`}>
-                已等待 {formatDuration(elapsed)}
+                {tr("已等待")} {formatDuration(elapsed)}
             </time>
         </div>
     );

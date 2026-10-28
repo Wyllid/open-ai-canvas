@@ -113,9 +113,17 @@ func run(ctx context.Context) error {
 		slog.Info("storage migration completed", "tasks", summary.Tasks, "assets", summary.Assets, "projects", summary.Projects, "backup", summary.Backup)
 	}
 	r := gin.New()
+	trusted, err := trustedProxies(os.Getenv("CANVAS_TRUSTED_PROXIES"))
+	if err != nil {
+		return err
+	}
+	// Only proxies in this list may set X-Forwarded-For; anyone else would spoof their IP past login rate limits.
+	if err := r.SetTrustedProxies(trusted); err != nil {
+		return fmt.Errorf("CANVAS_TRUSTED_PROXIES: %w", err)
+	}
 	// 访问日志：成功的查询类请求只在 debug 级别输出，避免轮询和列表查询把日志打爆。
 	r.Use(logging.AccessLog(redactCanvasSharePath), logging.Recovery())
-	r.Use(handler.RequestCorrelationMiddleware())
+	r.Use(handler.RequestCorrelationMiddleware(), securityHeaders())
 	corsMiddleware, err := cors()
 	if err != nil {
 		return err
@@ -125,7 +133,6 @@ func run(ctx context.Context) error {
 	api := r.Group("/api")
 	status := newSystemStatus(db, svc)
 	registerSystemStatusRoutes(api, status)
-	handler.RegisterOAuthCallbackRoutes(r, svc)
 	handler.RegisterCanvasAPI(api, svc)
 	r.NoRoute(handler.SystemProxyNoRouteHandler(svc))
 
@@ -201,6 +208,46 @@ func env(key string, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+// defaultTrustedProxies are the addresses a bundled reverse proxy (nginx container, host nginx/Caddy) uses.
+var defaultTrustedProxies = []string{"127.0.0.0/8", "::1/128", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7"}
+
+// trustedProxies parses CANVAS_TRUSTED_PROXIES: empty keeps the defaults, "none" trusts no proxy,
+// otherwise a comma-separated list of IPs or CIDRs (for example a load balancer or Cloudflare ranges).
+func trustedProxies(raw string) ([]string, error) {
+	raw = strings.TrimSpace(raw)
+	switch strings.ToLower(raw) {
+	case "":
+		return defaultTrustedProxies, nil
+	case "none":
+		return nil, nil
+	}
+	var proxies []string
+	for _, value := range strings.Split(raw, ",") {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			continue
+		}
+		if net.ParseIP(value) == nil {
+			if _, _, err := net.ParseCIDR(value); err != nil {
+				return nil, fmt.Errorf("CANVAS_TRUSTED_PROXIES 包含无效地址：%s", value)
+			}
+		}
+		proxies = append(proxies, value)
+	}
+	return proxies, nil
+}
+
+// securityHeaders sets browser hardening headers on API responses; handlers that need stricter ones override them.
+func securityHeaders() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		header := c.Writer.Header()
+		header.Set("X-Content-Type-Options", "nosniff")
+		header.Set("Referrer-Policy", "no-referrer")
+		header.Set("X-Frame-Options", "SAMEORIGIN")
+		c.Next()
+	}
 }
 
 func envBool(key string, fallback bool) (bool, error) {

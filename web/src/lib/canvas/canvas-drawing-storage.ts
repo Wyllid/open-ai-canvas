@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import localforage from "localforage";
 
 import type { CanvasDrawingEngine } from "@/lib/canvas/canvas-drawing-engine";
@@ -92,10 +93,10 @@ export async function createCanvasDrawingFromImage(
     image: { url: string; storageKey?: string; name: string; mimeType?: string },
 ) {
     const dataUrl = await imageToDataUrl({ url: image.url, storageKey: image.storageKey, name: image.name, mimeType: image.mimeType });
-    if (!dataUrl?.startsWith("data:image/")) throw new Error("无法读取来源图片");
+    if (!dataUrl?.startsWith("data:image/")) throw new Error(tr("无法读取来源图片"));
 
     const { width, height, mimeType } = await readImageMeta(dataUrl);
-    const source = { dataUrl, width, height, mimeType: mimeType || image.mimeType || "image/png", name: image.name || "来源图片" };
+    const source = { dataUrl, width, height, mimeType: mimeType || image.mimeType || "image/png", name: image.name || tr("来源图片") };
     const document = engine === "excalidraw"
         ? (await import("@/lib/canvas/canvas-drawing-excalidraw-document")).createExcalidrawDrawingFromImage(source)
         : await (await import("@/lib/canvas/canvas-drawing-tldraw-document")).createTldrawDrawingFromImage(source);
@@ -178,7 +179,7 @@ function normalizeCanvasDrawingSnapshot(saved: CanvasDrawingSnapshot | LegacyCan
     if (!saved) return null;
     if (saved.version === 1) return { ...saved, version: 2, engine: "tldraw" } satisfies CanvasDrawingSnapshot;
     if (saved.version === 2 && (saved.engine === "tldraw" || saved.engine === "excalidraw")) return saved;
-    throw new Error("绘图文档版本或引擎无效");
+    throw new Error(tr("绘图文档版本或引擎无效"));
 }
 
 function pagesFromSnapshot(document: Record<string, unknown>) {
@@ -200,7 +201,7 @@ async function createInitialDrawingRender(dataUrl: string, width: number, height
     canvas.width = Math.max(1, Math.round(paddedWidth * scale));
     canvas.height = Math.max(1, Math.round(paddedHeight * scale));
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("浏览器无法创建绘图预览");
+    if (!context) throw new Error(tr("浏览器无法创建绘图预览"));
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(
@@ -225,13 +226,13 @@ function loadDrawingImage(dataUrl: string) {
     return new Promise<HTMLImageElement>((resolve, reject) => {
         const image = new Image();
         image.onload = () => resolve(image);
-        image.onerror = () => reject(new Error("来源图片无法载入绘图"));
+        image.onerror = () => reject(new Error(tr("来源图片无法载入绘图")));
         image.src = dataUrl;
     });
 }
 
 function canvasToPngBlob(canvas: HTMLCanvasElement) {
     return new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("无法生成绘图预览")), "image/png");
+        canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error(tr("无法生成绘图预览"))), "image/png");
     });
 }

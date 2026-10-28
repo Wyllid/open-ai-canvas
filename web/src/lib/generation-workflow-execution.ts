@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { normalizeRunningHubCapability, type AiConfig, type RunningHubCapability, type RunningHubWorkflowKind, type WorkflowFieldMapping } from "@/stores/use-config-store";
 import { workflowProviderPluginEnabled } from "@/lib/plugins/builtin/workflows";
 import { usePluginStore } from "@/stores/use-plugin-store";
@@ -24,17 +25,17 @@ export function resolveGenerationWorkflowExecution(config: AiConfig, mode: Gener
     if (workflowProvider === "model") return null;
 
     if (workflowProvider === "runninghub") {
-        if (!workflowProviderPluginEnabled(usePluginStore.getState().runtimeStatuses, "runninghub")) throw new Error("RunningHub 工作流插件未启用");
+        if (!workflowProviderPluginEnabled(usePluginStore.getState().runtimeStatuses, "runninghub")) throw new Error(tr("RunningHub 工作流插件未启用"));
         const runningHub = config.runningHub;
         const workflowId = runningHub.workflowId.trim();
         const kind = runningHub.selectedKind === "app" ? "app" : "workflow";
         // RunningHub 工作流的参数拉取、提交和轮询固定使用积分 API Key；企业级 Key 只用于素材上传。
         const apiKey = runningHub.apiKey;
         if (!runningHub.enabled || !runningHub.baseUrl.trim() || !apiKey.trim() || !workflowId) {
-            throw new Error("RunningHub 工作流配置不完整，请填写积分 API Key 并选择已保存条目");
+            throw new Error(tr("RunningHub 工作流配置不完整，请填写积分 API Key 并选择已保存条目"));
         }
         const workflow = runningHub.workflows.find((item) => item.workflowId.trim() === workflowId && (item.kind === "app" ? "app" : "workflow") === kind);
-        if (!workflow) throw new Error("当前 RunningHub 工作流条目不存在，请重新选择已保存条目");
+        if (!workflow) throw new Error(tr("当前 RunningHub 工作流条目不存在，请重新选择已保存条目"));
         const capability = normalizeRunningHubCapability(workflow.capability, normalizeRunningHubCapability(runningHub.capability));
         assertWorkflowCapability("RunningHub", capability, mode);
         const webappId = kind === "app" ? (workflow.webappId || workflow.workflowId).trim() : "";
@@ -55,21 +56,21 @@ export function resolveGenerationWorkflowExecution(config: AiConfig, mode: Gener
 		};
 	}
 
-	throw new Error("未知工作流提供方");
+	throw new Error(tr("未知工作流提供方"));
 }
 
 function assertWorkflowCapability(providerName: string, capability: RunningHubCapability, mode: GenerationWorkflowMode) {
     if (capability === mode) return;
     const capabilityName = workflowCapabilityName(capability);
     const modeName = workflowCapabilityName(mode);
-    throw new Error(`${providerName} 已保存条目的用途为${capabilityName}，当前节点是${modeName}生成，请切换匹配的工作流`);
+    throw new Error(tr("{0} 已保存条目的用途为{1}，当前节点是{2}生成，请切换匹配的工作流", providerName, capabilityName, modeName));
 }
 
 function workflowCapabilityName(value: GenerationWorkflowMode) {
-    if (value === "video") return "视频";
-    if (value === "audio") return "音频";
-    if (value === "text") return "文本";
-    return "图片";
+    if (value === "video") return tr("视频");
+    if (value === "audio") return tr("音频");
+    if (value === "text") return tr("文本");
+    return tr("图片");
 }
 
 function workflowTaskModel(prefix: string, name: string) {

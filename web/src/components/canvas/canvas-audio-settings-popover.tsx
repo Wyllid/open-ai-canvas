@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { AudioSettingsPanel } from "@/components/audio-settings-panel";
 import { audioFormatLabelForConfig, audioSpeedLabel, audioVoiceLabelForConfig } from "@/lib/audio-generation";
 import { canvasThemes } from "@/lib/canvas-theme";
@@ -10,8 +11,8 @@ type AudioPopoverProps = { config: AiConfig; onConfigChange: (key: CanvasAudioSe
 
 export function CanvasAudioSettingsPopover({ config, onConfigChange, ...popover }: AudioPopoverProps) {
     const theme = canvasThemes[useActiveTheme()];
-    const parts = [audioVoiceLabelForConfig(config, config.audioVoice) || "不指定音色", audioFormatLabelForConfig(config, config.audioFormat), audioSpeedLabel(config.audioSpeed)];
-    return <CanvasSettingsPopover {...popover} label="音频设置" summary={parts.join(" · ")}>
+    const parts = [audioVoiceLabelForConfig(config, config.audioVoice) || tr("不指定音色"), audioFormatLabelForConfig(config, config.audioFormat), audioSpeedLabel(config.audioSpeed)];
+    return <CanvasSettingsPopover {...popover} label={tr("音频设置")} summary={parts.join(" · ")}>
         <AudioSettingsPanel config={config} onConfigChange={onConfigChange} theme={theme} className="space-y-4" />
     </CanvasSettingsPopover>;
 }

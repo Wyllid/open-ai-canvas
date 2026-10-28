@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 创作页空态的纵深图片画廊：卡片沿 Z 轴前后排队，当前一张在最前、最大，
 // 其余依次后退缩小，像展厅里一排挂在纵深上的画。
 // 滚轮、左右按钮或自动轮播切换，切换靠 CSS transition 平滑过渡。
@@ -247,7 +248,7 @@ export function CreationInspirationTunnel({ mode, onStartPrompt }: { mode: Creat
                             <span className="creation-tunnel-card-info">
                                 <span className="creation-tunnel-card-cta">
                                     <ArrowUp aria-hidden="true" />
-                                    使用这个创意
+                                    {tr("使用这个创意")}
                                 </span>
                                 <span className="creation-tunnel-card-title">{inspiration.title}</span>
                                 <span className="creation-tunnel-card-desc">{inspiration.description}</span>
@@ -261,12 +262,12 @@ export function CreationInspirationTunnel({ mode, onStartPrompt }: { mode: Creat
                 `button:has(> svg):not(:has(> span)):not(:disabled):hover` 会认领"纯图标按钮"，
                 用 !important 改写 color / background 并把 transform 顶成 translateY(-1px)，
                 按钮会当场掉半个身位。带 span 的按钮不在那条规则的射程内。 */}
-            <button type="button" className="creation-gallery-arrow is-prev" aria-label="上一张灵感" onClick={() => step(-1)}>
+            <button type="button" className="creation-gallery-arrow is-prev" aria-label={tr("上一张灵感")} onClick={() => step(-1)}>
                 <span className="creation-gallery-arrow-icon">
                     <ChevronLeft aria-hidden="true" />
                 </span>
             </button>
-            <button type="button" className="creation-gallery-arrow is-next" aria-label="下一张灵感" onClick={() => step(1)}>
+            <button type="button" className="creation-gallery-arrow is-next" aria-label={tr("下一张灵感")} onClick={() => step(1)}>
                 <span className="creation-gallery-arrow-icon">
                     <ChevronRight aria-hidden="true" />
                 </span>

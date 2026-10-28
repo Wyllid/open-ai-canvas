@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 export type PendingCanvasProjectAssetLink = {
     assetId: string;
     domainProjectId: string;
@@ -26,10 +27,10 @@ function parseQueue(value: string | null): PendingCanvasProjectAssetLink[] {
     try {
         parsed = JSON.parse(value);
     } catch {
-        throw new Error("项目资产待同步记录已损坏，原记录已保留");
+        throw new Error(tr("项目资产待同步记录已损坏，原记录已保留"));
     }
     if (!Array.isArray(parsed) || parsed.some((entry) => !isQueueEntry(entry))) {
-        throw new Error("项目资产待同步记录格式无效，原记录已保留");
+        throw new Error(tr("项目资产待同步记录格式无效，原记录已保留"));
     }
     return parsed;
 }

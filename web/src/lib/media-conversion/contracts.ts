@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CanvasNodeData } from "@/types/canvas";
 
 export const MEDIA_CONVERSION_SCHEMA_VERSION = 1 as const;
@@ -26,21 +27,21 @@ export type MediaConversionNodeState = {
 };
 
 export const MEDIA_CONVERSION_OPERATION_LABELS: Record<MediaConversionOperation, string> = {
-    grayscale: "灰度图",
-    "edge-canny": "Canny 边缘",
-    lineart: "AI 线稿",
-    depth: "深度图",
-    pose: "姿态骨架",
-    cutout: "透明抠图",
+    grayscale: tr("灰度图"),
+    "edge-canny": tr("Canny 边缘"),
+    lineart: tr("AI 线稿"),
+    depth: tr("深度图"),
+    pose: tr("姿态骨架"),
+    cutout: tr("透明抠图"),
 };
 
 export const MEDIA_CONVERSION_OPERATION_DESCRIPTIONS: Record<MediaConversionOperation, string> = {
-    grayscale: "普通图像算法，适合先检查明暗层次",
-    "edge-canny": "普通图像算法，提取清晰轮廓",
-    lineart: "本地 ControlNet Aux 线稿预处理，首次运行需要加载模型",
-    depth: "本地 Depth Anything V2 Small，首次运行需要加载模型",
-    pose: "本地 OpenPose 人体骨架预处理，未检测到人物时会跳过",
-    cutout: "需要安装并验证本地抠图模型",
+    grayscale: tr("普通图像算法，适合先检查明暗层次"),
+    "edge-canny": tr("普通图像算法，提取清晰轮廓"),
+    lineart: tr("本地 ControlNet Aux 线稿预处理，首次运行需要加载模型"),
+    depth: tr("本地 Depth Anything V2 Small，首次运行需要加载模型"),
+    pose: tr("本地 OpenPose 人体骨架预处理，未检测到人物时会跳过"),
+    cutout: tr("需要安装并验证本地抠图模型"),
 };
 
 export function createDefaultMediaConversionState(): MediaConversionNodeState {

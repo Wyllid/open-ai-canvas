@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { profileAvatarError, PROFILE_AVATAR_MAX_BYTES, profilePasswordError, profileReauthReady, profileSecondsRemaining } from "../src/pages/settings/profile-validation";
-import { settingsPath } from "../src/lib/settings-navigation";
-import { changeProfileEmail, changeProfilePassword, getUserProfile, profileLinuxDOReauthURL, requestProfileEmailCode, resetProfileAvatar, selectDefaultProfileAvatar, uploadProfileAvatar } from "../src/services/api/profile";
+import { profileAvatarError, PROFILE_AVATAR_MAX_BYTES, profilePasswordError } from "../src/pages/settings/profile-validation";
+import { settingsClosedSearch, settingsPath, settingsSearch, settingsSectionFromAdminPath, settingsSectionFromLegacy } from "../src/lib/settings-navigation";
+import { changeLocalAccount, getUserProfile, resetProfileAvatar, selectDefaultProfileAvatar, uploadProfileAvatar } from "../src/services/api/profile";
 import { ApiError, apiClient } from "../src/services/api/request";
 
 describe("profile input and security expiry", () => {
@@ -11,30 +11,33 @@ describe("profile input and security expiry", () => {
         expect(profileAvatarError({ type: "image/jpeg", size: PROFILE_AVATAR_MAX_BYTES + 1 })).toBeDefined();
         expect(profileAvatarError({ type: "image/png", size: PROFILE_AVATAR_MAX_BYTES })).toBeUndefined();
     });
-    test("checks password UTF-8 byte limit to prevent bcrypt truncation", () => {
-        expect(profilePasswordError("1234567")).toBeDefined();
+    test("requires 12 characters and checks the UTF-8 byte limit to prevent bcrypt truncation", () => {
+        expect(profilePasswordError("12345678901")).toBeDefined();
+        expect(profilePasswordError("123456789012")).toBeUndefined();
         expect(profilePasswordError("a".repeat(72))).toBeUndefined();
         expect(profilePasswordError("a".repeat(73))).toBeDefined();
         expect(profilePasswordError("密".repeat(24))).toBeUndefined();
         expect(profilePasswordError("密".repeat(25))).toBeDefined();
-        expect(profilePasswordError("😀".repeat(4))).toBeDefined();
-        expect(profilePasswordError("😀".repeat(8))).toBeUndefined();
+        expect(profilePasswordError("😀".repeat(11))).toBeDefined();
+        expect(profilePasswordError("😀".repeat(18))).toBeUndefined();
     });
-    test("expires identity proof and code cooldown at the boundary", () => {
-        const deadline = "2026-10-12T12:00:00Z";
-        const timestamp = Date.parse(deadline);
-        expect(profileReauthReady(deadline, timestamp - 1)).toBe(true);
-        expect(profileReauthReady(deadline, timestamp)).toBe(false);
-        expect(profileReauthReady("invalid", timestamp)).toBe(false);
-        expect(profileReauthReady(undefined, timestamp)).toBe(false);
-        expect(profileSecondsRemaining(timestamp, timestamp - 1001)).toBe(2);
-        expect(profileSecondsRemaining(timestamp, timestamp + 1)).toBe(0);
+    test("settings open as a modal on the current page", () => {
+        // Without a browser location the modal opens over the home page.
+        expect(settingsPath()).toBe("/?settings=account");
+        expect(settingsPath(undefined, true)).toBe("/?settings=channels&continue=1");
+        expect(settingsPath("models", true)).toBe("/?settings=models&continue=1");
+        expect(settingsSearch("?tab=cast", "account")).toBe("?tab=cast&settings=account");
+        expect(settingsSearch("?settings=account&taskId=t", "diagnostics")).toBe("?settings=diagnostics&taskId=t");
+        expect(settingsClosedSearch("?tab=cast&settings=models&continue=1&taskId=t")).toBe("?tab=cast");
     });
-    test("account settings default to profile and creation continues to channels", () => {
-        expect(settingsPath()).toBe("/settings?section=profile");
-        expect(settingsPath(undefined, true)).toBe("/settings?section=channels&continue=1");
-        expect(settingsPath("models", true)).toBe("/settings?section=models&continue=1");
-        expect(settingsPath("profile")).toBe("/settings?section=profile");
+    test("old settings and admin links open the matching section", () => {
+        expect(settingsSectionFromLegacy("profile")).toBe("account");
+        expect(settingsSectionFromLegacy("storage")).toBe("my-storage");
+        expect(settingsSectionFromLegacy(null)).toBe("account");
+        expect(settingsSectionFromAdminPath("/admin")).toBe("overview");
+        expect(settingsSectionFromAdminPath("/admin/users")).toBe("account");
+        expect(settingsSectionFromAdminPath("/admin/settings/appearance/")).toBe("appearance");
+        expect(settingsSectionFromAdminPath("/admin/unknown")).toBe("overview");
     });
 });
 
@@ -65,7 +68,7 @@ describe("profile API request contract", () => {
             apiClient.request = original;
         }
     });
-    test("keeps passwords, email codes and tickets in POST bodies", async () => {
+    test("keeps passwords in POST bodies", async () => {
         const original = apiClient.request;
         const requests: Array<Record<string, unknown>> = [];
         apiClient.request = (async (config: Record<string, unknown>) => {
@@ -73,14 +76,10 @@ describe("profile API request contract", () => {
             return { data: { code: 0, data: { changed: true }, msg: "ok" }, status: 200 };
         }) as typeof apiClient.request;
         try {
-            await changeProfilePassword({ currentPassword: "old-password", newPassword: "new-password" });
-            await requestProfileEmailCode({ email: "new@example.test", currentPassword: "old-password" });
-            await changeProfileEmail({ ticket: "test-ticket", emailCode: "123456", currentPassword: "old-password" });
-            expect(requests.map((request) => request.url)).toEqual(["/auth/profile/password", "/auth/profile/email-code", "/auth/profile/email"]);
+            await changeLocalAccount({ currentPassword: "old-password", username: "studio", newPassword: "a-new-long-password" });
+            expect(requests.map((request) => request.url)).toEqual(["/auth/profile/account"]);
             expect(requests.every((request) => request.method === "post" && request.params === undefined)).toBe(true);
-            expect(requests[2].data).toEqual({ ticket: "test-ticket", emailCode: "123456", currentPassword: "old-password" });
-            expect(profileLinuxDOReauthURL()).toEndWith("/auth/profile/linuxdo/start");
-            expect(profileLinuxDOReauthURL()).not.toContain("?");
+            expect(requests[0].data).toEqual({ currentPassword: "old-password", username: "studio", newPassword: "a-new-long-password" });
         } finally {
             apiClient.request = original;
         }
@@ -89,7 +88,7 @@ describe("profile API request contract", () => {
         const original = apiClient.request;
         apiClient.request = (async () => ({ data: { code: 40001, data: null, msg: "身份验证失败", reason: "bad_auth_request" }, status: 400 })) as typeof apiClient.request;
         try {
-            const error = await changeProfilePassword({ currentPassword: "wrong", newPassword: "new-password" }).catch((failure) => failure);
+            const error = await changeLocalAccount({ currentPassword: "wrong", username: "studio", newPassword: "a-new-long-password" }).catch((failure) => failure);
             expect(error).toBeInstanceOf(ApiError);
             expect(error.reason).toBe("bad_auth_request");
         } finally {

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { modelCapabilityConfigFor } from "@/lib/model-capabilities";
 import { uploadMediaFile, type UploadedFile } from "@/services/file-storage";
 import { resolveModelRequestConfig, type AiConfig } from "@/stores/use-config-store";
@@ -27,10 +28,10 @@ export async function requestVideoGeneration(config: AiConfig, prompt: string, r
         const state = await pollVideoGenerationTask(config, task, options);
         if (state.status === "completed") return state.result;
         if (state.status === "failed") throw new Error(state.error);
-        if (attempt === 119) throw new Error(`${task.provider === "seedance" ? "Seedance " : ""}视频生成超时，请稍后重试`);
+        if (attempt === 119) throw new Error(tr("{0}视频生成超时，请稍后重试", task.provider === "seedance" ? "Seedance " : ""));
         await videoResponseTools.delay(delayMs, options?.signal);
     }
-    throw new Error("视频生成超时，请稍后重试");
+    throw new Error(tr("视频生成超时，请稍后重试"));
 }
 
 export async function createVideoGenerationTask(config: AiConfig, prompt: string, references: ReferenceImage[] = [], videoReferences: ReferenceVideo[] = [], audioReferences: ReferenceAudio[] = [], options?: RequestOptions): Promise<VideoGenerationTask> {
@@ -45,7 +46,7 @@ export async function createVideoGenerationTask(config: AiConfig, prompt: string
     if (requestConfig.interfaceType === "minimax-video") return createMiniMaxVideoTask(deps, requestConfig, selectedModel, prompt, references, videoReferences, audioReferences, options);
     if (isAgnesConfig(requestConfig)) return createAgnesVideoTask(deps, requestConfig, selectedModel, prompt, references, videoReferences, audioReferences, options);
     if (isSeedanceConfig(requestConfig)) return createSeedanceTask(deps, requestConfig, selectedModel, prompt, references, videoReferences, audioReferences, options);
-    if (videoReferences.length || audioReferences.length) throw new Error("当前视频接口不支持参考视频或参考音频，请切换到 Seedance 2.0 / 火山 Agent Plan 模型，或移除参考素材");
+    if (videoReferences.length || audioReferences.length) throw new Error(tr("当前视频接口不支持参考视频或参考音频，请切换到 Seedance 2.0 / 火山 Agent Plan 模型，或移除参考素材"));
     return createOpenAIVideoTask(deps, requestConfig, selectedModel, prompt, references, options);
 }
 
@@ -65,7 +66,7 @@ export async function pollVideoGenerationTask(config: AiConfig, task: VideoGener
 export async function storeGeneratedVideo(result: VideoGenerationResult): Promise<UploadedFile> {
     if (result.blob) return uploadMediaFile(result.blob, "video");
     if (result.url) return { url: result.url, storageKey: "", bytes: 0, mimeType: result.mimeType || "video/mp4" };
-    throw new Error("视频接口没有返回可播放的视频");
+    throw new Error(tr("视频接口没有返回可播放的视频"));
 }
 
 export type { VideoProviderDeps } from "./video-provider-deps";

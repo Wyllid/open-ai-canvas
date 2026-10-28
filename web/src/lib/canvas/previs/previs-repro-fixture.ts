@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { resolvePrevisPlacement } from "@/lib/canvas/previs/previs-placement";
 import { createPrevisModel, touchPrevisScene } from "@/lib/canvas/previs/previs-scene";
 import type { PrevisObject, PrevisScene, PrevisVec3 } from "@/types/previs";
@@ -43,19 +44,19 @@ export function createPrevisReproScene(): PrevisScene {
     return {
         id: FIXTURE_SCENE_ID,
         version: 1,
-        title: "P0 复现场景",
+        title: tr("P0 复现场景"),
         background: "#d8dde3",
         environmentIntensity: 0.7,
         gridVisible: true,
         objects: [
-            fixtureObject({ id: "repro-box-1", name: "立方体 A", primitive: "box", position: [0, 0.5, 0], color: "#8795a5" }),
-            fixtureObject({ id: "repro-sphere-1", name: "球体 B", primitive: "sphere", position: [2.2, 0.5, 0], color: "#6f8fb8" }),
-            fixtureObject({ id: "repro-cylinder-1", name: "圆柱 C", primitive: "cylinder", position: [-2.2, 0.5, 0], color: "#b8926f" }),
+            fixtureObject({ id: "repro-box-1", name: tr("立方体 A"), primitive: "box", position: [0, 0.5, 0], color: "#8795a5" }),
+            fixtureObject({ id: "repro-sphere-1", name: tr("球体 B"), primitive: "sphere", position: [2.2, 0.5, 0], color: "#6f8fb8" }),
+            fixtureObject({ id: "repro-cylinder-1", name: tr("圆柱 C"), primitive: "cylinder", position: [-2.2, 0.5, 0], color: "#b8926f" }),
         ],
         cameras: [
             {
                 id: FIXTURE_CAMERA_ID,
-                name: "主摄影机",
+                name: tr("主摄影机"),
                 transform: { position: [4.8, 2.7, 6.8], rotation: [0, 0, 0], scale: [1, 1, 1] },
                 target: [0, 1, 0],
                 focalLength: 35,
@@ -70,7 +71,7 @@ export function createPrevisReproScene(): PrevisScene {
         lights: [
             {
                 id: "repro-light-1",
-                name: "主光",
+                name: tr("主光"),
                 type: "directional",
                 color: "#ffffff",
                 intensity: 2.4,
@@ -81,7 +82,7 @@ export function createPrevisReproScene(): PrevisScene {
         shots: [
             {
                 id: FIXTURE_SHOT_ID,
-                name: "镜头 1",
+                name: tr("镜头 1"),
                 cameraId: FIXTURE_CAMERA_ID,
                 shotSize: "medium",
                 cameraMove: "static",
@@ -111,21 +112,21 @@ export type PrevisReproCase = {
 };
 
 export const PREVIS_REPRO_MATRIX: readonly PrevisReproCase[] = [
-    { id: "empty-click", group: "选择语义", title: "空白单击", steps: "在视口空白处单击。", expected: "取消选择，不产生历史记录，状态栏不变为未保存。" },
-    { id: "right-click", group: "选择语义", title: "右击", steps: "在对象上右击，再在空白处右击。", expected: "不改变选择、不开始手势、不写入历史。" },
-    { id: "switch-object", group: "选择语义", title: "切换对象", steps: "拖动对象 A 后不松手切换选中 B（或先松手再选 B）。", expected: "旧手势先被终结，B 不消费 A 的 base。" },
-    { id: "release-outside", group: "手势终结", title: "视口外释放", steps: "在视口内按下并拖动，移出视口后松开鼠标。", expected: "手势以 commit 终结一次，不留下悬挂预览。" },
-    { id: "blur", group: "手势终结", title: "窗口 blur", steps: "拖动过程中切换到其它窗口。", expected: "手势终结，草稿状态一致，不重复镜像。" },
-    { id: "escape", group: "手势终结", title: "Escape 取消", steps: "拖动过程中按 Escape。", expected: "恢复到手势前快照，且被取消的值绝不发布。" },
-    { id: "playing", group: "时间轴", title: "播放中操作", steps: "点击播放，播放中尝试选择与拖动。", expected: "播放不被打断成错误状态；改动语义与暂停时一致。" },
-    { id: "non-zero-time", group: "时间轴", title: "非 0 秒操作", steps: "把播放头拖到非 0 且非帧格整数位置后拖动对象。", expected: "增量以 raw playhead 为起点，不产生漂移。" },
-    { id: "autokey-on", group: "时间轴", title: "Auto Key 开", steps: "打开 Auto Key，在非 0 秒拖动对象。", expected: "在吸附后的目的时间写入关键帧。" },
-    { id: "autokey-off", group: "时间轴", title: "Auto Key 关", steps: "关闭 Auto Key，在非 0 秒拖动对象。", expected: "只改基础 transform，不产生关键帧。" },
-    { id: "add-move-delete-undo", group: "编辑链路", title: "连续新增/移动/删除/Undo", steps: "连续新增三个对象，各移动一次，删除中间一个，然后连续 Undo 到初始。", expected: "每步都可逆，Undo 后位置与选择状态自洽，不出现重叠或丢失。" },
-    { id: "delete-while-loading", group: "模型", title: "模型加载中删除", steps: "点击「注入本地模型」，立即打开工作台，在模型仍在加载时于左侧列表删除它。", expected: "晚到的加载结果被丢弃并释放，不留孤儿资源、不报错。" },
-    { id: "model-load-failed", group: "模型", title: "模型加载失败", steps: "点击「注入缺失模型」，打开工作台等待加载失败。", expected: "退回占位人偶，右上出现可操作「重试加载」，诊断记录 PREVIS_MODEL_LOAD_FAILED。" },
-    { id: "save-failed", group: "保存", title: "保存失败", steps: "让保存 flush 抛错后观察头部状态与重试。", expected: "状态为错误，草稿保留时提示可恢复，重试可再次尝试。" },
-    { id: "close-recovery", group: "保存", title: "关闭与草稿恢复", steps: "保存失败后关闭；重开同一场景。", expected: "关闭走 prepareClose 决策；重开时提示恢复或放弃，放弃后不再重复提示。" },
+    { id: "empty-click", group: tr("选择语义"), title: tr("空白单击"), steps: tr("在视口空白处单击。"), expected: tr("取消选择，不产生历史记录，状态栏不变为未保存。") },
+    { id: "right-click", group: tr("选择语义"), title: tr("右击"), steps: tr("在对象上右击，再在空白处右击。"), expected: tr("不改变选择、不开始手势、不写入历史。") },
+    { id: "switch-object", group: tr("选择语义"), title: tr("切换对象"), steps: tr("拖动对象 A 后不松手切换选中 B（或先松手再选 B）。"), expected: tr("旧手势先被终结，B 不消费 A 的 base。") },
+    { id: "release-outside", group: tr("手势终结"), title: tr("视口外释放"), steps: tr("在视口内按下并拖动，移出视口后松开鼠标。"), expected: tr("手势以 commit 终结一次，不留下悬挂预览。") },
+    { id: "blur", group: tr("手势终结"), title: tr("窗口 blur"), steps: tr("拖动过程中切换到其它窗口。"), expected: tr("手势终结，草稿状态一致，不重复镜像。") },
+    { id: "escape", group: tr("手势终结"), title: tr("Escape 取消"), steps: tr("拖动过程中按 Escape。"), expected: tr("恢复到手势前快照，且被取消的值绝不发布。") },
+    { id: "playing", group: tr("时间轴"), title: tr("播放中操作"), steps: tr("点击播放，播放中尝试选择与拖动。"), expected: tr("播放不被打断成错误状态；改动语义与暂停时一致。") },
+    { id: "non-zero-time", group: tr("时间轴"), title: tr("非 0 秒操作"), steps: tr("把播放头拖到非 0 且非帧格整数位置后拖动对象。"), expected: tr("增量以 raw playhead 为起点，不产生漂移。") },
+    { id: "autokey-on", group: tr("时间轴"), title: tr("Auto Key 开"), steps: tr("打开 Auto Key，在非 0 秒拖动对象。"), expected: tr("在吸附后的目的时间写入关键帧。") },
+    { id: "autokey-off", group: tr("时间轴"), title: tr("Auto Key 关"), steps: tr("关闭 Auto Key，在非 0 秒拖动对象。"), expected: tr("只改基础 transform，不产生关键帧。") },
+    { id: "add-move-delete-undo", group: tr("编辑链路"), title: tr("连续新增/移动/删除/Undo"), steps: tr("连续新增三个对象，各移动一次，删除中间一个，然后连续 Undo 到初始。"), expected: tr("每步都可逆，Undo 后位置与选择状态自洽，不出现重叠或丢失。") },
+    { id: "delete-while-loading", group: tr("模型"), title: tr("模型加载中删除"), steps: tr("点击「注入本地模型」，立即打开工作台，在模型仍在加载时于左侧列表删除它。"), expected: tr("晚到的加载结果被丢弃并释放，不留孤儿资源、不报错。") },
+    { id: "model-load-failed", group: tr("模型"), title: tr("模型加载失败"), steps: tr("点击「注入缺失模型」，打开工作台等待加载失败。"), expected: tr("退回占位人偶，右上出现可操作「重试加载」，诊断记录 PREVIS_MODEL_LOAD_FAILED。") },
+    { id: "save-failed", group: tr("保存"), title: tr("保存失败"), steps: tr("让保存 flush 抛错后观察头部状态与重试。"), expected: tr("状态为错误，草稿保留时提示可恢复，重试可再次尝试。") },
+    { id: "close-recovery", group: tr("保存"), title: tr("关闭与草稿恢复"), steps: tr("保存失败后关闭；重开同一场景。"), expected: tr("关闭走 prepareClose 决策；重开时提示恢复或放弃，放弃后不再重复提示。") },
 ];
 
 /** 注入变体：本地可达 glTF，或确定性不可达地址。 */
@@ -156,8 +157,8 @@ const MODEL_MIME_TYPES: Record<PrevisReproModelVariant, string> = {
 };
 
 const MODEL_NAMES: Record<PrevisReproModelVariant, string> = {
-    local: "本地模型 repro triangle",
-    missing: "缺失模型（预期失败）",
+    local: tr("本地模型 repro triangle"),
+    missing: tr("缺失模型（预期失败）"),
 };
 
 /**

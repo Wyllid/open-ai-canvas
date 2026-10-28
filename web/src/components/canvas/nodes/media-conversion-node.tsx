@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Check, CheckCircle2, ChevronDown, CircleAlert, Download, Image as ImageIcon, LoaderCircle, RefreshCw, Video, WandSparkles } from "lucide-react";
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -139,26 +140,26 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
     const run = async () => {
         setNotice("");
         if (!input || !currentFingerprint) {
-            setNotice("请先连接一张图片或一个视频");
+            setNotice(tr("请先连接一张图片或一个视频"));
             return;
         }
         if (hasMultipleInputs) {
-            setNotice("转换节点只能连接一个输入，请移除多余连线");
+            setNotice(tr("转换节点只能连接一个输入，请移除多余连线"));
             return;
         }
         if (inputKind === "video") {
-            updateState({ status: "unavailable", outputKind: "video", errorCode: "video_not_ready", errorMessage: "本地视频转换还在进行短片性能验证", updatedAt: new Date().toISOString() });
-            setNotice("视频转换暂未开启，先完成单图模型验证");
+            updateState({ status: "unavailable", outputKind: "video", errorCode: "video_not_ready", errorMessage: tr("本地视频转换还在进行短片性能验证"), updatedAt: new Date().toISOString() });
+            setNotice(tr("视频转换暂未开启，先完成单图模型验证"));
             return;
         }
         if (!isLocalImageOperation(state.operation) && state.operation !== "depth" && state.operation !== "lineart" && state.operation !== "pose") {
-            updateState({ status: "unavailable", outputKind: "image", errorCode: "model_missing", errorMessage: "该转换需要先安装并验证本地模型", updatedAt: new Date().toISOString() });
+            updateState({ status: "unavailable", outputKind: "image", errorCode: "model_missing", errorMessage: tr("该转换需要先安装并验证本地模型"), updatedAt: new Date().toISOString() });
             setNotice(mediaConversionOperationDescription(state.operation));
             return;
         }
         if (!sourceUrl) {
-            updateState({ status: "error", errorCode: "source_unreadable", errorMessage: "图片预览尚未准备好，请稍后重试", updatedAt: new Date().toISOString() });
-            setNotice("图片预览尚未准备好，请稍后重试");
+            updateState({ status: "error", errorCode: "source_unreadable", errorMessage: tr("图片预览尚未准备好，请稍后重试"), updatedAt: new Date().toISOString() });
+            setNotice(tr("图片预览尚未准备好，请稍后重试"));
             return;
         }
 
@@ -235,7 +236,7 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
             if (error instanceof LocalRuntimeClientError) {
                 if (error.code === "pose_no_person") {
                     updateState({ status: "skipped", errorCode: error.code, errorMessage: error.message, detectedPeople: 0, updatedAt: new Date().toISOString() });
-                    setNotice("未检测到可用人物姿态，可更换含人物的图片或选择其他转换方式");
+                    setNotice(tr("未检测到可用人物姿态，可更换含人物的图片或选择其他转换方式"));
                     return;
                 }
                 const nextStatus = ["depth_model_missing", "depth_runtime_unavailable", "lineart_model_missing", "lineart_runtime_unavailable", "pose_model_missing", "pose_runtime_unavailable"].includes(error.code) ? "unavailable" : "error";
@@ -243,7 +244,7 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
                 setNotice(localRuntimeNotice(error, useLocalRuntimeStore.getState().connection));
                 return;
             }
-            const conversionError = error instanceof LocalImageConversionError ? error : new LocalImageConversionError("source_unreadable", "本地图片转换失败");
+            const conversionError = error instanceof LocalImageConversionError ? error : new LocalImageConversionError("source_unreadable", tr("本地图片转换失败"));
             const nextStatus = conversionError.code === "model_missing" ? "unavailable" : "error";
             updateState({ status: nextStatus, errorCode: conversionError.code, errorMessage: conversionError.message, updatedAt: new Date().toISOString() });
             setNotice(conversionError.message);
@@ -254,7 +255,7 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
         if (!resultUrl) return;
         const link = document.createElement("a");
         link.href = resultUrl;
-        link.download = `${node.title || "转换结果"}-${state.operation}.png`;
+        link.download = `${node.title || tr("转换结果")}-${state.operation}.png`;
         link.click();
     };
 
@@ -263,7 +264,7 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
     const buttonDisabled = !input || hasMultipleInputs || status === "processing";
     const statusText = mediaConversionStatusLabel(status);
     const previewStatusText = state.operation === "pose" && status === "completed" && typeof state.detectedPeople === "number"
-        ? `${statusText} · ${state.detectedPeople} 人`
+        ? tr("{0} · {1} 人", statusText, state.detectedPeople)
         : statusText;
     const showRuntimeRecovery = (state.operation === "depth" || state.operation === "lineart" || state.operation === "pose") && (localRuntimeConnection === "unreachable" || state.errorCode === "depth_runtime_unavailable" || state.errorCode === "lineart_runtime_unavailable" || state.errorCode === "pose_runtime_unavailable");
     const retryLocalRuntime = async () => {
@@ -271,9 +272,9 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
         await reconnectLocalRuntime();
         const next = useLocalRuntimeStore.getState();
         if (next.connection === "connected") {
-            setNotice("本地模型服务已连接，可以重新开始转换");
+            setNotice(tr("本地模型服务已连接，可以重新开始转换"));
         } else {
-            setNotice(next.error || "本地模型服务仍未连接，请先运行 start-yingce-local.cmd");
+            setNotice(next.error || tr("本地模型服务仍未连接，请先运行 start-yingce-local.cmd"));
         }
     };
 
@@ -289,8 +290,8 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
                     <WandSparkles className="size-4" aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
-                    <div className="truncate text-[var(--fs-label)] font-semibold">{node.title || "转换"}</div>
-                    <div className="truncate text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>本地处理 · 单图优先</div>
+                    <div className="truncate text-[var(--fs-label)] font-semibold">{node.title || tr("转换")}</div>
+                    <div className="truncate text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>{tr("本地处理 · 单图优先")}</div>
                 </div>
                 <StatusBadge status={status} />
             </div>
@@ -298,9 +299,9 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
             <div className="flex min-h-0 flex-1 flex-col gap-2">
                 <div className="relative min-h-0 flex-1 overflow-hidden rounded-[var(--r-md)] border" style={{ borderColor: theme.node.edge, background: theme.node.fill }}>
                     {displayResult ? (
-                        <img src={resultUrl} alt={`${mediaConversionOperationLabel(state.operation)}结果`} className="absolute inset-0 size-full object-contain" draggable={false} />
+                        <img src={resultUrl} alt={tr("{0}结果", mediaConversionOperationLabel(state.operation))} className="absolute inset-0 size-full object-contain" draggable={false} />
                     ) : input?.type === CanvasNodeType.Image && sourceUrl ? (
-                        <img src={sourceUrl} alt="转换输入" className="absolute inset-0 size-full object-contain" draggable={false} />
+                        <img src={sourceUrl} alt={tr("转换输入")} className="absolute inset-0 size-full object-contain" draggable={false} />
                     ) : input?.type === CanvasNodeType.Video && sourceUrl ? (
                         <video src={sourceUrl} className="absolute inset-0 size-full object-contain" controls preload="metadata" />
                     ) : (
@@ -310,8 +311,8 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
                     )}
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/75 to-transparent px-2 pb-2 pt-8 text-white">
                         <div className="min-w-0">
-                            <div className="truncate text-[var(--fs-micro)] font-semibold">{displayResult ? (status === "stale" ? "上次结果 · 待更新" : "转换结果") : input?.title || "等待输入"}</div>
-                            <div className="mt-0.5 truncate text-[var(--fs-micro)] opacity-75">{hasMultipleInputs ? "已连接多个输入" : input ? `${input.type === CanvasNodeType.Video ? "视频" : "图片"} · ${previewStatusText}` : "连接图片或视频节点"}</div>
+                            <div className="truncate text-[var(--fs-micro)] font-semibold">{displayResult ? (status === "stale" ? tr("上次结果 · 待更新") : tr("转换结果")) : input?.title || tr("等待输入")}</div>
+                            <div className="mt-0.5 truncate text-[var(--fs-micro)] opacity-75">{hasMultipleInputs ? tr("已连接多个输入") : input ? `${input.type === CanvasNodeType.Video ? tr("视频") : tr("图片")} · ${previewStatusText}` : tr("连接图片或视频节点")}</div>
                         </div>
                         {state.resultWidth && state.resultHeight && displayResult ? <span className="shrink-0 text-[var(--fs-micro)] tabular-nums">{state.resultWidth} × {state.resultHeight}</span> : null}
                     </div>
@@ -319,9 +320,9 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
 
                 {effectiveResult ? (
                     <div className="flex gap-1" data-canvas-no-zoom>
-                        <PreviewToggle theme={theme} pressed={!showResult} label="原素材" onClick={() => setShowResult(false)} />
-                        <PreviewToggle theme={theme} pressed={showResult} label="结果" onClick={() => setShowResult(true)} />
-                        <button type="button" aria-label="下载转换结果" title="下载转换结果" className="grid h-6 w-8 shrink-0 place-items-center rounded-[var(--r-sm)] outline-none transition hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/10" style={{ color: theme.node.muted, outlineColor: theme.accent.primary }} onClick={(event) => { event.stopPropagation(); downloadResult(); }} onMouseDown={(event) => event.stopPropagation()}>
+                        <PreviewToggle theme={theme} pressed={!showResult} label={tr("原素材")} onClick={() => setShowResult(false)} />
+                        <PreviewToggle theme={theme} pressed={showResult} label={tr("结果")} onClick={() => setShowResult(true)} />
+                        <button type="button" aria-label={tr("下载转换结果")} title={tr("下载转换结果")} className="grid h-6 w-8 shrink-0 place-items-center rounded-[var(--r-sm)] outline-none transition hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/10" style={{ color: theme.node.muted, outlineColor: theme.accent.primary }} onClick={(event) => { event.stopPropagation(); downloadResult(); }} onMouseDown={(event) => event.stopPropagation()}>
                             <Download className="size-3.5" aria-hidden="true" />
                         </button>
                     </div>
@@ -346,7 +347,7 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
                     onMouseDown={(event) => event.stopPropagation()}
                 >
                     {status === "processing" ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-                    {status === "processing" ? "处理中" : status === "completed" || status === "stale" ? "重新转换" : "开始转换"}
+                    {status === "processing" ? tr("处理中") : status === "completed" || status === "stale" ? tr("重新转换") : tr("开始转换")}
                 </button>
             </div>
 
@@ -361,7 +362,7 @@ export function MediaConversionNodeContent({ node, theme }: MediaConversionNodeC
                         onClick={(event) => { event.stopPropagation(); void retryLocalRuntime(); }}
                         onMouseDown={(event) => event.stopPropagation()}
                     >
-                        {localRuntimeConnecting ? "连接中" : "重试连接"}
+                        {localRuntimeConnecting ? tr("连接中") : tr("重试连接")}
                     </button>
                 ) : null}
             </div>
@@ -454,7 +455,7 @@ function OperationPicker({ theme, nodeId, value, disabled, onSelect }: { theme: 
                       ref={menuRef}
                       id={`${nodeId}-operation-menu`}
                       role="listbox"
-                      aria-label="转换方式"
+                      aria-label={tr("转换方式")}
                       data-canvas-no-zoom
                       className="fixed z-[var(--z-toast)] overflow-hidden rounded-[var(--r-lg)] border"
                       style={menuStyle}
@@ -463,7 +464,7 @@ function OperationPicker({ theme, nodeId, value, disabled, onSelect }: { theme: 
                       onWheel={(event) => event.stopPropagation()}
                   >
                       <div className="border-b px-3 py-2 text-[var(--fs-micro)] font-semibold" style={{ borderColor: theme.node.edge, color: theme.node.muted }}>
-                          选择转换方式
+                          {tr("选择转换方式")}
                       </div>
                       <div className="thin-scrollbar overflow-y-auto p-1" style={{ maxHeight: Math.max(0, position.maxHeight - 36) }}>
                           {OPERATIONS.map((operation) => {
@@ -504,7 +505,7 @@ function OperationPicker({ theme, nodeId, value, disabled, onSelect }: { theme: 
 
     return (
         <div className={`relative ${open ? "z-[var(--z-toast)]" : ""}`}>
-            <div className="mb-2 px-0.5 text-[var(--fs-micro)] font-medium" style={{ color: theme.node.muted }}>转换方式</div>
+            <div className="mb-2 px-0.5 text-[var(--fs-micro)] font-medium" style={{ color: theme.node.muted }}>{tr("转换方式")}</div>
             <button
                 ref={triggerRef}
                 id={`${nodeId}-operation`}
@@ -545,30 +546,30 @@ function OperationPicker({ theme, nodeId, value, disabled, onSelect }: { theme: 
 }
 
 function StatusBadge({ status }: { status: MediaConversionNodeState["status"] | "stale" }) {
-    if (status === "processing") return <span className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-info)", background: "color-mix(in oklch, var(--status-info) 15%, transparent)" }}><LoaderCircle className="size-3 animate-spin" aria-hidden="true" />处理中</span>;
-    if (status === "completed") return <span className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-success)", background: "color-mix(in oklch, var(--status-success) 15%, transparent)" }}><CheckCircle2 className="size-3" aria-hidden="true" />已完成</span>;
-    if (status === "stale") return <span className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-warning)", background: "color-mix(in oklch, var(--status-warning) 15%, transparent)" }}><RefreshCw className="size-3" aria-hidden="true" />待更新</span>;
-    if (status === "error") return <span className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-error)", background: "color-mix(in oklch, var(--status-error) 15%, transparent)" }}><CircleAlert className="size-3" aria-hidden="true" />失败</span>;
-    if (status === "unavailable") return <span className="inline-flex shrink-0 items-center rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-warning)", background: "color-mix(in oklch, var(--status-warning) 15%, transparent)" }}>本地不可用</span>;
-    if (status === "skipped") return <span className="inline-flex shrink-0 items-center rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-warning)", background: "color-mix(in oklch, var(--status-warning) 15%, transparent)" }}>已跳过</span>;
-    return <span className="inline-flex shrink-0 items-center rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--foreground-muted)", background: "color-mix(in oklch, var(--foreground-muted) 12%, transparent)" }}>未开始</span>;
+    if (status === "processing") return <span className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-info)", background: "color-mix(in oklch, var(--status-info) 15%, transparent)" }}><LoaderCircle className="size-3 animate-spin" aria-hidden="true" />{tr("处理中")}</span>;
+    if (status === "completed") return <span className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-success)", background: "color-mix(in oklch, var(--status-success) 15%, transparent)" }}><CheckCircle2 className="size-3" aria-hidden="true" />{tr("已完成")}</span>;
+    if (status === "stale") return <span className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-warning)", background: "color-mix(in oklch, var(--status-warning) 15%, transparent)" }}><RefreshCw className="size-3" aria-hidden="true" />{tr("待更新")}</span>;
+    if (status === "error") return <span className="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-error)", background: "color-mix(in oklch, var(--status-error) 15%, transparent)" }}><CircleAlert className="size-3" aria-hidden="true" />{tr("失败")}</span>;
+    if (status === "unavailable") return <span className="inline-flex shrink-0 items-center rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-warning)", background: "color-mix(in oklch, var(--status-warning) 15%, transparent)" }}>{tr("本地不可用")}</span>;
+    if (status === "skipped") return <span className="inline-flex shrink-0 items-center rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--status-warning)", background: "color-mix(in oklch, var(--status-warning) 15%, transparent)" }}>{tr("已跳过")}</span>;
+    return <span className="inline-flex shrink-0 items-center rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ color: "var(--foreground-muted)", background: "color-mix(in oklch, var(--foreground-muted) 12%, transparent)" }}>{tr("未开始")}</span>;
 }
 
 function mediaConversionStatusLabel(status: MediaConversionNodeState["status"] | "stale") {
-    if (status === "processing") return "正在处理";
-    if (status === "completed") return "已完成";
-    if (status === "stale") return "输入已变化，结果待更新";
-    if (status === "unavailable") return "本地能力不可用";
-    if (status === "skipped") return "未检测到人物姿态";
-    if (status === "error") return "处理失败";
-    return "尚未转换";
+    if (status === "processing") return tr("正在处理");
+    if (status === "completed") return tr("已完成");
+    if (status === "stale") return tr("输入已变化，结果待更新");
+    if (status === "unavailable") return tr("本地能力不可用");
+    if (status === "skipped") return tr("未检测到人物姿态");
+    if (status === "error") return tr("处理失败");
+    return tr("尚未转换");
 }
 
 function localRuntimeNotice(error: LocalRuntimeClientError, connection: ReturnType<typeof useLocalRuntimeStore.getState>["connection"]) {
-    if (connection === "unreachable") return "本地模型服务未启动，请双击 start-yingce-local.cmd 后重试";
-    if (error.code === "depth_model_missing") return "深度模型尚未安装，请先完成本地模型安装";
-    if (error.code === "lineart_model_missing") return "AI 线稿依赖或模型尚未安装，请先完成本地线稿模型安装";
-    if (error.code === "pose_model_missing") return "姿态模型或依赖尚未安装，请先完成本地姿态模型安装";
+    if (connection === "unreachable") return tr("本地模型服务未启动，请双击 start-yingce-local.cmd 后重试");
+    if (error.code === "depth_model_missing") return tr("深度模型尚未安装，请先完成本地模型安装");
+    if (error.code === "lineart_model_missing") return tr("AI 线稿依赖或模型尚未安装，请先完成本地线稿模型安装");
+    if (error.code === "pose_model_missing") return tr("姿态模型或依赖尚未安装，请先完成本地姿态模型安装");
     return error.message;
 }
 

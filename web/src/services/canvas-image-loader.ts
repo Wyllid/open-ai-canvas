@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { getActiveUserScope } from "@/lib/user-scope";
 
 const MAX_ACTIVE_IMAGE_PREPARATIONS = 4;
@@ -145,7 +146,7 @@ function pump() {
         activePreparations += 1;
         job.timeout = setTimeout(() => {
             job.image?.removeAttribute("src");
-            settle(job, undefined, new Error("图片加载或解码超时"));
+            settle(job, undefined, new Error(tr("图片加载或解码超时")));
         }, job.timeoutMs);
 
         const image = new Image();
@@ -159,7 +160,7 @@ function pump() {
                 (error) => settle(job, undefined, error),
             );
         };
-        image.onerror = () => settle(job, undefined, new Error("图片加载失败"));
+        image.onerror = () => settle(job, undefined, new Error(tr("图片加载失败")));
         image.src = job.src;
         if (image.complete && image.naturalWidth > 0) image.onload?.call(image, new Event("load"));
     }
@@ -180,9 +181,9 @@ function settle(job: ImagePreparationJob, image?: HTMLImageElement, error?: unkn
     }
     if (error !== undefined) job.reject(error);
     else if (image) job.resolve(image);
-    else job.reject(new Error("图片准备未完成"));
+    else job.reject(new Error(tr("图片准备未完成")));
 }
 
 function abortError() {
-    return new DOMException("图片准备已取消", "AbortError");
+    return new DOMException(tr("图片准备已取消"), "AbortError");
 }
