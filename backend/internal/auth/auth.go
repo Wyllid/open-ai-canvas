@@ -21,7 +21,8 @@ import (
 
 const SessionCookieName = "open_ai_canvas_session"
 
-const sessionMaxAge = 30 * 24 * time.Hour
+// Sessions live for a year so the browser keeps the user signed in; the cookie stays HttpOnly.
+const sessionMaxAge = 365 * 24 * time.Hour
 
 var usernamePattern = regexp.MustCompile(`^[a-zA-Z0-9_-]{3,32}$`)
 

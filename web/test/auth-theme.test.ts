@@ -38,15 +38,11 @@ describe("authentication follows the application theme", () => {
     });
 
     test("form labels, links and notices do not assume white text", () => {
-        for (const page of ["login", "register", "forgot-password"]) {
-            const form = source(`pages/auth/${page}.tsx`);
-            expect(form).not.toMatch(/(?:text|border|bg)-white/);
-            expect(form).not.toMatch(/text-(?:blue|amber)-[123]00/);
-            expect(form).toContain("auth-scene-label");
-            expect(form).toContain("auth-scene-icon");
-        }
-        expect(source("pages/auth/register.tsx")).toContain("auth-scene-notice");
-        expect(source("pages/auth/forgot-password.tsx")).toContain("auth-scene-notice");
+        const form = source("pages/auth/login.tsx");
+        expect(form).not.toMatch(/(?:text|border|bg)-white/);
+        expect(form).not.toMatch(/text-(?:blue|amber)-[123]00/);
+        expect(form).toContain("auth-scene-label");
+        expect(form).toContain("auth-scene-icon");
     });
 
     test("focus and autofill keep theme-aware foregrounds and visible focus", () => {

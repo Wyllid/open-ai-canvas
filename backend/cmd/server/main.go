@@ -83,6 +83,9 @@ func run(ctx context.Context) error {
 	if err := svc.ValidateRuntime(); err != nil {
 		return err
 	}
+	if err := ensureLocalAdmin(svc); err != nil {
+		return err
+	}
 	if err := svc.EnsureSystemChannelModels(); err != nil {
 		return err
 	}
