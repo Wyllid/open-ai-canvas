@@ -78,7 +78,7 @@ func TestCloudAgentStoryboardAcceptsImagePromptAsDescription(t *testing.T) {
 	}, true, "rows[0]"); err != nil {
 		t.Fatalf("a standalone imageGenerationPrompt should describe the shot: %v", err)
 	}
-	if err := validateCloudAgentStoryboardRow(map[string]any{"durationSeconds": float64(3)}, true, "rows[0]"); err == nil || !strings.Contains(err.Error(), "首帧提示词") {
+	if err := validateCloudAgentStoryboardRow(map[string]any{"durationSeconds": float64(3)}, true, "rows[0]"); err == nil || !strings.Contains(err.Error(), "first-frame prompt") {
 		t.Fatalf("missing shot description should explain accepted fields: %v", err)
 	} else if fieldErr, ok := err.(*cloudAgentFieldArgumentError); !ok || fieldErr.Field != "rows[0]" || fieldErr.Issue != "required" {
 		t.Fatalf("missing shot description should be a repairable field error, got %T: %v", err, err)
@@ -190,21 +190,21 @@ func TestCloudAgentNodeCapabilityCardsExplainStoryboardTradeoffs(t *testing.T) {
 		t.Fatal("storyboard and lightweight nodes expose indistinguishable purposes")
 	}
 	videoGoodFor := strings.Join(byType["video"]["goodFor"].([]string), "\n")
-	if !strings.Contains(videoGoodFor, "多图参考视频") {
+	if !strings.Contains(videoGoodFor, "Video from multiple reference images") {
 		t.Fatalf("video capability card does not explain multi-image video: %s", videoGoodFor)
 	}
 	frame := byType["frame"]
 	frameGoodFor := strings.Join(frame["goodFor"].([]string), "\n")
 	frameNotIdealFor := strings.Join(frame["notIdealFor"].([]string), "\n")
-	if !strings.Contains(frameGoodFor, "按场景或镜头组") || !strings.Contains(frameGoodFor, "制作") || !strings.Contains(frameNotIdealFor, "分镜脚本节点") {
+	if !strings.Contains(frameGoodFor, "by scene or shot group") || !strings.Contains(frameGoodFor, "production") || !strings.Contains(frameNotIdealFor, "storyboard node") {
 		t.Fatalf("frame capability card does not explain its use cases and limits: %+v", frame)
 	}
 	capabilityGuide := cloudAgentCapabilityGuide()
-	if !strings.Contains(capabilityGuide, "按场景或镜头组") || !strings.Contains(capabilityGuide, "可移动、可折叠") {
+	if !strings.Contains(capabilityGuide, "by scene or shot group") || !strings.Contains(capabilityGuide, "movable, collapsible") {
 		t.Fatalf("Agent system guide does not explain when to use a canvas frame: %s", capabilityGuide)
 	}
 	guide := strings.Join(result["selectionGuide"].([]string), "\n")
-	if !strings.Contains(guide, "多镜头") || !strings.Contains(guide, "model_list") || !strings.Contains(guide, "不要为了形式") {
+	if !strings.Contains(guide, "multiple shots") || !strings.Contains(guide, "model_list") || !strings.Contains(guide, "for form's sake") {
 		t.Fatalf("selection guide does not express soft routing: %s", guide)
 	}
 }
@@ -266,7 +266,7 @@ func TestCloudAgentCreatesAndReadsStructuredStoryboard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(plan.Preview.Items) != 1 || plan.Preview.Items[0].Operation != "create_storyboard" || !strings.Contains(plan.Preview.Description, "1 个镜头") {
+	if len(plan.Preview.Items) != 1 || plan.Preview.Items[0].Operation != "create_storyboard" || !strings.Contains(plan.Preview.Description, "1 shots") {
 		t.Fatalf("approval preview is incomplete: %+v", plan.Preview)
 	}
 
@@ -382,7 +382,7 @@ func TestCloudAgentStoryboardRejectsUnsafeOrStaleMutations(t *testing.T) {
 		"snapshotHash": "stale", "nodeId": "storyboard-1", "action": "update", "rowId": rowID,
 		"patch": map[string]any{"dialogue": "不应写入"},
 	})
-	if _, err := prepareCloudAgentStoryboardEdit(s.repo, "user", canvas.ID, stale); err == nil || !strings.Contains(err.Error(), "被修改过") {
+	if _, err := prepareCloudAgentStoryboardEdit(s.repo, "user", canvas.ID, stale); err == nil || !strings.Contains(err.Error(), "changed after you read it") {
 		t.Fatalf("stale snapshot was not rejected: %v", err)
 	}
 
@@ -413,7 +413,7 @@ func TestCloudAgentStoryboardRejectsUnsafeOrStaleMutations(t *testing.T) {
 		"snapshotHash": cloudAgentCanvasHash(textDoc), "nodeId": "text-1", "action": "update", "rowId": rowID,
 		"patch": map[string]any{"dialogue": "不应写入"},
 	})
-	if _, err := prepareCloudAgentStoryboardEdit(s.repo, "user", canvas.ID, wrongType); err == nil || !strings.Contains(err.Error(), "不是分镜") {
+	if _, err := prepareCloudAgentStoryboardEdit(s.repo, "user", canvas.ID, wrongType); err == nil || !strings.Contains(err.Error(), "not a storyboard") {
 		t.Fatalf("non-storyboard node was accepted: %v", err)
 	}
 }

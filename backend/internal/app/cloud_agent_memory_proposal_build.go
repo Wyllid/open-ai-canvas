@@ -88,7 +88,7 @@ func agentMemoryProposalIDFromTask(task model.Task) string {
 func (s *Service) finishAgentMemoryProposal(task model.Task, text string, taskErr error) error {
 	proposalID := agentMemoryProposalIDFromTask(task)
 	if proposalID == "" {
-		return BadAuthRequest("压缩任务缺少提案绑定，请重新生成")
+		return BadAuthRequest("The compaction task has no proposal binding; generate it again")
 	}
 	row, err := s.repo.AgentMemoryProposalForUser(task.UserID, proposalID)
 	if err != nil {

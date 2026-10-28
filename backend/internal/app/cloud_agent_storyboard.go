@@ -44,7 +44,7 @@ type cloudAgentStoryboardMutationPlan struct {
 }
 
 func storyboardArgumentError(action string) error {
-	return &cloudAgentArgumentError{BadAuthRequest(fmt.Sprintf("%s分镜工具参数无效：仅允许工具 schema 中声明的字段，请重新读取分镜并按结构化参数重试", action))}
+	return &cloudAgentArgumentError{BadAuthRequest(fmt.Sprintf("Invalid storyboard %s arguments: only fields declared in the tool schema are allowed; read the storyboard again and retry with structured arguments", action))}
 }
 
 func cloudAgentStoryboardRowSchema() map[string]any {
@@ -79,23 +79,23 @@ func cloudAgentStoryboardPatchSchema() map[string]any {
 
 func validateCloudAgentStoryboardRow(row map[string]any, requireDescription bool, fieldPath string) error {
 	if row == nil {
-		return BadAuthRequest("分镜行不能为空")
+		return BadAuthRequest("Storyboard rows must not be empty")
 	}
 	if duration, ok := row["durationSeconds"]; !ok {
-		return BadAuthRequest("每个分镜行必须有 durationSeconds")
+		return BadAuthRequest("Every storyboard row needs durationSeconds")
 	} else if value, ok := duration.(float64); !ok || value <= 0 {
-		return BadAuthRequest("分镜时长必须是大于零的数字")
+		return BadAuthRequest("Storyboard duration must be a number greater than zero")
 	}
 	for key := range row {
 		if key != "durationSeconds" && !cloudAgentStoryboardTextField(key) {
-			return BadAuthRequest(fmt.Sprintf("不能通过分镜工具写入字段 %s", key))
+			return BadAuthRequest(fmt.Sprintf("Field %s cannot be written with the storyboard tool", key))
 		}
 	}
 	for _, key := range cloudAgentStoryboardTextFields {
 		if value, exists := row[key]; exists {
 			text, ok := value.(string)
 			if !ok || utf8.RuneCountInString(text) > 20000 {
-				return BadAuthRequest(fmt.Sprintf("分镜字段 %s 必须是不超过20000字的文本", key))
+				return BadAuthRequest(fmt.Sprintf("Storyboard field %s must be text of at most 20000 characters", key))
 			}
 		}
 	}
@@ -104,7 +104,7 @@ func validateCloudAgentStoryboardRow(row map[string]any, requireDescription bool
 		motion := strings.TrimSpace(stringValue(row["videoMotionPrompt"]))
 		imagePrompt := strings.TrimSpace(stringValue(row["imageGenerationPrompt"]))
 		if plot == "" && motion == "" && imagePrompt == "" {
-			return cloudAgentFieldError(fieldPath, "required", "新增镜头需要画面描述、首帧提示词或视频提示词")
+			return cloudAgentFieldError(fieldPath, "required", "A new shot needs a visual description, a first-frame prompt or a video prompt")
 		}
 	}
 	return nil
@@ -112,7 +112,7 @@ func validateCloudAgentStoryboardRow(row map[string]any, requireDescription bool
 
 func normalizeCloudAgentStoryboardRows(rows []map[string]any, userID, nodeID, seed string) ([]any, error) {
 	if len(rows) < 1 || len(rows) > maxCloudAgentStoryboardRows {
-		return nil, BadAuthRequest("分镜脚本必须包含 1 到 100 个镜头")
+		return nil, BadAuthRequest("A storyboard must have 1 to 100 shots")
 	}
 	out := make([]any, 0, len(rows))
 	for index, input := range rows {
@@ -136,46 +136,46 @@ func storyboardNodeFromDocument(doc map[string]any, nodeID string) (map[string]a
 			continue
 		}
 		if stringValue(node["type"]) != "script" {
-			return nil, nil, nil, BadAuthRequest("目标节点不是分镜脚本节点")
+			return nil, nil, nil, BadAuthRequest("The target node is not a storyboard node")
 		}
 		metadata, ok := node["metadata"].(map[string]any)
 		if !ok {
-			return nil, nil, nil, BadAuthRequest("分镜节点数据格式无效")
+			return nil, nil, nil, BadAuthRequest("Invalid storyboard node data format")
 		}
 		storyboard, ok := metadata["storyboard"].(map[string]any)
 		if !ok {
-			return nil, nil, nil, BadAuthRequest("分镜节点缺少结构化表格")
+			return nil, nil, nil, BadAuthRequest("The storyboard node has no structured table")
 		}
 		rows := creationMaps(storyboard["rows"])
 		if len(rows) > maxCloudAgentStoryboardRows {
-			return nil, nil, nil, BadAuthRequest("分镜脚本超过100个镜头限制")
+			return nil, nil, nil, BadAuthRequest("The storyboard exceeds the 100 shot limit")
 		}
 		ids := map[string]bool{}
 		for _, row := range rows {
 			rowID := stringValue(row["id"])
-			if err := validateCloudAgentID(rowID, "分镜行ID", 120); err != nil || ids[rowID] {
-				return nil, nil, nil, BadAuthRequest("分镜节点包含无效或重复的镜头行ID")
+			if err := validateCloudAgentID(rowID, "Storyboard row ID", 120); err != nil || ids[rowID] {
+				return nil, nil, nil, BadAuthRequest("The storyboard node has invalid or duplicate shot row IDs")
 			}
 			ids[rowID] = true
 		}
 		return node, storyboard, rows, nil
 	}
-	return nil, nil, nil, BadAuthRequest("未找到当前画布的分镜脚本节点")
+	return nil, nil, nil, BadAuthRequest("Storyboard node not found on this canvas")
 }
 
 func prepareCloudAgentStoryboardCreate(repo *repository.Repository, userID, canvasID string, call cloudAgentCall) (*cloudAgentStoryboardMutationPlan, error) {
 	var args cloudAgentStoryboardCreateArgs
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
-		return nil, storyboardArgumentError("创建")
+		return nil, storyboardArgumentError("create")
 	}
 	if args.SnapshotHash == "" || args.NodeID == "" || strings.TrimSpace(args.Title) == "" {
-		return nil, BadAuthRequest("创建分镜脚本需要快照、节点ID和标题")
+		return nil, BadAuthRequest("Creating a storyboard needs a snapshot, a node ID and a title")
 	}
-	if err := validateCloudAgentID(args.NodeID, "分镜节点ID", 80); err != nil {
+	if err := validateCloudAgentID(args.NodeID, "Storyboard node ID", 80); err != nil {
 		return nil, err
 	}
 	if utf8.RuneCountInString(args.Title) > 240 {
-		return nil, BadAuthRequest("分镜标题超出限制")
+		return nil, BadAuthRequest("The storyboard title exceeds the limit")
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, canvasID)
 	if err != nil {
@@ -189,7 +189,7 @@ func prepareCloudAgentStoryboardCreate(repo *repository.Repository, userID, canv
 	beforeHash := cloudAgentCanvasHash(doc)
 	for _, node := range creationMaps(doc["nodes"]) {
 		if stringValue(node["id"]) == args.NodeID {
-			return nil, BadAuthRequest("分镜节点ID已存在")
+			return nil, BadAuthRequest("Storyboard node ID already exists")
 		}
 	}
 	rows, err := normalizeCloudAgentStoryboardRows(args.Rows, userID, args.NodeID, call.ID)
@@ -205,34 +205,34 @@ func prepareCloudAgentStoryboardCreate(repo *repository.Repository, userID, canv
 	doc["nodes"] = append(creationMaps(doc["nodes"]), node)
 	return &cloudAgentStoryboardMutationPlan{
 		Canvas: canvas, Document: doc, BeforeJSON: canvas.PayloadJSON, BeforeSnapshotHash: beforeHash,
-		Preview: cloudAgentApprovalPreview{Kind: "canvas_mutation", Title: "确认创建分镜脚本", Description: fmt.Sprintf("Agent 准备创建分镜脚本《%s》，包含 %d 个镜头。批准后才会写入画布。", args.Title, len(rows)), Items: []cloudAgentApprovalPreviewItem{{Operation: "create_storyboard", NodeID: args.NodeID, NodeTitle: args.Title, NodeType: "script", NodeTypeLabel: "分镜脚本", Summary: fmt.Sprintf("创建分镜脚本《%s》（%d个镜头）", args.Title, len(rows))}}},
+		Preview: cloudAgentApprovalPreview{Kind: "canvas_mutation", Title: "Confirm storyboard creation", Description: fmt.Sprintf("The Agent is about to create storyboard '%s' with %d shots. Nothing is written to the canvas until you approve.", args.Title, len(rows)), Items: []cloudAgentApprovalPreviewItem{{Operation: "create_storyboard", NodeID: args.NodeID, NodeTitle: args.Title, NodeType: "script", NodeTypeLabel: "Storyboard", Summary: fmt.Sprintf("Create storyboard '%s' (%d shots)", args.Title, len(rows))}}},
 	}, nil
 }
 
 func prepareCloudAgentStoryboardEdit(repo *repository.Repository, userID, canvasID string, call cloudAgentCall) (*cloudAgentStoryboardMutationPlan, error) {
 	var args cloudAgentStoryboardEditArgs
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
-		return nil, storyboardArgumentError("编辑")
+		return nil, storyboardArgumentError("edit")
 	}
 	if args.SnapshotHash == "" || args.NodeID == "" {
-		return nil, BadAuthRequest("编辑分镜需要快照和节点ID")
+		return nil, BadAuthRequest("Editing a storyboard needs a snapshot and the node ID")
 	}
 	if args.Action != "append" && args.Action != "update" && args.Action != "remove" {
-		return nil, BadAuthRequest("分镜操作必须是 append、update 或 remove")
+		return nil, BadAuthRequest("Storyboard action must be append, update or remove")
 	}
-	if err := validateCloudAgentID(args.NodeID, "分镜节点ID", 80); err != nil {
+	if err := validateCloudAgentID(args.NodeID, "Storyboard node ID", 80); err != nil {
 		return nil, err
 	}
 	if args.Action == "append" && args.RowID != "" {
-		return nil, BadAuthRequest("追加镜头不能指定已有 rowId")
+		return nil, BadAuthRequest("Appending a shot cannot specify an existing rowId")
 	}
 	if args.Action != "append" {
-		if err := validateCloudAgentID(args.RowID, "分镜行ID", 120); err != nil {
-			return nil, BadAuthRequest("修改或删除镜头必须使用最新读取结果中的真实 rowId")
+		if err := validateCloudAgentID(args.RowID, "Storyboard row ID", 120); err != nil {
+			return nil, BadAuthRequest("Updating or removing a shot must use a real rowId from the latest read")
 		}
 	}
 	if args.Action == "remove" && len(args.Patch) != 0 {
-		return nil, BadAuthRequest("删除镜头不接受 patch")
+		return nil, BadAuthRequest("Removing a shot does not accept a patch")
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, canvasID)
 	if err != nil {
@@ -248,7 +248,7 @@ func prepareCloudAgentStoryboardEdit(repo *repository.Repository, userID, canvas
 		return nil, err
 	}
 	if !cloudAgentNodeSnapshotMatches(doc, args.NodeID, args.SnapshotHash) {
-		return nil, cloudAgentFieldError("snapshotHash", "stale_snapshot", "这个分镜在你读取之后被修改过，本次未写入；请重新读取分镜后再改")
+		return nil, cloudAgentFieldError("snapshotHash", "stale_snapshot", "This storyboard changed after you read it, so nothing was written; read the storyboard again before editing")
 	}
 	index := -1
 	for i, row := range rows {
@@ -258,7 +258,7 @@ func prepareCloudAgentStoryboardEdit(repo *repository.Repository, userID, canvas
 		}
 	}
 	if args.Action != "append" && index < 0 {
-		return nil, BadAuthRequest("分镜行不存在，请先读取真实行ID")
+		return nil, BadAuthRequest("Storyboard row not found; read the real row ID first")
 	}
 	next := make([]map[string]any, len(rows))
 	for i, row := range rows {
@@ -268,24 +268,24 @@ func prepareCloudAgentStoryboardEdit(repo *repository.Repository, userID, canvas
 	switch args.Action {
 	case "remove":
 		next = append(next[:index], next[index+1:]...)
-		fields = []string{"镜头行"}
+		fields = []string{"Shot row"}
 	case "append", "update":
 		if len(args.Patch) == 0 {
-			return nil, BadAuthRequest("分镜操作需要 patch")
+			return nil, BadAuthRequest("The storyboard action needs a patch")
 		}
 		patch := map[string]any{}
 		for key, value := range args.Patch {
 			if key == "durationSeconds" {
 				if duration, ok := value.(float64); !ok || duration <= 0 {
-					return nil, BadAuthRequest("分镜时长必须是大于零的数字")
+					return nil, BadAuthRequest("Storyboard duration must be a number greater than zero")
 				}
 			} else if cloudAgentStoryboardTextField(key) {
 				text, ok := value.(string)
 				if !ok || utf8.RuneCountInString(text) > 20000 {
-					return nil, BadAuthRequest(fmt.Sprintf("分镜字段 %s 必须是不超过20000字的文本", key))
+					return nil, BadAuthRequest(fmt.Sprintf("Storyboard field %s must be text of at most 20000 characters", key))
 				}
 			} else {
-				return nil, BadAuthRequest(fmt.Sprintf("不能通过分镜编辑修改字段 %s", key))
+				return nil, BadAuthRequest(fmt.Sprintf("Field %s cannot be changed by a storyboard edit", key))
 			}
 			patch[key] = value
 			fields = append(fields, key)
@@ -293,7 +293,7 @@ func prepareCloudAgentStoryboardEdit(repo *repository.Repository, userID, canvas
 		sort.Strings(fields)
 		if args.Action == "append" {
 			if len(rows) >= maxCloudAgentStoryboardRows {
-				return nil, BadAuthRequest("单个分镜表最多100个镜头")
+				return nil, BadAuthRequest("A storyboard can have at most 100 shots")
 			}
 			if err := validateCloudAgentStoryboardRow(patch, true, "patch"); err != nil {
 				return nil, err
@@ -318,7 +318,7 @@ func prepareCloudAgentStoryboardEdit(repo *repository.Repository, userID, canvas
 	node["metadata"].(map[string]any)["storyboard"] = storyboard
 	return &cloudAgentStoryboardMutationPlan{
 		Canvas: canvas, Document: doc, BeforeJSON: canvas.PayloadJSON, BeforeSnapshotHash: beforeHash,
-		Preview: cloudAgentApprovalPreview{Kind: "canvas_mutation", Title: "确认修改分镜脚本", Description: "Agent 准备修改分镜脚本。批准后才会写入画布。", Items: []cloudAgentApprovalPreviewItem{{Operation: "edit_storyboard", NodeID: args.NodeID, NodeTitle: stringValue(node["title"]), NodeType: "script", NodeTypeLabel: "分镜脚本", Fields: fields, Summary: fmt.Sprintf("%s分镜脚本《%s》", map[string]string{"append": "追加镜头到", "update": "修改", "remove": "删除"}[args.Action], stringValue(node["title"]))}}},
+		Preview: cloudAgentApprovalPreview{Kind: "canvas_mutation", Title: "Confirm storyboard changes", Description: "The Agent is about to change the storyboard. Nothing is written to the canvas until you approve.", Items: []cloudAgentApprovalPreviewItem{{Operation: "edit_storyboard", NodeID: args.NodeID, NodeTitle: stringValue(node["title"]), NodeType: "script", NodeTypeLabel: "Storyboard", Fields: fields, Summary: fmt.Sprintf("%s storyboard '%s'", map[string]string{"append": "Append shots to", "update": "Update", "remove": "Remove shots from"}[args.Action], stringValue(node["title"]))}}},
 	}, nil
 }
 
@@ -360,19 +360,19 @@ func mapsAsAny(values []map[string]any) []any {
 func cloudAgentStoryboardReadResult(view any, nodeID, nodeHash string) (map[string]any, error) {
 	state, ok := view.(map[string]any)
 	if !ok {
-		return nil, BadAuthRequest("分镜读取结果无效")
+		return nil, BadAuthRequest("Invalid storyboard read result")
 	}
 	nodes, _ := state["nodes"].([]any)
 	if len(nodes) != 1 {
-		return nil, BadAuthRequest("分镜读取结果缺少目标节点")
+		return nil, BadAuthRequest("The storyboard read result is missing the target node")
 	}
 	node, ok := nodes[0].(map[string]any)
 	if !ok {
-		return nil, BadAuthRequest("分镜读取结果格式无效")
+		return nil, BadAuthRequest("The storyboard read result format is invalid")
 	}
 	storyboard, ok := node["storyboard"].(map[string]any)
 	if !ok {
-		return nil, BadAuthRequest("分镜读取结果缺少镜头行")
+		return nil, BadAuthRequest("The storyboard read result is missing shot rows")
 	}
 	rows, _ := storyboard["rows"].([]any)
 	for _, value := range rows {

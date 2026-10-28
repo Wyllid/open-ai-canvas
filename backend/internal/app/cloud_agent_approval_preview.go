@@ -109,24 +109,24 @@ func applyCloudAgentCanvasPlan(doc map[string]any, ops []agentCanvasOp) ([]cloud
 		if op.Content != nil {
 			content = *op.Content
 		}
-		if err := validateCloudAgentID(op.ID, "节点或连线 ID", 80); err != nil {
+		if err := validateCloudAgentID(op.ID, "Node or edge ID", 80); err != nil {
 			return nil, err
 		}
 		if op.Type == "add_node" && (utf8.RuneCountInString(content) > 16000 || utf8.RuneCountInString(title) > 240) {
-			return nil, BadAuthRequest("节点标题或正文超出限制")
+			return nil, BadAuthRequest("Node title or body exceeds the limit")
 		}
 		index := cloudAgentNodeIndex(nodes, op.ID)
 		switch op.Type {
 		case "add_node":
 			if index >= 0 {
-				return nil, BadAuthRequest("新增节点ID重复")
+				return nil, BadAuthRequest("Duplicate new node ID")
 			}
 			capability, ok := cloudAgentNodeCapabilityForType(op.NodeType)
 			if strings.TrimSpace(op.NodeType) == "" {
-				return nil, BadAuthRequest("新增节点缺少 nodeType")
+				return nil, BadAuthRequest("New node is missing nodeType")
 			}
 			if !ok {
-				return nil, BadAuthRequest("不支持的节点类型")
+				return nil, BadAuthRequest("Unsupported node type")
 			}
 			x, y := op.X, op.Y
 			if x == nil || y == nil {
@@ -160,23 +160,23 @@ func applyCloudAgentCanvasPlan(doc map[string]any, ops []agentCanvasOp) ([]cloud
 			items = append(items, cloudAgentApprovalPreviewItem{
 				Operation: "add_node", NodeID: op.ID, NodeTitle: nodeTitle,
 				NodeType: capability.Type, NodeTypeLabel: capability.Label,
-				Summary: fmt.Sprintf("新增%s《%s》", capability.Label, nodeTitle),
+				Summary: fmt.Sprintf("Add %s '%s'", capability.Label, nodeTitle),
 			})
 		case "connect_nodes":
-			if err := validateCloudAgentID(op.FromNodeID, "来源节点 ID", 80); err != nil {
+			if err := validateCloudAgentID(op.FromNodeID, "Source node ID", 80); err != nil {
 				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].fromNodeId", opIndex), "invalid_value", cloudAgentSafeToolError(err))
 			}
-			if err := validateCloudAgentID(op.ToNodeID, "目标节点 ID", 80); err != nil {
+			if err := validateCloudAgentID(op.ToNodeID, "Target node ID", 80); err != nil {
 				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].toNodeId", opIndex), "invalid_value", cloudAgentSafeToolError(err))
 			}
 			fromIndex, toIndex := cloudAgentNodeIndex(nodes, op.FromNodeID), cloudAgentNodeIndex(nodes, op.ToNodeID)
 			switch {
 			case fromIndex < 0:
-				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].fromNodeId", opIndex), "not_found", "连线来源节点不在当前画布；请重新读取画布并使用真实节点 ID")
+				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].fromNodeId", opIndex), "not_found", "The edge source node is not on this canvas; read the canvas again and use a real node ID")
 			case toIndex < 0:
-				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].toNodeId", opIndex), "not_found", "连线目标节点不在当前画布；请重新读取画布并使用真实节点 ID")
+				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].toNodeId", opIndex), "not_found", "The edge target node is not on this canvas; read the canvas again and use a real node ID")
 			case op.FromNodeID == op.ToNodeID:
-				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].toNodeId", opIndex), "invalid_value", "连线不能指向自身；请选择另一个目标节点")
+				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].toNodeId", opIndex), "invalid_value", "An edge cannot point to its own node; choose another target node")
 			}
 			if err := validateCloudAgentConnectionWithHandles(nodes, op.FromNodeID, op.ToNodeID, op.FromHandleID, op.ToHandleID, edges); err != nil {
 				// 保留端点校验指出的具体字段，让模型只修正错误 handle，而不是放弃镜头绑定。
@@ -188,10 +188,10 @@ func applyCloudAgentCanvasPlan(doc map[string]any, ops []agentCanvasOp) ([]cloud
 			}
 			for _, edge := range edges {
 				if stringValue(edge["id"]) == op.ID {
-					return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].id", opIndex), "duplicate", "连线 ID 已存在；请为新连线指定未使用的 ID")
+					return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].id", opIndex), "duplicate", "Edge ID already exists; give the new edge an unused ID")
 				}
 				if stringValue(edge["fromNodeId"]) == op.FromNodeID && stringValue(edge["toNodeId"]) == op.ToNodeID && stringValue(edge["fromHandleId"]) == op.FromHandleID && stringValue(edge["toHandleId"]) == op.ToHandleID {
-					return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d]", opIndex), "duplicate", "这两个节点与 handle 之间已有连线；请移除重复操作")
+					return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d]", opIndex), "duplicate", "These two nodes and handles are already connected; remove the duplicate operation")
 				}
 			}
 			fromCapability, _ := cloudAgentNodeCapabilityForNode(nodes[fromIndex])
@@ -215,26 +215,26 @@ func applyCloudAgentCanvasPlan(doc map[string]any, ops []agentCanvasOp) ([]cloud
 				NodeType: fromCapability.Type, NodeTypeLabel: fromCapability.Label,
 				TargetNodeID: op.ToNodeID, TargetNodeTitle: toTitle, TargetNodeType: toCapability.Type,
 				Details: details,
-				Summary: fmt.Sprintf("建立《%s》→《%s》的引用连线", fromTitle, toTitle),
+				Summary: fmt.Sprintf("Connect '%s' → '%s' as a reference", fromTitle, toTitle),
 			})
 		case "update_node":
 			if len(op.Patch) == 0 {
 				// 漏字段是模型照 schema 就能自己修好的参数错误：当成工具结果回给它重试，
-				// 而不是判整轮失败（用户只在失败提示里看到一句"必须提供 patch"）。
+				// 而不是判整轮失败（用户只在失败提示里看到一句"patch is required"）。
 				// 未知操作类型仍按准入失败终止（cloud_agent_test.go 有用例断言这一行为）。
-				return nil, &cloudAgentArgumentError{BadAuthRequest("更新节点必须提供 patch")}
+				return nil, &cloudAgentArgumentError{BadAuthRequest("Updating a node requires a patch")}
 			}
 			if index < 0 {
 				// 节点 ID 不存在同样是模型可自行纠正的参数错误，与连线端点 not_found 一致。
-				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].id", opIndex), "not_found", "只能更新现有且受 Agent 支持的节点；该节点不在当前画布，请重新读取画布并使用真实节点 ID")
+				return nil, cloudAgentFieldError(fmt.Sprintf("ops[%d].id", opIndex), "not_found", "Only existing nodes supported by the Agent can be updated; this node is not on the current canvas, so read the canvas again and use a real node ID")
 			}
 			capability, ok := cloudAgentNodeCapabilityForNode(nodes[index])
 			if !ok || !capability.CanUpdate {
-				return nil, BadAuthRequest("该节点类型不支持 Agent 更新")
+				return nil, BadAuthRequest("This node type cannot be updated by the Agent")
 			}
 			metadata, _ := nodes[index]["metadata"].(map[string]any)
 			if metadata["locked"] == true {
-				return nil, BadAuthRequest("不能修改锁定节点")
+				return nil, BadAuthRequest("Locked nodes cannot be changed")
 			}
 			beforeTitle := cloudAgentApprovalNodeTitle(nodes[index], capability.Label)
 			fields := cloudAgentApprovalPatchLabels(capability.PatchFields, op.Patch)
@@ -252,10 +252,10 @@ func applyCloudAgentCanvasPlan(doc map[string]any, ops []agentCanvasOp) ([]cloud
 			items = append(items, cloudAgentApprovalPreviewItem{
 				Operation: "update_node", NodeID: op.ID, NodeTitle: beforeTitle, ResultTitle: resultTitle,
 				NodeType: capability.Type, NodeTypeLabel: capability.Label, Fields: fields,
-				Summary: fmt.Sprintf("修改%s《%s》的%s", capability.Label, beforeTitle, strings.Join(fields, "、")),
+				Summary: fmt.Sprintf("Change %[3]s of %[1]s '%[2]s'", capability.Label, beforeTitle, strings.Join(fields, ", ")),
 			})
 		default:
-			return nil, BadAuthRequest("不支持的画布写操作")
+			return nil, BadAuthRequest("Unsupported canvas write operation")
 		}
 	}
 	doc["nodes"] = nodes
@@ -270,7 +270,7 @@ func applyCloudAgentStoryboardConnection(nodes []map[string]any, fromNodeID, toN
 	from := cloudAgentNodeByID(nodes, fromNodeID)
 	to := cloudAgentNodeByID(nodes, toNodeID)
 	if from == nil || to == nil {
-		return BadAuthRequest("分镜连线端点不存在")
+		return BadAuthRequest("Storyboard edge endpoint does not exist")
 	}
 	scriptNode, linkedNode, handleID := from, to, fromHandleID
 	scriptIsSource := true
@@ -279,15 +279,15 @@ func applyCloudAgentStoryboardConnection(nodes []map[string]any, fromNodeID, toN
 		scriptIsSource = false
 	}
 	if stringValue(scriptNode["type"]) != "script" {
-		return BadAuthRequest("分镜 handle 必须挂在分镜脚本节点上")
+		return BadAuthRequest("A storyboard handle must be on a storyboard node")
 	}
 	metadata, ok := scriptNode["metadata"].(map[string]any)
 	if !ok {
-		return BadAuthRequest("分镜节点数据格式无效")
+		return BadAuthRequest("Invalid storyboard node data format")
 	}
 	storyboard, ok := metadata["storyboard"].(map[string]any)
 	if !ok {
-		return BadAuthRequest("分镜节点缺少结构化表格")
+		return BadAuthRequest("The storyboard node has no structured table")
 	}
 	if handleID == "storyboard:context" {
 		ids := stringIDs(storyboard["referenceNodeIds"])
@@ -306,7 +306,7 @@ func applyCloudAgentStoryboardConnection(nodes []map[string]any, fromNodeID, toN
 		}
 	}
 	if row == nil {
-		return BadAuthRequest("分镜行不存在，请先读取最新分镜行 ID")
+		return BadAuthRequest("Storyboard row not found; read the latest storyboard row IDs first")
 	}
 	if scriptIsSource {
 		switch stringValue(linkedNode["type"]) {
@@ -337,10 +337,10 @@ func cloudAgentStoryboardConnectionDetails(fromHandleID, toHandleID string) []st
 		handleID = toHandleID
 	}
 	if handleID == "storyboard:context" {
-		return []string{"挂载到分镜全局设定"}
+		return []string{"Attach to the storyboard global settings"}
 	}
 	if strings.HasPrefix(handleID, "row:") {
-		return []string{fmt.Sprintf("挂载到镜头行 %s", strings.TrimPrefix(handleID, "row:"))}
+		return []string{fmt.Sprintf("Attach to shot row %s", strings.TrimPrefix(handleID, "row:"))}
 	}
 	return nil
 }
@@ -432,13 +432,13 @@ func cloudAgentCanvasAppliedPreview(preview cloudAgentApprovalPreview) cloudAgen
 	}
 	parts := make([]string, 0, 3)
 	if counts["add_node"] > 0 {
-		parts = append(parts, fmt.Sprintf("新增 %d 个节点", counts["add_node"]))
+		parts = append(parts, fmt.Sprintf("add %d nodes", counts["add_node"]))
 	}
 	if counts["update_node"] > 0 {
-		parts = append(parts, fmt.Sprintf("修改 %d 个节点", counts["update_node"]))
+		parts = append(parts, fmt.Sprintf("change %d nodes", counts["update_node"]))
 	}
 	if counts["connect_nodes"] > 0 {
-		parts = append(parts, fmt.Sprintf("建立 %d 条引用连线", counts["connect_nodes"]))
+		parts = append(parts, fmt.Sprintf("create %d reference edges", counts["connect_nodes"]))
 	}
 	if len(parts) == 0 {
 		for _, item := range preview.Items {
@@ -448,22 +448,22 @@ func cloudAgentCanvasAppliedPreview(preview cloudAgentApprovalPreview) cloudAgen
 		}
 	}
 	if len(parts) == 0 {
-		parts = append(parts, "已完成请求的画布操作")
+		parts = append(parts, "the requested canvas operations")
 	}
 	applied.Status = "applied"
-	applied.Title = "画布修改已写入"
-	applied.Description = fmt.Sprintf("画布修改已写入：%s。", strings.Join(parts, "，"))
+	applied.Title = "Canvas changes written"
+	applied.Description = fmt.Sprintf("Canvas changes written: %s.", strings.Join(parts, ", "))
 	return applied
 }
 
 func cloudAgentMediaSubmittedPreview(preview cloudAgentApprovalPreview) cloudAgentApprovalPreview {
 	preview.Status = "submitted"
-	preview.Title = "生成任务已提交"
-	summary := "媒体生成任务"
+	preview.Title = "Generation task submitted"
+	summary := "media generation task"
 	if len(preview.Items) > 0 && strings.TrimSpace(preview.Items[0].Summary) != "" {
 		summary = preview.Items[0].Summary
 	}
-	preview.Description = fmt.Sprintf("生成任务已提交：%s。生成结果尚未完成，完成后会自动回写画布。", summary)
+	preview.Description = fmt.Sprintf("Generation task submitted: %s. The result is not ready yet; it is written back to the canvas when it finishes.", summary)
 	return preview
 }
 
@@ -474,17 +474,17 @@ func cloudAgentCanvasApprovalPreview(items []cloudAgentApprovalPreviewItem) clou
 	}
 	parts := make([]string, 0, 3)
 	if counts["add_node"] > 0 {
-		parts = append(parts, fmt.Sprintf("新增 %d 个节点", counts["add_node"]))
+		parts = append(parts, fmt.Sprintf("add %d nodes", counts["add_node"]))
 	}
 	if counts["update_node"] > 0 {
-		parts = append(parts, fmt.Sprintf("修改 %d 个节点", counts["update_node"]))
+		parts = append(parts, fmt.Sprintf("change %d nodes", counts["update_node"]))
 	}
 	if counts["connect_nodes"] > 0 {
-		parts = append(parts, fmt.Sprintf("建立 %d 条引用连线", counts["connect_nodes"]))
+		parts = append(parts, fmt.Sprintf("create %d reference edges", counts["connect_nodes"]))
 	}
 	return cloudAgentApprovalPreview{
-		Kind: "canvas_mutation", Title: "确认画布修改",
-		Description: fmt.Sprintf("Agent 准备%s。请确认目标节点和修改字段；批准后才会写入画布。", strings.Join(parts, "，")),
+		Kind: "canvas_mutation", Title: "Confirm canvas changes",
+		Description: fmt.Sprintf("The Agent is about to %s. Check the target nodes and changed fields; nothing is written to the canvas until you approve.", strings.Join(parts, ", ")),
 		Items:       items,
 	}
 }
@@ -494,55 +494,55 @@ func cloudAgentMediaApprovalPreview(plan *cloudAgentMediaPlan, modelName string)
 	descriptor, _ := cloudAgentNodeCapabilityForGenerationMode(args.Mode)
 	nodeTitle := truncateRunes(strings.TrimSpace(args.Title), 120)
 	if nodeTitle == "" {
-		nodeTitle = "未命名" + descriptor.Label
+		nodeTitle = "Untitled " + descriptor.Label
 	}
 	details := make([]string, 0, 6)
 	if modelName != "" {
-		details = append(details, "模型："+truncateRunes(modelName, 120))
+		details = append(details, "Model: "+truncateRunes(modelName, 120))
 	}
 	if len(args.ReferenceNodeIDs) > 0 {
-		details = append(details, fmt.Sprintf("引用 %d 个画布资产并建立连线", len(args.ReferenceNodeIDs)))
+		details = append(details, fmt.Sprintf("References %d canvas assets and connects them", len(args.ReferenceNodeIDs)))
 	} else {
-		details = append(details, "不引用画布媒体资产")
+		details = append(details, "No canvas media assets referenced")
 	}
 	if len(args.CharacterLabels) > 0 {
-		details = append(details, "使用角色卡："+truncateRunes(strings.Join(args.CharacterLabels, "、"), 200))
+		details = append(details, "Character cards: "+truncateRunes(strings.Join(args.CharacterLabels, ", "), 200))
 	}
 	if args.Duration > 0 {
-		details = append(details, fmt.Sprintf("时长：%d 秒", args.Duration))
+		details = append(details, fmt.Sprintf("Duration: %d s", args.Duration))
 	}
 	if args.Size != "" {
-		details = append(details, "画幅："+truncateRunes(args.Size, 40))
+		details = append(details, "Aspect ratio: "+truncateRunes(args.Size, 40))
 	}
 	if args.VideoStartFrameNodeID != "" {
-		details = append(details, "首帧节点："+truncateRunes(args.VideoStartFrameNodeID, 80))
+		details = append(details, "First frame node: "+truncateRunes(args.VideoStartFrameNodeID, 80))
 	}
 	if args.VideoEndFrameNodeID != "" {
-		details = append(details, "尾帧节点："+truncateRunes(args.VideoEndFrameNodeID, 80))
+		details = append(details, "Last frame node: "+truncateRunes(args.VideoEndFrameNodeID, 80))
 	}
 	if args.Quality != "" {
-		details = append(details, "质量："+truncateRunes(args.Quality, 40))
+		details = append(details, "Quality: "+truncateRunes(args.Quality, 40))
 	}
 	if args.ImageResolution != "" {
-		details = append(details, "分辨率："+truncateRunes(args.ImageResolution, 40))
+		details = append(details, "Resolution: "+truncateRunes(args.ImageResolution, 40))
 	}
 	if args.ConfigurationChange != nil {
-		details = append(details, "规格变更依据："+truncateRunes(args.ConfigurationChange.UserInstruction, 200))
+		details = append(details, "Reason for the specification change: "+truncateRunes(args.ConfigurationChange.UserInstruction, 200))
 	}
 	if args.VideoGenerateAudio != nil {
-		value := "关闭"
+		value := "off"
 		if *args.VideoGenerateAudio {
-			value = "开启"
+			value = "on"
 		}
-		details = append(details, "音频："+value)
+		details = append(details, "Audio: "+value)
 	}
 	return cloudAgentApprovalPreview{
-		Kind: "media_generation", Title: "确认生成" + descriptor.Label,
-		Description: descriptor.Label + "草稿节点和引用连线已创建，尚未提交生成。确认规格后批准才会提交收费任务；拒绝则保留草稿，结果自动回写画布。",
+		Kind: "media_generation", Title: "Confirm " + strings.ToLower(descriptor.Label) + " generation",
+		Description: descriptor.Label + " draft node and reference edges were created; nothing has been submitted yet. Approving after checking the specification submits the paid task, and the result is written back to the canvas automatically; rejecting keeps the draft.",
 		Items: []cloudAgentApprovalPreviewItem{{
 			Operation: "generate_media", NodeID: args.NodeID, NodeTitle: nodeTitle,
 			NodeType: descriptor.Type, NodeTypeLabel: descriptor.Label, Details: details,
-			Summary: "生成" + descriptor.Label + "《" + nodeTitle + "》",
+			Summary: "Generate " + strings.ToLower(descriptor.Label) + " '" + nodeTitle + "'",
 		}},
 	}
 }
@@ -582,7 +582,7 @@ func cloudAgentApprovalNodeTitle(node map[string]any, typeLabel string) string {
 	if title != "" {
 		return title
 	}
-	return "未命名" + typeLabel
+	return "Untitled " + typeLabel
 }
 
 func cloudAgentApprovalCallHash(call cloudAgentCall) string {

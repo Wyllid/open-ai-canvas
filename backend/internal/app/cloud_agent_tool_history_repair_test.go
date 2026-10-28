@@ -275,7 +275,7 @@ func TestCloudAgentExpiredApprovalQuoteContinuesWithoutCharge(t *testing.T) {
 	if !strings.Contains(last, "approval_stale") || !strings.Contains(last, `"taskSubmitted":false`) {
 		t.Fatalf("stale approval receipt missing: %s", last)
 	}
-	if !strings.Contains(state.PiResumePrompt, "提交前校验未通过") || strings.Contains(state.PiResumePrompt, "已执行一次") {
+	if !strings.Contains(state.PiResumePrompt, "validation failed before submission") || strings.Contains(state.PiResumePrompt, "ran it once") {
 		t.Fatalf("resume prompt misreports the approval: %s", state.PiResumePrompt)
 	}
 	if repair := state.ToolRepairs["generate_media"]; repair.Attempt != 1 {

@@ -84,19 +84,19 @@ func cloudAgentRememberInterjectionID(state *cloudAgentRuntime, messageID string
 func (s *Service) InterjectCloudAgent(userID, id, messageID, text string) (int, error) {
 	text = strings.TrimSpace(text)
 	if text == "" {
-		return 0, BadAuthRequest("插话内容不能为空")
+		return 0, BadAuthRequest("The interjection must not be empty")
 	}
 	if !utf8.ValidString(text) {
-		return 0, BadAuthRequest("插话内容包含无效字符")
+		return 0, BadAuthRequest("The interjection contains invalid characters")
 	}
 	if utf8.RuneCountInString(text) > cloudAgentInterjectionMaxRunes {
-		return 0, BadAuthRequest("插话内容过长")
+		return 0, BadAuthRequest("The interjection is too long")
 	}
 	if strings.ContainsRune(text, 0) {
-		return 0, BadAuthRequest("插话内容包含无效字符")
+		return 0, BadAuthRequest("The interjection contains invalid characters")
 	}
 	if messageID == "" || !utf8.ValidString(messageID) || utf8.RuneCountInString(messageID) > 160 {
-		return 0, BadAuthRequest("插话标识无效")
+		return 0, BadAuthRequest("Invalid interjection ID")
 	}
 	// 归属校验：不是本人的运行在这里就要 404，不能靠下面的 CAS 兜底
 	// （否则错误形态会变成"冲突"，让人以为重试就好）。
@@ -118,7 +118,7 @@ func (s *Service) InterjectCloudAgent(userID, id, messageID, text string) (int, 
 			return len(state.PendingInterjections), nil
 		}
 		if !cloudAgentAcceptsInterjection(run.Status) {
-			return 0, creationConflict("本轮已经结束，这条消息将作为新一轮发送")
+			return 0, creationConflict("This run has ended; the message will be sent as a new turn")
 		}
 		err = s.repo.MutateCloudAgent(userID, id, run.Revision, func(current *model.CloudAgentExecution, _ *repository.Repository) error {
 			state.PendingInterjections = append(state.PendingInterjections, cloudAgentInterjection{ID: messageID, Text: text, CreatedAt: time.Now()})
@@ -135,7 +135,7 @@ func (s *Service) InterjectCloudAgent(userID, id, messageID, text string) (int, 
 		}
 		return len(state.PendingInterjections), nil
 	}
-	return 0, creationConflict("Agent 正在写入运行状态，请重试")
+	return 0, creationConflict("The Agent is writing its run state; retry")
 }
 
 // WithdrawCloudAgentInterjection 撤回一条尚未送达模型的插话。只动待送队列，
@@ -143,7 +143,7 @@ func (s *Service) InterjectCloudAgent(userID, id, messageID, text string) (int, 
 // 已送达的插话已经进入模型上下文，撤回会造成"界面说撤了、模型却看到了"，因此拒绝。
 func (s *Service) WithdrawCloudAgentInterjection(userID, id, messageID string) error {
 	if messageID == "" || !utf8.ValidString(messageID) || utf8.RuneCountInString(messageID) > 160 {
-		return BadAuthRequest("插话标识无效")
+		return BadAuthRequest("Invalid interjection ID")
 	}
 	if _, _, err := s.cloudAgentTask(userID, id); err != nil {
 		return err
@@ -167,10 +167,10 @@ func (s *Service) WithdrawCloudAgentInterjection(userID, id, messageID string) e
 		if index < 0 {
 			for _, seen := range state.InterjectionIDs {
 				if seen == messageID {
-					return creationConflict("插话已送达或已结束，无法撤回")
+					return creationConflict("The interjection was already delivered or the run ended; it cannot be withdrawn")
 				}
 			}
-			return kernel.NotFound("插话不存在")
+			return kernel.NotFound("Interjection not found")
 		}
 		err = s.repo.MutateCloudAgent(userID, id, run.Revision, func(current *model.CloudAgentExecution, _ *repository.Repository) error {
 			item := state.PendingInterjections[index]
@@ -184,7 +184,7 @@ func (s *Service) WithdrawCloudAgentInterjection(userID, id, messageID string) e
 		}
 		return err
 	}
-	return creationConflict("Agent 正在写入运行状态，请重试")
+	return creationConflict("The Agent is writing its run state; retry")
 }
 
 // cloudAgentDrainInterjections 把待送插话注入本轮对话。
@@ -200,7 +200,7 @@ func cloudAgentDrainInterjections(runID string, state *cloudAgentRuntime) bool {
 		// 而不是当成自己上一句的延续。
 		state.Canonical.Messages = append(state.Canonical.Messages, map[string]any{
 			"role":                     "user",
-			"content":                  "【用户插话】" + item.Text,
+			"content":                  "[User interjection] " + item.Text,
 			cloudAgentContextSourceKey: "user_interjection",
 		})
 		state.event(runID, "user_interjection_delivered", map[string]any{"messageId": item.ID, "text": item.Text})

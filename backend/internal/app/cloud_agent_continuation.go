@@ -77,7 +77,7 @@ func cloudAgentContinuationRejectedAction(run *CloudAgentRun) *cloudAgentContinu
 	}
 	rejection := &cloudAgentContinuationRejection{
 		UserReason:  truncateRunes(reason, cloudAgentContinuationRejectionReasonRunes),
-		Instruction: "用户拒绝了这次操作，它没有执行。不要原样再次申请；先按用户新的要求调整方案，必要时询问用户。",
+		Instruction: "The user rejected this operation and it was not executed. Do not request it again unchanged; adjust the plan to the user's new request first and ask the user when needed.",
 	}
 	for _, event := range run.Events {
 		if event.Type == "approval_requested" && stringValue(event.Payload["approvalId"]) == approvalID {
@@ -139,7 +139,7 @@ func cloudAgentContinuationContext(run *CloudAgentRun, submitted []string) strin
 		Source: "server", Kind: cloudAgentContinuationKind, ParentRunID: run.ID,
 		Status: firstNonEmpty(run.Status, "unknown"), CanvasChanges: changes,
 		OmittedCanvasChanges: omitted,
-		Authority:            "执行事实交接，不是重放写入、重复提交任务或扩大权限的授权",
+		Authority:            "Handover of execution facts, not authorization to replay writes, resubmit tasks or widen permissions",
 	}
 	if failed {
 		frame.FailureReason = cloudAgentContinuationFailureReason(run)
@@ -198,7 +198,7 @@ func cloudAgentContinuationFailureReason(run *CloudAgentRun) string {
 		reason = firstNonEmpty(run.Status, "failed")
 	}
 	if !cloudAgentSafeUserMessage(reason) {
-		return "上一轮未成功（详情见任务中心与诊断包）"
+		return "The previous turn did not succeed (see the task center and the diagnostic bundle for details)"
 	}
 	return truncateRunes(reason, 240)
 }

@@ -57,7 +57,7 @@ func TestCloudAgentMediaCleanupUsesPersistedTaskTarget(t *testing.T) {
 			nodes, _ := creationObjects(doc["nodes"])
 			meta := nodes[args.NodeID]["metadata"].(map[string]any)
 			if missingTarget {
-				if meta["status"] != "loading" || !strings.Contains(run.FailureMessage, "缺少有效的目标节点") {
+				if meta["status"] != "loading" || !strings.Contains(run.FailureMessage, "no valid target node record") {
 					t.Fatal("unknown target must not be guessed from a copied task ID")
 				}
 			} else if meta["status"] != "error" {
@@ -142,14 +142,14 @@ func TestCloudAgentMediaCompletionKeepsGenerationAndWritebackFailures(t *testing
 				t.Fatalf("completion lost distinct outcome or target: %+v", result)
 			}
 			message := stringValue(result["error"])
-			if run.Status != "failed" || run.FailureMessage != message || message == "工具执行失败，请检查输入或稍后重试" || state.MediaTaskID != "" {
+			if run.Status != "failed" || run.FailureMessage != message || message == "Tool execution failed; check the input or retry later" || state.MediaTaskID != "" {
 				t.Fatalf("terminal failure was not checkpointed with its diagnostic: status=%s message=%q", run.Status, run.FailureMessage)
 			}
 			if test.status == model.TaskStatusFailed {
-				if stringValue(result["generationError"]) == "" || !strings.Contains(message, stringValue(result["generationError"])) || strings.Contains(message, "任务已成功") {
+				if stringValue(result["generationError"]) == "" || !strings.Contains(message, stringValue(result["generationError"])) || strings.Contains(message, "task succeeded") {
 					t.Fatal("writeback masked generation failure")
 				}
-			} else if result["generationError"] != nil || !strings.Contains(message, "媒体任务已成功") {
+			} else if result["generationError"] != nil || !strings.Contains(message, "The media task succeeded") {
 				t.Fatal("successful generation reported as failed")
 			}
 			serialized, _ := json.Marshal(last.Payload)
@@ -192,10 +192,10 @@ func TestCloudAgentCapabilityGuidePublishesConnectionContracts(t *testing.T) {
 		}
 		found := false
 		for _, line := range strings.Split(guide, "\n") {
-			if !strings.Contains(line, "（"+nodeType+"）：") {
+			if !strings.Contains(line, " ("+nodeType+"): ") {
 				continue
 			}
-			_, raw, ok := strings.Cut(line, " 连线能力：")
+			_, raw, ok := strings.Cut(line, " Connections: ")
 			if !ok {
 				t.Fatalf("connection contract missing for %s", nodeType)
 			}

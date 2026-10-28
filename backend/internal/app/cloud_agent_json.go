@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-var errCloudAgentJSONSingleObject = errors.New("参数必须是单个 JSON 对象")
+var errCloudAgentJSONSingleObject = errors.New("Arguments must be a single JSON object")
 
 // Only explicitly classified input errors may be repaired by the model;
 // authorization and unsupported mutations still fail before any write/approval.
@@ -45,10 +45,10 @@ func decodeCloudAgentCanvasArgs(raw string) (agentCanvasArgs, error) {
 		return args, cloudAgentJSONArgumentError(err)
 	}
 	if envelope.SnapshotHash == "" {
-		return args, cloudAgentFieldError("snapshotHash", "required", "画布参数 snapshotHash 不能为空，请先读取画布")
+		return args, cloudAgentFieldError("snapshotHash", "required", "Canvas argument snapshotHash must not be empty; read the canvas first")
 	}
 	if len(envelope.Ops) < 1 || len(envelope.Ops) > 20 {
-		return args, cloudAgentFieldError("ops", "item_count", "画布参数 ops 必须包含1到20项操作")
+		return args, cloudAgentFieldError("ops", "item_count", "Canvas argument ops must contain 1 to 20 operations")
 	}
 	args.SnapshotHash = envelope.SnapshotHash
 	for i, rawOp := range envelope.Ops {
@@ -74,7 +74,7 @@ func decodeCloudAgentCanvasArgs(raw string) (agentCanvasArgs, error) {
 					}
 				}
 			}
-			return args, cloudAgentFieldError(field, issue, fmt.Sprintf("画布参数 %s 无效：%s", field, cloudAgentSafeToolError(cloudAgentJSONArgumentError(err))))
+			return args, cloudAgentFieldError(field, issue, fmt.Sprintf("Canvas argument %s is invalid: %s", field, cloudAgentSafeToolError(cloudAgentJSONArgumentError(err))))
 		}
 		required := ""
 		switch {
@@ -93,7 +93,7 @@ func decodeCloudAgentCanvasArgs(raw string) (agentCanvasArgs, error) {
 		}
 		if required != "" {
 			field := path + "." + required
-			return args, cloudAgentFieldError(field, "required", fmt.Sprintf("画布参数 %s 不能为空", field))
+			return args, cloudAgentFieldError(field, "required", fmt.Sprintf("Canvas argument %s must not be empty", field))
 		}
 		args.Ops = append(args.Ops, op)
 	}
@@ -103,15 +103,15 @@ func decodeCloudAgentCanvasArgs(raw string) (agentCanvasArgs, error) {
 // Report the failure category without echoing model-controlled keys or values.
 // The runtime attaches the advertised schema so the model can correct its call.
 func cloudAgentJSONArgumentError(err error) error {
-	message := "工具参数 JSON 格式无效，请按参数规范修正后重试"
+	message := "The tool argument JSON is malformed; fix it according to the parameter schema and retry"
 	var typeErr *json.UnmarshalTypeError
 	switch {
 	case errors.Is(err, errCloudAgentJSONSingleObject):
-		message = "工具参数必须是单个 JSON 对象，不能是字符串、数组、null 或多个对象；无参数时传 {}"
+		message = "Tool arguments must be a single JSON object, not a string, array, null or several objects; pass {} when there are no arguments"
 	case errors.As(err, &typeErr):
-		message = "工具参数字段类型不匹配，请按参数规范使用整数、字符串或数组，不要把数字或数组写成字符串"
+		message = "Tool argument field types do not match; use integers, strings or arrays as the schema says, and do not write numbers or arrays as strings"
 	case strings.HasPrefix(err.Error(), "json: unknown field "):
-		message = "工具参数含有不支持的字段，请移除参数规范以外的字段后重试"
+		message = "Tool arguments contain unsupported fields; remove fields outside the parameter schema and retry"
 	}
 	return &cloudAgentArgumentError{BadAuthRequest(message)}
 }

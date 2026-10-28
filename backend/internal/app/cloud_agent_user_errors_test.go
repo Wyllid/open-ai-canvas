@@ -67,6 +67,13 @@ func TestCloudAgentUserFailureMessageHidesInternalEnglish(t *testing.T) {
 	if got := cloudAgentUserFailureMessage("run-1", readable); got != "图片生成失败：网络异常。" {
 		t.Fatalf("readable reason lost: %q", got)
 	}
+	english := fmt.Errorf("wrap: %w", BadAuthRequest("The previous turn is still running; wait for it to finish"))
+	if got := cloudAgentUserFailureMessage("run-1", english); got != "The previous turn is still running; wait for it to finish" {
+		t.Fatalf("readable English reason lost: %q", got)
+	}
+	if got := cloudAgentUserFailureMessage("run-1", BadAuthRequest("dial tcp 10.0.0.1:443: connection refused")); !strings.Contains(got, "run-1") {
+		t.Fatalf("network detail leaked: %q", got)
+	}
 }
 
 // 所有仓储层哨兵错误都必须是中文：它们会经 handler 直接返回给用户。

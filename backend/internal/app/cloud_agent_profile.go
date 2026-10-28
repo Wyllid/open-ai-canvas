@@ -43,11 +43,11 @@ type AgentProfileView struct {
 
 func validateAgentProfileContent(content string) error {
 	if !utf8.ValidString(content) || utf8.RuneCountInString(content) > cloudAgentProfileMaxRunes {
-		return BadAuthRequest("Agent 偏好文档必须是有效 UTF-8，且不超过 12000 个字符")
+		return BadAuthRequest("The Agent preference document must be valid UTF-8 and at most 12000 characters")
 	}
 	for _, r := range content {
 		if unicode.IsControl(r) && r != '\n' && r != '\r' && r != '\t' {
-			return BadAuthRequest("Agent 偏好文档不能包含控制字符")
+			return BadAuthRequest("The Agent preference document must not contain control characters")
 		}
 	}
 	return nil
@@ -55,29 +55,29 @@ func validateAgentProfileContent(content string) error {
 
 func validateAgentProfileScope(req AgentProfileRequest) error {
 	if req.Scope != model.AgentProfileScopeUser && req.Scope != model.AgentProfileScopeProject && req.Scope != model.AgentProfileScopeCanvas {
-		return BadAuthRequest("无效的 Agent 偏好作用域")
+		return BadAuthRequest("Invalid Agent preference scope")
 	}
 	if req.Scope == model.AgentProfileScopeUser && (req.ProjectID != "" || req.CanvasID != "") {
-		return BadAuthRequest("用户偏好不能带项目或画布 ID")
+		return BadAuthRequest("User preferences cannot carry a project or canvas ID")
 	}
 	if req.Scope == model.AgentProfileScopeProject && (req.ProjectID == "" || req.CanvasID != "") {
-		return BadAuthRequest("项目偏好需要 projectId，且不能带 canvasId")
+		return BadAuthRequest("Project preferences need projectId and cannot carry canvasId")
 	}
 	if req.Scope == model.AgentProfileScopeCanvas && req.CanvasID == "" {
-		return BadAuthRequest("画布偏好缺少 canvasId")
+		return BadAuthRequest("Canvas preferences are missing canvasId")
 	}
 	if req.ProjectID != "" {
-		if err := validateCloudAgentID(req.ProjectID, "项目 ID", 80); err != nil {
+		if err := validateCloudAgentID(req.ProjectID, "Project ID", 80); err != nil {
 			return err
 		}
 	}
 	if req.CanvasID != "" {
-		if err := validateCloudAgentID(req.CanvasID, "画布 ID", 80); err != nil {
+		if err := validateCloudAgentID(req.CanvasID, "Canvas ID", 80); err != nil {
 			return err
 		}
 	}
 	if req.Revision < 0 {
-		return BadAuthRequest("偏好 revision 无效")
+		return BadAuthRequest("Invalid preference revision")
 	}
 	return validateAgentProfileContent(req.Content)
 }
@@ -104,7 +104,7 @@ func agentProfileRevision(layers []AgentProfileLayer) string {
 
 func (s *Service) UpdateCloudAgentProfile(userID string, req AgentProfileRequest) (AgentProfileView, error) {
 	if userID == "" {
-		return AgentProfileView{}, kernel.Unauthorized("请先登录")
+		return AgentProfileView{}, kernel.Unauthorized("Please sign in first")
 	}
 	if err := validateAgentProfileScope(req); err != nil {
 		return AgentProfileView{}, err
@@ -121,7 +121,7 @@ func (s *Service) UpdateCloudAgentProfile(userID string, req AgentProfileRequest
 			return AgentProfileView{}, err
 		}
 		if projectID != "" && canvas.ProjectID != projectID {
-			return AgentProfileView{}, errors.New("画布不属于指定项目")
+			return AgentProfileView{}, errors.New("The canvas does not belong to the given project")
 		}
 		projectID = canvas.ProjectID
 	}
@@ -135,7 +135,7 @@ func (s *Service) UpdateCloudAgentProfile(userID string, req AgentProfileRequest
 	}
 	if err := s.repo.SaveAgentProfile(profile, req.Revision); err != nil {
 		if errors.Is(err, repository.ErrTaskStateConflict) {
-			return AgentProfileView{}, creationConflict("Agent 偏好已变化，请重新读取后保存")
+			return AgentProfileView{}, creationConflict("Agent preferences changed; reload them and save again")
 		}
 		return AgentProfileView{}, err
 	}
@@ -155,7 +155,7 @@ func (s *Service) CloudAgentProfileForScope(userID, projectID, canvasID string) 
 
 func (s *Service) cloudAgentProfileView(userID, projectID, canvasID string) (AgentProfileView, error) {
 	if userID == "" {
-		return AgentProfileView{}, kernel.Unauthorized("请先登录")
+		return AgentProfileView{}, kernel.Unauthorized("Please sign in first")
 	}
 	if projectID != "" {
 		if _, err := s.repo.ProjectForUser(userID, projectID); err != nil {
@@ -168,7 +168,7 @@ func (s *Service) cloudAgentProfileView(userID, projectID, canvasID string) (Age
 			return AgentProfileView{}, err
 		}
 		if projectID != "" && canvas.ProjectID != projectID {
-			return AgentProfileView{}, errors.New("画布不属于指定项目")
+			return AgentProfileView{}, errors.New("The canvas does not belong to the given project")
 		}
 		projectID = canvas.ProjectID
 	}

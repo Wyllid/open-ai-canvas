@@ -134,7 +134,7 @@ func TestPiOutputLimitCorrection(t *testing.T) {
 			select {
 			case got := <-done:
 				if tc.fail {
-					if got.err == nil || !strings.Contains(got.err.Error(), "31 个工具调用") || strings.Contains(got.err.Error(), "checkpoint") {
+					if got.err == nil || !strings.Contains(got.err.Error(), "31 tool calls") || strings.Contains(got.err.Error(), "checkpoint") {
 						t.Fatalf("wrong terminal error: %v", got.err)
 					}
 				} else if got.err != nil {

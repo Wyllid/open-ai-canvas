@@ -10,7 +10,7 @@ import (
 // cloudAgentStepTimeoutError 是一次画布 Agent 模型调用被单步墙钟掐断时写进任务错误的标记。
 // 秒级超时（策略 AgentStepTimeoutSeconds）与文本任务超时都会走到这里，运行期按这个标记
 // 把它当成"可恢复失败"处理，而不是整轮判死。
-const cloudAgentStepTimeoutError = "画布 Agent 单步模型调用超时"
+const cloudAgentStepTimeoutError = "Canvas Agent model step timed out"
 
 // cloudAgentMaxStepTimeoutEscalations 是单步超时的重试次数：超时几乎总是思考阶段在长时间
 // 无输出，因此重试的手段是关掉思考（更省时的路径），只给一次机会。
@@ -51,7 +51,7 @@ func (s *Service) correctCloudAgentStepTimeout(run *model.CloudAgentExecution, s
 		state.CallIndex = 0
 		state.event(run.ID, "model_failure_recovered", map[string]any{
 			"reason": "step_timeout_retried",
-			"text":   "上一步模型调用超时；已关闭思考重试同一步",
+			"text":   "The previous model step timed out; retrying the same step with reasoning off",
 		})
 		return cloudAgentSave(current, state)
 	})

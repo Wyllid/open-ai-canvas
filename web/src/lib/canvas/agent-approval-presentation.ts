@@ -85,8 +85,8 @@ function countParts(items: AgentApprovalPreviewItem[]) {
 }
 
 /**
- * The server writes previews in Chinese. Canvas edits are rebuilt from their structured items in the
- * interface language; other texts are translated when they match a catalog entry and otherwise kept.
+ * The server writes previews in English. Canvas edits and media requests are rebuilt from their structured
+ * items in the interface language; other texts are translated when they match a catalog entry and otherwise kept.
  */
 function localizeServerPreview(preview: AgentApprovalPresentation): AgentApprovalPresentation {
     const items = preview.items.map((item) => {
@@ -99,11 +99,16 @@ function localizeServerPreview(preview: AgentApprovalPresentation): AgentApprova
         return { ...item, nodeTypeLabel: label || item.nodeTypeLabel, fields: item.fields?.map(trMessage), details: item.details?.map(trMessage), summary };
     });
     const parts = countParts(items);
-    if (preview.kind === "canvas_mutation" && parts.length && preview.title === "确认画布修改") {
+    if (preview.kind === "canvas_mutation" && parts.length && preview.title === "Confirm canvas changes") {
         return { ...preview, items, title: tr("确认画布修改"), description: tr("Agent 准备{0}。请确认目标节点和修改字段；批准后才会写入画布。", parts.join(tr("，"))) };
     }
-    if (preview.kind === "canvas_mutation" && parts.length && preview.title === "画布修改已写入") {
+    if (preview.kind === "canvas_mutation" && parts.length && preview.title === "Canvas changes written") {
         return { ...preview, items, title: tr("画布修改已写入"), description: tr("画布修改已写入：{0}。", parts.join(tr("，"))) };
+    }
+    const media = items.length === 1 && items[0].operation === "generate_media" && items[0].nodeType ? nodeTypeLabel(items[0].nodeType) : "";
+    if (preview.kind === "media_generation" && media && preview.title.startsWith("Confirm ")) {
+        const title = items[0].nodeTitle || tr("未命名{0}", media);
+        return { ...preview, items: [{ ...items[0], summary: tr("生成{0}《{1}》", media, title) }], title: tr("确认生成{0}", media), description: tr("{0}草稿节点和引用连线已创建，尚未提交生成。确认规格后批准才会提交收费任务；拒绝则保留草稿，结果自动回写画布。", media) };
     }
     return { ...preview, items, title: trMessage(preview.title), description: trMessage(preview.description) };
 }

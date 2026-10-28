@@ -9,7 +9,7 @@ import (
 // validator remains the authoritative boundary for null, whitespace and
 // decoded-value checks that JSON Schema cannot reliably express across all
 // provider adapters.
-const cloudAgentModelSelectionDescription = "模型：logicalModelId 或 channelId+channelModelKey，互斥且完整，不传 null/空白。generate_media 可继承草稿或本轮同条件唯一候选，多候选不代选。"
+const cloudAgentModelSelectionDescription = "Model: logicalModelId or channelId+channelModelKey, mutually exclusive and complete, never null or blank. generate_media can inherit the draft's model or the single matching candidate of this run; with several candidates it does not pick one for you."
 
 // A model can occasionally omit the copied selection even after reading
 // model_list. We may repair that omission only when the exact same query has a
@@ -100,24 +100,24 @@ func validateCloudAgentModelSelection(raw string, a cloudAgentMediaArgs) error {
 		if value, exists := fields[field]; exists {
 			var text *string
 			if err := json.Unmarshal(value, &text); err != nil || text == nil {
-				return cloudAgentFieldError(field, "type_mismatch", "模型选择字段必须是字符串，不能为 null")
+				return cloudAgentFieldError(field, "type_mismatch", "Model selection fields must be strings, not null")
 			}
 			if *text != "" && strings.TrimSpace(*text) == "" {
-				return cloudAgentFieldError(field, "invalid_value", "模型选择字段不能仅包含空白字符")
+				return cloudAgentFieldError(field, "invalid_value", "Model selection fields must not be only whitespace")
 			}
 		}
 	}
 	switch {
 	case a.LogicalModelID != "" && (a.ChannelID != "" || a.ChannelModelKey != ""):
-		return cloudAgentFieldError("logicalModelId", "mutually_exclusive", "模型选择冲突：logicalModelId 与 channelId/channelModelKey 不得混用，请复制 model_list 的一种 selection")
+		return cloudAgentFieldError("logicalModelId", "mutually_exclusive", "Conflicting model selection: logicalModelId and channelId/channelModelKey cannot be combined; copy one selection from model_list")
 	case a.LogicalModelID != "":
 		return nil
 	case a.ChannelID == "" && a.ChannelModelKey == "":
-		return cloudAgentFieldError("logicalModelId", "required", "缺少模型选择：请复制 model_list 的 logicalModelId 或完整的 channelId/channelModelKey；媒体生成必须显式指定模型，不会使用项目默认模型或随机选模")
+		return cloudAgentFieldError("logicalModelId", "required", "Model selection missing: copy logicalModelId or the complete channelId/channelModelKey from model_list; media generation must name the model explicitly and never uses the project default or a random model")
 	case a.ChannelID == "":
-		return cloudAgentFieldError("channelId", "required", "系统渠道模型选择不完整：缺少 channelId，请复制 model_list 的完整 selection")
+		return cloudAgentFieldError("channelId", "required", "Incomplete system channel model selection: channelId is missing; copy the full selection from model_list")
 	case a.ChannelModelKey == "":
-		return cloudAgentFieldError("channelModelKey", "required", "系统渠道模型选择不完整：缺少 channelModelKey，请复制 model_list 的完整 selection")
+		return cloudAgentFieldError("channelModelKey", "required", "Incomplete system channel model selection: channelModelKey is missing; copy the full selection from model_list")
 	default:
 		return nil
 	}

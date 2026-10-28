@@ -36,14 +36,14 @@ func strictRuntimeStringAliases(fields map[string]interface{}, label string, ali
 		}
 		text, ok := raw.(string)
 		if !ok {
-			return "", fmt.Errorf("%s 字段 %q 必须是字符串", label, alias)
+			return "", fmt.Errorf("%s field %q must be a string", label, alias)
 		}
 		text = strings.TrimSpace(text)
 		if text == "" {
 			continue
 		}
 		if value != "" && value != text {
-			return "", fmt.Errorf("%s 的别名 %q 与 %q 冲突", label, firstAlias, alias)
+			return "", fmt.Errorf("%s alias %q conflicts with %q", label, firstAlias, alias)
 		}
 		if value == "" {
 			value, firstAlias = text, alias
@@ -84,14 +84,14 @@ func canonicalFromRuntimeMessages(messages []map[string]any, tools []map[string]
 						if part["arguments"] == nil {
 							arguments = []byte("{}")
 						}
-						callID, err := strictRuntimeStringAliases(part, "Pi 工具调用 ID", "id", "call_id", "toolCallId", "tool_call_id")
+						callID, err := strictRuntimeStringAliases(part, "Pi tool call ID", "id", "call_id", "toolCallId", "tool_call_id")
 						if err != nil {
 							return canonicalAgentRequest{}, err
 						}
 						if callID == "" {
-							return canonicalAgentRequest{}, errors.New("Pi 工具调用缺少 call id")
+							return canonicalAgentRequest{}, errors.New("Pi tool call is missing a call id")
 						}
-						itemID, err := strictRuntimeStringAliases(part, "Pi 工具调用 item id", "item_id", "itemId")
+						itemID, err := strictRuntimeStringAliases(part, "Pi tool call item id", "item_id", "itemId")
 						if err != nil {
 							return canonicalAgentRequest{}, err
 						}
@@ -117,12 +117,12 @@ func canonicalFromRuntimeMessages(messages []map[string]any, tools []map[string]
 			}
 			canonical.Messages = append(canonical.Messages, converted)
 		case "toolResult", "tool":
-			id, err := strictRuntimeStringAliases(message, "Pi 工具结果 call id", "toolCallId", "tool_call_id", "call_id")
+			id, err := strictRuntimeStringAliases(message, "Pi tool result call id", "toolCallId", "tool_call_id", "call_id")
 			if err != nil {
 				return canonicalAgentRequest{}, err
 			}
 			if id == "" {
-				return canonicalAgentRequest{}, errors.New("Pi 工具结果缺少 call id")
+				return canonicalAgentRequest{}, errors.New("Pi tool result is missing a call id")
 			}
 			canonical.Messages = append(canonical.Messages, map[string]interface{}{"role": "tool", "tool_call_id": id, "content": runtimeContentText(message["content"])})
 		}
@@ -148,7 +148,7 @@ func validateRuntimeMessagesForModel(messages []map[string]any) error {
 		switch stringField(message, "role") {
 		case "assistant":
 			if len(pending) > 0 {
-				return fmt.Errorf("Pi 工具调用 %q 缺少结果", firstPendingRuntimeCall(pending))
+				return fmt.Errorf("Pi tool call %q has no result", firstPendingRuntimeCall(pending))
 			}
 			parts, _ := message["content"].([]interface{})
 			for _, value := range parts {
@@ -156,15 +156,15 @@ func validateRuntimeMessagesForModel(messages []map[string]any) error {
 				if stringField(part, "type") != "toolCall" {
 					continue
 				}
-				callID, err := strictRuntimeStringAliases(part, "Pi 工具调用 ID", "id", "call_id", "toolCallId", "tool_call_id")
+				callID, err := strictRuntimeStringAliases(part, "Pi tool call ID", "id", "call_id", "toolCallId", "tool_call_id")
 				if err != nil {
 					return err
 				}
 				if callID == "" {
-					return errors.New("Pi 工具调用缺少 call id")
+					return errors.New("Pi tool call is missing a call id")
 				}
 				if _, exists := pending[callID]; exists {
-					return fmt.Errorf("Pi 工具调用 %q 重复或缺少结果", callID)
+					return fmt.Errorf("Pi tool call %q is duplicated or has no result", callID)
 				}
 				arguments := part["arguments"]
 				if arguments == nil {
@@ -172,34 +172,34 @@ func validateRuntimeMessagesForModel(messages []map[string]any) error {
 				}
 				encoded, err := json.Marshal(arguments)
 				if err != nil {
-					return fmt.Errorf("Pi 工具调用 %q 参数无效: %w", callID, err)
+					return fmt.Errorf("Pi tool call %q has invalid arguments: %w", callID, err)
 				}
 				var object map[string]interface{}
 				if err := json.Unmarshal(encoded, &object); err != nil || object == nil {
-					return fmt.Errorf("Pi 工具调用 %q 参数不是 JSON 对象", callID)
+					return fmt.Errorf("Pi tool call %q arguments are not a JSON object", callID)
 				}
 				pending[callID] = struct{}{}
 			}
 		case "toolResult", "tool":
-			callID, err := strictRuntimeStringAliases(message, "Pi 工具结果 call id", "toolCallId", "tool_call_id", "call_id")
+			callID, err := strictRuntimeStringAliases(message, "Pi tool result call id", "toolCallId", "tool_call_id", "call_id")
 			if err != nil {
 				return err
 			}
 			if callID == "" {
-				return errors.New("Pi 工具结果缺少 call id")
+				return errors.New("Pi tool result is missing a call id")
 			}
 			if _, exists := pending[callID]; !exists {
-				return fmt.Errorf("Pi 工具结果 %q 没有对应的工具调用", callID)
+				return fmt.Errorf("Pi tool result %q has no matching tool call", callID)
 			}
 			delete(pending, callID)
 		case "user", "system":
 			if len(pending) > 0 {
-				return fmt.Errorf("Pi 工具调用 %q 缺少结果", firstPendingRuntimeCall(pending))
+				return fmt.Errorf("Pi tool call %q has no result", firstPendingRuntimeCall(pending))
 			}
 		}
 	}
 	if len(pending) > 0 {
-		return fmt.Errorf("Pi 工具调用 %q 缺少结果", firstPendingRuntimeCall(pending))
+		return fmt.Errorf("Pi tool call %q has no result", firstPendingRuntimeCall(pending))
 	}
 	return nil
 }
@@ -305,14 +305,14 @@ func runtimeToolCalls(calls []cloudAgentCall) []map[string]any {
 // cloudAgentPiTool 工具调用桥接：所有工具都交给唯一的 Go 业务执行器
 // advanceCloudAgentTool（权限、审批、计费、画布写入都在那里治理）。
 func (s *Service) cloudAgentPiTool(ctx context.Context, userID, runID string, payload map[string]json.RawMessage) (any, error) {
-	callID, err := decodePiStringAliases(payload, "Pi 工具调用 ID", "callId", "call_id", "toolCallId", "tool_call_id", "id")
+	callID, err := decodePiStringAliases(payload, "Pi tool call ID", "callId", "call_id", "toolCallId", "tool_call_id", "id")
 	if err != nil {
 		return nil, err
 	}
 	if callID == "" {
-		return nil, errors.New("Pi 工具调用缺少 call id")
+		return nil, errors.New("Pi tool call is missing a call id")
 	}
-	name, err := decodePiStringAliases(payload, "Pi 工具名称", "name", "toolName")
+	name, err := decodePiStringAliases(payload, "Pi tool name", "name", "toolName")
 	if err != nil {
 		return nil, err
 	}
@@ -366,7 +366,7 @@ func (s *Service) cloudAgentPiTool(ctx context.Context, userID, runID string, pa
 
 	if !allowedTools[call.Function.Name] {
 		log.Printf("[Agent] rejected undeclared tool call: %s in run %s", call.Function.Name, runID)
-		return nil, fmt.Errorf("未声明的工具: %s", call.Function.Name)
+		return nil, fmt.Errorf("Undeclared tool: %s", call.Function.Name)
 	}
 
 	return s.executeCloudAgentRuntimeTool(ctx, userID, runID, call)
@@ -396,11 +396,11 @@ func (s *Service) executeCloudAgentRuntimeTool(ctx context.Context, userID, runI
 			return nil, err
 		}
 		if state.CallIndex < 0 || state.CallIndex >= len(state.Calls) {
-			return nil, fmt.Errorf("工具调用 %q 没有对应的模型工具调用", call.ID)
+			return nil, fmt.Errorf("Tool call %q has no matching model tool call", call.ID)
 		}
 		expected := state.Calls[state.CallIndex]
 		if !cloudAgentToolCallsEquivalent(expected, call) {
-			return nil, fmt.Errorf("工具调用 %q 与模型声明的工具调用不一致", call.ID)
+			return nil, fmt.Errorf("Tool call %q does not match the tool call declared by the model", call.ID)
 		}
 		state.Approval = nil
 		err = s.advanceCloudAgentTool(run, &state)
@@ -430,7 +430,7 @@ func (s *Service) executeCloudAgentRuntimeTool(ctx context.Context, userID, runI
 			return map[string]any{"pause": true, "approvalId": state.Approval.ID, "content": cloudAgentPiApprovalPauseText}, nil
 		}
 		if cloudAgentRunTerminal(run.Status) && run.Status != "completed" {
-			return nil, fmt.Errorf("%s", firstNonEmpty(run.FailureMessage, "Agent 工具执行失败"))
+			return nil, fmt.Errorf("%s", firstNonEmpty(run.FailureMessage, "Agent tool execution failed"))
 		}
 		if content, ok := cloudAgentToolMessage(&state, call.ID); ok {
 			return cloudAgentPiToolResult(call, content), nil
@@ -468,7 +468,7 @@ func cloudAgentToolCallsEquivalent(expected, received cloudAgentCall) bool {
 
 func cloudAgentPiToolResult(call cloudAgentCall, content string) map[string]any {
 	if trimmed := strings.TrimSpace(content); trimmed == "" || trimmed == "null" {
-		content = `{"error":"工具没有返回结果"}`
+		content = `{"error":"The tool returned no result"}`
 	}
 	result := map[string]any{"content": content, "isError": cloudAgentToolContentIsError(content)}
 	if call.Function.Name == "ask_user" {
@@ -612,13 +612,13 @@ func cloudAgentPiCompactionEvent(eventType string, data map[string]any) (string,
 		}
 		payload["cancelled"] = aborted
 		if aborted {
-			payload["text"] = "上下文压缩已取消，原有对话历史已保留"
+			payload["text"] = "Context compaction was cancelled; the existing conversation history was kept"
 		} else {
 			if errorMessage == "" {
-				errorMessage = "Pi 未能生成上下文摘要"
+				errorMessage = "Pi could not produce a context summary"
 			}
 			payload["errorMessage"] = truncateRunes(errorMessage, 1000)
-			payload["text"] = "上下文压缩失败，原有对话历史已保留：" + truncateRunes(errorMessage, 1000)
+			payload["text"] = "Context compaction failed; the existing conversation history was kept: " + truncateRunes(errorMessage, 1000)
 		}
 		return "context_compaction_failed", payload, true
 	default:

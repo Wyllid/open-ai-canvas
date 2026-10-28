@@ -17,8 +17,8 @@ const (
 )
 
 const (
-	cloudAgentTryOnBatchPrompt    = "参考图1是人物原图，参考图2是目标服装。保持人物身份、五官、姿态和背景不变，将人物服装替换为参考图2中的款式。准确还原服装版型、颜色、材质、纹理和装饰细节，穿着关系自然，光影与原图一致。"
-	cloudAgentCreativeBatchPrompt = "基于参考图创作一张新的商业图片，保留主体身份和关键产品细节，画面构图完整，光影自然。"
+	cloudAgentTryOnBatchPrompt    = "Reference image 1 is the original photo of the person and reference image 2 is the target garment. Keep the person's identity, facial features, pose and background unchanged, and replace their clothing with the garment in reference image 2. Reproduce the garment's cut, color, material, texture and decorative details accurately, make it fit naturally, and match the lighting of the original photo."
+	cloudAgentCreativeBatchPrompt = "Create a new commercial image based on the reference images, keeping the subject's identity and key product details, with a complete composition and natural lighting."
 )
 
 type cloudAgentBatchTableEditArgs struct {
@@ -42,9 +42,9 @@ type cloudAgentBatchTableMutationPlan struct {
 
 func defaultCloudAgentBatchReferenceColumns() []any {
 	return []any{
-		map[string]any{"id": "reference-1", "label": "参考图 1"},
-		map[string]any{"id": "reference-2", "label": "参考图 2"},
-		map[string]any{"id": "reference-3", "label": "参考图 3"},
+		map[string]any{"id": "reference-1", "label": "Reference 1"},
+		map[string]any{"id": "reference-2", "label": "Reference 2"},
+		map[string]any{"id": "reference-3", "label": "Reference 3"},
 	}
 }
 
@@ -61,7 +61,7 @@ func cloudAgentBatchTablePatchSchema() map[string]any {
 }
 
 func batchTableArgumentError() error {
-	return &cloudAgentArgumentError{BadAuthRequest("批量创作表工具参数无效：仅允许工具 schema 中声明的字段，请重新读取节点并按结构化参数重试")}
+	return &cloudAgentArgumentError{BadAuthRequest("Invalid batch table tool arguments: only fields declared in the tool schema are allowed; read the node again and retry with structured arguments")}
 }
 
 func batchTableNodeFromDocument(doc map[string]any, nodeID string) (map[string]any, map[string]any, []map[string]any, []map[string]any, error) {
@@ -70,70 +70,70 @@ func batchTableNodeFromDocument(doc map[string]any, nodeID string) (map[string]a
 			continue
 		}
 		if stringValue(node["type"]) != "batch-table" {
-			return nil, nil, nil, nil, BadAuthRequest("目标节点不是批量创作表节点")
+			return nil, nil, nil, nil, BadAuthRequest("The target node is not a batch table node")
 		}
 		metadata, ok := node["metadata"].(map[string]any)
 		if !ok {
-			return nil, nil, nil, nil, BadAuthRequest("批量创作表节点数据格式无效")
+			return nil, nil, nil, nil, BadAuthRequest("The batch table node data format is invalid")
 		}
 		table, ok := metadata["batchTable"].(map[string]any)
 		if !ok {
-			return nil, nil, nil, nil, BadAuthRequest("批量创作表节点缺少结构化数据")
+			return nil, nil, nil, nil, BadAuthRequest("The batch table node has no structured data")
 		}
 		operation := stringValue(table["operation"])
 		if operation != "try_on" && operation != "creative" {
-			return nil, nil, nil, nil, BadAuthRequest("批量创作表包含无效的任务类型")
+			return nil, nil, nil, nil, BadAuthRequest("The batch table has an invalid task type")
 		}
 		concurrency, ok := cloudAgentInteger(table["concurrency"])
 		if !ok || !cloudAgentBatchConcurrencyAllowed(concurrency) {
-			return nil, nil, nil, nil, BadAuthRequest("批量创作表包含无效的并发数")
+			return nil, nil, nil, nil, BadAuthRequest("The batch table has an invalid concurrency")
 		}
 		if rawPrompt, exists := table["globalPrompt"]; exists {
 			globalPrompt, ok := rawPrompt.(string)
 			if !ok || utf8.RuneCountInString(globalPrompt) > maxCloudAgentBatchPromptRunes {
-				return nil, nil, nil, nil, BadAuthRequest("批量创作表包含无效或过长的全局提示词")
+				return nil, nil, nil, nil, BadAuthRequest("The batch table has an invalid or too long global prompt")
 			}
 		}
 		columns := creationMaps(table["referenceColumns"])
 		if len(columns) < 1 || len(columns) > maxCloudAgentBatchReferences {
-			return nil, nil, nil, nil, BadAuthRequest("批量创作表必须包含 1 到 10 个参考图列")
+			return nil, nil, nil, nil, BadAuthRequest("The batch table must have 1 to 10 reference columns")
 		}
 		columnIDs := map[string]bool{}
 		for _, column := range columns {
 			id, label := stringValue(column["id"]), stringValue(column["label"])
-			if validateCloudAgentID(id, "参考图列ID", 120) != nil || strings.TrimSpace(label) == "" || utf8.RuneCountInString(label) > 120 || columnIDs[id] {
-				return nil, nil, nil, nil, BadAuthRequest("批量创作表包含无效或重复的参考图列")
+			if validateCloudAgentID(id, "Reference column ID", 120) != nil || strings.TrimSpace(label) == "" || utf8.RuneCountInString(label) > 120 || columnIDs[id] {
+				return nil, nil, nil, nil, BadAuthRequest("The batch table has invalid or duplicate reference columns")
 			}
 			columnIDs[id] = true
 		}
 		rows := creationMaps(table["rows"])
 		if len(rows) > maxCloudAgentBatchRows {
-			return nil, nil, nil, nil, BadAuthRequest("单个批量创作表最多500行")
+			return nil, nil, nil, nil, BadAuthRequest("A batch table can have at most 500 rows")
 		}
 		rowIDs := map[string]bool{}
 		for _, row := range rows {
 			rowID := stringValue(row["id"])
-			if validateCloudAgentID(rowID, "批量创作行ID", 120) != nil || rowIDs[rowID] {
-				return nil, nil, nil, nil, BadAuthRequest("批量创作表包含无效或重复的行ID")
+			if validateCloudAgentID(rowID, "Batch row ID", 120) != nil || rowIDs[rowID] {
+				return nil, nil, nil, nil, BadAuthRequest("The batch table has invalid or duplicate row IDs")
 			}
 			rowIDs[rowID] = true
 			if _, ok := row["enabled"].(bool); !ok {
-				return nil, nil, nil, nil, BadAuthRequest("批量创作表包含无效的启用状态")
+				return nil, nil, nil, nil, BadAuthRequest("The batch table has an invalid enabled state")
 			}
 			prompt, ok := row["prompt"].(string)
 			if !ok || utf8.RuneCountInString(prompt) > maxCloudAgentBatchPromptRunes {
-				return nil, nil, nil, nil, BadAuthRequest("批量创作表包含无效或过长的提示词")
+				return nil, nil, nil, nil, BadAuthRequest("The batch table has an invalid or too long prompt")
 			}
 			if _, err := cloudAgentBatchInputNodeIDs(row["inputNodeIds"], len(columns)); err != nil {
 				return nil, nil, nil, nil, err
 			}
-			if outputNodeID := stringValue(row["outputNodeId"]); outputNodeID != "" && validateCloudAgentID(outputNodeID, "输出节点ID", 120) != nil {
-				return nil, nil, nil, nil, BadAuthRequest("批量创作表包含无效的输出节点ID")
+			if outputNodeID := stringValue(row["outputNodeId"]); outputNodeID != "" && validateCloudAgentID(outputNodeID, "Output node ID", 120) != nil {
+				return nil, nil, nil, nil, BadAuthRequest("The batch table has an invalid output node ID")
 			}
 		}
 		return node, table, rows, columns, nil
 	}
-	return nil, nil, nil, nil, BadAuthRequest("未找到当前画布的批量创作表节点")
+	return nil, nil, nil, nil, BadAuthRequest("Batch table node not found on this canvas")
 }
 
 func cloudAgentBatchInputNodeIDs(value any, maxItems int) ([]string, error) {
@@ -145,18 +145,18 @@ func cloudAgentBatchInputNodeIDs(value any, maxItems int) ([]string, error) {
 				items[index] = item
 			}
 		} else {
-			return nil, BadAuthRequest("批量创作行的 inputNodeIds 必须是图片节点ID数组")
+			return nil, BadAuthRequest("A batch row's inputNodeIds must be an array of image node IDs")
 		}
 	}
 	if len(items) > maxItems || len(items) > maxCloudAgentBatchReferences {
-		return nil, BadAuthRequest("每行参考图数量不能超过当前参考图列数")
+		return nil, BadAuthRequest("Each row's reference count cannot exceed the current number of reference columns")
 	}
 	result := make([]string, 0, len(items))
 	seen := map[string]bool{}
 	for _, item := range items {
 		id, ok := item.(string)
-		if !ok || validateCloudAgentID(id, "参考图片节点ID", 80) != nil || seen[id] {
-			return nil, BadAuthRequest("批量创作行包含无效或重复的图片节点ID")
+		if !ok || validateCloudAgentID(id, "Reference image node ID", 80) != nil || seen[id] {
+			return nil, BadAuthRequest("The batch row has invalid or duplicate image node IDs")
 		}
 		seen[id] = true
 		result = append(result, id)
@@ -172,7 +172,7 @@ func validateCloudAgentBatchInputNodes(doc map[string]any, inputNodeIDs []string
 	for _, id := range inputNodeIDs {
 		node := nodes[id]
 		if node == nil || stringValue(node["type"]) != "image" {
-			return BadAuthRequest("批量创作表只能引用当前画布内真实存在的图片节点")
+			return BadAuthRequest("A batch table can only reference image nodes that exist on this canvas")
 		}
 	}
 	return nil
@@ -184,20 +184,20 @@ func prepareCloudAgentBatchTableEdit(repo *repository.Repository, userID, canvas
 		return nil, batchTableArgumentError()
 	}
 	if args.SnapshotHash == "" || args.NodeID == "" {
-		return nil, BadAuthRequest("编辑批量创作表需要最新快照和节点ID")
+		return nil, BadAuthRequest("Editing a batch table needs the latest snapshot and the node ID")
 	}
-	if err := validateCloudAgentID(args.NodeID, "批量创作表节点ID", 80); err != nil {
+	if err := validateCloudAgentID(args.NodeID, "Batch table node ID", 80); err != nil {
 		return nil, err
 	}
 	allowedActions := map[string]bool{"append": true, "update": true, "remove": true, "set_operation": true, "set_concurrency": true, "add_reference_column": true, "remove_reference_column": true, "set_global_prompt": true}
 	if !allowedActions[args.Action] {
-		return nil, BadAuthRequest("批量创作表操作无效")
+		return nil, BadAuthRequest("Invalid batch table action")
 	}
 	if args.Action == "append" && args.RowID != "" {
-		return nil, BadAuthRequest("追加批量创作行不能指定已有 rowId")
+		return nil, BadAuthRequest("Appending a batch row cannot specify an existing rowId")
 	}
-	if (args.Action == "update" || args.Action == "remove") && validateCloudAgentID(args.RowID, "批量创作行ID", 120) != nil {
-		return nil, BadAuthRequest("修改或删除必须使用最新读取结果中的真实 rowId")
+	if (args.Action == "update" || args.Action == "remove") && validateCloudAgentID(args.RowID, "Batch row ID", 120) != nil {
+		return nil, BadAuthRequest("Update or delete must use a real rowId from the latest read")
 	}
 
 	canvas, err := repo.CanvasProjectForUser(userID, canvasID)
@@ -210,7 +210,7 @@ func prepareCloudAgentBatchTableEdit(repo *repository.Repository, userID, canvas
 	}
 	beforeHash := cloudAgentCanvasHash(doc)
 	if !cloudAgentNodeSnapshotMatches(doc, args.NodeID, args.SnapshotHash) {
-		return nil, cloudAgentFieldError("snapshotHash", "stale_snapshot", "这个批量创作表在你读取之后被修改过，本次未写入；请重新读取后再改")
+		return nil, cloudAgentFieldError("snapshotHash", "stale_snapshot", "This batch table changed after you read it, so nothing was written; read it again before editing")
 	}
 	node, table, rows, columns, err := batchTableNodeFromDocument(doc, args.NodeID)
 	if err != nil {
@@ -218,7 +218,7 @@ func prepareCloudAgentBatchTableEdit(repo *repository.Repository, userID, canvas
 	}
 	metadata := node["metadata"].(map[string]any)
 	if metadata["locked"] == true {
-		return nil, BadAuthRequest("不能修改锁定的批量创作表")
+		return nil, BadAuthRequest("A locked batch table cannot be changed")
 	}
 	index := -1
 	for i, row := range rows {
@@ -228,15 +228,15 @@ func prepareCloudAgentBatchTableEdit(repo *repository.Repository, userID, canvas
 		}
 	}
 	if (args.Action == "update" || args.Action == "remove") && index < 0 {
-		return nil, BadAuthRequest("批量创作行不存在，请先读取真实 rowId")
+		return nil, BadAuthRequest("Batch row not found; read the real rowId first")
 	}
 
 	fields := []string{}
-	summaryVerb := "修改"
+	summaryVerb := "Update"
 	switch args.Action {
 	case "append", "update":
 		if args.Action == "update" && len(args.Patch) == 0 {
-			return nil, BadAuthRequest("修改批量创作行必须提供 patch")
+			return nil, BadAuthRequest("Updating a batch row needs a patch")
 		}
 		patch, labels, err := validateCloudAgentBatchRowPatch(doc, args.Patch, len(columns))
 		if err != nil {
@@ -245,7 +245,7 @@ func prepareCloudAgentBatchTableEdit(repo *repository.Repository, userID, canvas
 		fields = labels
 		if args.Action == "append" {
 			if len(rows) >= maxCloudAgentBatchRows {
-				return nil, BadAuthRequest("单个批量创作表最多500行")
+				return nil, BadAuthRequest("A batch table can have at most 500 rows")
 			}
 			operation := stringValue(table["operation"])
 			prompt := cloudAgentTryOnBatchPrompt
@@ -261,92 +261,92 @@ func prepareCloudAgentBatchTableEdit(repo *repository.Repository, userID, canvas
 				row[key] = value
 			}
 			rows = append(rows, row)
-			summaryVerb = "追加一行到"
+			summaryVerb = "Append a row to"
 			if len(fields) == 0 {
-				fields = []string{"任务行"}
+				fields = []string{"Task row"}
 			}
 		} else {
 			for key, value := range patch {
 				rows[index][key] = value
 			}
-			summaryVerb = "修改"
+			summaryVerb = "Update"
 		}
 		table["rows"] = mapsAsAny(rows)
 	case "remove":
 		if len(args.Patch) != 0 || args.Operation != "" || args.Concurrency != 0 {
-			return nil, BadAuthRequest("删除批量创作行不接受其他修改参数")
+			return nil, BadAuthRequest("Removing a batch row accepts no other change arguments")
 		}
 		rows = append(rows[:index], rows[index+1:]...)
 		table["rows"] = mapsAsAny(rows)
-		fields, summaryVerb = []string{"任务行"}, "删除一行自"
+		fields, summaryVerb = []string{"Task row"}, "Remove a row from"
 	case "set_operation":
 		if args.Operation != "try_on" && args.Operation != "creative" {
-			return nil, BadAuthRequest("批量任务类型必须是 try_on 或 creative")
+			return nil, BadAuthRequest("Batch task type must be try_on or creative")
 		}
 		if args.RowID != "" || len(args.Patch) != 0 || args.Concurrency != 0 {
-			return nil, BadAuthRequest("设置批量任务类型不接受行级修改参数")
+			return nil, BadAuthRequest("Setting the batch task type accepts no row-level arguments")
 		}
 		table["operation"] = args.Operation
-		fields = []string{"任务类型"}
+		fields = []string{"Task type"}
 	case "set_concurrency":
 		if !cloudAgentBatchConcurrencyAllowed(args.Concurrency) {
-			return nil, BadAuthRequest("并发数必须是 1、5 或 10")
+			return nil, BadAuthRequest("Concurrency must be 1, 5 or 10")
 		}
 		if args.RowID != "" || len(args.Patch) != 0 || args.Operation != "" {
-			return nil, BadAuthRequest("设置并发数不接受行级修改参数")
+			return nil, BadAuthRequest("Setting concurrency accepts no row-level arguments")
 		}
 		table["concurrency"] = float64(args.Concurrency)
-		fields = []string{"并发数"}
+		fields = []string{"Concurrency"}
 	case "add_reference_column":
 		if len(columns) >= maxCloudAgentBatchReferences {
-			return nil, BadAuthRequest("批量创作表最多支持10组参考图")
+			return nil, BadAuthRequest("A batch table supports at most 10 reference sets")
 		}
 		if args.RowID != "" || len(args.Patch) != 0 || args.Operation != "" || args.Concurrency != 0 {
-			return nil, BadAuthRequest("新增参考图列不接受其他修改参数")
+			return nil, BadAuthRequest("Adding a reference column accepts no other change arguments")
 		}
 		next := len(columns) + 1
-		columns = append(columns, map[string]any{"id": cloudAgentID(userID, fmt.Sprintf("batch-column:%s:%s:%d", args.NodeID, call.ID, next)), "label": fmt.Sprintf("参考图 %d", next)})
+		columns = append(columns, map[string]any{"id": cloudAgentID(userID, fmt.Sprintf("batch-column:%s:%s:%d", args.NodeID, call.ID, next)), "label": fmt.Sprintf("Reference %d", next)})
 		table["referenceColumns"] = mapsAsAny(columns)
-		fields = []string{"参考图列"}
-		summaryVerb = "新增参考图列到"
+		fields = []string{"Reference column"}
+		summaryVerb = "Add a reference column to"
 	case "remove_reference_column":
 		if len(columns) <= 1 {
-			return nil, BadAuthRequest("批量创作表至少保留1组参考图")
+			return nil, BadAuthRequest("A batch table must keep at least 1 reference set")
 		}
 		if args.RowID != "" || len(args.Patch) != 0 || args.Operation != "" || args.Concurrency != 0 {
-			return nil, BadAuthRequest("减少参考图列不接受其他修改参数")
+			return nil, BadAuthRequest("Removing a reference column accepts no other change arguments")
 		}
 		columns = columns[:len(columns)-1]
 		for index, column := range columns {
-			column["label"] = fmt.Sprintf("参考图 %d", index+1)
+			column["label"] = fmt.Sprintf("Reference %d", index+1)
 		}
 		table["referenceColumns"] = mapsAsAny(columns)
 		for _, row := range rows {
 			row["inputNodeIds"] = cloudAgentBatchInputIDs(row["inputNodeIds"], len(columns))
 		}
 		table["rows"] = mapsAsAny(rows)
-		fields = []string{"参考图列"}
-		summaryVerb = "减少参考图列自"
+		fields = []string{"Reference column"}
+		summaryVerb = "Remove a reference column from"
 	case "set_global_prompt":
 		if utf8.RuneCountInString(args.GlobalPrompt) > maxCloudAgentBatchPromptRunes {
-			return nil, BadAuthRequest("全局提示词必须是不超过20000字的文本")
+			return nil, BadAuthRequest("The global prompt must be text of at most 20000 characters")
 		}
 		if args.RowID != "" || len(args.Patch) != 0 || args.Operation != "" || args.Concurrency != 0 {
-			return nil, BadAuthRequest("设置全局提示词不接受其他修改参数")
+			return nil, BadAuthRequest("Setting the global prompt accepts no other change arguments")
 		}
 		if strings.TrimSpace(args.GlobalPrompt) == "" {
 			delete(table, "globalPrompt")
 		} else {
 			table["globalPrompt"] = args.GlobalPrompt
 		}
-		fields = []string{"全局提示词"}
-		summaryVerb = "设置全局提示词到"
+		fields = []string{"Global prompt"}
+		summaryVerb = "Set the global prompt on"
 	}
 	metadata["batchTable"] = table
-	title := cloudAgentApprovalNodeTitle(node, "批量创作表")
+	title := cloudAgentApprovalNodeTitle(node, "Batch table")
 	preview := cloudAgentApprovalPreview{
-		Kind: "canvas_mutation", Title: "确认修改批量创作表", Description: "Agent 准备修改批量创作表的结构化任务数据。批准后才会写入画布；本操作不会提交生成任务。",
-		Items: []cloudAgentApprovalPreviewItem{{Operation: "edit_batch_table", NodeID: args.NodeID, NodeTitle: title, NodeType: "batch-table", NodeTypeLabel: "批量创作表", Fields: fields, Summary: fmt.Sprintf("%s批量创作表《%s》", summaryVerb, title)}},
+		Kind: "canvas_mutation", Title: "Confirm batch table changes", Description: "The Agent is about to change the batch table's structured task data. Nothing is written to the canvas until you approve; this does not submit generation tasks.",
+		Items: []cloudAgentApprovalPreviewItem{{Operation: "edit_batch_table", NodeID: args.NodeID, NodeTitle: title, NodeType: "batch-table", NodeTypeLabel: "Batch table", Fields: fields, Summary: fmt.Sprintf("%s batch table '%s'", summaryVerb, title)}},
 	}
 	return &cloudAgentBatchTableMutationPlan{Canvas: canvas, Document: doc, BeforeJSON: canvas.PayloadJSON, BeforeSnapshotHash: beforeHash, Preview: preview}, nil
 }
@@ -358,15 +358,15 @@ func validateCloudAgentBatchRowPatch(doc map[string]any, input map[string]any, m
 		switch key {
 		case "enabled":
 			if _, ok := value.(bool); !ok {
-				return nil, nil, BadAuthRequest("enabled 必须是布尔值")
+				return nil, nil, BadAuthRequest("enabled must be a boolean")
 			}
-			patch[key], labels = value, append(labels, "启用状态")
+			patch[key], labels = value, append(labels, "Enabled")
 		case "prompt":
 			text, ok := value.(string)
 			if !ok || utf8.RuneCountInString(text) > maxCloudAgentBatchPromptRunes {
-				return nil, nil, BadAuthRequest("提示词必须是不超过20000字的文本")
+				return nil, nil, BadAuthRequest("The prompt must be text of at most 20000 characters")
 			}
-			patch[key], labels = text, append(labels, "提示词")
+			patch[key], labels = text, append(labels, "Prompt")
 		case "inputNodeIds":
 			ids, err := cloudAgentBatchInputNodeIDs(value, maxInputs)
 			if err != nil {
@@ -379,9 +379,9 @@ func validateCloudAgentBatchRowPatch(doc map[string]any, input map[string]any, m
 			for index, id := range ids {
 				values[index] = id
 			}
-			patch[key], labels = values, append(labels, "参考图片")
+			patch[key], labels = values, append(labels, "Reference images")
 		default:
-			return nil, nil, BadAuthRequest(fmt.Sprintf("不能通过批量创作表工具修改字段 %s", key))
+			return nil, nil, BadAuthRequest(fmt.Sprintf("Field %s cannot be changed with the batch table tool", key))
 		}
 	}
 	sort.Strings(labels)
@@ -412,19 +412,19 @@ func applyCloudAgentBatchTableMutation(repo *repository.Repository, userID, canv
 func cloudAgentBatchTableReadResult(view any, nodeID, nodeHash string) (map[string]any, error) {
 	state, ok := view.(map[string]any)
 	if !ok {
-		return nil, BadAuthRequest("批量创作表读取结果无效")
+		return nil, BadAuthRequest("Invalid batch table read result")
 	}
 	nodes, _ := state["nodes"].([]any)
 	if len(nodes) != 1 {
-		return nil, BadAuthRequest("批量创作表读取结果缺少目标节点")
+		return nil, BadAuthRequest("The batch table read result is missing the target node")
 	}
 	node, ok := nodes[0].(map[string]any)
 	if !ok {
-		return nil, BadAuthRequest("批量创作表读取结果格式无效")
+		return nil, BadAuthRequest("The batch table read result format is invalid")
 	}
 	table, ok := node["batchTable"].(map[string]any)
 	if !ok {
-		return nil, BadAuthRequest("批量创作表读取结果缺少结构化任务行")
+		return nil, BadAuthRequest("The batch table read result is missing structured task rows")
 	}
 	rows, _ := table["rows"].([]any)
 	for _, value := range rows {

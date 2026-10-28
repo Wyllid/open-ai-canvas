@@ -18,7 +18,7 @@ func cloudAgentEmptyModelOutput(task *model.Task) bool {
 	if task == nil || task.Status == model.TaskStatusSucceeded {
 		return false
 	}
-	return strings.Contains(task.Error, "没有返回内容")
+	return strings.Contains(task.Error, "returned no content")
 }
 
 func (s *Service) correctCloudAgentEmptyOutput(run *model.CloudAgentExecution, state *cloudAgentRuntime) error {
@@ -44,7 +44,7 @@ func (s *Service) correctCloudAgentEmptyOutputEscalation(run *model.CloudAgentEx
 		state.CallIndex = 0
 		state.event(run.ID, "model_failure_recovered", map[string]any{
 			"reason": "empty_output_escalated",
-			"text":   "上游连续返回空内容；已关闭思考并放大输出预算重试同一步",
+			"text":   "The upstream returned empty content repeatedly; retrying the same step with reasoning off and a larger output budget",
 		})
 		return cloudAgentSave(current, state)
 	})

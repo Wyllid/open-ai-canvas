@@ -29,13 +29,13 @@ func (s *Service) terminateStuckCloudAgent(run *model.CloudAgentExecution) bool 
 		return false
 	}
 	idle := time.Since(last)
-	if err := s.terminateCloudAgent(run, fmt.Sprintf("运行已 %.0f 分钟没有任何进展（既没有新事件、也没有在跑的任务），已判定为卡住并停止；可以重新发起", idle.Minutes())); err != nil {
+	if err := s.terminateCloudAgent(run, fmt.Sprintf("The run made no progress for %.0f minutes (no new events and no running tasks), so it was judged stuck and stopped; you can start it again", idle.Minutes())); err != nil {
 		if !errors.Is(err, repository.ErrCreationConflict) {
 			log.Printf("agent stuck cleanup %s: %v", run.ID, err)
 		}
 		return false
 	}
-	log.Printf("agent scheduler: run=%s 判定卡死并收尾（最后一条事件在 %.0f 分钟前）", run.ID, idle.Minutes())
+	log.Printf("agent scheduler: run=%s judged stuck and closed (last event %.0f minutes ago)", run.ID, idle.Minutes())
 	return true
 }
 
@@ -68,7 +68,7 @@ func (s *Service) noteCloudAgentSchedulerConflict(runID string) {
 	}
 	s.agentConflictStreak[runID]++
 	if streak := s.agentConflictStreak[runID]; streak == cloudAgentConflictLogThreshold {
-		log.Printf("agent scheduler: run=%s 连续 %d 次 CAS 冲突（另有写者持续占用该行），这一轮很可能卡住了", runID, streak)
+		log.Printf("agent scheduler: run=%s hit %d CAS conflicts in a row (another writer keeps holding the row); the run is probably stuck", runID, streak)
 	}
 }
 

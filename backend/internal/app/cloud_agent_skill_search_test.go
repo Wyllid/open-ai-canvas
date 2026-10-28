@@ -124,7 +124,7 @@ func TestCloudAgentSkillSearchEmptySkillsReturnsGuidance(t *testing.T) {
 	if len(result["matches"].([]map[string]any)) != 0 {
 		t.Fatal("expected empty matches without skills")
 	}
-	if guidance, _ := result["guidance"].(string); !strings.Contains(guidance, "没有已启用") {
+	if guidance, _ := result["guidance"].(string); !strings.Contains(guidance, "No skills are enabled") {
 		t.Fatalf("guidance mismatch: %q", guidance)
 	}
 }

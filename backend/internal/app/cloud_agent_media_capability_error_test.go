@@ -53,11 +53,11 @@ func TestCloudAgentMediaCapabilityErrorsUseStableFields(t *testing.T) {
 
 func TestCloudAgentMediaAdmissionFailureMessageKeepsReason(t *testing.T) {
 	message := cloudAgentMediaAdmissionFailureMessage(cloudAgentWrapMediaAdmissionError(BadAuthRequest("已超过本轮视频时长预算")))
-	if !strings.Contains(message, "已超过本轮视频时长预算") || !strings.Contains(message, "未提交生成任务") {
+	if !strings.Contains(message, "已超过本轮视频时长预算") || !strings.Contains(message, "No generation task was submitted") {
 		t.Fatalf("admission message lost the actionable reason: %q", message)
 	}
 	generic := cloudAgentMediaAdmissionFailureMessage(cloudAgentWrapMediaAdmissionError(errors.New("opaque failure")))
-	if !strings.Contains(generic, "未提交生成任务") || strings.Contains(generic, "opaque failure") {
+	if !strings.Contains(generic, "no generation task was submitted") || strings.Contains(generic, "opaque failure") {
 		t.Fatalf("unsafe admission detail leaked or missing: %q", generic)
 	}
 }

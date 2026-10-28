@@ -24,7 +24,7 @@ func TestCloudAgentMinimalMediaIntentMaterializesStableDraftBeforeApproval(t *te
 		t.Fatal(err)
 	}
 	_, second, err := s.prepareCloudAgentMedia(run, &state, call)
-	if err != nil || first.Args.NodeID != second.Args.NodeID || first.Args.NodeID == "" || first.Args.Title != "视频创作" || first.Args.ChannelModelKey != "seedance-test" {
+	if err != nil || first.Args.NodeID != second.Args.NodeID || first.Args.NodeID == "" || first.Args.Title != "Video" || first.Args.ChannelModelKey != "seedance-test" {
 		t.Fatalf("minimal intent was not deterministically materialized: first=%+v second=%+v err=%v", first, second, err)
 	}
 	state.Calls = []cloudAgentCall{call}

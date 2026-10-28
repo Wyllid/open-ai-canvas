@@ -195,7 +195,7 @@ func (s *Service) failPiRunner(runID, userID string, cause error) {
 			state, decodeErr := cloudAgentDecode(current)
 			if decodeErr == nil {
 				state.LastError = cause.Error()
-				cloudAgentDropInterjections(runID, "本轮已结束："+truncateRunes(cause.Error(), 120), &state)
+				cloudAgentDropInterjections(runID, "This run has ended: "+truncateRunes(cause.Error(), 120), &state)
 				state.event(runID, "run_failed", map[string]any{"error": cause.Error()})
 				return cloudAgentSave(current, &state)
 			}
@@ -486,7 +486,7 @@ func (s *Service) completeCloudAgentPiRun(userID, runID string) error {
 					resumed = true
 					return cloudAgentSave(current, &state)
 				}
-				cloudAgentDropInterjections(runID, "本轮已达到模型调用上限", &state)
+				cloudAgentDropInterjections(runID, "This run reached its model call limit", &state)
 			}
 
 			// 模型只回正文就停下、清单仍有未完成项（例如回复“准备提交生成…”却没发出调用）：
@@ -503,7 +503,7 @@ func (s *Service) completeCloudAgentPiRun(userID, runID string) error {
 			}
 			current.Status = "completed"
 			state.event(runID, "run_completed", map[string]any{
-				"text":      "Agent 已完成",
+				"text":      "Agent finished",
 				"timestamp": time.Now().Unix(),
 			})
 

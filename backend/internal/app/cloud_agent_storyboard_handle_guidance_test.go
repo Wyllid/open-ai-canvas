@@ -20,10 +20,10 @@ func storyboardHandleGuidanceDocument(t *testing.T) map[string]any {
 
 func TestAgentStoryboardHandleErrorsIdentifyTheWrongField(t *testing.T) {
 	for _, tc := range []struct{ name, from, to, fromHandle, toHandle, field, issue, guidance string }{
-		{"asset source handle", "asset", "script", "row:r1", "", "fromHandleId", "invalid_node_handle", "省略 fromHandleId"},
-		{"output target handle", "script", "output", "", "row:r1", "toHandleId", "invalid_node_handle", "分镜来源的 fromHandleId"},
-		{"shot number is not row id", "asset", "script", "", "row:9", "toHandleId", "not_found", "不要用镜头编号代替"},
-		{"missing row prefix", "asset", "script", "", "r1", "toHandleId", "invalid_handle", "row:<真实rowId>"},
+		{"asset source handle", "asset", "script", "row:r1", "", "fromHandleId", "invalid_node_handle", "omit fromHandleId"},
+		{"output target handle", "script", "output", "", "row:r1", "toHandleId", "invalid_node_handle", "storyboard source's fromHandleId"},
+		{"shot number is not row id", "asset", "script", "", "row:9", "toHandleId", "not_found", "instead of using shot numbers"},
+		{"missing row prefix", "asset", "script", "", "r1", "toHandleId", "invalid_handle", "row:<real rowId>"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			doc := storyboardHandleGuidanceDocument(t)
@@ -42,7 +42,7 @@ func TestAgentStoryboardHandleErrorsIdentifyTheWrongField(t *testing.T) {
 			state := cloudAgentRuntime{Request: CloudAgentRequest{PermissionMode: "auto", ContextScope: []string{"canvas"}}, Calls: []cloudAgentCall{call}}
 			cloudAgentRecordToolResult(&model.CloudAgentExecution{ID: "run"}, &state, call, nil, err)
 			result := state.Events[0].Payload["result"].(map[string]any)
-			if result["field"] != "ops[0]."+tc.field || !strings.Contains(stringValue(result["guidance"]), "本次连线未执行") {
+			if result["field"] != "ops[0]."+tc.field || !strings.Contains(stringValue(result["guidance"]), "the edge was not created") {
 				t.Fatal("tool receipt lost actionable feedback")
 			}
 			example := result["exampleArguments"].(map[string]any)["ops"].([]any)[0].(map[string]any)
@@ -91,7 +91,7 @@ func TestAgentToolDescriptionIncludesBothStoryboardDirections(t *testing.T) {
 			continue
 		}
 		description := stringValue(fn["description"])
-		for _, phrase := range []string{"镜头绑定示例", `"toHandleId":"row:<rowId>"`, "输出示例", `"fromHandleId":"row:<rowId>"`, "不是镜头编号"} {
+		for _, phrase := range []string{"Shot binding example", `"toHandleId":"row:<rowId>"`, "output example", `"fromHandleId":"row:<rowId>"`, "not the shot number"} {
 			if !strings.Contains(description, phrase) {
 				t.Fatalf("missing tool guidance %s", phrase)
 			}

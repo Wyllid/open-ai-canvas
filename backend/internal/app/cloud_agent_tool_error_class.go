@@ -105,21 +105,21 @@ func cloudAgentPlatformToolNames() map[string]bool {
 func cloudAgentToolErrorLabel(class string) string {
 	switch class {
 	case cloudAgentToolErrorInvalidModelOutput:
-		return "模型输出问题"
+		return "Model output problem"
 	case cloudAgentToolErrorSchemaError:
-		return "参数不符合契约"
+		return "Arguments do not match the contract"
 	case cloudAgentToolErrorStateConflict:
-		return "画布状态已变化"
+		return "Canvas state changed"
 	case cloudAgentToolErrorPermission:
-		return "超出本轮权限"
+		return "Outside this run's permissions"
 	case cloudAgentToolErrorUpstream:
-		return "上游故障"
+		return "Upstream failure"
 	case cloudAgentToolErrorAdmission:
-		return "媒体生成准入失败"
+		return "Media generation admission failed"
 	case cloudAgentToolErrorApprovalDeferred:
-		return "审批暂停未执行"
+		return "Paused for approval, not executed"
 	default:
-		return "工具执行失败"
+		return "Tool execution failed"
 	}
 }
 

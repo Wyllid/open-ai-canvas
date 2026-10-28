@@ -299,7 +299,7 @@ func TestCloudAgentOmitsProfileReadWhenNoLayers(t *testing.T) {
 	call := cloudAgentCall{}
 	call.Function.Name, call.Function.Arguments = "agent_profile_read", `{"scope":"user"}`
 	_, err = cloudAgentReadTool(nil, "user", &cloudAgentRuntime{}, call)
-	if err == nil || !strings.Contains(err.Error(), "本轮没有长期偏好层") {
+	if err == nil || !strings.Contains(err.Error(), "This run has no long-term preference layers") {
 		t.Fatalf("empty profile read should refuse: %v", err)
 	}
 }
@@ -309,7 +309,7 @@ func TestCloudAgentProfileReadListsAvailableLayers(t *testing.T) {
 	call := cloudAgentCall{}
 	call.Function.Name, call.Function.Arguments = "agent_profile_read", `{"scope":"canvas"}`
 	_, err := cloudAgentReadTool(nil, "user", &state, call)
-	if err == nil || !strings.Contains(err.Error(), "user") || strings.Contains(err.Error(), "请只读取系统清单列出的层") {
+	if err == nil || !strings.Contains(err.Error(), "user") || strings.Contains(err.Error(), "read only the layers listed") {
 		t.Fatalf("missing layer should list readable scopes: %v", err)
 	}
 }

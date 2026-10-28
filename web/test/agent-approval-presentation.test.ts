@@ -13,8 +13,8 @@ describe("Agent approval presentation", () => {
             call: { function: { name: "canvas_apply_ops", arguments: args } },
             preview: {
                 kind: "canvas_mutation",
-                title: "确认画布修改",
-                description: "请确认目标节点和修改字段；批准后才会写入画布。",
+                title: "Confirm canvas changes",
+                description: "The Agent is about to change 1 nodes. Check the target nodes and changed fields; nothing is written to the canvas until you approve.",
                 items: [{ operation: "update_node", nodeId: "video-node-1789310237935", nodeTitle: "满月庆祝视频草稿", nodeType: "video", nodeTypeLabel: "视频", fields: ["节点名称", "下一版提示词"], resultTitle: "满月庆祝视频草稿（舒缓呼吸感）", summary: "修改视频《满月庆祝视频草稿》的节点名称、下一版提示词" }],
             },
         });
@@ -42,6 +42,21 @@ describe("Agent approval presentation", () => {
         expect(view.items[0].summary).toContain("来源");
         expect(view.items[0].summary).toContain("目标");
         expect(view.description).toContain("建立 1 条引用连线");
+    });
+
+    it("rebuilds a server media approval in the interface language", () => {
+        const view = agentApprovalPresentation({
+            preview: {
+                kind: "media_generation",
+                title: "Confirm video generation",
+                description: "Video draft node and reference edges were created; nothing has been submitted yet.",
+                items: [{ operation: "generate_media", nodeId: "video-1", nodeTitle: "雨夜追逐", nodeType: "video", nodeTypeLabel: "Video", details: ["Model: seedance"], summary: "Generate video '雨夜追逐'" }],
+            },
+        });
+        expect(view.title).toBe("确认生成视频");
+        expect(view.items[0].summary).toBe("生成视频《雨夜追逐》");
+        const submitted = agentApprovalPresentation({ preview: { kind: "media_generation", title: "Generation task submitted", description: "Generation task submitted: Generate video '雨夜追逐'.", items: [{ operation: "generate_media", nodeTitle: "雨夜追逐", nodeType: "video", summary: "Generate video '雨夜追逐'" }] } });
+        expect(submitted.title).toBe("Generation task submitted");
     });
 
     it("summarizes an event approval and media request", () => {

@@ -455,7 +455,7 @@ func TestLessonSearchNoMatchReturnsActionableError(t *testing.T) {
 	if err == nil {
 		t.Fatal("搜不到应当报错")
 	}
-	if !strings.Contains(err.Error(), "列索引") {
+	if !strings.Contains(err.Error(), "see the index") {
 		t.Fatalf("报错要给出下一步，实际：%v", err)
 	}
 }
@@ -535,7 +535,7 @@ func TestRememberLessonBlockedInReadOnlyAndWithoutRealWork(t *testing.T) {
 		Request: CloudAgentRequest{PermissionMode: "read_only"},
 		Events:  []CloudAgentEvent{{Type: "tool_completed", Payload: map[string]any{"toolName": "canvas_apply_ops"}}},
 	}
-	if _, err := cloudAgentRememberLesson(repo, "user", readOnly, call); err == nil || !strings.Contains(err.Error(), "只读模式") {
+	if _, err := cloudAgentRememberLesson(repo, "user", readOnly, call); err == nil || !strings.Contains(err.Error(), "read-only mode") {
 		t.Fatalf("只读模式必须拒绝写入：%v", err)
 	}
 	if cloudAgentToolAllowed(agentTestRequest(), "remember_lesson") {
@@ -549,7 +549,7 @@ func TestRememberLessonBlockedInReadOnlyAndWithoutRealWork(t *testing.T) {
 		Request: CloudAgentRequest{PermissionMode: "auto"},
 		Events:  []CloudAgentEvent{{Type: "tool_completed", Payload: map[string]any{"toolName": "skills_load"}}},
 	}
-	if _, err := cloudAgentRememberLesson(repo, "user", idle, call); err == nil || !strings.Contains(err.Error(), "没有可沉淀") {
+	if _, err := cloudAgentRememberLesson(repo, "user", idle, call); err == nil || !strings.Contains(err.Error(), "no lesson to record") {
 		t.Fatalf("仅 skills_load 不能打开写入闸：%v", err)
 	}
 }
@@ -562,7 +562,7 @@ func TestRememberLessonCapsWritesPerRun(t *testing.T) {
 	}
 	state := &cloudAgentRuntime{Request: CloudAgentRequest{PermissionMode: "auto"}, Events: events}
 	_, err := cloudAgentRememberLesson(repo, "user", state, rememberLessonCall(`{"topic":"canvas.snapshot-hash","category":"canvas","situation":"写画布时报快照过期","lesson":"用返回的新 snapshotHash"}`))
-	if err == nil || !strings.Contains(err.Error(), "最多记录") {
+	if err == nil || !strings.Contains(err.Error(), "lessons can be recorded per run") {
 		t.Fatalf("超出本轮条数上限应拒绝：%v", err)
 	}
 }
@@ -828,7 +828,7 @@ func TestRememberLessonPendingLimitErrorShowsCountAndSettings(t *testing.T) {
 	}
 	state := &cloudAgentRuntime{Request: CloudAgentRequest{PermissionMode: "auto"}, LessonEligibleToolSuccesses: 1}
 	_, err := cloudAgentRememberLesson(repo, "user-a", state, rememberLessonCall(`{"topic":"canvas.snapshot-hash","category":"canvas","situation":"写画布时报快照过期","lesson":"用返回的新 snapshotHash"}`))
-	if err == nil || !strings.Contains(err.Error(), "50") || !strings.Contains(err.Error(), "设置 → Agent 记忆") {
+	if err == nil || !strings.Contains(err.Error(), "50") || !strings.Contains(err.Error(), "Settings → Agent memory") {
 		t.Fatalf("拒绝信息应包含待审数量和处理入口：%v", err)
 	}
 }

@@ -17,21 +17,21 @@ import (
 // undone, cancelled, or refunded by this method.
 func (s *Service) UndoCloudAgentCanvas(userID, runID, stepID, expectedSnapshotHash, reason string) (map[string]any, error) {
 	if strings.TrimSpace(userID) == "" || strings.TrimSpace(runID) == "" {
-		return nil, Unauthorized("请先登录")
+		return nil, Unauthorized("Please sign in first")
 	}
 	expectedSnapshotHash = strings.TrimSpace(expectedSnapshotHash)
 	if len(expectedSnapshotHash) != 64 {
-		return nil, BadAuthRequest("需要有效的画布快照哈希")
+		return nil, BadAuthRequest("A valid canvas snapshot hash is required")
 	}
 	if _, err := hex.DecodeString(expectedSnapshotHash); err != nil {
-		return nil, BadAuthRequest("需要有效的画布快照哈希")
+		return nil, BadAuthRequest("A valid canvas snapshot hash is required")
 	}
 	stepID = strings.TrimSpace(stepID)
 	if len(stepID) > 160 {
-		return nil, BadAuthRequest("Agent 操作 ID 过长")
+		return nil, BadAuthRequest("The Agent operation ID is too long")
 	}
 	if len([]rune(reason)) > 2000 {
-		return nil, BadAuthRequest("撤销理由过长")
+		return nil, BadAuthRequest("The undo reason is too long")
 	}
 
 	s.storageMu.Lock()
@@ -40,7 +40,7 @@ func (s *Service) UndoCloudAgentCanvas(userID, runID, stepID, expectedSnapshotHa
 	run, err := s.repo.CloudAgent(userID, runID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, NotFound("Agent 运行不存在")
+			return nil, NotFound("Agent run not found")
 		}
 		return nil, err
 	}
@@ -49,18 +49,18 @@ func (s *Service) UndoCloudAgentCanvas(userID, runID, stepID, expectedSnapshotHa
 		mutation, err := repo.LatestCloudAgentCanvasMutation(userID, runID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return NotFound("当前 Agent 运行没有可撤销的画布变更")
+				return NotFound("This Agent run has no canvas change to undo")
 			}
 			return err
 		}
 		if stepID != "" && mutation.StepID != stepID {
-			return creationConflict("待撤销的 Agent 操作已不是当前运行的最新变更")
+			return creationConflict("The Agent operation to undo is no longer this run's latest change")
 		}
 
 		canvas, err := repo.CanvasProjectForUser(userID, mutation.CanvasID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return NotFound("画布不存在或无权访问")
+				return NotFound("The canvas does not exist or you have no access")
 			}
 			return err
 		}
@@ -74,41 +74,41 @@ func (s *Service) UndoCloudAgentCanvas(userID, runID, stepID, expectedSnapshotHa
 				result = map[string]any{"accepted": true, "snapshotHash": currentHash}
 				return nil
 			}
-			return creationConflict("该 Agent 变更已经撤销，但画布之后又发生了变化")
+			return creationConflict("This Agent change was already undone, but the canvas changed afterwards")
 		}
 		if mutation.Status == "not_undoable" {
-			return BadAuthRequest("该 Agent 画布变更未保留完整快照，无法撤销")
+			return BadAuthRequest("This Agent canvas change kept no complete snapshot and cannot be undone")
 		}
 		if mutation.Status != "applied" {
-			return creationConflict("该 Agent 变更当前不可撤销")
+			return creationConflict("This Agent change cannot be undone now")
 		}
 		if mutation.HasSubmittedTask {
-			return BadAuthRequest("已提交的生成任务不能撤销；任务不会取消或退款")
+			return BadAuthRequest("Submitted generation tasks cannot be undone; the task is not cancelled or refunded")
 		}
 		if expectedSnapshotHash != currentHash || mutation.AfterSnapshotHash != currentHash {
-			return creationConflict("画布已发生后续变化，未执行撤销")
+			return creationConflict("The canvas changed afterwards; nothing was undone")
 		}
 		if mutation.BeforeJSON == "" {
-			return BadAuthRequest("该 Agent 画布变更未保留可撤销快照")
+			return BadAuthRequest("This Agent canvas change kept no undo snapshot")
 		}
 		beforeDoc, err := creationDocument(mutation.BeforeJSON)
 		if err != nil {
-			return BadAuthRequest("该 Agent 画布变更的撤销快照无效")
+			return BadAuthRequest("The undo snapshot of this Agent canvas change is invalid")
 		}
 		if cloudAgentCanvasHash(beforeDoc) != mutation.BeforeSnapshotHash {
-			return BadAuthRequest("该 Agent 画布变更的撤销快照校验失败")
+			return BadAuthRequest("The undo snapshot of this Agent canvas change failed validation")
 		}
 		previous := canvas.PayloadJSON
 		canvas.PayloadJSON = mutation.BeforeJSON
 		if err := saveCreationCanvasWithHistory(repo, canvas, previous); err != nil {
 			if errors.Is(err, repository.ErrCreationConflict) {
-				return creationConflict("画布已发生后续变化，未执行撤销")
+				return creationConflict("The canvas changed afterwards; nothing was undone")
 			}
 			return err
 		}
 		if err := repo.MarkCloudAgentCanvasMutationUndone(userID, runID, mutation.ID, time.Now().UTC()); err != nil {
 			if errors.Is(err, repository.ErrCreationConflict) {
-				return creationConflict("该 Agent 变更已经被处理，请重新读取画布")
+				return creationConflict("This Agent change was already handled; read the canvas again")
 			}
 			return err
 		}

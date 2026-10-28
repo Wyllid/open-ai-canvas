@@ -204,7 +204,7 @@ func TestFinishCloudAgentPiModelStepWithInvalidCalls(t *testing.T) {
 	if decoded["errorClass"] != cloudAgentToolErrorInvalidModelOutput || decoded["requiredAction"] != "fix_arguments" {
 		t.Fatalf("回执应按模型输出问题分类并指引修正参数：%v", decoded)
 	}
-	if !strings.Contains(stringField(decoded, "error"), "拆分") {
+	if !strings.Contains(stringField(decoded, "error"), "split long text") {
 		t.Fatalf("超限回执应指引拆分重试：%v", decoded["error"])
 	}
 

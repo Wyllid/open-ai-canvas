@@ -233,7 +233,7 @@ func TestCloudAgentStepTimeoutRetriesThenFailsWithReadableReason(t *testing.T) {
 	if run.Status != "failed" {
 		t.Fatalf("重试仍超时应结束本轮，实际 status=%s", run.Status)
 	}
-	if !strings.Contains(run.FailureMessage, "单步模型调用超过执行时限") {
+	if !strings.Contains(run.FailureMessage, "did not return within its time limit") {
 		t.Fatalf("失败文案没有解释单步超时: %s", run.FailureMessage)
 	}
 	if !agentHasEventWithReason(state, "run_failed", "model_step_timeout") {

@@ -32,18 +32,18 @@ type CloudAgentMediaSettings struct {
 // hash, resource lease set and runtime checkpoint commit atomically.
 func (s *Service) updateCloudAgentMediaApproval(repo *repository.Repository, run *model.CloudAgentExecution, state *cloudAgentRuntime, settings CloudAgentMediaSettings) error {
 	if state == nil || state.Approval == nil {
-		return creationConflict("审批不存在或已过期")
+		return creationConflict("The approval does not exist or has expired")
 	}
 	call := state.Approval.Call
 	if call.Function.Name != "generate_media" {
-		return BadAuthRequest("当前审批不是媒体生成，不能修改生成参数")
+		return BadAuthRequest("This approval is not a media generation; generation parameters cannot be changed")
 	}
 	var args cloudAgentMediaArgs
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
 		return err
 	}
 	if args.Mode != "image" && args.Mode != "video" {
-		return BadAuthRequest("仅图片或视频生成审批支持修改模型和规格")
+		return BadAuthRequest("Only image or video generation approvals can change the model and specification")
 	}
 	args.LogicalModelID, args.ChannelID, args.ChannelModelKey = settings.LogicalModelID, settings.ChannelID, settings.ChannelModelKey
 	// These settings now come directly from the user, not the Agent's proposal.
@@ -53,7 +53,7 @@ func (s *Service) updateCloudAgentMediaApproval(repo *repository.Repository, run
 	if args.Mode == "video" {
 		if settings.DurationSeconds != nil {
 			if *settings.DurationSeconds < 0 {
-				return BadAuthRequest("视频时长不能为负数")
+				return BadAuthRequest("Video duration cannot be negative")
 			}
 			args.Duration = *settings.DurationSeconds
 		}
@@ -62,7 +62,7 @@ func (s *Service) updateCloudAgentMediaApproval(repo *repository.Repository, run
 		args.VideoArkPrivateAssetUpload = settings.VideoArkPrivateAssetUpload
 	}
 	if args.Mode == "image" && (settings.DurationSeconds != nil || settings.VideoGenerateAudio != nil || settings.VideoWatermark != nil || settings.VideoArkPrivateAssetUpload != nil) {
-		return BadAuthRequest("视频参数仅适用于视频生成审批")
+		return BadAuthRequest("Video parameters apply only to video generation approvals")
 	}
 	raw, err := json.Marshal(args)
 	if err != nil {
@@ -173,14 +173,14 @@ func validateCloudAgentResolvedMediaOptions(requested, resolvedInput map[string]
 		var values map[string]any
 		if encoded, ok := raw.(string); ok {
 			if err := json.Unmarshal([]byte(encoded), &values); err != nil {
-				return creationConflict("图片参数格式无效")
+				return creationConflict("Invalid image parameter format")
 			}
 		} else {
 			values, _ = raw.(map[string]any)
 		}
 		for name, value := range values {
 			if resolvedOptions[name] != value {
-				return creationConflict("模型解析后的图片参数与审批内容不同")
+				return creationConflict("The image parameters resolved by the model differ from the approved content")
 			}
 		}
 	}
@@ -204,7 +204,7 @@ func validateCloudAgentResolvedMediaOptions(requested, resolvedInput map[string]
 					// 任务准入已把旧 quality 档位解析为图片分辨率，不能再次与空 quality 比较。
 					continue
 				}
-				return cloudAgentMediaSpecMismatch(key, requestedValue, "", "所选图片模型未声明质量参数，请使用模型声明的图片分辨率或质量选项")
+				return cloudAgentMediaSpecMismatch(key, requestedValue, "", "The selected image model declares no quality parameter; use the image resolution or quality options the model declares")
 			}
 		}
 		resolved := stringValue(resolvedOptions[key])
@@ -257,8 +257,8 @@ func cloudAgentMediaFrameRatio(value string) (float64, bool) {
 var cloudAgentMediaSpecArgument = map[string]string{"videoSeconds": "durationSeconds", "vquality": "quality"}
 
 var cloudAgentMediaSpecLabel = map[string]string{
-	"size": "画幅/尺寸", "imageResolution": "图片分辨率", "quality": "质量", "vquality": "视频清晰度", "videoSeconds": "视频时长",
-	"count": "生成数量", "videoGenerateAudio": "同步生成音频", "videoWatermark": "水印", "videoArkPrivateAssetUpload": "参考图同步",
+	"size": "aspect ratio/size", "imageResolution": "image resolution", "quality": "quality", "vquality": "video quality", "videoSeconds": "video duration",
+	"count": "output count", "videoGenerateAudio": "generate audio", "videoWatermark": "watermark", "videoArkPrivateAssetUpload": "reference sync",
 }
 
 // cloudAgentMediaSpecMismatch 说明具体哪一项被模型目录改写：此时还没有提交收费任务，
@@ -275,9 +275,9 @@ func cloudAgentMediaSpecMismatch(key, requested, resolved, message string) error
 			label = key
 		}
 		if resolved == "" {
-			message = fmt.Sprintf("所选模型不支持%s「%s」，请去掉该参数或改用 model_list 中该模型声明的取值", label, truncateRunes(requested, 40))
+			message = fmt.Sprintf("The selected model does not support %s \"%s\"; remove the parameter or use a value the model declares in model_list", label, truncateRunes(requested, 40))
 		} else {
-			message = fmt.Sprintf("所选模型会把%s「%s」解析为「%s」，与申请的规格不一致；请改用「%s」或 model_list 中该模型声明的其他取值", label, truncateRunes(requested, 40), truncateRunes(resolved, 40), truncateRunes(resolved, 40))
+			message = fmt.Sprintf("The selected model resolves %s \"%s\" to \"%s\", which differs from the requested specification; use \"%s\" or another value the model declares in model_list", label, truncateRunes(requested, 40), truncateRunes(resolved, 40), truncateRunes(resolved, 40))
 		}
 	}
 	return cloudAgentFieldError(field, "invalid_value", message)

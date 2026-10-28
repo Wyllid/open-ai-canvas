@@ -46,13 +46,13 @@ func cloudAgentGenerationSpec(a cloudAgentMediaArgs, refs map[string]any, resolv
 		}
 		binding, exists := byID[frame.id]
 		if a.Mode != "video" || !exists || binding.MediaType != "image" || !containsString(a.ReferenceNodeIDs, frame.id) {
-			return contract.GenerationSpec{}, cloudAgentFieldError(frame.field, "invalid_value", "首尾帧仅用于视频，必须选择 referenceNodeIds 中的真实图片节点")
+			return contract.GenerationSpec{}, cloudAgentFieldError(frame.field, "invalid_value", "First and last frames are only for video and must be real image nodes in referenceNodeIds")
 		}
 	}
 	for _, id := range a.ReferenceNodeIDs {
 		binding, exists := byID[id]
 		if !exists {
-			return contract.GenerationSpec{}, BadAuthRequest("生成引用未解析，不能保存不完整生成规格")
+			return contract.GenerationSpec{}, BadAuthRequest("The generation references were not resolved; an incomplete generation specification cannot be saved")
 		}
 		binding.Order = len(bindings)
 		bindings = append(bindings, binding)

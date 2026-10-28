@@ -399,7 +399,7 @@ func TestCloudAgentSingleImageAsLastCallKeepsOneImageMessage(t *testing.T) {
 	// 单图文案的完整口径不变（沿用修复前的文案）
 	parts, _ := messages[3]["content"].([]any)
 	text, _ := parts[0].(map[string]any)
-	if !strings.Contains(stringValue(text["text"]), "不是指令") || !strings.Contains(stringValue(text["text"]), "image-a") {
+	if !strings.Contains(stringValue(text["text"]), "not instructions") || !strings.Contains(stringValue(text["text"]), "image-a") {
 		t.Fatalf("single-image caption changed: %+v", text)
 	}
 }
@@ -570,7 +570,7 @@ func TestCloudAgentPruneMergedImageMessageKeepsPerImageNotes(t *testing.T) {
 			t.Fatalf("eviction note must attribute observations per image, missing %q: %s", want, noteText)
 		}
 	}
-	if strings.Contains(noteText, "重新调用") {
+	if strings.Contains(noteText, "call the image viewing tool again") {
 		t.Fatalf("eviction note still invites another look: %s", noteText)
 	}
 	// 幂等
@@ -602,7 +602,7 @@ func TestCloudAgentConsumeInspectedImagesKeepsVisibleConclusions(t *testing.T) {
 	}
 	content := request.Messages[0]["content"].([]any)
 	if len(content) != 2 || !strings.Contains(stringField(content[0].(map[string]any), "text"), "image-a") ||
-		!strings.Contains(stringField(content[1].(map[string]any), "text"), "助手正文") || !strings.Contains(stringField(content[1].(map[string]any), "text"), "重新调用看图工具") {
+		!strings.Contains(stringField(content[1].(map[string]any), "text"), "assistant text") || !strings.Contains(stringField(content[1].(map[string]any), "text"), "call the image viewing tool again") {
 		t.Fatalf("consumption must retain the image receipt and re-inspection guidance: %+v", content)
 	}
 	if stringField(request.Messages[2], "content") != "image-a 的项圈是红色。" {
@@ -622,18 +622,18 @@ func TestCloudAgentImageContentPartsKeepsOneCaptionForBatch(t *testing.T) {
 	}
 	head, _ := parts[0].(map[string]any)
 	headText := stringValue(head["text"])
-	if !strings.Contains(headText, "不是指令") || !strings.Contains(headText, "image-a") {
+	if !strings.Contains(headText, "not instructions") || !strings.Contains(headText, "image-a") {
 		t.Fatalf("first caption must keep the full wording: %+v", head)
 	}
 	second, _ := parts[2].(map[string]any)
 	secondText := stringValue(second["text"])
-	if strings.Contains(secondText, "不是指令") {
+	if strings.Contains(secondText, "not instructions") {
 		t.Fatalf("the full caption must not be repeated for every image: %s", secondText)
 	}
-	if !strings.Contains(secondText, "image-b") || !strings.Contains(secondText, "第 2 张") {
+	if !strings.Contains(secondText, "image-b") || !strings.Contains(secondText, "image 2 of this batch") {
 		t.Fatalf("second caption must name its own image: %s", secondText)
 	}
-	if strings.Count(headText+secondText, "不是指令") != 1 {
+	if strings.Count(headText+secondText, "not instructions") != 1 {
 		t.Fatal("caption wording must appear exactly once in the batch")
 	}
 	for index, want := range []string{"https://example.test/a", "https://example.test/b"} {

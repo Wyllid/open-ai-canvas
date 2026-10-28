@@ -37,18 +37,18 @@ type CloudAgentConversationRunPage struct {
 
 func cloudAgentHistoryCursor(value string, limit int) (*repository.CloudAgentHistoryCursor, error) {
 	if limit < 1 || limit > 100 {
-		return nil, BadAuthRequest("会话页大小必须是 1–100 之间的整数")
+		return nil, BadAuthRequest("Conversation page size must be an integer between 1 and 100")
 	}
 	if value == "" {
 		return nil, nil
 	}
 	if len(value) > 512 {
-		return nil, BadAuthRequest("会话分页游标无效")
+		return nil, BadAuthRequest("Invalid conversation page cursor")
 	}
 	data, err := base64.RawURLEncoding.DecodeString(value)
 	var cursor repository.CloudAgentHistoryCursor
-	if err != nil || json.Unmarshal(data, &cursor) != nil || cursor.CreatedAt.IsZero() || validateCloudAgentID(cursor.ID, "轮次 ID", 80) != nil {
-		return nil, BadAuthRequest("会话分页游标无效")
+	if err != nil || json.Unmarshal(data, &cursor) != nil || cursor.CreatedAt.IsZero() || validateCloudAgentID(cursor.ID, "Turn ID", 80) != nil {
+		return nil, BadAuthRequest("Invalid conversation page cursor")
 	}
 	return &cursor, nil
 }
@@ -62,10 +62,10 @@ func encodeCloudAgentHistoryCursor(run model.CloudAgentExecution) string {
 // A conversation that visited this canvas retains its global latest turn.
 func (s *Service) CloudAgentConversations(userID, canvasID, before string, limit int) (*CloudAgentConversationPage, error) {
 	if userID == "" {
-		return nil, kernel.Unauthorized("请先登录")
+		return nil, kernel.Unauthorized("Please sign in first")
 	}
-	if strings.TrimSpace(canvasID) == "" || validateCloudAgentID(canvasID, "画布 ID", 80) != nil {
-		return nil, BadAuthRequest("需要有效的画布 ID")
+	if strings.TrimSpace(canvasID) == "" || validateCloudAgentID(canvasID, "Canvas ID", 80) != nil {
+		return nil, BadAuthRequest("A valid canvas ID is required")
 	}
 	cursor, err := cloudAgentHistoryCursor(before, limit)
 	if err != nil {
@@ -73,7 +73,7 @@ func (s *Service) CloudAgentConversations(userID, canvasID, before string, limit
 	}
 	if _, err := s.repo.CanvasProjectMetadataForUser(userID, canvasID); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, kernel.NotFound("画布不存在")
+			return nil, kernel.NotFound("Canvas not found")
 		}
 		return nil, err
 	}
@@ -108,14 +108,14 @@ func cloudAgentConversationSummary(run model.CloudAgentExecution) CloudAgentConv
 // 当前画布目录之外的已选对话靠它判断是否变化，避免每次轮询都重读全部轮次。
 func (s *Service) CloudAgentConversationSummaryByID(userID, conversationID string) (*CloudAgentConversation, error) {
 	if userID == "" {
-		return nil, kernel.Unauthorized("请先登录")
+		return nil, kernel.Unauthorized("Please sign in first")
 	}
-	if err := validateCloudAgentID(conversationID, "会话 ID", 80); err != nil {
+	if err := validateCloudAgentID(conversationID, "Conversation ID", 80); err != nil {
 		return nil, err
 	}
 	row, err := s.repo.CloudAgentConversationLatest(userID, conversationID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, kernel.NotFound("Agent 对话不存在")
+		return nil, kernel.NotFound("Agent conversation not found")
 	}
 	if err != nil {
 		return nil, err
@@ -126,9 +126,9 @@ func (s *Service) CloudAgentConversationSummaryByID(userID, conversationID strin
 
 func (s *Service) CloudAgentConversationRuns(userID, conversationID, after string, limit int) (*CloudAgentConversationRunPage, error) {
 	if userID == "" {
-		return nil, kernel.Unauthorized("请先登录")
+		return nil, kernel.Unauthorized("Please sign in first")
 	}
-	if err := validateCloudAgentID(conversationID, "会话 ID", 80); err != nil {
+	if err := validateCloudAgentID(conversationID, "Conversation ID", 80); err != nil {
 		return nil, err
 	}
 	cursor, err := cloudAgentHistoryCursor(after, limit)
@@ -140,7 +140,7 @@ func (s *Service) CloudAgentConversationRuns(userID, conversationID, after strin
 		return nil, err
 	}
 	if !exists {
-		return nil, kernel.NotFound("Agent 对话不存在")
+		return nil, kernel.NotFound("Agent conversation not found")
 	}
 	rows, err := s.repo.CloudAgentConversationRuns(userID, conversationID, cursor, limit+1)
 	if err != nil {

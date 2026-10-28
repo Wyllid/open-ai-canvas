@@ -24,28 +24,28 @@ func cloudAgentResolveCharacter(repo *repository.Repository, userID, projectID s
 	meta, _ := node["metadata"].(map[string]any)
 	assetID := stringValue(meta["characterAssetId"])
 	if assetID == "" {
-		return nil, BadAuthRequest("角色卡未关联角色资产")
+		return nil, BadAuthRequest("The character card is not linked to a character asset")
 	}
 	_ = projectID
 	asset, err := repo.UserCharacterAsset(userID, assetID)
 	if err != nil {
-		return nil, BadAuthRequest("角色卡不存在或不可访问")
+		return nil, BadAuthRequest("The character card does not exist or is not accessible")
 	}
 	policy := stringValue(meta["characterVersionPolicy"])
 	versionID := asset.PrimaryVersionID
 	if policy == "pinned" {
 		versionID = stringValue(meta["characterVersionId"])
 		if versionID == "" {
-			return nil, BadAuthRequest("角色卡固定版本不存在")
+			return nil, BadAuthRequest("The character card's pinned version does not exist")
 		}
 	} else if policy != "" && policy != "current" {
-		return nil, BadAuthRequest("角色卡版本策略无效")
+		return nil, BadAuthRequest("Invalid character card version policy")
 	} else {
 		policy = "current"
 	}
 	version, err := repo.AssetVersion(versionID)
 	if err != nil || version.AssetID != asset.ID {
-		return nil, BadAuthRequest("角色卡版本不存在或不属于当前角色")
+		return nil, BadAuthRequest("The character card version does not exist or does not belong to this character")
 	}
 	card, err := (&Service{repo: repo}).characterCardVersion(userID, version)
 	if err != nil {
@@ -116,7 +116,7 @@ func (character *cloudAgentCharacter) prompt() string {
 	if len(parts) == 0 {
 		return ""
 	}
-	return fmt.Sprintf("【角色卡：%s（第%d版）】\n%s", character.Name, character.Card.Version, strings.Join(parts, "\n"))
+	return fmt.Sprintf("[Character card: %s (version %d)]\n%s", character.Name, character.Card.Version, strings.Join(parts, "\n"))
 }
 
 func cloudAgentCharacterImageReference(repo *repository.Repository, userID, nodeID string, character *cloudAgentCharacter) (map[string]any, error) {
@@ -127,7 +127,7 @@ func cloudAgentCharacterImageReference(repo *repository.Repository, userID, node
 			}
 			resource, err := repo.ResourceForUser(userID, representation.ResourceID)
 			if err != nil || resource.Status != model.ResourceStatusReady || !strings.HasPrefix(strings.ToLower(resource.MimeType), "image/") {
-				return nil, BadAuthRequest("角色卡三视图资源不存在、未就绪或不可访问")
+				return nil, BadAuthRequest("The character card turnaround resource does not exist, is not ready or is not accessible")
 			}
 			return map[string]any{
 				"id": nodeID, "name": character.Name, "storageKey": "resource:" + resource.ID,
@@ -137,12 +137,12 @@ func cloudAgentCharacterImageReference(repo *repository.Repository, userID, node
 			}, nil
 		}
 	}
-	return nil, BadAuthRequest("角色卡尚未绑定可用的三视图图片")
+	return nil, BadAuthRequest("The character card has no usable turnaround image yet")
 }
 
 func cloudAgentCharacterAudioReference(repo *repository.Repository, userID, nodeID string, character *cloudAgentCharacter) (map[string]any, error) {
 	if character.Card.Voice == nil || strings.TrimSpace(character.Card.Voice.Profile.VoiceKey) == "" {
-		return nil, BadAuthRequest("角色卡尚未绑定可用的声音档案")
+		return nil, BadAuthRequest("The character card has no usable voice profile yet")
 	}
 	return map[string]any{
 		"id": nodeID, "name": character.Name, "voiceProfileId": character.Card.Voice.Profile.ID,
@@ -179,7 +179,7 @@ func cloudAgentMediaCharacters(repo *repository.Repository, userID, projectID st
 			return nil, err
 		}
 		if id == args.SourceNodeID && character.prompt() == "" {
-			return nil, BadAuthRequest("角色卡还没有可用的文字设定，不能作为文本来源")
+			return nil, BadAuthRequest("The character card has no written profile yet and cannot be a text source")
 		}
 		characters[id] = character
 	}

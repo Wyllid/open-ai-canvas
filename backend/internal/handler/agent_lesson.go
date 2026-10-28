@@ -231,7 +231,7 @@ func decodeAgentJSON(c *gin.Context, dest any, maxBytes int64) error {
 		return err
 	}
 	if err := decoder.Decode(&struct{}{}); err != io.EOF {
-		return errors.New("请求必须只包含一个 JSON 对象")
+		return errors.New("The request must contain exactly one JSON object")
 	}
 	return nil
 }

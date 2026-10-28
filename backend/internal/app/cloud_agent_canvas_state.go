@@ -163,13 +163,13 @@ func cloudAgentCanvasStateWithRelated(repo *repository.Repository, userID, canva
 
 func cloudAgentCanvasStateSelected(repo *repository.Repository, userID, canvasID string, doc map[string]any, offset int, ids, focusNodeIDs []string, depth int, includeRelated bool, storyboardOffset int, connectionOffsets ...int) (any, error) {
 	if offset < 0 || storyboardOffset < 0 || len(ids) > 8 || len(focusNodeIDs) > 8 || (len(ids) > 0 && len(focusNodeIDs) > 0) {
-		return nil, BadAuthRequest("画布读取分页参数无效")
+		return nil, BadAuthRequest("Invalid canvas read paging arguments")
 	}
 	if len(focusNodeIDs) > 0 && !includeRelated && (depth < 0 || depth > 3) {
-		return nil, BadAuthRequest("关联子图 depth 必须在 0 到 3 之间")
+		return nil, BadAuthRequest("Linked subgraph depth must be between 0 and 3")
 	}
 	if includeRelated && len(focusNodeIDs) == 0 {
-		return nil, BadAuthRequest("includeRelated 只能与 focusNodeIds 一起使用")
+		return nil, BadAuthRequest("includeRelated can only be used with focusNodeIds")
 	}
 	all := creationMaps(doc["nodes"])
 	connectionOffset := 0
@@ -177,7 +177,7 @@ func cloudAgentCanvasStateSelected(repo *repository.Repository, userID, canvasID
 		connectionOffset = connectionOffsets[0]
 	}
 	if connectionOffset < 0 {
-		return nil, BadAuthRequest("连线分页参数无效")
+		return nil, BadAuthRequest("Invalid edge paging arguments")
 	}
 	wanted := map[string]bool{}
 	for _, id := range ids {
@@ -186,7 +186,7 @@ func cloudAgentCanvasStateSelected(repo *repository.Repository, userID, canvasID
 	focus := map[string]bool{}
 	for _, id := range focusNodeIDs {
 		if id == "" || focus[id] {
-			return nil, BadAuthRequest("关联子图 focusNodeIds 不能包含空值或重复节点")
+			return nil, BadAuthRequest("Linked subgraph focusNodeIds must not contain empty values or repeated nodes")
 		}
 		focus[id] = true
 	}
@@ -198,12 +198,12 @@ func cloudAgentCanvasStateSelected(repo *repository.Repository, userID, canvasID
 	}
 	for id := range wanted {
 		if nodeByID[id] == nil {
-			return nil, BadAuthRequest("指定节点不在当前画布")
+			return nil, BadAuthRequest("The given node is not on this canvas")
 		}
 	}
 	for id := range focus {
 		if nodeByID[id] == nil {
-			return nil, BadAuthRequest("关联子图 focusNodeIds 中存在不在当前画布的节点")
+			return nil, BadAuthRequest("Some linked subgraph focusNodeIds are not on this canvas")
 		}
 	}
 	selected := map[string]bool{}
@@ -304,7 +304,7 @@ func cloudAgentCanvasStateSelected(repo *repository.Repository, userID, canvasID
 		if !known {
 			// Read visibility is not permission to mutate or use a node as a media reference.
 			item["agentSupported"] = false
-			item["agentUnsupportedReason"] = "仅展示基础信息；当前 Agent 不支持操作此类型节点"
+			item["agentUnsupportedReason"] = "Basic information only; the Agent cannot operate on this node type"
 			body, _ := json.Marshal(item)
 			if pageBytes+len(body) > cloudAgentReadPageBytes-(8<<10) {
 				next = candidateIndex
@@ -332,7 +332,7 @@ func cloudAgentCanvasStateSelected(repo *repository.Repository, userID, canvasID
 		}
 		if cloudAgentCharacterNode(node) {
 			if repo == nil {
-				item["character"] = map[string]any{"available": false, "issue": "角色资产读取服务不可用"}
+				item["character"] = map[string]any{"available": false, "issue": "The character asset reader is unavailable"}
 			} else {
 				canvas, canvasErr := repo.CanvasProjectForUser(userID, canvasID)
 				if canvasErr != nil {
@@ -413,7 +413,7 @@ func cloudAgentCanvasStateSelected(repo *repository.Repository, userID, canvasID
 		}
 		if pageBytes+len(body) > cloudAgentReadPageBytes-(8<<10) {
 			if len(nodes) == 0 {
-				return nil, BadAuthRequest("节点详情超过单页读取预算，请使用节点对应的结构化分页工具")
+				return nil, BadAuthRequest("The node details exceed the single-page read budget; use the node's structured paging tool")
 			}
 			next = candidateIndex
 			break
@@ -477,7 +477,7 @@ func cloudAgentProjectNodeFields(node, meta map[string]any, descriptor capabilit
 		if descriptor.ProjectionKind != "" && key == descriptor.ProjectionField {
 			projector, registered := cloudAgentStructuredProjectors[descriptor.ProjectionKind]
 			if !registered {
-				return nil, BadAuthRequest(fmt.Sprintf("节点 %s 的结构化读取能力未注册", descriptor.Label))
+				return nil, BadAuthRequest(fmt.Sprintf("No structured reader is registered for node %s", descriptor.Label))
 			}
 			value, ok := cloudAgentProjectionValue(node, meta, descriptor.ProjectionField)
 			if !ok {
@@ -485,7 +485,7 @@ func cloudAgentProjectNodeFields(node, meta map[string]any, descriptor capabilit
 			}
 			structured, err := projector(value, structuredOffset, precise)
 			if err != nil {
-				return nil, BadAuthRequest(fmt.Sprintf("节点 %s 的结构化数据无法读取", descriptor.Label))
+				return nil, BadAuthRequest(fmt.Sprintf("The structured data of node %s cannot be read", descriptor.Label))
 			}
 			if structured != nil {
 				projected[key] = structured

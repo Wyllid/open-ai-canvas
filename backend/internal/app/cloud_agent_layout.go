@@ -151,38 +151,38 @@ func cloudAgentLayoutNodesByID(doc map[string]any) map[string]map[string]any {
 func cloudAgentArrangeModeLabel(mode layout.Mode) string {
 	switch mode {
 	case layout.ModeFlow:
-		return "按依赖分层"
+		return "layered by dependency"
 	case layout.ModeByLane:
-		return "按媒体类型分区"
+		return "grouped by media type"
 	case layout.ModeRow:
-		return "排成一行"
+		return "in a row"
 	case layout.ModeColumn:
-		return "排成一列"
+		return "in a column"
 	case layout.ModeGrid:
-		return "排成网格"
+		return "in a grid"
 	default:
-		return "自动整理"
+		return "automatic"
 	}
 }
 
 func cloudAgentArrangeAlignLabel(align layout.AlignMode) string {
 	switch align {
 	case layout.AlignLeft:
-		return "左对齐"
+		return "align left"
 	case layout.AlignCenterX:
-		return "水平居中"
+		return "center horizontally"
 	case layout.AlignRight:
-		return "右对齐"
+		return "align right"
 	case layout.AlignTop:
-		return "顶对齐"
+		return "align top"
 	case layout.AlignCenterY:
-		return "垂直居中"
+		return "center vertically"
 	case layout.AlignBottom:
-		return "底对齐"
+		return "align bottom"
 	case layout.AlignDistributeX:
-		return "水平等距"
+		return "distribute horizontally"
 	case layout.AlignDistributeY:
-		return "垂直等距"
+		return "distribute vertically"
 	default:
 		return ""
 	}
@@ -203,7 +203,7 @@ func cloudAgentArrangeMode(value string) (layout.Mode, error) {
 	case "grid":
 		return layout.ModeGrid, nil
 	default:
-		return "", cloudAgentFieldError("mode", "invalid_value", "整理模式无效：只能是 auto、flow、byType、row、column 或 grid")
+		return "", cloudAgentFieldError("mode", "invalid_value", "Invalid arrange mode: must be auto, flow, byType, row, column or grid")
 	}
 }
 
@@ -214,7 +214,7 @@ func cloudAgentArrangeAlign(value string) (layout.AlignMode, error) {
 	case "left", "centerx", "right", "top", "centery", "bottom", "distributex", "distributey":
 		return layout.AlignMode(strings.ToLower(strings.TrimSpace(value))), nil
 	default:
-		return "", cloudAgentFieldError("align", "invalid_value", "对齐模式无效：只能是 left、centerX、right、top、centerY、bottom、distributeX 或 distributeY")
+		return "", cloudAgentFieldError("align", "invalid_value", "Invalid align mode: must be left, centerX, right, top, centerY, bottom, distributeX or distributeY")
 	}
 }
 
@@ -261,7 +261,7 @@ func cloudAgentArrangeScope(doc map[string]any, args cloudAgentArrangeArgs) ([]l
 	for _, id := range requested {
 		node, ok := byID[id]
 		if !ok {
-			return nil, nil, cloudAgentFieldError("nodeIds", "invalid_value", fmt.Sprintf("要整理的节点 %s 不在当前画布，请重新读取画布", id))
+			return nil, nil, cloudAgentFieldError("nodeIds", "invalid_value", fmt.Sprintf("Node %s to arrange is not on this canvas; read the canvas again", id))
 		}
 		if node.NoMove || !cloudAgentLayoutMovable(index[id]) {
 			skipped = append(skipped, id)
@@ -310,7 +310,7 @@ func cloudAgentArrangePositions(doc map[string]any, args cloudAgentArrangeArgs, 
 			}
 			label := strings.TrimSpace(group.Label)
 			if label == "" {
-				label = fmt.Sprintf("第 %d 组", len(bands)+1)
+				label = fmt.Sprintf("Group %d", len(bands)+1)
 			}
 			labels = append(labels, label)
 			if align != "" {
@@ -320,7 +320,7 @@ func cloudAgentArrangePositions(doc map[string]any, args cloudAgentArrangeArgs, 
 			bands = append(bands, layout.Band{Label: label, Nodes: members, Mode: groupMode})
 		}
 		if len(bands) == 0 {
-			return nil, nil, "", cloudAgentFieldError("groups", "invalid_value", "分组里没有可整理的节点")
+			return nil, nil, "", cloudAgentFieldError("groups", "invalid_value", "The group has no nodes that can be arranged")
 		}
 		positions = layout.Bands(bands, args.Gap)
 	} else {
@@ -389,13 +389,13 @@ func prepareCloudAgentArrangeNodes(repo *repository.Repository, userID, canvasID
 		return nil, cloudAgentJSONArgumentError(err)
 	}
 	if strings.TrimSpace(args.SnapshotHash) == "" {
-		return nil, cloudAgentFieldError("snapshotHash", "required", "整理节点需要先读取画布并传入 snapshotHash")
+		return nil, cloudAgentFieldError("snapshotHash", "required", "Arranging nodes needs a canvas read first and its snapshotHash")
 	}
 	if len(args.Groups) > cloudAgentArrangeMaxGroups {
-		return nil, cloudAgentFieldError("groups", "item_count", fmt.Sprintf("一次最多分成 %d 组", cloudAgentArrangeMaxGroups))
+		return nil, cloudAgentFieldError("groups", "item_count", fmt.Sprintf("At most %d groups at once", cloudAgentArrangeMaxGroups))
 	}
 	if args.Gap < 0 || args.Gap > cloudAgentArrangeMaxGap {
-		return nil, cloudAgentFieldError("gap", "invalid_value", fmt.Sprintf("组间距必须在 0 到 %d 之间", cloudAgentArrangeMaxGap))
+		return nil, cloudAgentFieldError("gap", "invalid_value", fmt.Sprintf("Group spacing must be between 0 and %d", cloudAgentArrangeMaxGap))
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, canvasID)
 	if err != nil {
@@ -410,7 +410,7 @@ func prepareCloudAgentArrangeNodes(repo *repository.Repository, userID, canvasID
 		// 与 canvas_apply_ops 同一写法：过期快照是"可纠正的参数错误"，运行期把它当工具结果
 		// 交回模型重新读取，而不是走准入失败分支终止整轮。
 		return nil, &cloudAgentFieldArgumentError{
-			error: &cloudAgentArgumentError{creationConflict("画布已变化，本次未整理；请重新读取并重新申请审批")},
+			error: &cloudAgentArgumentError{creationConflict("The canvas changed, so nothing was arranged; read it again and request approval again")},
 			Field: "snapshotHash", Issue: "stale_snapshot",
 		}
 	}
@@ -419,10 +419,10 @@ func prepareCloudAgentArrangeNodes(repo *repository.Repository, userID, canvasID
 		return nil, err
 	}
 	if len(selected) < 2 {
-		return nil, cloudAgentFieldError("nodeIds", "invalid_value", "可整理的节点少于两个；单个节点请直接用 update_node 指定坐标")
+		return nil, cloudAgentFieldError("nodeIds", "invalid_value", "Fewer than two nodes can be arranged; for a single node set its coordinates with update_node")
 	}
 	if len(selected) > cloudAgentArrangeMaxNodes {
-		return nil, cloudAgentFieldError("nodeIds", "item_count", fmt.Sprintf("一次最多整理 %d 个节点，请分批或用 nodeIds 指定范围", cloudAgentArrangeMaxNodes))
+		return nil, cloudAgentFieldError("nodeIds", "item_count", fmt.Sprintf("At most %d nodes can be arranged at once; work in batches or limit the scope with nodeIds", cloudAgentArrangeMaxNodes))
 	}
 	positions, labels, mode, err := cloudAgentArrangePositions(doc, args, selected)
 	if err != nil {
@@ -476,32 +476,32 @@ func cloudAgentLayoutTitles(doc map[string]any) map[string]string {
 
 func cloudAgentArrangePreview(doc map[string]any, plan *cloudAgentArrangePlan) cloudAgentApprovalPreview {
 	modeLabel := cloudAgentArrangeModeLabel(plan.Mode)
-	headline := fmt.Sprintf("整理 %d 个节点的位置（%s）", len(plan.Moves), modeLabel)
+	headline := fmt.Sprintf("Arrange %d nodes (%s)", len(plan.Moves), modeLabel)
 	if len(plan.BandLabels) > 0 {
-		headline = fmt.Sprintf("把 %d 个节点归入 %d 组并整理位置", len(plan.Moves), len(plan.BandLabels))
+		headline = fmt.Sprintf("Put %d nodes into %d groups and arrange them", len(plan.Moves), len(plan.BandLabels))
 	}
 	if alignLabel := cloudAgentArrangeAlignLabel(layout.AlignMode(strings.ToLower(strings.TrimSpace(plan.Args.Align)))); alignLabel != "" {
-		headline += "，" + alignLabel
+		headline += ", " + alignLabel
 	}
 	details := make([]string, 0, 6)
 	if len(plan.BandLabels) > 0 {
-		details = append(details, "分组："+strings.Join(plan.BandLabels, " / "))
+		details = append(details, "Groups: "+strings.Join(plan.BandLabels, " / "))
 	}
-	details = append(details, fmt.Sprintf("移动 %d 个节点（上限 %d）", len(plan.Moves), cloudAgentArrangeMaxNodes))
+	details = append(details, fmt.Sprintf("Move %d nodes (limit %d)", len(plan.Moves), cloudAgentArrangeMaxNodes))
 	for index, move := range plan.Moves {
 		if index == 6 {
-			details = append(details, fmt.Sprintf("等共 %d 个节点", len(plan.Moves)))
+			details = append(details, fmt.Sprintf("… %d nodes in total", len(plan.Moves)))
 			break
 		}
 		details = append(details, fmt.Sprintf("%s → (%g, %g)", move.Title, move.To.X, move.To.Y))
 	}
 	if len(plan.Skipped) > 0 {
-		details = append(details, fmt.Sprintf("%d 个锁定/容器/隐藏节点保持不动", len(plan.Skipped)))
+		details = append(details, fmt.Sprintf("%d locked/container/hidden nodes stay in place", len(plan.Skipped)))
 	}
 	return cloudAgentApprovalPreview{
 		Kind:        "arrange_nodes",
-		Title:       "整理节点位置",
-		Description: headline + "；只调整坐标，不改内容、不建连线、不改层级。",
+		Title:       "Arrange nodes",
+		Description: headline + "; only coordinates change: no content, edges or layering are touched.",
 		Items: []cloudAgentApprovalPreviewItem{{
 			Operation: "arrange_nodes",
 			Summary:   headline,
@@ -519,7 +519,7 @@ func applyCloudAgentArrangeNodes(repo *repository.Repository, userID, canvasID s
 	if len(plan.Moves) == 0 {
 		return map[string]any{
 			"canvasId": canvasID, "snapshotHash": plan.BeforeHash, "moved": 0,
-			"summary": "节点位置已经是整理后的结果，本次没有改动",
+			"summary": "The nodes are already arranged; nothing changed",
 		}, nil
 	}
 	if plan.Args.DryRun {
@@ -529,7 +529,7 @@ func applyCloudAgentArrangeNodes(repo *repository.Repository, userID, canvasID s
 		}
 		return map[string]any{
 			"canvasId": canvasID, "snapshotHash": plan.BeforeHash, "moved": 0, "wouldMove": len(ids),
-			"nodeIds": ids, "summary": fmt.Sprintf("预演：将移动 %d 个节点，未写入画布", len(ids)),
+			"nodeIds": ids, "summary": fmt.Sprintf("Dry run: %d nodes would move; nothing was written to the canvas", len(ids)),
 		}, nil
 	}
 	before := plan.Canvas.PayloadJSON
@@ -556,7 +556,7 @@ func applyCloudAgentArrangeNodes(repo *repository.Repository, userID, canvasID s
 		"canvasId": canvasID, "snapshotHash": cloudAgentCanvasHash(plan.Document),
 		"beforeSnapshotHash": plan.BeforeHash, "moved": len(plan.Moves), "nodeIds": ids,
 		"groups": plan.BandLabels, "skipped": plan.Skipped,
-		"summary": fmt.Sprintf("已整理 %d 个节点的位置（%s）", len(plan.Moves), cloudAgentArrangeModeLabel(plan.Mode)),
+		"summary": fmt.Sprintf("Arranged %d nodes (%s)", len(plan.Moves), cloudAgentArrangeModeLabel(plan.Mode)),
 	}, nil
 }
 

@@ -26,7 +26,7 @@ func requestTextProvider(ctx context.Context, config providerConfig, path string
 	}
 	result := providerTextResult{Text: stringField(parsed, "text"), Reasoning: stringField(parsed, "reasoning")}
 	if result.Text == "" {
-		return providerTextResult{}, errors.New("文本接口没有返回内容")
+		return providerTextResult{}, errors.New("Text API returned no content")
 	}
 	return result, nil
 }
@@ -44,7 +44,7 @@ func postStreamingTextResult(ctx context.Context, config providerConfig, path st
 	}
 	result := providerTextResult{Text: stringField(parsed, "text"), Reasoning: stringField(parsed, "reasoning")}
 	if result.Text == "" {
-		return providerTextResult{}, errors.New("流式文本接口没有返回内容")
+		return providerTextResult{}, errors.New("Streaming text API returned no content")
 	}
 	return result, nil
 }
@@ -157,7 +157,7 @@ func parseTextEventStream(data []byte, protocol string) (string, error) {
 		return "", err
 	}
 	if text.Len() == 0 {
-		return "", errors.New("流式文本接口没有返回内容")
+		return "", errors.New("Streaming text API returned no content")
 	}
 	return text.String(), nil
 }

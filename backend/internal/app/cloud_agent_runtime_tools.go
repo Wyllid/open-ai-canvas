@@ -82,7 +82,7 @@ func cloudAgentToolResult(runID string, state *cloudAgentRuntime, call cloudAgen
 					break
 				}
 			}
-			detail["guidance"] = "本次调用未执行，请按 parameters 修正参数后重试，不要重复提交相同的错误参数"
+			detail["guidance"] = "This call was not executed; fix the arguments according to parameters and retry, without resubmitting the same wrong arguments"
 			if call.Function.Name == agenttool.CanvasGetState {
 				detail["exampleArguments"] = map[string]any{}
 			}
@@ -98,7 +98,7 @@ func cloudAgentToolResult(runID string, state *cloudAgentRuntime, call cloudAgen
 					if sourceHandle {
 						op = map[string]any{"type": "connect_nodes", "id": "<new-edge-id>", "fromNodeId": "<script-node-id>", "toNodeId": "<output-image-or-video-node-id>", "fromHandleId": "row:<rowId-from-canvas_read_storyboard>"}
 					}
-					detail["guidance"] = message + "；本次连线未执行，示例仅是参数模板，节点 ID 和 rowId 必须来自最新读取结果"
+					detail["guidance"] = message + "; the edge was not created. The example is only an argument template: node IDs and rowId must come from the latest read"
 					detail["exampleArguments"] = map[string]any{"snapshotHash": "<canvas_get_state.snapshotHash>", "ops": []any{op}}
 				} else {
 					detail["exampleArguments"] = map[string]any{"snapshotHash": "<canvas_get_state.snapshotHash>", "ops": []any{map[string]any{"type": "add_node", "id": "<new-node-id>", "nodeType": "text", "content": "<content>"}}}
@@ -119,7 +119,7 @@ func cloudAgentToolResult(runID string, state *cloudAgentRuntime, call cloudAgen
 		kind = "tool_failed"
 		payload["text"] = message
 	} else {
-		payload["text"] = "工具执行成功"
+		payload["text"] = "Tool executed successfully"
 	}
 	if receipt, inspections, ok := cloudAgentImageInspectionResult(result); ok && err == nil {
 		rawReceipt, _ := json.Marshal(receipt)
@@ -186,13 +186,13 @@ func cloudAgentApplyReadLoopNudge(canonical *canonicalAgentRequest, state *cloud
 	}
 	toolName := state.ReadLoopToolName
 	if toolName == "" {
-		toolName = "只读工具"
+		toolName = "read-only tools"
 	}
 	canonical.Tools = cloudAgentToolsWithoutReadTools(canonical.Tools)
 	// 提示只进入下一次模型输入，避免插入尚未收齐结果的工具批次或堆积历史。
 	canonical.Messages = append(append([]map[string]any(nil), canonical.Messages...), cloudAgentRuntimeMessage(cloudAgentRuntimeContext{
 		Kind:   cloudAgentContextReadLoop,
-		Detail: fmt.Sprintf("%s 触发读取收敛（读取或回放计数 %d）；本次模型请求暂时不提供只读工具，运行状态仍为 running。", toolName, max(1, state.ReadLoopCount)),
+		Detail: fmt.Sprintf("%s triggered read convergence (read or replay count %d); read-only tools are withheld from this model request and the run stays running.", toolName, max(1, state.ReadLoopCount)),
 	}))
 }
 
@@ -296,7 +296,7 @@ func cloudAgentCompactSupersededReadBody(content, toolName string) string {
 		return ""
 	}
 	result["contextCompacted"] = true
-	result["guidance"] = "较新的同参读取已替代这份旧快照；需要正文时重新读取，不要依据旧快照重复提交写入。"
+	result["guidance"] = "A newer read with the same arguments replaced this old snapshot; read again when you need the content, and never resubmit writes based on the old snapshot."
 	encoded, err := json.Marshal(result)
 	if err != nil || len(encoded) >= len(content) {
 		return ""
@@ -394,7 +394,7 @@ func (s *Service) advanceCloudAgentReadBatch(run *model.CloudAgentExecution, sta
 				result = map[string]any{
 					"cacheReplay": true,
 					"replayCount": state.ToolReadReplays[cacheKey],
-					"message":     "该只读结果已在本批工具调用的前序结果中，请直接使用已有结果，不要再次读取",
+					"message":     "This read-only result is already among the earlier results of this batch; use it directly instead of reading again",
 				}
 			} else {
 				batchReadResults[cacheKey] = true
@@ -419,7 +419,7 @@ func (s *Service) advanceCloudAgentReadBatch(run *model.CloudAgentExecution, sta
 				// 只收敛触发护栏的读取；同批剩余调用仍由调度器处理，不能吞掉写操作。
 				cloudAgentToolResult(current.ID, state, item.call, map[string]any{
 					"readLoopGuard": true,
-					"message":       "重复只读调用已软收敛，请使用已有结果继续；运行仍可继续",
+					"message":       "Repeated read-only calls were soft-converged; continue with the existing results. The run can still continue",
 				}, nil)
 				cloudAgentMarkReadLoopNudge(state, item.call, readLoopErr.Count)
 				break
@@ -428,7 +428,7 @@ func (s *Service) advanceCloudAgentReadBatch(run *model.CloudAgentExecution, sta
 		}
 		if state.ReadLoopNudge && len(outcomes) > 0 {
 			state.event(run.ID, "read_loop_guard", map[string]any{
-				"text":     "重复只读调用已软收敛，运行继续",
+				"text":     "Repeated read-only calls were soft-converged; the run continues",
 				"toolName": state.ReadLoopToolName, "readCount": state.ReadLoopCount,
 			})
 		}
@@ -442,7 +442,7 @@ func (s *Service) advanceCloudAgentTool(run *model.CloudAgentExecution, state *c
 		return nil
 	}
 	if state.CallIndex < 0 || state.CallIndex >= len(state.Calls) {
-		return s.failCloudAgent(run, state, "Agent 工具调用状态无效，本轮已停止")
+		return s.failCloudAgent(run, state, "Invalid Agent tool call state; this run has stopped")
 	}
 	call := state.Calls[state.CallIndex]
 	call = s.cloudAgentRefreshStepSnapshotHash(run, state, call)
@@ -451,7 +451,7 @@ func (s *Service) advanceCloudAgentTool(run *model.CloudAgentExecution, state *c
 		return nil
 	}
 	if state.Approval != nil && state.Approval.Decision != "" && state.Approval.CallHash != "" && state.Approval.CallHash != cloudAgentApprovalCallHash(call) {
-		return s.terminateCloudAgent(run, "审批内容与待执行操作不一致，本轮已停止")
+		return s.terminateCloudAgent(run, "The approved content does not match the pending operation; this run has stopped")
 	}
 	allowed := cloudAgentToolAllowed(state.Request, call.Function.Name)
 	binding, _ := cloudAgentRegistry().Lookup(call.Function.Name)
@@ -465,7 +465,7 @@ func (s *Service) advanceCloudAgentTool(run *model.CloudAgentExecution, state *c
 		var mediaPreparation *creationTaskPreparation
 		policy, err := s.RuntimePolicy()
 		if err != nil {
-			return s.terminateCloudAgent(run, "Agent 运行策略不可用，本轮已停止")
+			return s.terminateCloudAgent(run, "The Agent run policy is unavailable; this run has stopped")
 		}
 		if cloudAgentMediaTool(call.Function.Name) {
 			mediaCall := cloudAgentMediaCall(call)
@@ -533,7 +533,7 @@ func (s *Service) advanceCloudAgentTool(run *model.CloudAgentExecution, state *c
 				}
 			} else {
 				if binding.Handler.Preview == nil {
-					return BadAuthRequest("工具缺少审批预演入口")
+					return BadAuthRequest("The tool has no approval preview entry point")
 				}
 				var mutationErr error
 				preview, mutationErr = binding.Handler.Preview(repo, run.UserID, state.Request.CanvasID, call)
@@ -581,7 +581,7 @@ func (s *Service) advanceCloudAgentTool(run *model.CloudAgentExecution, state *c
 	}
 	policy, err := s.RuntimePolicy()
 	if err != nil {
-		return s.terminateCloudAgent(run, "Agent 运行策略不可用，本轮已停止")
+		return s.terminateCloudAgent(run, "The Agent run policy is unavailable; this run has stopped")
 	}
 	// 看图的资源与能力校验在写事务外完成；真实图片只在模型任务执行时读取。
 	var inspectionResult any
@@ -623,9 +623,9 @@ func (s *Service) advanceCloudAgentTool(run *model.CloudAgentExecution, state *c
 			// 幻觉出来的工具名与"真被权限挡住"要分开反馈：前者模型根本不该发这个调用，
 			// 后者是授权边界问题。两者仍然一律拒绝，只是给模型的下一步更明确。
 			if !cloudAgentPlatformToolNames()[call.Function.Name] {
-				toolErr = BadAuthRequest("模型调用了不存在的工具「" + truncateRunes(call.Function.Name, 60) + "」，本轮已拒绝；请只使用本轮工具表里列出的工具")
+				toolErr = BadAuthRequest("The model called a tool that does not exist: \"" + truncateRunes(call.Function.Name, 60) + "\". It was rejected; use only the tools listed for this run")
 			} else {
-				toolErr = BadAuthRequest("工具未获本轮权限授权")
+				toolErr = BadAuthRequest("The tool is not authorized in this run")
 			}
 		case binding.Handler.Write != nil:
 			result, toolErr = binding.Handler.Write(repo, run.UserID, state.Request.CanvasID, call, policy, cloudAgentCanvasEventRecorder(run.ID, state))
@@ -658,11 +658,11 @@ func (s *Service) advanceCloudAgentTool(run *model.CloudAgentExecution, state *c
 		if errors.As(toolErr, &readLoopErr) {
 			cloudAgentRecordToolResult(current, state, call, map[string]any{
 				"readLoopGuard": true,
-				"message":       "重复只读调用已软收敛，请使用已有结果继续；运行仍可继续",
+				"message":       "Repeated read-only calls were soft-converged; continue with the existing results. The run can still continue",
 			}, nil)
 			cloudAgentMarkReadLoopNudge(state, call, readLoopErr.Count)
 			state.event(run.ID, "read_loop_guard", map[string]any{
-				"text":     "重复只读调用已软收敛，运行继续",
+				"text":     "Repeated read-only calls were soft-converged; the run continues",
 				"toolName": call.Function.Name, "readCount": readLoopErr.Count,
 			})
 			return cloudAgentSave(current, state)
@@ -687,7 +687,7 @@ func (s *Service) advanceCloudAgentTool(run *model.CloudAgentExecution, state *c
 		cloudAgentRecordToolResult(current, state, call, result, toolErr)
 		if state.ReadLoopNudge {
 			state.event(run.ID, "read_loop_guard", map[string]any{
-				"text":     "重复只读调用已软收敛，运行继续",
+				"text":     "Repeated read-only calls were soft-converged; the run continues",
 				"toolName": state.ReadLoopToolName, "readCount": state.ReadLoopCount,
 			})
 		}

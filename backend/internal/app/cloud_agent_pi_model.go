@@ -52,17 +52,17 @@ func (s *Service) validateCloudAgentPiModelRequest(userID, runID string, request
 		}
 	case "conversation":
 		if compactionSummary {
-			return false, errors.New("普通 Agent 模型请求不能携带压缩摘要上下文")
+			return false, errors.New("A regular Agent model request cannot carry a compaction summary context")
 		}
 	case "compaction":
 		if !compactionSummary {
-			return false, errors.New("压缩模型请求缺少压缩摘要系统提示")
+			return false, errors.New("The compaction model request is missing the compaction system prompt")
 		}
 	default:
-		return false, fmt.Errorf("未知的 Pi 模型请求 purpose: %s", purpose)
+		return false, fmt.Errorf("Unknown Pi model request purpose: %s", purpose)
 	}
 	if purpose == "compaction" && len(request.Tools) > 0 {
-		return false, errors.New("压缩模型请求不得携带 Agent 工具")
+		return false, errors.New("A compaction model request must not carry Agent tools")
 	}
 	if strings.TrimSpace(request.ModelID) == "" {
 		return compactionSummary, nil
@@ -77,7 +77,7 @@ func (s *Service) validateCloudAgentPiModelRequest(userID, runID string, request
 	}
 	expected := strings.TrimSpace(firstNonEmpty(state.Request.ChannelModelKey, state.Request.Model))
 	if expected != "" && request.ModelID != expected {
-		return false, fmt.Errorf("Pi 模型标识与运行配置不一致: got %q, want %q", request.ModelID, expected)
+		return false, fmt.Errorf("Pi model identifier does not match the run configuration: got %q, want %q", request.ModelID, expected)
 	}
 	return compactionSummary, nil
 }
@@ -170,7 +170,7 @@ const cloudAgentModelStepRetries = 3
 // errCloudAgentAwaitingApproval 运行正在等用户审批，本步模型请求被拒绝（未入队、未计费）。
 var errCloudAgentAwaitingApproval = errors.New("run is waiting for approval")
 
-// errCloudAgentTruncatedToolArguments 标记"模型返回的工具参数不是完整 JSON"：
+// errCloudAgentTruncatedToolArguments 标记"The tool arguments returned by the model are not complete JSON"：
 // 调用未执行，可以带纠偏上下文重做同一步。
 var errCloudAgentTruncatedToolArguments = errors.New("truncated tool arguments")
 
@@ -180,7 +180,7 @@ type cloudAgentPiOutputLimitError struct {
 }
 
 func (e *cloudAgentPiOutputLimitError) Error() string {
-	return "模型输出超出限制：" + e.Detail
+	return "The model output exceeds the limit: " + e.Detail
 }
 
 // runCloudAgentModelStep 调度并等待一次模型步骤；第二个返回值表示失败是否值得重试。
@@ -323,7 +323,7 @@ func (s *Service) runCloudAgentModelStep(ctx context.Context, userID, runID stri
 				// The CAS lost before the checkpoint was written. Preserve the
 				// one-shot guard for the retry so a conflict cannot reopen the loop.
 				state.ReadLoopNudge = true
-				state.ReadLoopToolName = firstNonEmpty(softReadToolName, "只读工具")
+				state.ReadLoopToolName = firstNonEmpty(softReadToolName, "read-only tools")
 				state.ReadLoopCount = max(1, softReadCount)
 			}
 			time.Sleep(time.Duration(attempt+1) * 20 * time.Millisecond)
@@ -392,7 +392,7 @@ func (s *Service) runCloudAgentModelStep(ctx context.Context, userID, runID stri
 			if structural {
 				return nil, false, fmt.Errorf("invalid Pi tool calls: %w", validateCloudAgentCalls(result.ToolCalls))
 			}
-			return nil, false, fmt.Errorf("invalid Pi tool calls: 模型连续 %d 批工具调用未通过参数校验", cloudAgentInvalidArgumentStepLimit)
+			return nil, false, fmt.Errorf("invalid Pi tool calls: %d consecutive batches of model tool calls failed argument validation", cloudAgentInvalidArgumentStepLimit)
 		}
 		if len(invalid) > 0 {
 			if err := s.finishCloudAgentPiModelStepWithInvalidCalls(userID, runID, task.ID, finishText, finishReasoning, result.ToolCalls, invalid); err != nil {
@@ -537,7 +537,7 @@ func (s *Service) cloudAgentModelTaskRetryable(taskID string) bool {
 	case status == 0:
 		// 没有上游响应：连接失败、重置、超时。
 		raw := strings.ToLower(task.Error)
-		return strings.Contains(raw, "timeout") || strings.Contains(raw, "deadline") || strings.Contains(raw, "connection") || strings.Contains(raw, "eof") || strings.Contains(task.Error, "超时")
+		return strings.Contains(raw, "timeout") || strings.Contains(raw, "deadline") || strings.Contains(raw, "connection") || strings.Contains(raw, "eof") || strings.Contains(raw, "timed out")
 	}
 	return false
 }
@@ -652,7 +652,7 @@ func (s *Service) finishCloudAgentPiModelStepWithInvalidCalls(userID, runID, tas
 					continue
 				}
 				receipt, _ := json.Marshal(map[string]any{
-					"error":           "该工具调用未通过参数校验：" + reason + "。本次调用没有执行，其余同批调用不受影响。",
+					"error":           "This tool call failed argument validation: " + reason + ". The call was not executed; other calls in the same batch are not affected.",
 					"errorClass":      cloudAgentToolErrorInvalidModelOutput,
 					"errorClassLabel": cloudAgentToolErrorLabel(cloudAgentToolErrorInvalidModelOutput),
 					"requiredAction":  "fix_arguments",
@@ -665,7 +665,7 @@ func (s *Service) finishCloudAgentPiModelStepWithInvalidCalls(userID, runID, tas
 			fresh.event(runID, "tool_arguments_rejected", map[string]any{
 				"toolNames": rejected, "attempt": fresh.InvalidArgumentSteps,
 				"maxAttempts": cloudAgentInvalidArgumentStepLimit,
-				"text":        "模型工具调用参数未通过校验，已回执要求修正后重试",
+				"text":        "Model tool call arguments failed validation; the receipt asks for a fix and retry",
 			})
 			return cloudAgentSave(current, &fresh)
 		})

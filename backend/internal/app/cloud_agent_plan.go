@@ -26,7 +26,7 @@ func cloudAgentPendingPlanItems(plan []cloudAgentPlanItem) []string {
 	return pending
 }
 
-const cloudAgentPlanBlockMarker = "\n\n## 本轮待办清单\n\n"
+const cloudAgentPlanBlockMarker = "\n\n## To-do list for this run\n\n"
 
 func stripCloudAgentPlanBlock(system string) string {
 	if i := strings.Index(system, cloudAgentPlanBlockMarker); i >= 0 {
@@ -122,8 +122,8 @@ func cloudAgentPlanApprovalPreview(call cloudAgentCall) (cloudAgentApprovalPrevi
 	}
 	return cloudAgentApprovalPreview{
 		Kind:        "plan",
-		Title:       "确认执行计划",
-		Description: fmt.Sprintf("Agent 把这轮任务拆成 %d 步。确认后才会开始执行；暂不执行则会让它改用别的做法。", len(items)),
+		Title:       "Confirm the plan",
+		Description: fmt.Sprintf("The Agent split this task into %d steps. It starts only after you confirm; declining makes it try another approach.", len(items)),
 		Items:       items,
 	}, true
 }
@@ -133,20 +133,20 @@ func cloudAgentApplyPlanUpdate(state *cloudAgentRuntime, call cloudAgentCall) (a
 		Items []cloudAgentPlanItem `json:"items"`
 	}
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
-		return nil, BadAuthRequest("工具参数必须是只含支持字段的JSON对象")
+		return nil, BadAuthRequest("Tool arguments must be a JSON object with only supported fields")
 	}
 	if len(args.Items) > 20 {
-		return nil, BadAuthRequest("待办清单最多 20 项")
+		return nil, BadAuthRequest("The to-do list can have at most 20 items")
 	}
 	seen := map[string]bool{}
 	for i := range args.Items {
 		args.Items[i].ID = strings.TrimSpace(args.Items[i].ID)
 		args.Items[i].Title = strings.TrimSpace(args.Items[i].Title)
 		if args.Items[i].ID == "" || args.Items[i].Title == "" {
-			return nil, BadAuthRequest("待办的 id 和 title 不能为空")
+			return nil, BadAuthRequest("To-do id and title must not be empty")
 		}
 		if seen[args.Items[i].ID] {
-			return nil, BadAuthRequest("待办 id 重复：" + args.Items[i].ID)
+			return nil, BadAuthRequest("Duplicate to-do id: " + args.Items[i].ID)
 		}
 		seen[args.Items[i].ID] = true
 		switch args.Items[i].Status {
@@ -227,11 +227,11 @@ func cloudAgentAskUser(call cloudAgentCall, states ...*cloudAgentRuntime) (any, 
 		MaxRounds     int   `json:"maxRounds"`
 	}
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
-		return nil, BadAuthRequest("工具参数必须是只含支持字段的JSON对象")
+		return nil, BadAuthRequest("Tool arguments must be a JSON object with only supported fields")
 	}
 	question := strings.TrimSpace(args.Question)
 	if question == "" {
-		return nil, BadAuthRequest("ask_user 必须给出 question：把要用户拍板的那一个问题一句话写清")
+		return nil, BadAuthRequest("ask_user needs a question: state in one sentence the single decision the user must make")
 	}
 	options := make([]map[string]any, 0, len(args.Options))
 	for _, option := range args.Options {
@@ -298,10 +298,10 @@ func cloudAgentAskUser(call cloudAgentCall, states ...*cloudAgentRuntime) (any, 
 		fields = fields[:6]
 	}
 	if len(fields) > 0 && len(options) > 0 {
-		return nil, BadAuthRequest("ask_user 的 options 与 fields 只能二选一；多个参数请只使用 fields")
+		return nil, BadAuthRequest("ask_user takes either options or fields, not both; use only fields for several parameters")
 	}
 	if len(fields) == 0 && len(options) < 2 {
-		return nil, BadAuthRequest("ask_user 必须提供动态表单字段，或至少 2 个候选项；若你自己能定，直接做完继续，不要问")
+		return nil, BadAuthRequest("ask_user needs dynamic form fields or at least 2 options; if you can decide yourself, just carry on without asking")
 	}
 	allowFreeform := true
 	if args.AllowFreeform != nil {
@@ -337,7 +337,7 @@ func cloudAgentAskUser(call cloudAgentCall, states ...*cloudAgentRuntime) (any, 
 		if currentRound > maxRounds {
 			payload["reason"] = "confirmation_round_limit"
 		}
-		payload["text"] = "确认次数已达到上限或确认点已重复。请使用安全默认方案继续，不要再次询问；最终回复中列出采用的默认假设。"
+		payload["text"] = "The confirmation limit was reached or the question repeats. Continue with safe defaults without asking again, and list the assumed defaults in the final reply."
 		if state != nil {
 			state.PendingConfirmationFingerprint = ""
 		}
@@ -357,7 +357,7 @@ func cloudAgentAskUser(call cloudAgentCall, states ...*cloudAgentRuntime) (any, 
 // 的兜底 flush，少了这一步缓冲的图片会被丢掉。
 func skipRemainingCloudAgentCalls(runID string, state *cloudAgentRuntime) {
 	for index := state.CallIndex + 1; index < len(state.Calls); index++ {
-		cloudAgentToolResult(runID, state, state.Calls[index], map[string]any{"skipped": true}, BadAuthRequest("本轮已结束（等待用户决定），该调用未执行"))
+		cloudAgentToolResult(runID, state, state.Calls[index], map[string]any{"skipped": true}, BadAuthRequest("This run has ended (waiting for the user's decision); the call was not executed"))
 	}
 	cloudAgentFlushPendingImages(state)
 }

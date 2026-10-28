@@ -18,7 +18,7 @@ func cloudAgentHandleModelList(repo *repository.Repository, userID string, state
 		service = services[0]
 	}
 	if service == nil {
-		return nil, BadAuthRequest("模型目录服务不可用")
+		return nil, BadAuthRequest("The model catalog service is unavailable")
 	}
 	intent, err := service.cloudAgentModelIntent(userID, state.Request.CanvasID, call.Function.Arguments)
 	if err != nil {
@@ -33,13 +33,13 @@ func cloudAgentHandleAgentProfileRead(repo *repository.Repository, userID string
 		return nil, cloudAgentJSONArgumentError(err)
 	}
 	if args.Scope != model.AgentProfileScopeUser && args.Scope != model.AgentProfileScopeProject && args.Scope != model.AgentProfileScopeCanvas {
-		return nil, BadAuthRequest("长期偏好作用域无效")
+		return nil, BadAuthRequest("Invalid long-term preference scope")
 	}
 	if state.ProfileReads == nil {
 		state.ProfileReads = map[string]bool{}
 	}
 	if state.ProfileReads[args.Scope] {
-		return nil, BadAuthRequest("本轮已读取该长期偏好层，请使用历史工具结果，不要重复读取")
+		return nil, BadAuthRequest("This preference layer was already read in this run; use the earlier tool result instead of reading it again")
 	}
 	available := make([]string, 0, len(state.Profile.Layers))
 	for _, layer := range state.Profile.Layers {
@@ -50,9 +50,9 @@ func cloudAgentHandleAgentProfileRead(repo *repository.Repository, userID string
 		}
 	}
 	if len(available) == 0 {
-		return nil, BadAuthRequest("本轮没有长期偏好层，不要调用 agent_profile_read")
+		return nil, BadAuthRequest("This run has no long-term preference layers; do not call agent_profile_read")
 	}
-	return nil, BadAuthRequest("本轮固定快照中不存在该长期偏好层；本轮可读的层只有：" + strings.Join(available, "、") + "。不要再尝试其它层")
+	return nil, BadAuthRequest("This preference layer is not in this run's fixed snapshot; the only readable layers are: " + strings.Join(available, "、") + ". Do not try other layers")
 }
 
 func cloudAgentHandlePlanUpdate(repo *repository.Repository, userID string, state *cloudAgentRuntime, call cloudAgentCall, services ...*Service) (any, error) {
@@ -99,29 +99,29 @@ func cloudAgentHandleCanvasGetState(repo *repository.Repository, userID string, 
 		depth = 1
 	}
 	if args.Offset < 0 || args.ConnectionOffset < 0 || args.StoryboardOffset < 0 {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("画布读取参数无效：offset、connectionOffset、storyboardOffset 必须是非负整数")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid canvas read arguments: offset, connectionOffset and storyboardOffset must be non-negative integers")}
 	}
 	if len(args.NodeIDs) > 8 {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("画布读取参数无效：nodeIds 最多包含8个节点ID")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid canvas read arguments: nodeIds can hold at most 8 node IDs")}
 	}
 	if len(args.FocusNodeIDs) > 8 {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("画布读取参数无效：focusNodeIds 最多包含8个节点ID")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid canvas read arguments: focusNodeIds can hold at most 8 node IDs")}
 	}
 	if len(args.NodeIDs) > 0 && len(args.FocusNodeIDs) > 0 {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("画布读取参数无效：nodeIds 与 focusNodeIds 互斥")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid canvas read arguments: nodeIds and focusNodeIds are mutually exclusive")}
 	}
 	if depth < 0 || depth > 3 {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("画布读取参数无效：depth 必须为0到3")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid canvas read arguments: depth must be 0 to 3")}
 	}
 	if len(args.FocusNodeIDs) == 0 && args.Depth != nil {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("画布读取参数无效：depth 只能与 focusNodeIds 一起使用")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid canvas read arguments: depth can only be used with focusNodeIds")}
 	}
 	includeRelated := args.IncludeRelated != nil && *args.IncludeRelated
 	if includeRelated && len(args.FocusNodeIDs) == 0 {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("画布读取参数无效：includeRelated 只能与 focusNodeIds 一起使用")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid canvas read arguments: includeRelated can only be used with focusNodeIds")}
 	}
 	if includeRelated && args.Depth != nil {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("画布读取参数无效：includeRelated 与 depth 不能同时使用")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid canvas read arguments: includeRelated and depth cannot be used together")}
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, state.Request.CanvasID)
 	if err != nil {
@@ -149,14 +149,14 @@ func cloudAgentHandleCanvasReadText(repo *repository.Repository, userID string, 
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
 		return nil, cloudAgentJSONArgumentError(err)
 	}
-	if err := validateCloudAgentID(args.NodeID, "文本节点ID", 80); err != nil || args.Offset < 0 {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("文本节点ID或分页参数无效")}
+	if err := validateCloudAgentID(args.NodeID, "Text node ID", 80); err != nil || args.Offset < 0 {
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid text node ID or paging arguments")}
 	}
 	if args.MaxChars == 0 {
 		args.MaxChars = 16000
 	}
 	if args.MaxChars < 1 || args.MaxChars > 16000 {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("maxChars 必须在1到16000之间")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("maxChars must be between 1 and 16000")}
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, state.Request.CanvasID)
 	if err != nil {
@@ -172,15 +172,15 @@ func cloudAgentHandleCanvasReadText(repo *repository.Repository, userID string, 
 	}
 	node := nodes[args.NodeID]
 	if node == nil {
-		return nil, BadAuthRequest("目标文本节点不在当前画布")
+		return nil, BadAuthRequest("The target text node is not on this canvas")
 	}
 	kind := stringValue(node["type"])
 	meta, _ := node["metadata"].(map[string]any)
 	if kind != "text" && kind != "markdown" && kind != "file" {
-		return nil, BadAuthRequest("目标节点不是可读取的文本或文件节点")
+		return nil, BadAuthRequest("The target node is not a readable text or file node")
 	}
 	if stringValue(meta["workflowKind"]) == "character" {
-		return nil, BadAuthRequest("角色卡正文不是普通文本，请读取 character 字段")
+		return nil, BadAuthRequest("A character card body is not plain text; read the character field")
 	}
 	content := stringValue(meta["content"])
 	resourceID := assets.ResourceID(stringValue(meta["storageKey"]))
@@ -189,21 +189,21 @@ func cloudAgentHandleCanvasReadText(repo *repository.Repository, userID string, 
 	}
 	if resourceID != "" {
 		if service == nil {
-			return nil, BadAuthRequest("文本资源读取服务不可用")
+			return nil, BadAuthRequest("The text resource reader is unavailable")
 		}
 		resource, resourceErr := repo.ResourceForUser(userID, resourceID)
 		if resourceErr != nil {
 			return nil, resourceErr
 		}
 		if resource.Status != model.ResourceStatusReady {
-			return nil, BadAuthRequest("文本资源尚未上传完成")
+			return nil, BadAuthRequest("The text resource has not finished uploading")
 		}
 		if !isReadableTextResource(resource) {
-			return nil, BadAuthRequest("该文件不是可直接读取的文本资源")
+			return nil, BadAuthRequest("This file is not a directly readable text resource")
 		}
 		const maxTextResourceBytes = 32 << 20
 		if resource.Size > maxTextResourceBytes {
-			return nil, BadAuthRequest("文本资源超过32MB，请先拆分文件后再读取")
+			return nil, BadAuthRequest("The text resource exceeds 32MB; split the file before reading it")
 		}
 		stream, streamErr := service.OpenResourceRange(userID, resourceID, "")
 		if streamErr != nil {
@@ -215,7 +215,7 @@ func cloudAgentHandleCanvasReadText(repo *repository.Repository, userID string, 
 			return nil, readErr
 		}
 		if len(body) > maxTextResourceBytes {
-			return nil, BadAuthRequest("文本资源超过32MB，请先拆分文件后再读取")
+			return nil, BadAuthRequest("The text resource exceeds 32MB; split the file before reading it")
 		}
 		content = string(body)
 	}
@@ -224,7 +224,7 @@ func cloudAgentHandleCanvasReadText(repo *repository.Repository, userID string, 
 	}
 	runes := []rune(content)
 	if args.Offset > len(runes) {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("文本读取 offset 超出正文长度")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("The text read offset is beyond the end of the body")}
 	}
 	end := min(len(runes), args.Offset+args.MaxChars)
 	chunk := string(runes[args.Offset:end])
@@ -240,8 +240,8 @@ func cloudAgentHandleCanvasReadStoryboard(repo *repository.Repository, userID st
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
 		return nil, cloudAgentJSONArgumentError(err)
 	}
-	if err := validateCloudAgentID(args.NodeID, "分镜节点ID", 80); err != nil || args.Offset < 0 {
-		return nil, BadAuthRequest("分镜节点ID或分页参数无效")
+	if err := validateCloudAgentID(args.NodeID, "Storyboard node ID", 80); err != nil || args.Offset < 0 {
+		return nil, BadAuthRequest("Invalid storyboard node ID or paging arguments")
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, state.Request.CanvasID)
 	if err != nil {
@@ -266,8 +266,8 @@ func cloudAgentHandleCanvasReadBatchTable(repo *repository.Repository, userID st
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
 		return nil, cloudAgentJSONArgumentError(err)
 	}
-	if err := validateCloudAgentID(args.NodeID, "批量创作表节点ID", 80); err != nil || args.Offset < 0 {
-		return nil, BadAuthRequest("批量创作表节点ID或分页参数无效")
+	if err := validateCloudAgentID(args.NodeID, "Batch table node ID", 80); err != nil || args.Offset < 0 {
+		return nil, BadAuthRequest("Invalid batch table node ID or paging arguments")
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, state.Request.CanvasID)
 	if err != nil {
@@ -292,7 +292,7 @@ func cloudAgentHandleImageTextDetect(repo *repository.Repository, userID string,
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
 		return nil, cloudAgentJSONArgumentError(err)
 	}
-	if err := validateCloudAgentID(args.NodeID, "图片节点ID", 80); err != nil {
+	if err := validateCloudAgentID(args.NodeID, "Image node ID", 80); err != nil {
 		return nil, err
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, state.Request.CanvasID)
@@ -309,18 +309,18 @@ func cloudAgentHandleImageTextDetect(repo *repository.Repository, userID string,
 	}
 	node := nodes[args.NodeID]
 	if node == nil || stringValue(node["type"]) != "image" {
-		return nil, BadAuthRequest("目标节点不是图片节点")
+		return nil, BadAuthRequest("The target node is not an image node")
 	}
 	ref, _, err := cloudAgentReference(repo, userID, node)
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"nodeId": args.NodeID, "reference": ref, "status": "ready_for_visual_detection", "outputSchema": []string{"original", "text", "location"}, "nextStep": "使用视觉模型对该参考图返回 JSON 数组；不要把识别结果写回画布"}, nil
+	return map[string]any{"nodeId": args.NodeID, "reference": ref, "status": "ready_for_visual_detection", "outputSchema": []string{"original", "text", "location"}, "nextStep": "Use the vision model to return a JSON array for this reference image; do not write the recognition result back to the canvas"}, nil
 }
 
 func cloudAgentHandleImageAnnotationRender(repo *repository.Repository, userID string, state *cloudAgentRuntime, call cloudAgentCall, services ...*Service) (any, error) {
 	if len(services) == 0 || services[0] == nil {
-		return nil, BadAuthRequest("标注资源存储不可用")
+		return nil, BadAuthRequest("Annotation resource storage is unavailable")
 	}
 	return cloudAgentRenderImageAnnotations(repo, userID, state, call, services[0])
 }
@@ -349,12 +349,12 @@ func cloudAgentHandleSkillReadFile(repo *repository.Repository, userID string, s
 		return nil, cloudAgentJSONArgumentError(err)
 	}
 	if args.Offset < 0 || (args.Path == "" && args.Offset != 0) {
-		return nil, BadAuthRequest("技能读取偏移无效")
+		return nil, BadAuthRequest("Invalid skill read offset")
 	}
 	for _, skill := range state.Skills {
 		if skill.ID == args.SkillID {
 			if args.Path == "" {
-				return map[string]any{"version": skill.Version, "entryPath": cloudAgentSkillEntryPath, "files": cloudAgentSkillPaths(skill), "guidance": "先读取 SKILL.md，再只读取入口明确引用且当前任务需要的参考文件。只能读取 files 中列出的路径；不要重复列目录或猜测路径"}, nil
+				return map[string]any{"version": skill.Version, "entryPath": cloudAgentSkillEntryPath, "files": cloudAgentSkillPaths(skill), "guidance": "Read SKILL.md first, then only the reference files the entry point explicitly references and this task needs. Only paths listed in files can be read; do not list directories again or guess paths"}, nil
 			}
 			if service != nil {
 				detail, err := service.SkillDetail(userID, skill.ID)
@@ -362,27 +362,27 @@ func cloudAgentHandleSkillReadFile(repo *repository.Repository, userID string, s
 					return nil, err
 				}
 				if !detail.IsAdded || detail.Status != 1 || detail.VersionID != skill.Version || detail.ContentHash != skill.Hash {
-					return nil, creationConflict("技能已更新或不可用，请重试")
+					return nil, creationConflict("The skill was updated or is unavailable; retry")
 				}
 				if args.Path == cloudAgentSkillEntryPath {
 					return cloudAgentSkillPage(skill.Version, args.Path, detail.Instruction, args.Offset)
 				}
 				if _, ok := skill.Files[args.Path]; !ok {
-					return nil, BadAuthRequest("参考文件未包含在本轮固定快照中")
+					return nil, BadAuthRequest("The reference file is not in this run's fixed snapshot")
 				}
 				file, err := service.SkillPackageFile(userID, skill.ID, args.Path)
 				if err != nil {
 					return nil, err
 				}
 				if file.Binary {
-					return nil, BadAuthRequest("不支持读取二进制技能文件")
+					return nil, BadAuthRequest("Binary skill files cannot be read")
 				}
 				latest, err := service.SkillDetail(userID, skill.ID)
 				if err != nil {
 					return nil, err
 				}
 				if !latest.IsAdded || latest.Status != 1 || latest.VersionID != skill.Version || latest.ContentHash != skill.Hash {
-					return nil, creationConflict("技能已更新或不可用，请重试")
+					return nil, creationConflict("The skill was updated or is unavailable; retry")
 				}
 				return cloudAgentSkillPage(skill.Version, args.Path, file.Content, args.Offset)
 			}
@@ -392,10 +392,10 @@ func cloudAgentHandleSkillReadFile(repo *repository.Repository, userID string, s
 			if content, ok := skill.Files[args.Path]; ok && content != "" {
 				return map[string]any{"version": skill.Version, "path": args.Path, "content": content}, nil
 			}
-			return nil, BadAuthRequest(fmt.Sprintf("参考文件未包含在本轮固定快照中；可读路径：%s。不要重试此路径", strings.Join(cloudAgentSkillPaths(skill), ", ")))
+			return nil, BadAuthRequest(fmt.Sprintf("The reference file is not in this run's fixed snapshot; readable paths: %s. Do not retry this path", strings.Join(cloudAgentSkillPaths(skill), ", ")))
 		}
 	}
-	return nil, BadAuthRequest("技能未在本轮启用，或参考文件未包含在固定快照中")
+	return nil, BadAuthRequest("The skill is not enabled in this run, or the reference file is not in the fixed snapshot")
 }
 
 func cloudAgentHandleTaskGet(repo *repository.Repository, userID string, state *cloudAgentRuntime, call cloudAgentCall, services ...*Service) (any, error) {
@@ -408,7 +408,7 @@ func cloudAgentHandleTaskGet(repo *repository.Repository, userID string, state *
 		return nil, err
 	}
 	if task.ProjectID != state.Request.CanvasID {
-		return nil, BadAuthRequest("不能读取其他画布的任务")
+		return nil, BadAuthRequest("Tasks of other canvases cannot be read")
 	}
 	result := cloudAgentTaskDiagnostic(repo, task)
 	result["status"] = task.Status

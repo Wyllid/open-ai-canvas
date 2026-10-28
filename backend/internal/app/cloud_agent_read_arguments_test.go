@@ -13,21 +13,21 @@ func TestCloudAgentReadArgumentsRejectBeforeReadingCanvas(t *testing.T) {
 	for _, tt := range []struct {
 		name, arguments, message string
 	}{
-		{"unknown field", `{"limit":40}`, "不支持的字段"},
-		{"wrong canvas", `{"canvasId":"other-canvas"}`, "不支持的字段"},
-		{"string offset", `{"offset":"0"}`, "字段类型不匹配"},
-		{"fractional offset", `{"offset":0.5}`, "字段类型不匹配"},
-		{"string nodeIds", `{"nodeIds":"node-1"}`, "字段类型不匹配"},
-		{"numeric nodeId", `{"nodeIds":[1]}`, "字段类型不匹配"},
-		{"empty", ``, "单个 JSON 对象"},
-		{"null", `null`, "单个 JSON 对象"},
-		{"array", `[]`, "单个 JSON 对象"},
-		{"encoded object", `"{}"`, "单个 JSON 对象"},
-		{"trailing object", `{} {}`, "单个 JSON 对象"},
-		{"incomplete", `{"offset":`, "JSON 格式无效"},
-		{"negative offset", `{"offset":-1}`, "非负整数"},
-		{"negative storyboard offset", `{"storyboardOffset":-1}`, "非负整数"},
-		{"too many nodes", `{"nodeIds":["1","2","3","4","5","6","7","8","9"]}`, "最多包含8个"},
+		{"unknown field", `{"limit":40}`, "unsupported fields"},
+		{"wrong canvas", `{"canvasId":"other-canvas"}`, "unsupported fields"},
+		{"string offset", `{"offset":"0"}`, "field types do not match"},
+		{"fractional offset", `{"offset":0.5}`, "field types do not match"},
+		{"string nodeIds", `{"nodeIds":"node-1"}`, "field types do not match"},
+		{"numeric nodeId", `{"nodeIds":[1]}`, "field types do not match"},
+		{"empty", ``, "single JSON object"},
+		{"null", `null`, "single JSON object"},
+		{"array", `[]`, "single JSON object"},
+		{"encoded object", `"{}"`, "single JSON object"},
+		{"trailing object", `{} {}`, "single JSON object"},
+		{"incomplete", `{"offset":`, "JSON is malformed"},
+		{"negative offset", `{"offset":-1}`, "non-negative integers"},
+		{"negative storyboard offset", `{"storyboardOffset":-1}`, "non-negative integers"},
+		{"too many nodes", `{"nodeIds":["1","2","3","4","5","6","7","8","9"]}`, "at most 8 node IDs"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			call := cloudAgentCall{ID: "read-1"}

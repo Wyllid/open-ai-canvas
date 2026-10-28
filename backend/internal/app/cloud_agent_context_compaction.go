@@ -268,16 +268,16 @@ func cloudAgentFallbackCheckpoint(state *cloudAgentRuntime) agentcontext.Checkpo
 	checkpoint.HistorySummary = truncateRunes(strings.TrimSpace(checkpoint.HistorySummary+"\n"+currentHistory), 10000)
 	checkpoint.ScriptDesign = truncateRunes(strings.TrimSpace(checkpoint.ScriptDesign+"\n"+state.CreativeAnchor.UserPrompt+"\n"+currentHistory), 10000)
 	checkpoint.CurrentWork = truncateRunes(state.Request.Prompt, 3000)
-	checkpoint.NextStep = "继续当前工作；执行前重新读取画布和任务状态，并优先处理未完成任务。"
+	checkpoint.NextStep = "Continue the current work; read the canvas and task status again before acting, and handle unfinished tasks first."
 	// 锚点不再携带权限与"可自行决定"清单（用户消息定义目标），这里只把跨步必须记住的
 	// 视觉事实带进摘要：否则压缩后模型会重新声称"没有视觉识别证据"并重复看图。
 	for _, asset := range state.CreativeAnchor.ReferenceAssets {
 		if asset.VisualIdentity != "inspected" {
 			continue
 		}
-		checkpoint.Decisions = append(checkpoint.Decisions, fmt.Sprintf("已查看过画面 %s（%s），无需重复看图", asset.NodeID, asset.Type))
+		checkpoint.Decisions = append(checkpoint.Decisions, fmt.Sprintf("Image %s (%s) was already viewed; no need to view it again", asset.NodeID, asset.Type))
 	}
-	checkpoint.Constraints = append(checkpoint.Constraints, fmt.Sprintf("权限模式：%s", state.Request.PermissionMode))
+	checkpoint.Constraints = append(checkpoint.Constraints, fmt.Sprintf("Permission mode: %s", state.Request.PermissionMode))
 	for _, layer := range state.Profile.Layers {
 		if content := strings.TrimSpace(layer.Content); content != "" {
 			checkpoint.UserPreferences = append(checkpoint.UserPreferences, layer.Scope+": "+truncateRunes(content, 2400))
@@ -401,7 +401,7 @@ func (s *Service) enqueueCloudAgentContextCompaction(run *model.CloudAgentExecut
 	prompt := cloudAgentContextCompactionPrompt(state)
 	input := map[string]any{
 		"mode": "text", "prompt": prompt,
-		"config":      map[string]any{"channelId": state.Request.ChannelID, "channelModelKey": state.Request.ChannelModelKey, "model": firstNonEmpty(state.Request.ChannelModelKey, state.Request.Model), "systemPrompt": "只执行服务端上下文压缩合同。不要调用工具，不要生成面向用户的回复。"},
+		"config":      map[string]any{"channelId": state.Request.ChannelID, "channelModelKey": state.Request.ChannelModelKey, "model": firstNonEmpty(state.Request.ChannelModelKey, state.Request.Model), "systemPrompt": "Only carry out the server context compaction contract. Do not call tools and do not write a reply for the user."},
 		"textOptions": map[string]any{"stream": false, "thinking": false},
 	}
 	req := CreateTaskRequest{ProjectID: state.Request.CanvasID, Type: "canvas_text", Operation: cloudAgentContextCompactionOperation, Prompt: prompt, Model: state.Request.Model, LogicalModelID: state.Request.LogicalModelID, Input: input}
@@ -415,7 +415,7 @@ func (s *Service) advanceCloudAgentContextCompaction(run *model.CloudAgentExecut
 		return nil
 	}
 	checkpoint := cloudAgentFallbackCheckpoint(state)
-	mode, reason := "fallback", "压缩模型任务未成功，已使用服务端保底检查点"
+	mode, reason := "fallback", "The compaction model task did not succeed; the server fallback checkpoint was used"
 	if task.Status == model.TaskStatusSucceeded {
 		var result struct {
 			Text string `json:"text"`
@@ -428,10 +428,10 @@ func (s *Service) advanceCloudAgentContextCompaction(run *model.CloudAgentExecut
 				parsed.PendingTasks = checkpoint.PendingTasks
 				checkpoint, mode, reason = parsed, "model", ""
 			} else {
-				reason = "压缩模型输出不符合检查点合同，已使用服务端保底检查点"
+				reason = "The compaction model output does not match the checkpoint contract; the server fallback checkpoint was used"
 			}
 		} else {
-			reason = "压缩模型结果损坏，已使用服务端保底检查点"
+			reason = "The compaction model result is corrupted; the server fallback checkpoint was used"
 		}
 	}
 	if state.ContextCompaction != nil {

@@ -25,17 +25,17 @@ func (s *Service) handlePiToolValidationFailure(userID, runID string, data map[s
 				return nil
 			}
 			if state.CallIndex < 0 || state.CallIndex >= len(state.Calls) {
-				return fmt.Errorf("工具调用 %q 没有对应的模型工具调用", callID)
+				return fmt.Errorf("Tool call %q has no matching model tool call", callID)
 			}
 			call := state.Calls[state.CallIndex]
 			if call.ID != callID || call.Function.Name != toolName {
-				return fmt.Errorf("工具调用 %q 与模型声明的工具调用不一致", callID)
+				return fmt.Errorf("Tool call %q does not match the tool call declared by the model", callID)
 			}
 			result := map[string]any{
 				"phase": "validation", "taskSubmitted": false,
 				"validationError": stringField(data, "error"),
 			}
-			argumentErr := &cloudAgentArgumentError{BadAuthRequest("工具参数不符合声明，本次调用未执行；请按返回的 parameters 修正参数")}
+			argumentErr := &cloudAgentArgumentError{BadAuthRequest("The tool arguments do not match the declaration and the call was not executed; fix them according to the returned parameters")}
 			cloudAgentRecordToolResult(current, &state, call, result, argumentErr)
 			return cloudAgentSave(current, &state)
 		})
