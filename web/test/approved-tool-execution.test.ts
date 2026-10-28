@@ -130,7 +130,7 @@ test("并行阶段报价失败会停止其他等待中的阶段，不永久挂�
     } finally { h.execution.dispose(); }
 });
 
-test("刷新费用卡后旧按钮不能批准新报价", async () => {
+test("刷新确认卡后旧按钮不能批准新的生成内容", async () => {
     const h = harness();
     try {
         const result = h.execution.execute(request("analyze_art_scene"));
@@ -138,7 +138,7 @@ test("刷新费用卡后旧按钮不能批准新报价", async () => {
         await h.execution.refresh();
         expect(h.view().quote?.items[0]?.label).toBe("理解画面");
         await h.execution.approve(shown.quote!.items.map((item) => item.id));
-        expect(h.executions).toEqual([]); expect(h.view().error).toContain("报价已变化");
+        expect(h.executions).toEqual([]); expect(h.view().error).toContain("生成内容已变化");
         await h.execution.approve(h.view().quote!.items.map((item) => item.id)); await result;
         expect(h.approvals).toEqual([["fresh-1"]]);
     } finally { h.execution.dispose(); }

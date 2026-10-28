@@ -159,7 +159,6 @@ export function CanvasNodeLayerDecompositionDialog({
                             value={plannerModel}
                             capability="text"
                             fullWidth
-                            showSelectedPrice
                             placeholder="选择视觉规划模型"
                             modelFilter={(model) => !imageLayerPlannerError(config, model)}
                             onMissingConfig={() => navigateToSettings({ continueCreation: true })}
@@ -178,7 +177,6 @@ export function CanvasNodeLayerDecompositionDialog({
                             value={selectedModel}
                             capability="image"
                             fullWidth
-                            showSelectedPrice
                             placeholder="选择图层拆分模型"
                             modelFilter={(model) => supportsLayerDecomposition(config, model) || supportsExperimentalLayerExtraction(config, model)}
                             onMissingConfig={() => navigateToSettings({ continueCreation: true })}

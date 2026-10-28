@@ -1,4 +1,4 @@
-import { App, Button, Checkbox, Input, InputNumber, Spin } from "antd";
+import { App, Button, Checkbox, Input, Spin } from "antd";
 import { ArrowLeft, Check, ExternalLink, Gift, RefreshCw, Search, SlidersHorizontal, TriangleAlert } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -14,7 +14,7 @@ import {
     type ProviderCatalogView,
 } from "@/services/api/provider-catalog";
 import type { ModelChannel } from "@/stores/use-config-store";
-import { formatCredits, formatWindow, promotionExpiry, matchesProvider, tierPriceLines, tierSpecLabel, validMarkup } from "./provider-catalog-pricing";
+import { formatWindow, promotionExpiry, matchesProvider, tierSpecLabel } from "./provider-catalog-helpers";
 import "./provider-catalog-wizard.css";
 
 type Step = "pick" | "connect" | "pricing";
@@ -23,7 +23,7 @@ const capabilityLabels: Record<ProviderCatalogModel["capability"], string> = { t
 const stepLabels: Array<{ key: Step; label: string }> = [
     { key: "pick", label: "选择服务商" },
     { key: "connect", label: "填写 Key" },
-    { key: "pricing", label: "模型与定价" },
+    { key: "pricing", label: "选择模型" },
 ];
 
 type Props = {
@@ -47,8 +47,6 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
     const [verifying, setVerifying] = useState(false);
     const [verifyError, setVerifyError] = useState("");
     const [verified, setVerified] = useState<ProviderCatalogVerifyResult | null>(null);
-    const [markup, setMarkup] = useState<number | null>(30);
-    const [overrides, setOverrides] = useState<Record<string, number | null>>({});
     const [selected, setSelected] = useState<Record<string, boolean>>({});
     const [installing, setInstalling] = useState(false);
 
@@ -83,7 +81,6 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
         setApiKey("");
         setVerified(null);
         setVerifyError("");
-        setOverrides({});
         setSelected(Object.fromEntries(next.models.map((item) => [item.modelKey, item.supported])));
         setStep("connect");
     };
@@ -123,18 +120,16 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
     };
 
     const chosenModels = provider ? provider.models.filter((item) => selected[item.modelKey]) : [];
-    const overridesValid = chosenModels.every((item) => overrides[item.modelKey] === undefined || overrides[item.modelKey] === null || validMarkup(overrides[item.modelKey]));
-    const canInstall = Boolean(provider && chosenModels.length && validMarkup(markup) && overridesValid && name.trim() && apiKey.trim());
+    const canInstall = Boolean(provider && chosenModels.length && name.trim() && apiKey.trim());
 
     const install = async () => {
-        if (!provider || !canInstall || markup === null) return;
+        if (!provider || !canInstall) return;
         setInstalling(true);
         try {
             const { channel } = await installProviderCatalog(provider.id, {
                 name: name.trim(),
                 apiKey: apiKey.trim(),
-                markupPercent: markup,
-                models: chosenModels.map((item) => ({ modelKey: item.modelKey, markupPercent: overrides[item.modelKey] ?? null })),
+                models: chosenModels.map((item) => ({ modelKey: item.modelKey })),
                 // 跳过验证时先停用，避免未确认可用的渠道进入线上路由。
                 enabled: verified !== null,
             });
@@ -364,11 +359,6 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
         return (
             <div className="pcw-body">
                 <div className="pcw-pricing-bar">
-                    <label className="pcw-markup">
-                        <span>统一加价</span>
-                        <InputNumber aria-label="统一加价率" value={markup} min={0} max={1000} step={5} precision={2} suffix="%" status={validMarkup(markup) ? undefined : "error"} onChange={(value) => setMarkup(value)} />
-                    </label>
-                    <span className="pcw-formula">售价 = 成本 × (1 + 加价率) · 1 元 = 1 积分</span>
                     {verified ? (
                         <span className="pcw-verified">
                             <Check className="size-3.5" /> 连接成功 · 上游可用 {verified.availableModels.length}/{current.models.length} 个推荐模型
@@ -382,8 +372,6 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                         {current.models.map((item) => {
                             const missing = verified?.missingModels.includes(item.modelKey);
                             const disabledReason = !item.supported ? item.unsupportedReason || "当前版本不支持" : missing ? "上游未返回该模型" : "";
-                            const override = overrides[item.modelKey];
-                            const effective = override ?? markup ?? 0;
                             const checked = Boolean(selected[item.modelKey]);
                             return (
                                 <li key={item.modelKey} className="pcw-model" data-disabled={Boolean(disabledReason) || undefined} data-checked={checked || undefined}>
@@ -396,47 +384,23 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                                         </span>
                                         <code className="pcw-model-key">{item.providerModelKey}</code>
                                         <span className="flex-1" />
-                                        {disabledReason ? (
-                                            <span className="pcw-model-reason">{disabledReason}</span>
-                                        ) : (
-                                            <label className="pcw-override">
-                                                <span>加价</span>
-                                                <InputNumber
-                                                    size="small"
-                                                    aria-label={`${item.displayName} 单独加价率`}
-                                                    value={override ?? null}
-                                                    placeholder={markup === null ? "" : String(markup)}
-                                                    min={0}
-                                                    max={1000}
-                                                    precision={2}
-                                                    suffix="%"
-                                                    disabled={!checked}
-                                                    onChange={(value) => setOverrides((state) => ({ ...state, [item.modelKey]: value }))}
-                                                />
-                                            </label>
-                                        )}
+                                        {disabledReason ? <span className="pcw-model-reason">{disabledReason}</span> : null}
                                     </div>
                                     {item.description ? <p className="pcw-model-desc">{item.description}</p> : null}
                                     <table className="pcw-tiers">
                                         <thead>
                                             <tr>
                                                 <th scope="col">规格</th>
-                                                <th scope="col">计价</th>
-                                                <th scope="col">成本（积分）</th>
-                                                <th scope="col">售价（积分）</th>
+                                                <th scope="col">上游模型 ID</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {item.priceTiers.flatMap((tier, tierIndex) =>
-                                                tierPriceLines(item.capability, tier, effective).map((line, lineIndex) => (
-                                                    <tr key={`${tierIndex}-${lineIndex}`}>
-                                                        <td>{lineIndex === 0 ? tierSpecLabel(tier) : ""}</td>
-                                                        <td>{line.label}</td>
-                                                        <td>{formatCredits(line.cost)}</td>
-                                                        <td className="pcw-sale">{formatCredits(line.sale)}</td>
-                                                    </tr>
-                                                )),
-                                            )}
+                                            {item.priceTiers.map((tier, tierIndex) => (
+                                                <tr key={tierIndex}>
+                                                    <td>{tierSpecLabel(tier)}</td>
+                                                    <td>{tier.providerModelKey || item.providerModelKey}</td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </li>

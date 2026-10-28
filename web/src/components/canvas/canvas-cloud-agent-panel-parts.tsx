@@ -371,7 +371,7 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
                     <div className="agent-context-panel-foot">
                         <span>
                             {sourceLabel}
-                            {view.tokenSource === "pi" ? " · 不是计费 Token" : ""}
+                            {view.tokenSource === "pi" ? " · 本地估算 Token" : ""}
                         </span>
                         {view.compactAtTokens ? <span>压缩线 {formatContextCount(view.compactAtTokens)}</span> : null}
                     </div>
@@ -657,8 +657,6 @@ export function ComposerControls({
                 fullWidth
                 className="agent-composer-model-trigger !h-8 !min-w-0 !w-full !max-w-full !border-0 !bg-transparent !px-2 !shadow-none"
                 popoverClassName="agent-model-picker-popover"
-                showSelectedPrice={false}
-                showOptionPrices
                 placeholder="选择文本模型"
             />
             <Dropdown trigger={["click"]} placement="topLeft" menu={{ items: agentPermissionMenuItems(permissionMode, onPermissionChange) }}>

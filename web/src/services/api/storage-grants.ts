@@ -4,8 +4,7 @@ import type { AccountFileStorageUsage } from "@/services/api/resources";
 export type UserStorageGrant = {
     id: string;
     userId: string;
-    source: "payment" | "admin" | string;
-    paymentOrderId?: string;
+    source: "admin" | string;
     productId?: string;
     productName?: string;
     bytes: number;

@@ -8,14 +8,13 @@ import { useSearchParams } from "react-router";
 
 import { PaginationBar } from "@/pages/admin/components/admin-ui";
 import { MediaPreview } from "@/components/media-preview";
-import { formatCredits } from "@/constant/credits";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { mediaDeliverySummary } from "@/lib/generation-task-display";
 import { batchRecoverAdminApiLogs, exportAdminApiLogs, listAdminApiLogs, type ApiCallLog } from "@/services/api/auth";
 import { ApiLogDetailDrawer } from "../components/api-log-detail-drawer";
 import { AdminPageFrame } from "../components/admin-shell";
 import { AdminBatchBar, AdminDataTable, AdminExportButton, AdminFilterChip, AdminStatusBadge, AdminTableEmpty } from "../components/admin-ui";
-import { logBillingLabel, logStatus, normalizeLogView } from "./log-view";
+import { logStatus, normalizeLogView } from "./log-view";
 import "./logs-page.css";
 import { Select } from "@/components/ui/base/select";
 import { AdminSearchInput } from "../components/admin-search-input";
@@ -119,7 +118,6 @@ export default function LogsPage() {
                 ),
         },
         { title: "耗时", dataIndex: "durationMs", width: 112, render: (value) => <span className="tabular-nums">{formatDuration(value)}</span> },
-        { title: "积分计算", width: 195, render: (_, log) => <BillingSummary log={log} /> },
         {
             title: "Tokens",
             width: 166,
@@ -151,11 +149,9 @@ export default function LogsPage() {
         { title: "渠道", dataIndex: "channelName", width: 116, ellipsis: true, render: (value) => value || "未记录渠道" },
         { title: "用户", key: "user", width: 110, ellipsis: true, render: (_, log) => <span title={[log.userDisplayName, log.userAccount].filter(Boolean).join(" · ")}>{log.userDisplayName || log.userAccount || "未知用户"}</span> },
     ];
-    const compactColumns: ColumnsType<ApiCallLog> = view === "billing" ? [
+    const compactColumns: ColumnsType<ApiCallLog> = view === "usage" ? [
         ...identityColumns,
-        { title: "销售积分", key: "revenue", align: "right", width: 108, render: (_, log) => log.billable && log.billingAvailable ? formatCredits(log.billingAmountMicrocredits) : "—" },
-        { title: "成本积分", key: "cost", align: "right", width: 108, render: (_, log) => log.creditCostMicrocredits !== undefined ? formatCredits(log.creditCostMicrocredits) : log.creditCostConfigured ? "待核算" : "未配置" },
-        { title: "账务状态", key: "billingStatus", width: 100, render: (_, log) => logBillingLabel(log) },
+        { title: "耗时", dataIndex: "durationMs", align: "right", width: 90, render: formatDuration },
         { title: "Tokens 入 / 出", key: "usage", width: 142, render: (_, log) => log.usageAvailable ? `${log.inputTokens.toLocaleString()} / ${log.outputTokens.toLocaleString()}` : "未返回" },
     ] : [
         ...identityColumns,
@@ -176,7 +172,6 @@ export default function LogsPage() {
             const result = await batchRecoverAdminApiLogs(videoIds);
             const totalSkipped = skipped + result.skipped;
             Modal.info({ title: "批量恢复处理结果", width: 560, content: <div className="max-h-[50vh] space-y-2 overflow-auto"><div className="mb-3">成功 {result.success} 条，失败 {result.failed} 条，跳过 {totalSkipped} 条</div>{result.items.map((item) => <div key={item.logId} className="rounded border border-border/70 px-3 py-2 text-xs"><div className="font-mono">{item.logId}</div><div>{item.recovered ? "成功" : item.error?.startsWith("跳过") ? item.error : item.providerStatus ? `仍在生成中（${item.providerStatus}）` : `失败：${item.error || "未恢复"}`}</div></div>)}</div> });
-            if (result.success > 0) window.dispatchEvent(new CustomEvent("wallet:updated"));
             setRetry((value) => value + 1);
         } catch (error) { message.error(error instanceof Error ? error.message : "批量恢复失败"); }
         finally { setBatchRecovering(false); }
@@ -185,7 +180,7 @@ export default function LogsPage() {
     return (
         <AdminPageFrame
             title="请求明细"
-            description="模型生成与结果下载记录；仅计费调用扣除积分"
+            description="模型生成与结果下载记录"
             actions={
                 <>
                 <Button icon={<RefreshCw className="size-4" />} loading={loading} onClick={() => { setLoading(true); setRetry((value) => value + 1); }}>刷新列表</Button>
@@ -202,7 +197,7 @@ export default function LogsPage() {
             {loadError ? <Alert type="error" showIcon title="请求明细读取失败" description={loadError} action={<Button size="small" onClick={() => setRetry((value) => value + 1)}>重试</Button>} /> : null}
             <AdminDataTable
                 className={view === "all" ? "admin-logs-full" : "admin-logs-compact"}
-                trailing={<Segmented aria-label="请求明细视图" value={view} onChange={(value) => updateUrl({ view: value })} options={[{ label: "排障", value: "troubleshoot" }, { label: "计费", value: "billing" }, { label: "全部字段", value: "all" }]} />}
+                trailing={<Segmented aria-label="请求明细视图" value={view} onChange={(value) => updateUrl({ view: value })} options={[{ label: "排障", value: "troubleshoot" }, { label: "用量", value: "usage" }, { label: "全部字段", value: "all" }]} />}
                 toolbar={
                     <AdminSearchInput
                         allowClear
@@ -271,7 +266,7 @@ export default function LogsPage() {
                     tableLayout: "fixed",
                     dataSource: logs,
                     pagination: false,
-                    scroll: { x: view === "all" ? 1901 : view === "billing" ? 1246 : 1186 },
+                    scroll: { x: view === "all" ? 1901 : view === "usage" ? 1246 : 1186 },
                 }}
                 empty={loadError ? <span role="status">数据暂不可用，请重试</span> : <AdminTableEmpty filtered={hasFilters} />}
                 footer={<PaginationBar alwaysShow current={page} pageSize={pageSize} total={total} onChange={(nextPage, nextSize) => updateUrl({ page: nextSize !== pageSize ? 1 : nextPage, pageSize: nextSize })} />}
@@ -338,19 +333,6 @@ function formatDuration(value: number) {
     return `${minutes} 分 ${seconds} 秒`;
 }
 
-function BillingSummary({ log }: { log: ApiCallLog }) {
-    if (!log.billable) return <span className="text-foreground/45">不计费</span>;
-    if (!log.billingAvailable) return <span className="text-foreground/35">未扣积分</span>;
-    const status = log.billingStatus || "reserved";
-    const statusLabel = ({ settled: "已结算", refunded: "已退回", uncertain: "待核对", running: "运行中", reserved: "已预授权" } as const)[status];
-    return (
-        <div>
-            <div className="tabular-nums">销售价格：{formatCredits(log.billingAmountMicrocredits)} 积分</div>
-            <div className="tabular-nums text-xs text-foreground/60">成本价格：{log.creditCostMicrocredits !== undefined ? `${formatCredits(log.creditCostMicrocredits)} 积分` : log.creditCostConfigured ? "待核算" : "未配置"}</div>
-            <div className="text-xs text-foreground/40">{statusLabel}</div>
-        </div>
-    );
-}
 
 function MediaResult({ log, onPreview }: { log: ApiCallLog; onPreview: (url: string, kind: "image" | "video") => void }) {
     const url = log.mediaPreviewUrl;

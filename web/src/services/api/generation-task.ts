@@ -73,7 +73,7 @@ type PreparedGenerationReferences = {
     mask?: Awaited<ReturnType<typeof prepareBackendImageReference>>;
 };
 
-// 生成、计费、取消和任务记录必须共用后端任务生命周期，页面层不能再直连供应商。
+// 生成、取消和任务记录必须共用后端任务生命周期，页面层不能再直连供应商。
 export async function runBackendGenerationTask(
     {
         projectId,

@@ -9,7 +9,7 @@ import { PageHeader, PaginationBar, WorkspacePage } from "@/components/layout/wo
 import { WorkspaceErrorState, WorkspaceLoadingState, WorkspaceNoResultsState } from "@/components/layout/workspace-state";
 import { deleteDrama, listDramas, type DramaListItem, type DramaStatus } from "@/services/api/drama";
 
-import { formatCredits, MediaThumb, STATUS_LABEL } from "./drama-shared";
+import { MediaThumb, STATUS_LABEL } from "./drama-shared";
 import { progressFillStyle } from "@/lib/progress-fill";
 import { RelativeTime } from "@/components/ui/product/relative-time";
 import "./drama.css";
@@ -189,7 +189,7 @@ function DramaCard({ item, onDelete }: { item: DramaListItem; onDelete: () => vo
                     </div>
                     <div className="drama-library-progress">
                         <span className="drama-library-progress-bar"><span style={progressFillStyle(Math.max(progress, item.episodeCount && progress === 0 ? 2 : progress))} /></span>
-                        <span className="drama-library-progress-text"><b>{stage}</b>{item.spentMicrocredits ? <span>{formatCredits(item.spentMicrocredits)} 积分</span> : null}</span>
+                        <span className="drama-library-progress-text"><b>{stage}</b></span>
                     </div>
                     {needsAction ? <p className="drama-library-alert" title={item.pauseReason}>{item.pauseReason}</p> : null}
                 </div>

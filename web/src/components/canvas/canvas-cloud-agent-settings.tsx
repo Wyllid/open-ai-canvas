@@ -36,7 +36,6 @@ type AgentSettingsProps = {
     skillSearch: string;
     skillsLoading: boolean;
     skillHasMore: boolean;
-    maxCredits: string;
     maxGenerationTasks: string;
     maxVideoSeconds: string;
     onBack: () => void;
@@ -47,7 +46,6 @@ type AgentSettingsProps = {
     onSkillToggle: (skillId: string) => void;
     onSkillInstall: (skill: Skill) => Promise<void>;
     onLoadMoreSkills: () => Promise<void>;
-    onMaxCreditsChange: (value: string) => void;
     onMaxGenerationTasksChange: (value: string) => void;
     onMaxVideoSecondsChange: (value: string) => void;
 };
@@ -105,7 +103,7 @@ function SettingsHome({ props, theme, onOpen }: { props: AgentSettingsProps; the
             <section>
                 <SettingLabel label="对话模型" hint="新运行生效" />
                 <div className="min-w-0 rounded-xl px-2 py-2" style={{ background: theme.node.fill }}>
-                    <ModelPicker config={props.config} value={props.selectedModel} capability="text" onChange={props.onModelChange} variant="creation" fullWidth showSelectedPrice showOptionPrices placeholder="选择文本模型" className="!border-0 !bg-transparent !shadow-none" popoverClassName="agent-model-picker-popover" />
+                    <ModelPicker config={props.config} value={props.selectedModel} capability="text" onChange={props.onModelChange} variant="creation" fullWidth placeholder="选择文本模型" className="!border-0 !bg-transparent !shadow-none" popoverClassName="agent-model-picker-popover" />
                 </div>
             </section>
             <section>
@@ -132,7 +130,7 @@ function SettingsHome({ props, theme, onOpen }: { props: AgentSettingsProps; the
                     <SettingRow theme={theme} icon={<BookMarked className="size-4" />} title="个人记忆" summary="批准、添加、导出导入；只影响你的会话" onClick={() => onOpen("memories")} />
                     <SettingRow theme={theme} icon={<Sparkles className="size-4" />} title="Skills · 用户技能库" summary={`${props.installedSkills.length} 个已安装 · 本轮启用 ${props.selectedSkillIds.length} 个`} onClick={() => onOpen("skills")} />
                     <SettingRow theme={theme} icon={<Wrench className="size-4" />} title="工具与连接" summary="画布、技能参考文件、生成任务" onClick={() => onOpen("mcp")} />
-                    <SettingRow theme={theme} icon={<Gauge className="size-4" />} title="预算" summary={`每轮最多 ${props.maxCredits || "未设置"} 积分 · 固定计价模型`} onClick={() => onOpen("budget")} />
+                    <SettingRow theme={theme} icon={<Gauge className="size-4" />} title="预算" summary={`生成任务 ${props.maxGenerationTasks || "不限"} · 视频秒数 ${props.maxVideoSeconds || "不限"}`} onClick={() => onOpen("budget")} />
                 </div>
             </section>
         </div>
@@ -307,7 +305,7 @@ function ContextWorkspace({ props, theme }: { props: AgentSettingsProps; theme: 
 }
 
 function BudgetWorkspace({ props, theme }: { props: AgentSettingsProps; theme: CanvasTheme }) {
-    return <div className="thin-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5"><div className="rounded-xl p-4" style={{ background: theme.node.fill }}><div className="text-sm font-semibold">本轮累计预算</div><p className="mt-2 text-xs opacity-60">积分预算用于费用保护；生成任务和视频秒数填 0 表示不设该项上限。模型循环由预算和运行状态控制，不再用固定次数截断。</p></div><BudgetInput label="积分上限" hint="必填且大于 0；所有步骤累计" value={props.maxCredits} onChange={props.onMaxCreditsChange} theme={theme} /><BudgetInput label="生成任务上限" hint="0 表示不限；只读模式不执行生成" value={props.maxGenerationTasks} onChange={props.onMaxGenerationTasksChange} theme={theme} /><BudgetInput label="视频秒数上限" hint="0 表示不限；按请求时长累计" value={props.maxVideoSeconds} onChange={props.onMaxVideoSecondsChange} theme={theme} /></div>;
+    return <div className="thin-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5"><div className="rounded-xl p-4" style={{ background: theme.node.fill }}><div className="text-sm font-semibold">本轮累计预算</div><p className="mt-2 text-xs opacity-60">生成任务和视频秒数填 0 表示不设该项上限。模型循环由预算和运行状态控制，不再用固定次数截断。</p></div><BudgetInput label="生成任务上限" hint="0 表示不限；只读模式不执行生成" value={props.maxGenerationTasks} onChange={props.onMaxGenerationTasksChange} theme={theme} /><BudgetInput label="视频秒数上限" hint="0 表示不限；按请求时长累计" value={props.maxVideoSeconds} onChange={props.onMaxVideoSecondsChange} theme={theme} /></div>;
 }
 
 function SettingRow({ theme, icon, title, summary, onClick }: { theme: CanvasTheme; icon: ReactNode; title: string; summary: string; onClick: () => void }) { return <button type="button" className="canvas-agent-setting-row flex w-full min-w-0 items-center gap-3 rounded-xl p-3 text-left transition-colors focus-visible:outline focus-visible:outline-2" onClick={onClick}><span className="grid size-9 shrink-0 place-items-center rounded-xl" style={{ background: theme.node.fill, color: theme.node.muted }}>{icon}</span><span className="min-w-0 flex-1"><span className="block text-[var(--fs-ui)] font-medium">{title}</span><span className="mt-1 block text-xs leading-5" style={{ color: theme.node.muted }}>{summary}</span></span><ChevronRight className="size-4 shrink-0" style={{ color: theme.node.muted }} /></button>; }
@@ -315,7 +313,7 @@ function TabButton({ active, label, onClick, theme }: { active: boolean; label: 
 function SettingLabel({ label, hint }: { label: string; hint?: string }) { return <div className="mb-2 flex items-center justify-between text-xs font-semibold"><span>{label}</span>{hint ? <span className="text-[var(--fs-label)] font-normal opacity-40">{hint}</span> : null}</div>; }
 function BudgetInput({ label, hint, value, onChange, theme }: { label: string; hint: string; value: string; onChange: (value: string) => void; theme: CanvasTheme }) { return <label className="block"><span className="flex items-center justify-between text-xs font-medium"><span>{label}</span><span className="text-[var(--fs-label)] opacity-40">{hint}</span></span><Input size="large" value={value} onChange={(event) => onChange(event.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" className="mt-2 !rounded-lg" style={{ background: theme.node.fill }} /></label>; }
 function sectionTitle(section: SettingsSection) { return section === "profile" ? "长期偏好" : section === "memories" ? "个人记忆" : section === "skills" ? "Skills" : section === "mcp" ? "MCP 与工具" : section === "context" ? "上下文" : "预算"; }
-function sectionSubtitle(section: SettingsSection) { return section === "profile" ? "用户、项目和画布的长期行为偏好" : section === "memories" ? "只属于你，批准后才会注入会话" : section === "skills" ? "搜索、安装并选择本轮技能" : section === "mcp" ? "云端工具与连接状态" : section === "context" ? "控制 Agent 能读取的范围" : "控制本轮积分与生成消耗"; }
+function sectionSubtitle(section: SettingsSection) { return section === "profile" ? "用户、项目和画布的长期行为偏好" : section === "memories" ? "只属于你，批准后才会注入会话" : section === "skills" ? "搜索、安装并选择本轮技能" : section === "mcp" ? "云端工具与连接状态" : section === "context" ? "控制 Agent 能读取的范围" : "控制本轮生成任务数与视频时长"; }
 
 export function agentPermissionLabel(mode: AgentPermissionMode) { return permissionOptions.find((option) => option.value === mode)?.label || "请求审批"; }
 export function agentPermissionVisual(mode: AgentPermissionMode) { const option = permissionOptions.find((item) => item.value === mode) || permissionOptions[0]; return { color: option.color, soft: `${option.color}1f`, icon: option.icon }; }

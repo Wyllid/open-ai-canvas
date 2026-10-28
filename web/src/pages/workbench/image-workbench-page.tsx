@@ -16,16 +16,12 @@ import { imageResolutionUsesQuality } from "@/lib/image-size-presets";
 import { modelCapabilityConfigFor, normalizeImageValue, normalizeVideoValue } from "@/lib/model-capabilities";
 import { creationVideoConfig } from "@/pages/create/creation-generation-config";
 import { imageQualityLabel } from "@/lib/image-quality";
-import { modelQuoteRequest } from "@/lib/model-pricing";
-import { quoteModel } from "@/services/api/logical-models";
 import { prepareBackendGenerationTask } from "@/services/api/generation-task";
 import { createGenerationTask, cancelGenerationTask, queryGenerationTask, retryGenerationTask, type GenerationTask } from "@/services/api/task-center";
 import { capabilitySupportedModes, createWorkbenchTask, listWorkbenchTasks, listWorkbenchTools, normalizeWorkbenchGuide, resolveWorkbenchResourceURL, type WorkbenchKind, type WorkbenchPromptPreset, type WorkbenchTool } from "@/services/api/workbench";
 import { resourceStorageKey, resolveResourceUrl, uploadResourceFile } from "@/services/api/resources";
-import { formatCredits, requestCreditCost } from "@/constant/credits";
 import { useCreationPreferencesStore } from "@/stores/use-creation-preferences-store";
 import { logicalModelIDForConfig, modelDisplayName, modelOptionName, resolveModelChannel, selectableModelsByCapability, useConfigStore, useEffectiveConfig } from "@/stores/use-config-store";
-import { useUserStore } from "@/stores/use-user-store";
 
 import { workbenchCategoryLabel, workbenchCategories } from "./workbench-catalog";
 import { missingWorkbenchInput, workbenchPromptRequired, workbenchVideoOperation } from "./workbench-input";
@@ -200,10 +196,6 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
     const [taskBusyId, setTaskBusyId] = useState("");
     const [mobileTab, setMobileTab] = useState("generate");
     const [query, setQuery] = useState("");
-    const creditsEnabled = useUserStore((state) => state.features.creditsEnabled);
-    const [estimateCredits, setEstimateCredits] = useState<number | null>(null);
-    const [estimateEstimated, setEstimateEstimated] = useState(false);
-    const [estimateTone, setEstimateTone] = useState<"quote" | "local" | "usage" | "loading" | "unavailable">("unavailable");
     const fileRef = useRef<HTMLInputElement>(null);
     const [uploadSlotKey, setUploadSlotKey] = useState<string | undefined>();
     const preferencesHydrated = useCreationPreferencesStore((state) => state.hydrated);
@@ -233,7 +225,6 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
     const missingInput = missingWorkbenchInput(tool, references);
     const activeTasks = useMemo(() => tasks.filter((task) => task.status === "queued" || task.status === "running"), [tasks]);
     const historyTasks = useMemo(() => tasks.filter((task) => task.status !== "queued" && task.status !== "running"), [tasks]);
-    const selectedCount = Number(count) || 1;
     const promptReferences = useMemo<CanvasResourceReference[]>(
         () =>
             references.map((reference) => ({
@@ -336,67 +327,6 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
         setRatio(normalized.ratio);
         setVideoQuality(normalized.resolution.replace(/p$/i, ""));
     }, [kind, selectedModel, settingsReady, videoProfile]);
-
-    const quoteRequirements = useMemo(
-        () => ({
-            capability,
-            input: {
-                textCount: prompt.trim() ? 1 : 0,
-                imageCount: references.filter((reference) => reference.kind === "image").length,
-                referenceImageCount: references.filter((reference) => reference.kind === "image" && reference.role !== "first_frame" && reference.role !== "last_frame").length,
-                videoCount: references.filter((reference) => reference.kind === "video").length,
-                audioCount: references.filter((reference) => reference.kind === "audio").length,
-                characterCount: 0,
-            },
-            ...(kind === "image" ? { imageSize: ratio, options: { size: ratio, quality, ...(imageProfile?.resolution.supported ? { imageResolution } : {}), count: selectedCount } } : { videoSeconds: seconds, options: { size: ratio, videoSeconds: Number(seconds), vquality: videoQuality } }),
-        }),
-        [capability, imageProfile, imageResolution, kind, prompt, quality, ratio, references, seconds, selectedCount, videoQuality],
-    );
-
-    useEffect(() => {
-        if (!creditsEnabled || !selectedModel) {
-            setEstimateCredits(null);
-            setEstimateTone("unavailable");
-            return;
-        }
-        const priceChannel = resolveModelChannel(config, selectedModel);
-        const localCredits = requestCreditCost({
-            channelMode: priceChannel.scope === "system" ? "remote" : "local",
-            modelCosts: priceChannel.modelCosts,
-            model: modelOptionName(selectedModel),
-            count: kind === "image" ? selectedCount : 1,
-            seconds: kind === "video" ? Number(seconds) || 1 : 1,
-            capability,
-            config: composerConfig,
-            requirements: quoteRequirements,
-        });
-        const request = modelQuoteRequest(composerConfig, selectedModel, capability, quoteRequirements);
-        if (!request) {
-            setEstimateCredits(localCredits);
-            setEstimateEstimated(false);
-            setEstimateTone(localCredits === null ? "usage" : "local");
-            return;
-        }
-        const controller = new AbortController();
-        if (localCredits === null) setEstimateTone("loading");
-        else {
-            setEstimateCredits(localCredits);
-            setEstimateTone("local");
-        }
-        quoteModel(request, controller.signal)
-            .then(({ quote }) => {
-                setEstimateCredits(quote.amountMicrocredits / 1_000_000);
-                setEstimateEstimated(quote.estimated === true);
-                setEstimateTone("quote");
-            })
-            .catch(() => {
-                if (controller.signal.aborted) return;
-                setEstimateCredits(localCredits);
-                setEstimateEstimated(false);
-                setEstimateTone(localCredits === null ? "unavailable" : "local");
-            });
-        return () => controller.abort();
-    }, [capability, composerConfig, config, creditsEnabled, kind, quoteRequirements, seconds, selectedCount, selectedModel]);
 
     const loadTasks = useCallback(async () => {
         try {
@@ -831,15 +761,6 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
         }
     };
 
-    const estimateLabel = !creditsEnabled
-        ? ""
-        : estimateCredits !== null
-          ? `${estimateEstimated || estimateTone !== "quote" ? "预估" : "预计"} ${estimateCredits.toLocaleString("zh-CN", { maximumFractionDigits: 6 })} 积分`
-          : estimateTone === "loading"
-            ? "正在计算积分"
-            : estimateTone === "usage"
-              ? "按实际用量结算"
-              : "报价暂不可用";
     const taskModelLabel = (task: GenerationTask) => {
         const rawModel = task.model?.trim() || "";
         if (!rawModel) return kind === "image" ? "图片生成" : "视频生成";
@@ -1251,13 +1172,11 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                                                 audioCount: references.filter((reference) => reference.kind === "audio").length,
                                                 characterCount: 0,
                                             },
-                                            ...(kind === "image" ? { imageSize: ratio, options: { size: ratio, quality, ...(imageProfile?.resolution.supported ? { imageResolution } : {}), count: selectedCount } } : { videoSeconds: seconds, options: { size: ratio, videoSeconds: Number(seconds), vquality: videoQuality } }),
+                                            ...(kind === "image" ? { imageSize: ratio, options: { size: ratio, quality, ...(imageProfile?.resolution.supported ? { imageResolution } : {}), count: Number(count) || 1 } } : { videoSeconds: seconds, options: { size: ratio, videoSeconds: Number(seconds), vquality: videoQuality } }),
                                         }}
                                         variant="creation"
                                         fullWidth
                                         className="creation-model-picker workbench-model-picker"
-                                        showSelectedPrice={false}
-                                        showOptionPrices
                                         onChange={(value) => {
                                             if (kind === "image") updateConfig("imageModel", value);
                                             else updateConfig("videoModel", value);
@@ -1274,7 +1193,6 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                                     </div>
                                 )}
                                 <div className="workbench-submit-estimate" aria-live="polite">
-                                    <span className="workbench-submit-estimate-label">{estimateLabel || "预估可用积分"}</span>
                                     {selectedModel ? (
                                         <span className="workbench-submit-estimate-model">使用 {modelDisplayName(config, selectedModel)}</span>
                                     ) : null}
@@ -1478,10 +1396,6 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                                 <div>
                                     <dt>耗时</dt>
                                     <dd>{elapsedLabel(detailTask)}</dd>
-                                </div>
-                                <div>
-                                    <dt>积分</dt>
-                                    <dd>{detailTask.billing ? `${formatCredits(detailTask.billing.amountMicrocredits)} · ${detailTask.billing.status}` : "--"}</dd>
                                 </div>
                                 <div>
                                     <dt>创建时间</dt>

@@ -6,7 +6,7 @@ import { IMAGE_RATIOS, imagePresetForRatio, imageSizeConfigWithPresets } from ".
 import { defaultImageCapabilityConfig, type ImageCapabilityConfig } from "../src/lib/model-capabilities";
 import { projectLogicalCapability } from "../src/lib/user-session";
 import { capabilitySpecFromChannelModel } from "../src/pages/admin/logical-models/model-routing-capabilities";
-import type { ChannelModel } from "../src/services/api/wallet";
+import type { ChannelModel } from "../src/services/api/channel-models";
 
 const definitions: ImageParameter[] = [
     { name: "size", label: "画幅", type: "string", encoding: "pixels" },

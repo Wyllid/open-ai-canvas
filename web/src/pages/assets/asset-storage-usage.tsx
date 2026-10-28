@@ -2,7 +2,6 @@ import { HardDrive } from "lucide-react";
 
 import { useAccountFileStorageUsage } from "@/hooks/use-account-file-storage-usage";
 import { accountFileStorageUsageQueryKey, accountStorageMeter, accountStorageStateMessage, formatStorageBytes } from "@/lib/account-storage-usage";
-import { openStoragePurchase } from "@/lib/workspace-storage";
 import { progressFillStyle } from "@/lib/progress-fill";
 
 export const assetStorageUsageQueryKey = accountFileStorageUsageQueryKey;
@@ -12,7 +11,6 @@ export function AssetStorageUsage() {
     const usage = query.data;
     const meter = accountStorageMeter(usage);
     const stateMessage = accountStorageStateMessage(meter);
-    const showUpsell = meter.state !== "ok" || meter.tone !== "ok";
 
     return (
         <section
@@ -42,9 +40,6 @@ export function AssetStorageUsage() {
                         <span style={progressFillStyle(meter.percent)} />
                     </span>
                     <span className="assets-storage-usage-percent">{meter.percentLabel}</span>
-                    <button type="button" className="assets-storage-usage-action" onClick={() => openStoragePurchase()}>
-                        {showUpsell ? "扩容" : "购买空间"}
-                    </button>
                 </>
             ) : query.isError ? (
                 <span className="assets-storage-usage-status">

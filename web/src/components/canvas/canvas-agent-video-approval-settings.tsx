@@ -81,7 +81,7 @@ export function CanvasAgentVideoApprovalSettings({ initial, value, theme, disabl
                 <div className="text-xs" style={{ color: theme.node.muted }}>
                     生成模型
                 </div>
-                <ModelPicker config={config} capability="video" value={model} onChange={changeModel} requirements={requirements} variant="creation" fullWidth showOptionPrices placeholder="选择生成模型" popoverClassName="agent-model-picker-popover" />
+                <ModelPicker config={config} capability="video" value={model} onChange={changeModel} requirements={requirements} variant="creation" fullWidth placeholder="选择生成模型" popoverClassName="agent-model-picker-popover" />
             </div>
             {model ? (
                 <VideoSettingsPanel
@@ -102,7 +102,7 @@ export function CanvasAgentVideoApprovalSettings({ initial, value, theme, disabl
                 {settings.durationSeconds ? ` · ${settings.durationSeconds} 秒` : ""}
             </p>
             <p className="text-xs" style={{ color: theme.node.muted }}>
-                修改仅用于本次生成，费用按最终模型和规格计算。
+                修改仅用于本次生成，最终按所选模型和规格提交。
             </p>
         </fieldset>
     );

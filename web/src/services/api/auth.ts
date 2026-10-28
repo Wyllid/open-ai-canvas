@@ -1,5 +1,4 @@
 import type { ModelChannel } from "@/stores/use-config-store";
-import type { BillingOrder, CreditLedgerEntry } from "@/services/api/wallet";
 import type { GenerationTask, TaskStatus } from "@/services/api/task-center";
 import type { CanvasDrawingEngineSetting } from "@/lib/canvas/canvas-drawing-engine";
 import type { FeatureAvailability } from "@/stores/use-user-store";
@@ -31,24 +30,18 @@ export type LocalUser = {
     identityUsername?: string;
     role: "admin" | "user";
     status: "active" | "disabled";
-    isPromoter?: boolean;
     lastLoginAt?: string;
     createdAt: string;
     updatedAt: string;
 };
 
-export type AdminUser = LocalUser & {
-    availableMicrocredits: number;
-    reservedMicrocredits: number;
-};
+export type AdminUser = LocalUser;
 
 export type AuthSessionPayload = {
     user: LocalUser | null;
     runtimeLimits?: RuntimeLimits;
     drawingEngine?: CanvasDrawingEngineSetting;
     features?: FeatureAvailability;
-    /** 当前账号能否进入推广中心；由后台推广设置和推广人标记共同决定。 */
-    referralAvailable?: boolean;
 };
 
 export type RuntimeLimits = {
@@ -68,10 +61,6 @@ export type ApiCallLog = {
     taskId?: string;
     taskStatus?: TaskStatus;
     mediaStage?: GenerationTask["mediaStage"];
-    billingOrderId?: string;
-    billingStatus?: BillingOrder["status"];
-    billingAmountMicrocredits: number;
-    billingAvailable: boolean;
     source: string;
     capability: "text" | "image" | "video" | "audio" | "";
     operation?: string;
@@ -95,10 +84,6 @@ export type ApiCallLog = {
     mediaPreviewKind?: "image" | "video";
     videoSeconds: number;
     providerRequestId?: string;
-    estimatedCostMicros: number;
-    creditCostConfigured?: boolean;
-    creditCostMicrocredits?: number;
-    costAvailable: boolean;
     currency?: string;
     errorCode?: string;
     error?: string;
@@ -115,7 +100,6 @@ export type AdminProviderTaskQueryResult = {
     task: GenerationTask;
     providerStatus: string;
     recovered: boolean;
-    billingSettled: boolean;
 };
 
 export type AdminAuditEvent = {
@@ -131,8 +115,7 @@ export type AdminAuditEvent = {
 
 export type AdminUserDetail = {
     user: LocalUser;
-    account: { userId: string; availableMicrocredits: number; reservedMicrocredits: number; version: number };
-    counts: { ledgerEntries: number; tasks: number; apiCalls: number; auditEvents: number; rechargeMicrocredits: number; checkinMicrocredits: number };
+    counts: { tasks: number; apiCalls: number; auditEvents: number };
     storageUsage: {
         assetCount: number;
         assetBytes: number;
@@ -174,15 +157,6 @@ export type AdminReferenceData = {
     channels: Array<{ id: string; name: string; enabled: boolean; models: string[]; modelDisplayNames?: string[] }>;
 };
 
-export type AnalyticsFinance = {
-    settledOrders: number;
-    costedOrders: number;
-    revenueMicrocredits: number;
-    costMicrocredits: number;
-    profitMicrocredits: number | null;
-    profitMargin: number | null;
-};
-
 export type AdminAnalytics = {
     from: string;
     to: string;
@@ -196,11 +170,8 @@ export type AdminAnalytics = {
         successRate: number;
         p95DurationMs: number;
         currentQueuedTasks: number;
-        totalBalanceMicrocredits?: number;
-        totalConsumedMicrocredits?: number;
-        finance?: AnalyticsFinance | null;
     };
-    trend: Array<{ day: string; tasks: number; requests: number; activeUsers: number; requestSuccessRate: number; consumedMicrocredits?: number }>;
+    trend: Array<{ day: string; tasks: number; requests: number; activeUsers: number; requestSuccessRate: number}>;
     models: Array<{
         model: string;
         capability: string;
@@ -217,7 +188,6 @@ export type AdminAnalytics = {
         usageAvailable: boolean;
         mediaCount: number;
         videoSeconds: number;
-        finance?: AnalyticsFinance | null;
     }>;
     users: Array<{ userId: string; name: string; activeDays: number; tasks: number; agentMessages: number; canvasDays: number; assets: number; resources: number; commonModel?: string }>;
     failures: Array<{ type: string; model: string; count: number; lastError?: string; lastSeenAt: string }>;
@@ -449,7 +419,7 @@ export function getAdminFeatureAvailability() {
 }
 
 export function updateAdminFeatureAvailability(
-    features: Partial<Pick<FeatureAvailability, "welcomeEnabled" | "shortDramaEnabled" | "taskCenterEnabled" | "creditsEnabled" | "customChannelsEnabled" | "frontendModelsEnabled" | "pluginCenterEnabled" | "systemPluginsVisibleToUsers" | "inspirationSourcesVisible" | "imageWorkbenchEnabled" | "videoWorkbenchEnabled">>,
+    features: Partial<Pick<FeatureAvailability, "welcomeEnabled" | "shortDramaEnabled" | "taskCenterEnabled" | "customChannelsEnabled" | "frontendModelsEnabled" | "pluginCenterEnabled" | "systemPluginsVisibleToUsers" | "inspirationSourcesVisible" | "imageWorkbenchEnabled" | "videoWorkbenchEnabled">>,
 ) {
     return http.patch<{ features: FeatureAvailability }>("/admin/settings/features", features);
 }
@@ -473,7 +443,7 @@ export function resetPassword(input: { email: string; emailCode: string; passwor
     return http.post<{ reset: boolean }>("/auth/password-reset", input);
 }
 
-export async function register(input: { username: string; email?: string; emailCode?: string; phone?: string; smsCode?: string; ticket?: string; displayName?: string; password: string; acceptedTerms: boolean; referralCode?: string }) {
+export async function register(input: { username: string; email?: string; emailCode?: string; phone?: string; smsCode?: string; ticket?: string; displayName?: string; password: string; acceptedTerms: boolean}) {
     const result = await http.post<{ user: LocalUser }>("/auth/register", input);
     invalidateAuthSessionCache();
     return result;
@@ -503,10 +473,6 @@ export function getAdminUserDetail(id: string) {
     return http.get<AdminUserDetail>(`/admin/users/${encodeURIComponent(id)}/detail`);
 }
 
-export function listAdminUserLedger(id: string, params: { page?: number; pageSize?: number; type?: string } = {}) {
-    return http.get<{ entries: CreditLedgerEntry[]; total: number; page: number; pageSize: number }>(`/admin/users/${encodeURIComponent(id)}/ledger`, { params });
-}
-
 export function listAdminUserTasks(id: string, params: { page?: number; pageSize?: number } = {}) {
     return http.get<{ tasks: AdminUserTask[]; total: number; page: number; pageSize: number }>(`/admin/users/${encodeURIComponent(id)}/tasks`, { params });
 }
@@ -515,7 +481,7 @@ export function listAdminUserAuditEvents(id: string, params: { page?: number; pa
     return http.get<{ events: AdminAuditEvent[]; total: number; page: number; pageSize: number }>(`/admin/users/${encodeURIComponent(id)}/audit-events`, { params });
 }
 
-export function updateAdminUser(id: string, input: Partial<Pick<LocalUser, "displayName" | "email" | "role" | "status" | "isPromoter">> & { password?: string }) {
+export function updateAdminUser(id: string, input: Partial<Pick<LocalUser, "displayName" | "email" | "role" | "status">> & { password?: string }) {
     return http.patch<{ user: LocalUser }>(`/admin/users/${encodeURIComponent(id)}`, input);
 }
 
@@ -650,8 +616,8 @@ export function recoverAdminApiLogVideoByURL(id: string, url: string, providerRe
 }
 
 /** 重新保存“作品已生成但保存失败”的任务。订单已退款时必须选择补扣（charge）或免除（waive）。 */
-export function recoverAdminApiLogTaskMedia(id: string, refundedBilling?: "charge" | "waive") {
-    return http.post<{ task: GenerationTask }>(`/admin/api-logs/${encodeURIComponent(id)}/recover-media`, refundedBilling ? { refundedBilling } : undefined);
+export function recoverAdminApiLogTaskMedia(id: string) {
+    return http.post<{ task: GenerationTask }>(`/admin/api-logs/${encodeURIComponent(id)}/recover-media`);
 }
 export function batchRecoverAdminApiLogs(ids: string[]) {
     return http.post<{ items: Array<{ logId: string; recovered: boolean; providerStatus?: string; error?: string }>; success: number; failed: number; skipped: number }>("/admin/api-logs/recover-batch", { ids }, { timeout: 180_000 });

@@ -716,7 +716,6 @@ export function CanvasPromptOptimizerDrawer({ open, children, prompt, generation
                                     onChange={setActiveOptimizerModel}
                                     capability="text"
                                     placeholder="选择优化模型"
-                                    showSelectedPrice={false}
                                     variant="creation"
                                     className="canvas-prompt-optimizer-model-picker"
                                     popoverClassName="canvas-prompt-optimizer-model-popover"

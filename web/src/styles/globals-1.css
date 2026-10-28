@@ -2107,10 +2107,6 @@
         background: var(--dock-command-hover) !important;
     }
 
-    .canvas-topbar-action:hover:not(:disabled) .app-workspace-credit-gift {
-        transform: translateY(-1px) rotate(-8deg);
-    }
-
     .canvas-topbar-project-cluster {
         width: max-content;
         max-width: min(360px, calc(50vw - 88px));

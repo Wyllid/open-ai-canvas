@@ -8,7 +8,6 @@ export type DramaModelChoice = {
     channelId?: string;
     modelKey?: string;
     label?: string;
-    priceLabel?: string;
 };
 
 export type DramaCapability = "text" | "image" | "video";
@@ -102,8 +101,6 @@ export type DramaProductionView = {
     stage: "bible" | "produce" | "done";
     pauseReason: string;
     settings: DramaSettings;
-    budgetMicrocredits: number;
-    spentMicrocredits: number;
     planDone: boolean;
     planCursor: number;
     sampleApproved: boolean;
@@ -212,7 +209,6 @@ export type DramaJob = {
     episodeId?: string;
     shotId?: string;
     taskId?: string;
-    costMicrocredits: number;
     attempt: number;
     createdAt: string;
     startedAt?: string;
@@ -239,7 +235,7 @@ export type DramaJobTask = {
     resourceIds?: string[];
 };
 
-export type DramaJobAttempt = { taskId?: string; status: string; error?: string; costMicrocredits: number; at: string; task?: DramaJobTask };
+export type DramaJobAttempt = { taskId?: string; status: string; error?: string; at: string; task?: DramaJobTask };
 
 export type DramaJobDetail = { job: DramaJob; target: string; attempts: DramaJobAttempt[] };
 
@@ -346,13 +342,12 @@ export type DramaListItem = {
     coverResourceIds?: string[];
     aspectRatio: string;
     styleName?: string;
-    spentMicrocredits: number;
     updatedAt: string;
 };
 
 export type DramaListPage = { items: DramaListItem[]; page: number; pageSize: number; total: number; hasMore: boolean; statusCounts: Partial<Record<DramaStatus | "all", number>> };
 
-export type DramaModelOption = { choice: DramaModelChoice; capability: DramaCapability; label: string; priceLabel: string; maxVideoSeconds?: number };
+export type DramaModelOption = { choice: DramaModelChoice; capability: DramaCapability; label: string; maxVideoSeconds?: number };
 
 /** 平台目录里有、但短剧流水线无法使用的模型及原因；前端置灰展示。 */
 export type DramaModelUnavailable = { choice: DramaModelChoice; reason: string };
@@ -365,10 +360,6 @@ export type DramaEstimate = {
     images: number;
     videos: number;
     textCalls: number;
-    minMicrocredits: number;
-    maxMicrocredits: number;
-    sampleMicrocredits: number;
-    priced: boolean;
     note: string;
     durationMinutes: number;
 };
@@ -377,7 +368,6 @@ export type CreateDramaInput = {
     name: string;
     chapters: Array<{ title: string; text: string }>;
     settings: Partial<DramaSettings>;
-    budgetMicrocredits: number;
     start: boolean;
     sourceFormat: DramaSourceFormat;
     /** 剧本与分镜总是每章一集，服务端忽略 auto。 */
@@ -414,7 +404,7 @@ export function getDrama(projectId: string, signal?: AbortSignal) {
     return http.get<DramaSummary>(base(projectId), { signal });
 }
 
-export function updateDramaSettings(projectId: string, input: { settings?: DramaSettings; budgetMicrocredits?: number }) {
+export function updateDramaSettings(projectId: string, input: { settings?: DramaSettings }) {
     return http.patch<DramaSummary>(`${base(projectId)}/settings`, input);
 }
 
@@ -526,7 +516,7 @@ export function regenerateDramaCast(projectId: string, castId: string, restyleSe
     return http.post<{ affectedSegments: number }>(`${base(projectId)}/cast/${encodeURIComponent(castId)}/regenerate`, { restyleSegments });
 }
 
-/** 重新处理已生成但后处理失败的段视频：重放原任务结果，不重新生成、不扣费。 */
+/** 重新处理已生成但后处理失败的段视频：重放原任务结果，不重新生成。 */
 export function reprocessDramaSegmentVideo(projectId: string, episodeId: string, segmentIndex: number) {
     return http.post<{ reprocessing: boolean }>(`${base(projectId)}/episodes/${encodeURIComponent(episodeId)}/segments/${segmentIndex}/reprocess`);
 }

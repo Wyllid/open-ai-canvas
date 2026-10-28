@@ -54,10 +54,10 @@ export function CanvasAgentImageApprovalSettings({ initial, value, onChange, the
     return <fieldset disabled={disabled} className="min-w-0 space-y-3 border-0 p-0" data-canvas-no-zoom data-canvas-wheel-scroll aria-label="图片生成设置">
         <div className="space-y-2">
             <div className="text-xs" style={{ color: theme.node.muted }}>生成模型</div>
-            <ModelPicker config={config} capability="image" value={model} onChange={changeModel} requirements={requirements} variant="creation" fullWidth showOptionPrices placeholder="选择生成模型" popoverClassName="agent-model-picker-popover" />
+            <ModelPicker config={config} capability="image" value={model} onChange={changeModel} requirements={requirements} variant="creation" fullWidth placeholder="选择生成模型" popoverClassName="agent-model-picker-popover" />
         </div>
         {model ? <ImageSettingsPanel config={{ ...config, model, imageModel: model, size: settings.size, imageResolution: settings.imageResolution || "auto", imageParameters: settings.imageParameters, quality: settings.quality, count: "1" }} onConfigChange={changeOption} theme={theme} showTitle={false} showCount={false} showTransparent={false} className="min-w-0 space-y-3" /> : <p className="text-xs" style={{ color: theme.node.muted }}>当前模型不在可选目录中，可重新选择；提交时将重新校验模型与规格。</p>}
         <p className="text-xs" style={{ color: theme.node.text }}>本次规格：{settings.size}{settings.imageResolution && settings.imageResolution !== "auto" ? ` · ${settings.imageResolution}` : ""}{settings.quality ? ` · ${settings.quality}` : ""}</p>
-        <p className="text-xs" style={{ color: theme.node.muted }}>修改仅用于本次生成，费用按最终模型和规格计算。</p>
+        <p className="text-xs" style={{ color: theme.node.muted }}>修改仅用于本次生成，最终按所选模型和规格提交。</p>
     </fieldset>;
 }

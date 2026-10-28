@@ -66,7 +66,7 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
     const [draftReportVisible, setDraftReportVisible] = useState(false);
     const abortRef = useRef<AbortController | null>(null);
     const approvalRef = useRef<ApprovedToolExecution | null>(null);
-    const [payment, setPayment] = useState<ApprovedToolExecutionState>({ busy: false });
+    const [execution, setExecution] = useState<ApprovedToolExecutionState>({ busy: false });
     const startedRequestRef = useRef<string | undefined>(undefined);
     const currentRunTargetRef = useRef("");
     currentRunTargetRef.current = `${getActiveUserScope()}:${node?.id || ""}:${currentFingerprint}`;
@@ -185,12 +185,12 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
         let latestStage: ArtCritiquePipelineStage = "preparing";
         let runningReport: ArtCritiqueReport | undefined = state.report;
         const stageTaskIds: Record<string, string> = resume ? { ...state.stageTaskIds } : {};
-        setPayment({ busy: false });
+        setExecution({ busy: false });
         const approval = new ApprovedToolExecution({
             clientKey: `art-critique:${runId}`, runId: billingRunId,
             identity: { kind: "art-critique", nodeId: node.id, sourceFingerprint, model: selectedCritiqueModel }, signal: controller.signal,
             onRun: (id) => { billingRunId = id; publishState({ ...baseState, stageTaskIds: { ...stageTaskIds } }); },
-            onState: (next) => { if (currentRunTargetRef.current === runTarget) setPayment(next); },
+            onState: (next) => { if (currentRunTargetRef.current === runTarget) setExecution(next); },
         });
         approvalRef.current = approval;
         try {
@@ -251,7 +251,7 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
             publishState({ ...baseState, stageTaskIds: { ...stageTaskIds }, status: "failed", analysisStage: "failed", errorCode: error instanceof Error ? error.message : "art_critique_failed", errorMessage, updatedAt: new Date().toISOString() });
         } finally {
             approval.dispose();
-            if (approvalRef.current === approval) { approvalRef.current = null; setPayment({ busy: false }); }
+            if (approvalRef.current === approval) { approvalRef.current = null; setExecution({ busy: false }); }
             if (abortRef.current === controller) abortRef.current = null;
             setRunning(false);
             onRunningChange?.(false);
@@ -350,8 +350,8 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
 
                     <aside className="min-h-0 flex-1 overflow-y-auto" data-canvas-wheel-scroll>
                         <div className="flex min-h-full flex-col gap-4 p-4">
-                            {payment.quote ? <CreativeQuoteCard quote={payment.quote} busy={payment.busy} onApprove={() => void approvalRef.current?.approve(payment.quote!.items.map((item) => item.id))} onRefresh={() => void approvalRef.current?.refresh()} /> : null}
-                            {payment.error ? <Callout tone="warning" title="费用确认未完成">{payment.error}</Callout> : null}
+                            {execution.quote ? <CreativeQuoteCard quote={execution.quote} busy={execution.busy} onApprove={() => void approvalRef.current?.approve(execution.quote!.items.map((item) => item.id))} onRefresh={() => void approvalRef.current?.refresh()} /> : null}
+                            {execution.error ? <Callout tone="warning" title="生成确认未完成">{execution.error}</Callout> : null}
                             {running || visibleState.status === "running" ? <ArtCritiqueProgress stage={progressStage} theme={theme} /> : null}
                             {draftReportVisible && visibleState.status === "running" && visibleState.report ? (
                                 <Callout tone="info" title="报告初稿已生成">

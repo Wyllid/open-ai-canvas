@@ -51,7 +51,6 @@ export async function applyUserSession(payload: AuthSessionPayload) {
     useUserStore.getState().setRuntimeLimits(payload.runtimeLimits);
     useUserStore.getState().setDrawingEngine(payload.drawingEngine);
     useUserStore.getState().setFeatures(payload.features);
-    useUserStore.getState().setReferralAvailable(payload.referralAvailable);
     installRemoteUserDataAutoSync();
     try {
         // 缓存恢复和同步基线必须先于工作区开放，防止生成/编辑抢跑，或被初始化误记为已同步。
@@ -194,22 +193,11 @@ export function systemChannelModelChannels(channels: PublicChannelCatalog[]): Mo
             models: availableModels.map((m) => m.modelKey),
             modelAliases: {},
             modelCosts: availableModels.map((model) => {
-                // 标量价格仅用于旧配置兼容；创作端按完整 SKU 档位展示和匹配价格。
-                const firstTier = model.priceTiers?.[0];
-                const unitPrice = firstTier?.unitPriceMicrocredits || 0;
-                const inputPrice = firstTier?.inputTokenPriceMicrocredits || 0;
-                const outputPrice = firstTier?.outputTokenPriceMicrocredits || 0;
-                const cachedPrice = firstTier?.cachedTokenPriceMicrocredits || 0;
-                const billingMode = firstTier?.billingMode || "fixed_request";
+                // 创作端按完整 SKU 规格档匹配可用参数组合。
                 const logicalPriceTiers = (model.priceTiers || []).map((tier) => ({
                     selector: tier.selector || {},
                     resolution: tier.resolution || "*",
                     videoSeconds: tier.videoSeconds || 0,
-                    billingMode: tier.billingMode as "fixed_request" | "per_second" | "token",
-                    unitPriceMicrocredits: tier.unitPriceMicrocredits || 0,
-                    inputTokenPriceMicrocredits: tier.inputTokenPriceMicrocredits || 0,
-                    outputTokenPriceMicrocredits: tier.outputTokenPriceMicrocredits || 0,
-                    cachedTokenPriceMicrocredits: tier.cachedTokenPriceMicrocredits || 0,
                 }));
 
                 return {
@@ -221,12 +209,6 @@ export function systemChannelModelChannels(channels: PublicChannelCatalog[]): Mo
                     icon: model.icon || "",
                     capability: model.capability as ModelCapability,
                     protocol: model.protocol as any,
-                    pricePolicy: "channel" as const,
-                    billingMode: billingMode as any,
-                    unitPriceMicrocredits: unitPrice,
-                    inputTokenPriceMicrocredits: inputPrice,
-                    outputTokenPriceMicrocredits: outputPrice,
-                    cachedTokenPriceMicrocredits: cachedPrice,
                     capabilityConfig: (model.capabilityConfig as ModelCapabilityConfig | undefined) || defaultModelCapabilityConfig(),
                     channelModelId: model.id,
                     channelId: channel.id,

@@ -78,7 +78,7 @@ export function normalizeCreativeProposal(raw: unknown, id: string, version: num
     if (refs.size !== nodes.length) throw new Error("方案节点引用重复");
     const generationItems: CreativeGenerationItem[] = (Array.isArray(data.generationItems) ? data.generationItems : []).map((value) => {
         const item = record(value), ref = required(item.ref, "生成目标"), node = nodes.find((candidate) => candidate.ref === ref);
-        if (!node || (node.kind !== "image" && node.kind !== "video") || node.kind !== item.mode || existingAssets[ref]) throw new Error("生成任务与媒体节点不匹配，已有素材不能重复计费");
+        if (!node || (node.kind !== "image" && node.kind !== "video") || node.kind !== item.mode || existingAssets[ref]) throw new Error("生成任务与媒体节点不匹配，已有素材不能重复生成");
         const model = required(item.model, "生成模型");
         if (!selectableModelsByCapability(config, node.kind).includes(model)) throw new Error(`节点“${node.title}”需要${node.kind === "video" ? "视频" : "图片"}模型，所选模型不支持该用途或已不可用：${model}。请从 availableModels 中选择 mode=${node.kind} 的模型重新提交方案。`);
         const referenceRefs: string[] = [];

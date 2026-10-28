@@ -6906,184 +6906,6 @@
     line-height: 1.55;
 }
 
-.admin-credit-operations,
-.admin-credit-operations-table-region,
-.admin-credit-operations-table-region > .admin-data-table {
-    width: 100%;
-}
-
-.admin-credit-drawer .ant-drawer-content {
-    background: var(--admin-layer-0);
-}
-
-.admin-credit-drawer .ant-drawer-header {
-    min-height: 64px;
-    border-bottom: 1px solid var(--admin-divider);
-    background: var(--admin-layer-1);
-    padding: 16px 20px;
-}
-
-.admin-credit-drawer .ant-drawer-title {
-    color: var(--admin-text-primary);
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.admin-credit-drawer .ant-drawer-body {
-    padding: 20px;
-}
-
-.admin-credit-drawer .ant-drawer-footer {
-    min-height: 64px;
-    background: var(--admin-layer-1);
-    padding: 16px 20px;
-}
-
-.admin-credit-drawer .ant-drawer-footer .ant-btn {
-    min-width: 80px;
-    min-height: 36px;
-    border-radius: 8px;
-}
-
-.admin-credit-drawer :is(.ant-input-number, .ant-input-number-affix-wrapper) {
-    width: 100%;
-}
-
-.admin-credit-drawer-intro {
-    margin-bottom: 16px;
-    border: 1px solid color-mix(in srgb, var(--admin-status-info) 20%, var(--admin-card-border));
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--admin-status-info) 4%, var(--admin-layer-1));
-    padding: 16px 16px;
-}
-
-.admin-credit-drawer-intro.is-warning {
-    border-color: color-mix(in srgb, var(--admin-status-warning) 30%, var(--admin-card-border));
-    background: color-mix(in srgb, var(--admin-status-warning) 7%, var(--admin-layer-1));
-}
-
-.admin-credit-drawer-intro strong {
-    color: var(--admin-text-primary);
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.admin-credit-drawer-intro p {
-    margin-top: 4px;
-    color: var(--admin-text-secondary);
-    font-size: 12px;
-    line-height: 1.65;
-}
-
-.admin-credit-drawer-loading {
-    display: grid;
-    min-height: 240px;
-    place-items: center;
-    color: var(--admin-text-muted);
-    font-size: 13px;
-}
-
-.admin-credit-drawer-section {
-    overflow: hidden;
-    border: 1px solid var(--admin-card-border);
-    border-radius: 8px;
-    background: var(--admin-layer-1);
-    padding: 16px;
-    box-shadow: var(--admin-card-shadow);
-}
-
-.admin-credit-drawer-section + .admin-credit-drawer-section {
-    margin-top: 16px;
-}
-
-.admin-credit-drawer-section-heading {
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--admin-divider);
-    padding-bottom: 12px;
-}
-
-.admin-credit-drawer-section-heading-with-action {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.admin-credit-drawer-section-heading h3 {
-    color: var(--admin-text-primary);
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.45;
-}
-
-.admin-credit-drawer-section-heading p {
-    margin-top: 4px;
-    color: var(--admin-text-muted);
-    font-size: 11px;
-    line-height: 1.55;
-}
-
-.admin-credit-policy-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-}
-
-.admin-credit-policy-grid .ant-form-item {
-    margin-bottom: 0;
-}
-
-.admin-credit-multiplier-list {
-    overflow: hidden;
-    border: 1px solid var(--admin-divider);
-    border-radius: 8px;
-}
-
-.admin-credit-multiplier-header,
-.admin-credit-multiplier-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 128px 42px;
-    align-items: start;
-    gap: 8px;
-}
-
-.admin-credit-multiplier-header {
-    background: var(--admin-layer-2);
-    padding: 8px 8px;
-    color: var(--admin-text-muted);
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.admin-credit-multiplier-row {
-    padding: 8px;
-}
-
-.admin-credit-multiplier-row + .admin-credit-multiplier-row {
-    border-top: 1px solid var(--admin-divider);
-}
-
-.admin-credit-multiplier-row .ant-form-item {
-    margin-bottom: 0;
-}
-
-.admin-credit-multiplier-remove.ant-btn {
-    width: 36px;
-    min-width: 36px;
-    height: 36px;
-    padding: 0;
-}
-
-.admin-credit-multiplier-empty {
-    border: 1px dashed var(--admin-control-border);
-    border-radius: 8px;
-    background: var(--admin-layer-2);
-    padding: 24px 16px;
-    color: var(--admin-text-muted);
-    font-size: 12px;
-    text-align: center;
-}
-
 .admin-redemption-codes,
 .admin-redemption-codes > section,
 .admin-redemption-codes > section > .admin-data-table {
@@ -8420,45 +8242,17 @@
     opacity: 0.64;
 }
 
-.admin-credit-account-summary {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1px;
-    margin: -4px 0 16px;
-    overflow: hidden;
-    border: 1px solid var(--admin-divider);
-    border-radius: 8px;
-    background: var(--admin-divider);
-}
-
-.admin-credit-account-summary > div {
-    background: var(--admin-layer-2);
-    padding: 12px 12px;
-}
-
-.admin-credit-account-summary dt,
 .admin-operation-confirmation-grid dt {
     color: var(--admin-text-muted);
     font-size: 11px;
     line-height: 1.4;
 }
 
-.admin-credit-account-summary dd,
 .admin-operation-confirmation-grid dd {
     margin-top: 4px;
     color: var(--admin-text-primary);
     font-size: 13px;
     font-weight: 600;
-    line-height: 1.5;
-}
-
-.admin-credit-account-summary.is-unavailable {
-    display: block;
-    border-style: dashed;
-    background: var(--admin-layer-2);
-    padding: 12px;
-    color: var(--admin-text-muted);
-    font-size: 11px;
     line-height: 1.5;
 }
 
@@ -8652,33 +8446,6 @@
     color: var(--admin-text-muted);
     font-size: 12px;
     line-height: 16px;
-}
-
-.admin-analytics-finance-values {
-    display: grid;
-    gap: 2px;
-    margin: 0;
-    font-size: 14px;
-    letter-spacing: 0;
-    line-height: 1.4;
-    white-space: normal;
-}
-
-.admin-analytics-finance-values > div {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 12px;
-}
-
-.admin-analytics-finance-values dt {
-    color: var(--admin-text-muted);
-    font-weight: 400;
-}
-
-.admin-analytics-finance-values dd {
-    margin: 0;
-    text-align: right;
-    overflow-wrap: anywhere;
 }
 
 .admin-analytics-overview-grid {

@@ -147,12 +147,6 @@ export function formatClock(ms: number) {
     return `${Math.floor(seconds / 60)}:${(seconds % 60).toFixed(1).padStart(4, "0")}`;
 }
 
-export function formatCredits(microcredits: number) {
-    const credits = microcredits / 1_000_000;
-    if (credits >= 10_000) return `${(credits / 10_000).toFixed(credits >= 100_000 ? 0 : 1)}万`;
-    return credits.toLocaleString("zh-CN", { maximumFractionDigits: credits >= 100 ? 0 : 2 });
-}
-
 export function formatCount(value: number) {
     if (value >= 10_000) return `${(value / 10_000).toFixed(value >= 100_000 ? 0 : 1)}万`;
     return value.toLocaleString("zh-CN");

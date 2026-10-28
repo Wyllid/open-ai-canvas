@@ -40,8 +40,6 @@ export function ChannelModelSettings({ channel, onChange }: { channel: ModelChan
             model,
             capability: defaultCap,
             protocol: defaultProtocol,
-            billingMode: "fixed_request" as const,
-            unitPriceMicrocredits: 0,
             capabilityConfig: defaultModelCapabilityConfig(defaultProtocol, model),
         };
         const next = [...(channel.modelCosts || []).filter((item) => item.model !== model), { ...current, ...patch, model }];
@@ -146,8 +144,6 @@ export function ChannelModelSettings({ channel, onChange }: { channel: ModelChan
                                         updateCost(activeModel, {
                                             protocol: nextProtocol,
                                             capability: nextCapability,
-                                            billingMode: "fixed_request",
-                                            unitPriceMicrocredits: 0,
                                             capabilityConfig: nextCapability === "text" || nextCapability === "image" || nextCapability === "video" ? defaultModelCapabilityConfig(nextProtocol, activeModel) : undefined,
                                         });
                                     }}
@@ -163,8 +159,6 @@ export function ChannelModelSettings({ channel, onChange }: { channel: ModelChan
                                     protocols={availableProtocols}
                                     onChange={(nextProtocol) => updateCost(activeModel, {
                                         protocol: nextProtocol,
-                                        billingMode: "fixed_request",
-                                        unitPriceMicrocredits: 0,
                                         capabilityConfig: activeCapability === "text" || activeCapability === "image" || activeCapability === "video" ? defaultModelCapabilityConfig(nextProtocol, activeModel) : undefined,
                                     })}
                                 />

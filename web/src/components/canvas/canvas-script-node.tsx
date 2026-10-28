@@ -422,7 +422,6 @@ export function CanvasScriptNodeContent({
                                 value={generationConfig.model}
                                 capability="text"
                                 placeholder="选择文本模型"
-                                showSelectedPrice={false}
                                 onChange={onModelChange}
                                 onMissingConfig={() => navigateToSettings({ continueCreation: true })}
                             />

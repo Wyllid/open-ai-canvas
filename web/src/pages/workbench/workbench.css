@@ -744,12 +744,6 @@
     white-space: nowrap;
 }
 
-.workbench-submit-estimate-label {
-    font-weight: 600;
-    color: var(--wb-text);
-    font-size: 12px;
-}
-
 .workbench-submit-estimate-model {
     overflow: hidden;
     min-width: 0;

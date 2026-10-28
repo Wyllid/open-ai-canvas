@@ -9,7 +9,7 @@ import { ModelProtocolBrowser } from "@/components/model-protocol-browser";
 import { ModelCapabilityEditor } from "@/components/model-capability-editor";
 import { defaultModelCapabilityConfig, normalizeModelCapabilityConfig, type ModelCapabilityConfig } from "@/lib/model-capabilities";
 import type { ModelProtocolDefinition } from "@/lib/model-protocols";
-import { createAdminChannelModel, testAdminChannelModel, updateAdminChannelModel, type ChannelModel } from "@/services/api/wallet";
+import { createAdminChannelModel, testAdminChannelModel, updateAdminChannelModel, type ChannelModel } from "@/services/api/channel-models";
 import type { ModelChannel } from "@/stores/use-config-store";
 import { defaultPriceTier, normalizeUpstreamModelKey, priceTierPayloadFromForm } from "./channel-model-price-tier-form";
 import { PriceTierFields } from "./channel-model-price-tier-fields";
@@ -21,7 +21,7 @@ import {
     initialChannelModelValues,
     replaceChannelModelFormValues,
     updateChannelModelUpstreamCapabilities,
-    validateChannelModelPrices,
+    validateChannelModelSpecTiers,
     validateChannelModelProtocol,
     type ChannelModelFormValues as FormValues,
     type EditorSection,
@@ -197,7 +197,7 @@ export function ChannelModelEditor({
                 <div className="admin-model-editor-title">
                     <span>{draftValues ? "复制模型" : editing ? "编辑模型" : "新增模型"}</span>
                     <p>
-                        {channel.name} · {editing?.displayName || editing?.modelKey || draftValues?.displayName || "配置调用方式与用户积分价格"}
+                        {channel.name} · {editing?.displayName || editing?.modelKey || draftValues?.displayName || "配置调用方式与规格"}
                     </p>
                 </div>
             }
@@ -282,7 +282,7 @@ export function ChannelModelEditor({
                                                     placeholder="例如：seedance-2-5"
                                                 />
                                             </Form.Item>
-                                            <Form.Item name="providerModelKey" label="上游模型 ID" tooltip="实际发送给供应商；留空时使用产品模型标识。价格档可配置独立上游 ID，命中时优先于此处。">
+                                            <Form.Item name="providerModelKey" label="上游模型 ID" tooltip="实际发送给供应商；留空时使用产品模型标识。规格档可配置独立上游 ID，命中时优先于此处。">
                                                 <Input placeholder="留空则使用产品模型标识" />
                                             </Form.Item>
                                             <Form.Item name="displayName" label="模型展示名（一级目录）" tooltip="跨所有系统渠道按此名称分组；新模型默认未分类。同名模型归入同一组，不改变调用 ID。">
@@ -320,8 +320,8 @@ export function ChannelModelEditor({
                                             <Alert
                                                 type="info"
                                                 showIcon
-                                                title={`${tiersWithOwnUpstream.length} 个价格档配置了独立上游模型 ID`}
-                                                description="命中的请求会优先使用价格档的上游 ID；修改上方上游模型 ID 时，只有与旧值相同的档位会自动跟随更新，其余保持不变。"
+                                                title={`${tiersWithOwnUpstream.length} 个规格档配置了独立上游模型 ID`}
+                                                description="命中的请求会优先使用规格档的上游 ID；修改上方上游模型 ID 时，只有与旧值相同的档位会自动跟随更新，其余保持不变。"
                                             />
                                         ) : null}
                                         <ChannelModelTagsEditor />
@@ -330,7 +330,7 @@ export function ChannelModelEditor({
                                         </Form.Item>
                                     </section>
                                     <section className="admin-model-editor-section">
-                                        <SectionHeading title="能力与协议" description="先选任务类型，再选择对应的调用协议；更换后请核对参数与价格。" />
+                                        <SectionHeading title="能力与协议" description="先选任务类型，再选择对应的调用协议；更换后请核对参数与规格。" />
                                         <div className="admin-model-editor-section-content admin-model-protocol-grid">
                                             <Form.Item name="capability" label="模型能力" rules={[{ required: true }]}>
                                                 <Segmented
@@ -370,7 +370,7 @@ export function ChannelModelEditor({
                             forceRender: true,
                             children: (
                                 <div className="admin-model-editor-tab-content">
-                                    {configurationChanged && <Alert type="warning" showIcon title="能力或协议已变更" description="引用与参数已恢复为新协议默认值，旧规格条件已在切换能力时清除。价格与计费方式保留，请在保存前核对。" />}{" "}
+                                    {configurationChanged && <Alert type="warning" showIcon title="能力或协议已变更" description="引用与参数已恢复为新协议默认值，旧规格条件已在切换能力时清除，请在保存前核对。" />}{" "}
                                     {modelCapability === "text" || modelCapability === "image" || modelCapability === "video" ? (
                                         <section className="admin-model-editor-section admin-model-editor-section-stacked admin-model-editor-references">
                                             <SectionHeading title="引用与限制" description="按媒体类型纵向配置数量、大小、时长及通用约束。" />
@@ -411,33 +411,33 @@ export function ChannelModelEditor({
                                             </div>
                                         </section>
                                     ) : null}
-                                    {modelCapability === "audio" && <Alert type="info" title="音频模型无需额外配置引用与参数" description="调用协议和积分定价仍需在对应分组中配置。" />}
+                                    {modelCapability === "audio" && <Alert type="info" title="音频模型无需额外配置引用与参数" description="调用协议和规格仍需在对应分组中配置。" />}
                                 </div>
                             ),
                         },
                         {
                             key: "pricing",
-                            label: "积分定价",
+                            label: "规格",
                             forceRender: true,
                             children: (
                                 <div className="admin-model-editor-tab-content">
-                                    {configurationChanged && <Alert type="warning" showIcon title="请核对定价" description="能力或协议已变更。请重新检查规格条件、计费方式和金额；不会自动转换价格单位。" />}{" "}
+                                    {configurationChanged && <Alert type="warning" showIcon title="请核对规格" description="能力或协议已变更。请重新检查规格条件。" />}{" "}
                                     <section className="admin-model-editor-section">
-                                        <SectionHeading title="用户积分价格" description="默认只需填写一个统一价格；需要区分生成方式、质量或尺寸时，再添加规格价格。" />
+                                        <SectionHeading title="模型规格" description="默认只需一个统一规格；需要按生成方式、质量或尺寸路由到不同上游模型时，再添加规格档。" />
                                         <div className="admin-model-editor-section-content">
                                             <Form.List
                                                 name="priceTiers"
                                                 rules={[
                                                     {
                                                         validator: async (_, value) => {
-                                                            validateChannelModelPrices({ capability: form.getFieldValue("capability"), protocol: form.getFieldValue("protocol"), priceTiers: value });
+                                                            validateChannelModelSpecTiers({ capability: form.getFieldValue("capability"), priceTiers: value });
                                                         },
                                                     },
                                                 ]}
                                             >
                                                 {(fields, { add, remove }, { errors }) => (
                                                     <div className="admin-price-tier-list-shell">
-                                                        <div className="admin-price-tier-list" aria-label="积分价格规则列表">
+                                                        <div className="admin-price-tier-list" aria-label="规格档列表">
                                                             {fields.map((field, index) => (
                                                                 <PriceTierFields
                                                                     key={field.key}
@@ -457,7 +457,7 @@ export function ChannelModelEditor({
                                                         </div>
                                                         <div className="admin-price-tier-list-footer">
                                                             <Button className="admin-model-editor-add-tier" type="dashed" block icon={<Plus className="size-4" />} onClick={() => add(defaultPriceTier(hasDefaultPriceTier ? "advanced" : "default"))}>
-                                                                {hasDefaultPriceTier ? "新增规格价格" : "新增统一默认价格"}
+                                                                {hasDefaultPriceTier ? "新增规格档" : "新增统一默认规格"}
                                                             </Button>
                                                             <Form.ErrorList errors={errors} />
                                                         </div>

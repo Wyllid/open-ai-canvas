@@ -8,13 +8,11 @@ import { PaginationBar } from "@/pages/admin/components/admin-ui";
 import { ModelIcon } from "@/components/model-picker";
 import { modelProtocolDefinition, modelProtocolLabel, type ModelProtocol } from "@/lib/model-protocols";
 import { fetchPluginProviderCatalog } from "@/services/api/plugin-catalog";
-import { deleteAdminChannelModel, deleteAdminChannelModels, fetchAdminChannelModels, importAdminChannelModels, listAdminChannelModels, type ChannelModel } from "@/services/api/wallet";
+import { deleteAdminChannelModel, deleteAdminChannelModels, fetchAdminChannelModels, importAdminChannelModels, listAdminChannelModels, type ChannelModel } from "@/services/api/channel-models";
 import type { ModelChannel } from "@/stores/use-config-store";
 import { ChannelModelEditor } from "./channel-model-editor";
 import { AdminBatchBar, AdminDataTable, AdminFilterChip, AdminStatusBadge, AdminTableEmpty } from "./admin-ui";
 import { ChannelOrderDialog } from "./channel-order-dialog";
-import { ChannelModelCostSummary } from "./channel-model-cost-summary";
-import { ChannelModelRepriceDialog } from "./channel-model-reprice-dialog";
 import { deselectVisibleModels, filterImportModels, normalizeFetchModelKey, selectExistingImportModels, selectVisibleModels } from "./channel-model-import-selection";
 import { duplicateChannelModelValues, type ChannelModelFormValues } from "./channel-model-editor-form";
 import { Select } from "@/components/ui/base/select";
@@ -24,7 +22,6 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
     const [items, setItems] = useState<ChannelModel[]>([]);
     const [selectedModelIds, setSelectedModelIds] = useState<string[]>([]);
     const [deletingSelected, setDeletingSelected] = useState(false);
-    const [repriceItems, setRepriceItems] = useState<ChannelModel[]>([]);
     const [editing, setEditing] = useState<ChannelModel | null>(null);
     const [copyDraft, setCopyDraft] = useState<ChannelModelFormValues | null>(null);
     const [loading, setLoading] = useState(true);
@@ -79,7 +76,6 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
         setCopyDraft(null);
         setEditorOpen(false);
         setSelectedModelIds([]);
-        setRepriceItems([]);
         resetFetchPreview();
         setKeyword("");
         setCapability("all");
@@ -227,8 +223,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                     <AdminStatusBadge label="待配置" tone="warning" />
                 ),
         },
-        { title: "规格成本价 / 销售价 / 加价", width: 310, render: (_, item) => <ChannelModelCostSummary item={item} /> },
-        { title: "版本", dataIndex: "priceVersion", width: 75, render: (value) => `v${value}` },
+        { title: "规格档", width: 90, render: (_, item) => item.priceTiers.filter((tier) => tier.enabled).length },
         { title: "状态", dataIndex: "enabled", width: 85, render: (enabled) => <AdminStatusBadge label={enabled ? "启用" : "停用"} tone={enabled ? "success" : "neutral"} /> },
         {
             title: "操作",
@@ -396,9 +391,6 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                 }}
                 batchActions={
                     <AdminBatchBar count={selectedModelIds.length} onClear={() => setSelectedModelIds([])}>
-                        <Button size="small" disabled={deletingSelected || loading || Boolean(loadError)} onClick={() => setRepriceItems(items.filter((item) => selectedModelIds.includes(item.id)))}>
-                            统一调价
-                        </Button>
                         <Button danger size="small" icon={<Trash2 className="size-3.5" />} loading={deletingSelected} onClick={confirmBatchRemove}>
                             批量删除
                         </Button>
@@ -436,11 +428,6 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                     />
                 }
             />
-            {repriceItems.length > 0 && <ChannelModelRepriceDialog channelId={channel.id} channelName={channel.name} items={repriceItems} onClose={() => setRepriceItems([])} onSaved={async () => {
-                setSelectedModelIds([]);
-                await reload();
-                await onChanged();
-            }} />}
             <Modal
                 title="选择要导入的模型"
                 open={fetchPreviewOpen}

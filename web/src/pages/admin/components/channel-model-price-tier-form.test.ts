@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { ChannelModel, ChannelModelPriceTier } from "@/services/api/wallet";
+import type { ChannelModel, ChannelModelPriceTier } from "@/services/api/channel-models";
 
 // Node 原生 TypeScript 测试运行器要求保留扩展名，项目编译器不允许该写法。
 // @ts-expect-error -- Node 原生 TypeScript 测试运行器需要保留扩展名。

@@ -1,16 +1,15 @@
-import { Alert, Button, Form, Input, InputNumber, Segmented, Switch, type FormInstance } from "antd";
+import { Alert, Button, Form, Input, Segmented, Switch, type FormInstance } from "antd";
 import { Trash2 } from "lucide-react";
 import type { ModelCapabilityConfig } from "@/lib/model-capabilities";
-import { modelProtocolSupportsTokenBilling, type ModelProtocol } from "@/lib/model-protocols";
+import type { ModelProtocol } from "@/lib/model-protocols";
 import type { ModelCapabilityChoice as EditableCapability } from "@/components/model-protocol-picker";
 import type { ChannelModelFormValues as FormValues } from "./channel-model-editor-form";
 import { normalizeUpstreamModelKey } from "./channel-model-price-tier-form";
-import { CreditCostFields } from "./credit-cost-fields";
 import { Select } from "@/components/ui/base/select";
 import { ImageParameterInput } from "@/components/image-parameter-fields";
 import { imageResolutionTiers } from "@/lib/image-size-presets";
-// 价格档分辨率按后端保存口径（2k→1440p、4k→2160p）取值，已存档位才能正确回显。
-import { normalizeTierResolution } from "@/lib/model-pricing";
+// 规格档分辨率按后端保存口径（2k→1440p、4k→2160p）取值，已存档位才能正确回显。
+import { normalizeTierResolution } from "@/lib/model-spec-tiers";
 
 export function PriceTierFields({
     index,
@@ -33,52 +32,43 @@ export function PriceTierFields({
     onDirty: () => void;
     onRemove: () => void;
 }) {
-    const billingMode = Form.useWatch(["priceTiers", index, "billingMode"], form) || "fixed_request";
     const matchMode = Form.useWatch(["priceTiers", index, "matchMode"], form) || "default";
-    const priceConfigured = Form.useWatch(["priceTiers", index, "priceConfigured"], form) !== false;
     const tierEnabled = Form.useWatch(["priceTiers", index, "enabled"], form) !== false;
     const tierUpstream = normalizeUpstreamModelKey(Form.useWatch(["priceTiers", index, "providerModelKey"], form));
-    // 统一价格档不展示上游键输入，但历史数据可能固化了独立键；它与模型级不一致时会
+    // 统一规格档不展示上游键输入，但历史数据可能固化了独立键；它与模型级不一致时会
     // 静默改变实际发往供应商的模型，必须显式提示并允许一键恢复“跟随模型默认”。
     const staleTierUpstream = matchMode === "default" && tierUpstream && modelUpstream && tierUpstream !== modelUpstream ? tierUpstream : "";
     const video = capabilityConfig?.video;
     const image = capabilityConfig?.image;
     const resolutionOptions = Array.from(new Set([...(video?.resolutions || []), ...(protocol === "autodl-comfyui" ? video?.fixedScreenSpec?.resolutions || [] : [])]));
-    const tokenEnabled = modelProtocolSupportsTokenBilling(capability, protocol);
     const isVideo = capability === "video";
-    const isAudio = capability === "audio";
-    const isDurationPriced = isVideo || isAudio;
     const isImage = capability === "image";
     return (
         <article className="admin-price-tier-card">
             <header className="admin-price-tier-card-header">
-                <Form.Item name={[index, "priceConfigured"]} hidden valuePropName="checked">
-                    <Switch />
-                </Form.Item>
                 <Form.Item name={[index, "enabled"]} hidden valuePropName="checked">
                     <Switch />
                 </Form.Item>
                 <div className="admin-price-tier-card-heading">
                     <span className="admin-price-tier-card-index">{String(ordinal).padStart(2, "0")}</span>
                     <div className="admin-price-tier-card-heading-copy">
-                        <div className="admin-price-tier-card-title">{matchMode === "default" ? "默认价格" : `规格价格 ${ordinal}`}</div>
-                        <div className="admin-price-tier-card-summary">{matchMode === "default" ? "所有请求使用同一价格" : isVideo ? "按生成方式与分辨率匹配" : "按生成方式、画质、分辨率或尺寸匹配"}</div>
+                        <div className="admin-price-tier-card-title">{matchMode === "default" ? "默认规格" : `规格 ${ordinal}`}</div>
+                        <div className="admin-price-tier-card-summary">{matchMode === "default" ? "所有请求使用同一上游模型" : isVideo ? "按生成方式与分辨率匹配" : "按生成方式、画质、分辨率或尺寸匹配"}</div>
                     </div>
                 </div>
                 <div className="admin-price-tier-card-actions">
                     <div className="admin-price-tier-toggle">
-                        <span title="关闭后保留配置，但不参与用户请求及计费匹配">可供用户使用</span>
+                        <span title="关闭后保留配置，但不参与用户请求匹配">可供用户使用</span>
                         <Switch
                             aria-label="可供用户使用"
-                            checked={priceConfigured && tierEnabled}
+                            checked={tierEnabled}
                             onChange={(checked) => {
                                 onDirty();
-                                form.setFieldValue(["priceTiers", index, "priceConfigured"], checked);
                                 form.setFieldValue(["priceTiers", index, "enabled"], checked);
                             }}
                         />
                     </div>
-                    <Button type="text" danger aria-label={`删除价格档 ${ordinal}`} icon={<Trash2 className="size-3.5" />} onClick={onRemove}>
+                    <Button type="text" danger aria-label={`删除规格档 ${ordinal}`} icon={<Trash2 className="size-3.5" />} onClick={onRemove}>
                         删除
                     </Button>
                 </div>
@@ -94,10 +84,10 @@ export function PriceTierFields({
                     <Form.Item className="admin-price-tier-mode-control mb-0" name={[index, "matchMode"]} rules={[{ required: true }]}>
                         <Segmented
                             block
-                            aria-label="价格规则适用范围"
+                            aria-label="规格适用范围"
                             options={[
-                                { label: "统一价格", value: "default" },
-                                { label: "按规格定价", value: "advanced" },
+                                { label: "统一规格", value: "default" },
+                                { label: "按规格匹配", value: "advanced" },
                             ]}
                         />
                     </Form.Item>
@@ -160,63 +150,13 @@ export function PriceTierFields({
                             </div>
                         </section>
                     )}
-                    <section className="admin-price-tier-panel admin-price-tier-selling-panel">
-                        <div className="admin-price-tier-panel-heading">
-                            <div>
-                                <h3>销售价格</h3>
-                                <p>设置用户完成一次生成实际消耗的积分。</p>
-                            </div>
-                        </div>
-                        <div className="admin-price-tier-billing-grid">
-                            <Form.Item className="admin-price-tier-billing-mode mb-0" name={[index, "billingMode"]} label="计费方式" rules={[{ required: true }]}>
-                                <Segmented
-                                    className="w-full"
-                                    options={[
-                                        { label: "按次", value: "fixed_request" },
-                                        { label: "按秒", value: "per_second", disabled: !isDurationPriced },
-                                        { label: isVideo ? "视频 Token" : "Token", value: "token", disabled: !tokenEnabled },
-                                    ]}
-                                />
-                            </Form.Item>
-                            {billingMode === "token" ? (
-                                isVideo ? (
-                                    <Form.Item className="admin-price-tier-unit-price mb-0" name={[index, "outputTokenPrice"]} label="积分 / 百万视频 Token" rules={[{ required: true, message: "请输入视频 Token 价格" }]}>
-                                        <InputNumber className="w-full" min={0} max={1_000_000} precision={6} step={0.1} />
-                                    </Form.Item>
-                                ) : (
-                                    <div className="admin-price-tier-token-grid">
-                                        <Form.Item className="admin-price-tier-unit-price mb-0" name={[index, "inputTokenPrice"]} label="输入 / 百万 Token" rules={[{ required: true, message: "请输入输入 Token 价格" }]}>
-                                            <InputNumber className="w-full" min={0} max={1_000_000} precision={6} step={0.1} />
-                                        </Form.Item>
-                                        <Form.Item className="admin-price-tier-unit-price mb-0" name={[index, "outputTokenPrice"]} label="输出 / 百万 Token" rules={[{ required: true, message: "请输入输出 Token 价格" }]}>
-                                            <InputNumber className="w-full" min={0} max={1_000_000} precision={6} step={0.1} />
-                                        </Form.Item>
-                                        <Form.Item className="admin-price-tier-unit-price mb-0" name={[index, "cachedTokenPrice"]} label="缓存 / 百万 Token" rules={[{ required: true, message: "请输入缓存 Token 价格" }]}>
-                                            <InputNumber className="w-full" min={0} max={1_000_000} precision={6} step={0.1} />
-                                        </Form.Item>
-                                    </div>
-                                )
-                            ) : (
-                                <Form.Item className="admin-price-tier-unit-price mb-0" name={[index, "unitPrice"]} label={billingMode === "per_second" ? "每秒消耗积分" : "每次消耗积分"} rules={[{ required: true, message: "请输入积分价格" }]}>
-                                    <InputNumber className="w-full" min={0} max={1_000_000} precision={6} step={0.1} />
-                                </Form.Item>
-                            )}
-                        </div>
-                        {isVideo && billingMode === "token" ? (
-                            <div className="admin-price-tier-helper" role="note">
-                                <strong>视频 Token 计费</strong>
-                                <span>估算：宽 × 高 × 24 帧/秒 ×（输出时长 + 参考视频时长）÷ 1024；优先按上游有效用量结算，无用量时使用公式，授权预留 10% 会在结算后补扣或退回。</span>
-                            </div>
-                        ) : null}
-                        <CreditCostFields index={index} form={form} billingMode={billingMode} isVideo={isVideo} />
-                    </section>
                 </div>
                 {staleTierUpstream ? (
                     <Alert
                         className="admin-price-tier-alert"
                         type="warning"
                         showIcon
-                        title="该统一价格档仍指向独立上游模型 ID"
+                        title="该统一规格档仍指向独立上游模型 ID"
                         description={`命中此档的请求会优先使用「${staleTierUpstream}」，而不是模型默认上游「${modelUpstream}」。`}
                         action={
                             <Button

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { App, Button, Skeleton } from "antd";
 import { Switch } from "@/pages/admin/ui/controls";
-import { AlertTriangle, Clapperboard, Coins, ListChecks, MonitorCog, PlugZap, RadioTower, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertTriangle, Clapperboard, ListChecks, MonitorCog, PlugZap, RadioTower, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { getAdminFeatureAvailability, updateAdminFeatureAvailability } from "@/services/api/auth";
@@ -9,7 +9,7 @@ import { useUserStore, type FeatureAvailability } from "@/stores/use-user-store"
 import { AdminStatusBadge } from "./admin-ui";
 
 type FeatureKey =
-    "shortDramaEnabled" | "taskCenterEnabled" | "creditsEnabled" | "customChannelsEnabled" | "inspirationSourcesVisible" | "frontendModelsEnabled" | "pluginCenterEnabled" | "systemPluginsVisibleToUsers" | "imageWorkbenchEnabled" | "videoWorkbenchEnabled";
+    "shortDramaEnabled" | "taskCenterEnabled" | "customChannelsEnabled" | "inspirationSourcesVisible" | "frontendModelsEnabled" | "pluginCenterEnabled" | "systemPluginsVisibleToUsers" | "imageWorkbenchEnabled" | "videoWorkbenchEnabled";
 type FeatureRow = {
     key: FeatureKey;
     title: string;
@@ -21,7 +21,6 @@ type FeatureRow = {
 const editableFeatureKeys: FeatureKey[] = [
     "shortDramaEnabled",
     "taskCenterEnabled",
-    "creditsEnabled",
     "customChannelsEnabled",
     "inspirationSourcesVisible",
     "imageWorkbenchEnabled",
@@ -43,12 +42,6 @@ const workspaceFeatureRows: FeatureRow[] = [
         title: "任务中心",
         description: "开放任务记录页面。关闭不会停止生成任务。",
         icon: <ListChecks className="size-4" aria-hidden="true" />,
-    },
-    {
-        key: "creditsEnabled",
-        title: "积分计费",
-        description: "控制积分中心弹窗及新任务的积分预授权与结算。",
-        icon: <Coins className="size-4" aria-hidden="true" />,
     },
     {
         key: "customChannelsEnabled",
@@ -180,17 +173,6 @@ export default function FeatureAvailabilityPanel() {
 
     const requestFeatureChange = (key: FeatureKey, enabled: boolean) => {
         if (!savedFeatures || saving || savedFeatures[key] === enabled) return;
-        if (key === "creditsEnabled" && !enabled) {
-            modal.confirm({
-                title: "关闭用户积分功能？",
-                content: "保存后新创建的任务和系统渠道请求将不再扣减积分；已经冻结的计费订单仍按原规则结算，已有余额和流水继续保留。",
-                okText: "确认关闭",
-                cancelText: "取消",
-                okButtonProps: { danger: true },
-                onOk: () => setFeature(key, false),
-            });
-            return;
-        }
         if (key === "frontendModelsEnabled" && !enabled) {
             modal.confirm({
                 title: "关闭前台模型功能？",
@@ -379,7 +361,6 @@ function toEditablePayload(features: FeatureAvailability) {
     return {
         shortDramaEnabled: features.shortDramaEnabled,
         taskCenterEnabled: features.taskCenterEnabled,
-        creditsEnabled: features.creditsEnabled,
         customChannelsEnabled: features.customChannelsEnabled,
         inspirationSourcesVisible: features.inspirationSourcesVisible,
         imageWorkbenchEnabled: features.imageWorkbenchEnabled,
@@ -404,7 +385,6 @@ function parseFeatureAvailability(value: unknown): FeatureAvailability {
         welcomeEnabled: record.welcomeEnabled as boolean,
         shortDramaEnabled: record.shortDramaEnabled as boolean,
         taskCenterEnabled: record.taskCenterEnabled as boolean,
-        creditsEnabled: record.creditsEnabled as boolean,
         customChannelsEnabled: record.customChannelsEnabled as boolean,
         inspirationSourcesVisible: record.inspirationSourcesVisible as boolean,
         imageWorkbenchEnabled: record.imageWorkbenchEnabled as boolean,

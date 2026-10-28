@@ -70,7 +70,7 @@ import { useSkillCuration, curationQuery } from "@/components/skills/skill-curat
 import { CanvasCloudAgentSettings, type AgentContextKey } from "./canvas-cloud-agent-settings";
 import { useAgentPanelLayout } from "./use-agent-panel-layout";
 import "./canvas-cloud-agent.css";
-import { appendAgentError, appendUniqueMessage, applyAgentEvent, positiveNumber, type ApprovalState } from "./canvas-cloud-agent-events";
+import { appendAgentError, appendUniqueMessage, applyAgentEvent, type ApprovalState } from "./canvas-cloud-agent-events";
 import { AgentContextRing, AgentConversation, AgentHeader, AgentHistory, AgentLauncher, ComposerControls } from "./canvas-cloud-agent-panel-parts";
 import { AgentConnectorsBar } from "./canvas-cloud-agent-connectors";
 import { useGlobalAgentStore, type AgentPrefillRequest } from "@/stores/use-global-agent-store";
@@ -160,7 +160,6 @@ export const CanvasCloudAgentPanel = memo(function CanvasCloudAgentPanel() {
     const [approval, setApproval] = useState<ApprovalState | null>(null);
     const [permissionMode, setPermissionMode] = useState<AgentPermissionMode>("request_approval");
     const [contextScope, setContextScope] = useState<AgentContextKey[]>(["canvas"]);
-    const [maxCredits, setMaxCredits] = useState("200");
     const [maxGenerationTasks, setMaxGenerationTasks] = useState("0");
     const [maxVideoSeconds, setMaxVideoSeconds] = useState("0");
     const [conversations, setConversations] = useState<CloudAgentConversation[]>([]);
@@ -914,7 +913,7 @@ export const CanvasCloudAgentPanel = memo(function CanvasCloudAgentPanel() {
                     focusNodeOmittedCount: canvasId ? Math.max(0, selectedNodeIds.length - 8) : 0,
                     permissionMode,
                     contextScope: canvasId ? contextScope : [],
-                    budget: { maxCredits: positiveNumber(maxCredits), maxGenerationTasks: permissionMode === "read_only" ? 0 : Number(maxGenerationTasks), maxVideoSeconds: permissionMode === "read_only" ? 0 : Number(maxVideoSeconds) },
+                    budget: { maxGenerationTasks: permissionMode === "read_only" ? 0 : Number(maxGenerationTasks), maxVideoSeconds: permissionMode === "read_only" ? 0 : Number(maxVideoSeconds) },
                 };
                 const fingerprint = JSON.stringify({ scope, parent: run?.id, input });
                 if (pending && pending.fingerprint !== fingerprint) throw new Error("上一条请求尚未确认，请恢复原消息与设置后核对，不能覆盖原幂等记录");
@@ -1341,7 +1340,6 @@ export const CanvasCloudAgentPanel = memo(function CanvasCloudAgentPanel() {
                                         skillSearch={skillSearch}
                                         skillsLoading={skillsLoading}
                                         skillHasMore={skillHasMore}
-                                        maxCredits={maxCredits}
                                         maxGenerationTasks={maxGenerationTasks}
                                         maxVideoSeconds={maxVideoSeconds}
                                         onBack={() => setView("chat")}
@@ -1362,7 +1360,6 @@ export const CanvasCloudAgentPanel = memo(function CanvasCloudAgentPanel() {
                                         onSkillToggle={(id) => setSelectedSkillIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]))}
                                         onSkillInstall={installSkill}
                                         onLoadMoreSkills={loadMoreSkills}
-                                        onMaxCreditsChange={setMaxCredits}
                                         onMaxGenerationTasksChange={setMaxGenerationTasks}
                                         onMaxVideoSecondsChange={setMaxVideoSeconds}
                                     />

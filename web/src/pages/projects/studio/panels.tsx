@@ -21,12 +21,11 @@ import {
     type DramaSummary,
 } from "@/services/api/drama";
 
-import { aspectRatioValue, CAST_KIND_LABEL, formatCredits, MEDIA_MODE_LABEL, mediaBusy, MediaThumb, parseList } from "../drama-shared";
+import { aspectRatioValue, CAST_KIND_LABEL, MEDIA_MODE_LABEL, mediaBusy, MediaThumb, parseList } from "../drama-shared";
 import { AssetSchemePicker } from "../asset-scheme";
 import { DramaModelPicker, useDramaModelCatalog } from "../drama-model-picker";
 import { PromptSkillField } from "../prompt-skill";
 import { StoryboardRules } from "../storyboard-rules";
-import { progressFillStyle } from "@/lib/progress-fill";
 import { uploadResourceFile } from "@/services/api/resources";
 
 // 制作台的三个整页视图：设定（角色 / 道具 / 场景）、待处理、制作设置。都在主区域内展示，不使用抽屉遮挡。
@@ -590,14 +589,12 @@ export function SettingsPanel({ projectId, summary, cast, onChanged }: { project
     const { message, modal } = App.useApp();
     const current = summary.production.settings;
     const [settings, setSettings] = useState(current);
-    const [budget, setBudget] = useState(summary.production.budgetMicrocredits / 1_000_000);
     useEffect(() => {
         setSettings(summary.production.settings);
-        setBudget(summary.production.budgetMicrocredits / 1_000_000);
-    }, [summary.production.settings, summary.production.budgetMicrocredits]);
-    const dirty = useMemo(() => JSON.stringify(settings) !== JSON.stringify(current) || Math.round(budget * 1_000_000) !== summary.production.budgetMicrocredits, [budget, current, settings, summary.production.budgetMicrocredits]);
+    }, [summary.production.settings]);
+    const dirty = useMemo(() => JSON.stringify(settings) !== JSON.stringify(current), [current, settings]);
     const save = useMutation({
-        mutationFn: () => updateDramaSettings(projectId, { settings, budgetMicrocredits: Math.max(0, Math.round((budget || 0) * 1_000_000)) }),
+        mutationFn: () => updateDramaSettings(projectId, { settings }),
         onSuccess: () => {
             message.success("设置已保存，新任务会使用新配置");
             onChanged();
@@ -618,9 +615,6 @@ export function SettingsPanel({ projectId, summary, cast, onChanged }: { project
     const sampleCharacter = cast.find((item) => item.kind === "character" && item.appearance);
     const sampleScene = cast.find((item) => item.kind === "scene" && item.appearance);
     const countOf = (kind: DramaCastKind) => cast.filter((item) => item.kind === kind).length;
-    const spent = summary.production.spentMicrocredits;
-    const budgetMicro = Math.round((budget || 0) * 1_000_000);
-    const usage = budgetMicro > 0 ? Math.min(1, spent / budgetMicro) : 0;
     return (
         <div className="drama-view">
             <section className="drama-view-main">
@@ -632,7 +626,6 @@ export function SettingsPanel({ projectId, summary, cast, onChanged }: { project
                             disabled={!dirty}
                             onClick={() => {
                                 setSettings(current);
-                                setBudget(summary.production.budgetMicrocredits / 1_000_000);
                             }}
                         >
                             还原
@@ -770,19 +763,6 @@ export function SettingsPanel({ projectId, summary, cast, onChanged }: { project
                                 <SettingsTitle title="每段最多参考图" detail="自动取参考图时的上限，人物优先；0 为按视频模型上限" />
                                 <InputNumber className="!w-full" min={0} max={20} precision={0} value={settings.referenceLimit || 0} onChange={(value) => setSettings({ ...settings, referenceLimit: value || 0 })} suffix="张" aria-label="每段最多参考图" />
                                 <p className="drama-cfg-note">超出的设定按文字描述生成，不附图。个别段需要更多参考图时，在剧情段弹窗里手动指定，只受模型上限约束。</p>
-                            </section>
-                            <section className="drama-cfg-card">
-                                <SettingsTitle title="预算上限" detail="0 表示不限，达到后自动暂停" />
-                                <InputNumber className="!w-full" min={0} precision={0} value={budget} onChange={(value) => setBudget(value || 0)} suffix="积分" aria-label="预算上限" />
-                                <div className="drama-budget-meter">
-                                    <div className="drama-budget-track">
-                                        <span className={usage >= 0.9 ? "is-warn" : ""} style={progressFillStyle(budgetMicro ? Math.max(usage * 100, spent ? 2 : 0) : 0)} />
-                                    </div>
-                                    <span>
-                                        已花费 <b>{formatCredits(spent)}</b>
-                                        {budgetMicro ? ` / ${formatCredits(budgetMicro)}` : " · 不限预算"}
-                                    </span>
-                                </div>
                             </section>
                         </aside>
                     </div>

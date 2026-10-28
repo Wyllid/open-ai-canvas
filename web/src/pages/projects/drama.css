@@ -2017,34 +2017,6 @@
     color: var(--drama-faint);
 }
 
-.drama-budget-meter {
-    display: grid;
-    gap: 8px;
-    font-size: var(--fs-tiny);
-    color: var(--drama-muted);
-}
-.drama-budget-meter b {
-    color: var(--foreground);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-.drama-budget-track {
-    height: 6px;
-    border-radius: 999px;
-    background: var(--drama-line-strong);
-    overflow: hidden;
-}
-.drama-budget-track span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--drama-run);
-    transition: transform 250ms var(--motion-ease-out);
-}
-.drama-budget-track span.is-warn {
-    background: var(--drama-warn);
-}
-
 /* 短剧模型下拉：通用 ModelPicker 触发器换成与表单一致的外观。
    通用样式在 @layer utilities 里带 !important，只有更早的 components 层 !important 才能覆盖。 */
 @layer components {
@@ -2843,32 +2815,6 @@
 .drama-queue-stat.is-err b {
     color: var(--drama-err);
 }
-.drama-queue-budget {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    margin-left: auto;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.drama-queue-meter {
-    width: 64px;
-    height: 4px;
-    flex: none;
-    overflow: hidden;
-    border-radius: 999px;
-    background: var(--drama-line-strong);
-}
-.drama-queue-meter span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--drama-run);
-}
-.drama-queue-meter span.is-warn {
-    background: var(--drama-warn);
-}
 .drama-queue-toggle {
     display: inline-flex;
     flex: none;
@@ -2911,7 +2857,7 @@
 /* 每列固定或可收缩，错误信息单行截断，完整内容在详情弹窗里看 */
 .drama-job {
     display: grid;
-    grid-template-columns: 16px 72px minmax(120px, 1.1fr) minmax(0, 2fr) 64px 72px 14px;
+    grid-template-columns: 16px 72px minmax(120px, 1.1fr) minmax(0, 2fr) 64px 14px;
     align-items: center;
     gap: 8px;
     width: 100%;
@@ -2952,13 +2898,6 @@
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
-.drama-job-cost {
-    overflow: hidden;
-    color: var(--drama-faint);
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-}
 .drama-job-chevron {
     color: var(--drama-faint);
     opacity: 0;
@@ -2975,15 +2914,7 @@
     .drama-job {
         grid-template-columns: 16px minmax(0, 1fr) minmax(0, 1fr) 14px;
     }
-    .drama-job-kind,
-    .drama-job-time,
-    .drama-job-cost {
-        display: none;
     }
-    .drama-queue-budget .drama-queue-meter {
-        display: none;
-    }
-}
 
 /* 队列详情弹窗 */
 .drama-jobd {

@@ -2684,7 +2684,7 @@ html:not(.dark) .creation-studio-control[aria-expanded="true"] { background: #e7
     .model-default-option.is-selected { background: var(--workspace-accent-soft); }
     .model-default-option-icon { background: color-mix(in srgb, var(--foreground) 5%, transparent); }
     .model-default-option.is-selected .model-default-option-icon { background: color-mix(in srgb, var(--workspace-surface-strong) 72%, transparent); }
-    .model-default-option-scope, .model-default-price { color: color-mix(in srgb, var(--foreground) 48%, transparent); font-size: var(--fs-micro); font-variant-numeric: tabular-nums; }
+    .model-default-option-scope { color: color-mix(in srgb, var(--foreground) 48%, transparent); font-size: var(--fs-micro); font-variant-numeric: tabular-nums; }
     .model-default-option-check { background: color-mix(in srgb, var(--foreground) 7%, transparent); }
     .model-default-option-check.is-selected { background: var(--control-check-bg); color: var(--control-check-fg); }
 
@@ -2975,7 +2975,7 @@ html:not(.dark) .creation-studio-control[aria-expanded="true"] { background: #e7
     /* 任务列表：整屏几十条长 prompt 极易糊成一片，靠三件事拉开密度——
        行距（min-height + gap）、标题只给一行且宽度封顶、次要信息降到 42% 前景色。 */
     .task-record-list { display: grid; gap: 2px; margin-top: 10px; }
-    .task-record-row { position: relative; display: grid; min-width: 0; grid-template-columns: 84px minmax(0, 1fr) 120px 104px 104px; align-items: center; gap: 18px; min-height: 92px; border-radius: var(--r-md); background: transparent; padding: 12px 14px; transition: background-color var(--motion-state) ease-out; }
+    .task-record-row { position: relative; display: grid; min-width: 0; grid-template-columns: 84px minmax(0, 1fr) 120px 104px; align-items: center; gap: 18px; min-height: 92px; border-radius: var(--r-md); background: transparent; padding: 12px 14px; transition: background-color var(--motion-state) ease-out; }
     .task-record-row:hover, .task-record-row:focus-within { background: color-mix(in srgb, var(--foreground) 4%, transparent); }
     .task-record-row.is-attention { background: color-mix(in srgb, var(--palette-status-error) 4%, transparent); }
     .task-record-main { min-width: 0; }
@@ -3017,15 +3017,7 @@ html:not(.dark) .creation-studio-control[aria-expanded="true"] { background: #e7
     .task-record-error { display: -webkit-box; max-width: 68ch; margin: 7px 0 0; overflow: hidden; color: color-mix(in srgb, var(--palette-status-error) 72%, var(--foreground)); font-size: var(--fs-label); line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
     .task-record-date { min-width: 0; color: color-mix(in srgb, var(--foreground) 38%, transparent); }
     .task-record-date-value { display: block; overflow: hidden; font-size: var(--fs-label); font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
-    .task-record-billing, .task-record-billing-empty { display: inline-flex; min-width: 0; align-items: center; justify-content: flex-end; gap: 7px; }
     /* 积分列去掉图标 glow：一屏 20 行同时发光比正文还抢眼。 */
-    .task-record-billing { color: color-mix(in srgb, var(--palette-status-warning) 52%, var(--foreground)); }
-    .task-record-billing > svg { width: 14px; height: 14px; opacity: .72; }
-    .task-record-billing > span { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
-    .task-record-billing strong { color: color-mix(in srgb, var(--foreground) 82%, transparent); font-size: var(--fs-caption); font-weight: 560; font-variant-numeric: tabular-nums; }
-    .task-record-billing small { color: color-mix(in srgb, var(--foreground) 36%, transparent); font-size: var(--fs-tiny); }
-    .task-record-billing.is-uncertain { color: color-mix(in srgb, var(--palette-status-warning) 84%, var(--foreground)); }
-    .task-record-billing.is-uncertain strong, .task-record-billing.is-uncertain small { color: inherit; }
     .task-record-actions { display: flex; align-items: center; justify-content: flex-end; gap: 2px; opacity: 0; transform: translateX(4px); transition: opacity 220ms ease-out, transform 320ms var(--motion-ease-out); }
     .task-record-actions .ant-btn { width: 32px; height: 32px; padding: 0; border-radius: var(--r-md); }
     .task-record-row:hover .task-record-actions, .task-record-row:focus-within .task-record-actions { opacity: 1; transform: translateX(0); }

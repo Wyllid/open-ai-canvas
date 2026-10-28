@@ -1,22 +1,19 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
-import { Check, ChevronDown, Coins } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { Popover } from "antd";
 import { usePopoverAnchorAlign } from "@/hooks/use-popover-anchor-align";
 
-import { imageQualityLabel } from "@/lib/image-quality";
 import { canvasThemes, type CanvasTheme } from "@/lib/canvas-theme";
 import { modelCapabilityConfigFor, videoDurationOptions } from "@/lib/model-capabilities";
-import { formatPriceRange, modelQuoteDescription, modelQuoteRequest, normalizeTierResolution, priceTierSummaryLabel, priceTiersForCurrentSelection } from "@/lib/model-pricing";
 import { compatibleModelInGroup, configuredModelDisplayName, modelCompatibilityError, resolveCompatibleModel, type ModelRequirements } from "@/lib/model-selection";
 import { groupModelsForPicker, isDirectSystemModel, modelChannelLabel, type ModelPickerGroup } from "@/lib/model-picker-groups";
 import { cn } from "@/lib/utils";
 import { modelDisplayName, modelIcon, modelOptionName, resolveModelChannel, selectableModelsByCapability, type AiConfig, type ModelCapability } from "@/stores/use-config-store";
 import { useActiveTheme } from "@/stores/canvas/use-canvas-theme-store";
-import { useUserStore } from "@/stores/use-user-store";
 import { ModelLogo } from "@/components/model-logo";
 import { ModelTags } from "@/components/model-tags";
 import { videoReferenceCapabilityTag } from "@/lib/model-tags";
-import { quoteModel, type LogicalModelQuote, type PublicChannelModelAvailability } from "@/services/api/logical-models";
+import type { PublicChannelModelAvailability } from "@/services/api/logical-models";
 
 type ModelPickerProps = {
     config: AiConfig;
@@ -28,8 +25,6 @@ type ModelPickerProps = {
     fullWidth?: boolean;
     placeholder?: string;
     onMissingConfig?: () => void;
-    showSelectedPrice?: boolean;
-    showOptionPrices?: boolean;
     variant?: "default" | "creation";
     requirements?: ModelRequirements;
     showConfiguredModelName?: boolean;
@@ -48,15 +43,12 @@ export function ModelPicker({
     fullWidth = false,
     placeholder = "选择模型",
     onMissingConfig,
-    showSelectedPrice = true,
-    showOptionPrices = showSelectedPrice,
     variant = "creation",
     requirements,
     showConfiguredModelName = false,
     modelFilter,
     modelDisabledReason,
 }: ModelPickerProps) {
-    const creditsEnabled = useUserStore((state) => state.features.creditsEnabled);
     const pickerId = useId();
     // 双保险：即使 store merge 写出非法 theme，这里也兜底到 dark，避免 "reading 'node'" 崩溃
     const rawTheme = useActiveTheme();
@@ -75,9 +67,6 @@ export function ModelPicker({
     const resolvedCurrent = isDirectSystemModel(config, storedCurrent) ? storedCurrent : resolveCompatibleModel(config, storedCurrent, selectionRequirements) || storedCurrent;
     // 旧画布可能保存过已下架或前端历史内置模型；它们不能重新进入当前可选目录。
     const current = options.includes(resolvedCurrent) ? resolvedCurrent : "";
-    const currentPrice = modelMenuPrice(config, current, capability, false, requirements);
-    const quoteRequest = useMemo(() => modelQuoteRequest(config, current, capability, requirements), [capability, config, current, requirements]);
-    const [routeQuote, setRouteQuote] = useState<LogicalModelQuote | undefined>();
     const creationVariant = variant === "creation";
     const currentChannel = current ? resolveModelChannel(config, current) : undefined;
     const isCurrentCustomChannel = Boolean(current && currentChannel && currentChannel.scope !== "system");
@@ -96,21 +85,6 @@ export function ModelPicker({
             window.removeEventListener("scroll", updateAvailableHeight, true);
         };
     }, [open]);
-
-    useEffect(() => {
-        if (!showSelectedPrice || !creditsEnabled || !quoteRequest) {
-            setRouteQuote(undefined);
-            return;
-        }
-        const controller = new AbortController();
-        setRouteQuote(undefined);
-        quoteModel(quoteRequest, controller.signal)
-            .then((payload) => setRouteQuote(payload.quote))
-            .catch(() => {
-                if (!controller.signal.aborted) setRouteQuote(undefined);
-            });
-        return () => controller.abort();
-    }, [creditsEnabled, quoteRequest, showSelectedPrice]);
 
     useEffect(() => {
         const closeOtherPicker = (event: Event) => {
@@ -270,8 +244,6 @@ export function ModelPicker({
                                             creationVariant
                                             showConfiguredModelName={showConfiguredModelName}
                                             label={group.kind === "product" ? modelGroup.label : undefined}
-                                            requirements={requirements}
-                                            showPrice={showOptionPrices && creditsEnabled}
                                             disabledReason={disabledReason}
                                             showDescription
                                         />
@@ -328,7 +300,6 @@ export function ModelPicker({
                                 个人
                             </span>
                         ) : null}
-                        {showSelectedPrice && creditsEnabled ? <ModelPrice price={currentPrice} quote={routeQuote} compact /> : null}
                     </span>
                     <ChevronDown className={cn("canvas-model-picker-chevron", open && "is-open")} aria-hidden="true" />
                 </button>
@@ -364,8 +335,6 @@ export function ModelLabel({
     creationVariant,
     showConfiguredModelName,
     label,
-    requirements,
-    showPrice,
     disabledReason,
     showDescription,
 }: {
@@ -376,8 +345,6 @@ export function ModelLabel({
     creationVariant: boolean;
     showConfiguredModelName: boolean;
     label?: string;
-    requirements?: ModelRequirements;
-    showPrice: boolean;
     disabledReason?: string;
     showDescription: boolean;
 }) {
@@ -408,12 +375,6 @@ export function ModelLabel({
                             </span>
                         ) : null}
                     </span>
-                    {showPrice ? (
-                        <span className="canvas-model-picker-option-price">
-                            {/* 候选模型展示自身价目；当前参数的精确报价只在选中后的触发器显示。 */}
-                            <ModelPrice price={modelMenuPrice(config, model, capability, true, requirements)} />
-                        </span>
-                    ) : null}
                     <ModelAvailabilityBadge availability={modelAvailability(config, model)} available={logicalCost?.available ?? true} showAvailability={channel.scope === "system"} />
                 </span>
                 <span className={cn("canvas-model-picker-description mt-1 block", showDescription && "is-visible")} style={{ color: theme.node.muted }}>
@@ -490,29 +451,6 @@ function formatDurationSummary(profile: NonNullable<ReturnType<typeof modelCapab
     return `${profile.duration.min || values[0]}-${profile.duration.max || values[values.length - 1]}s`;
 }
 
-type ModelMenuPrice = { kind: "tiers"; label: string; compactLabel: string; title: string } | { kind: "estimate"; label?: string; title?: string } | { kind: "fixed"; value: number; unit: "次" | "秒" };
-
-function modelMenuPrice(config: AiConfig, model: string, capability?: ModelCapability, summary = false, requirements?: ModelRequirements): ModelMenuPrice | null | undefined {
-    if (!model) return undefined;
-    const channel = resolveModelChannel(config, model);
-    const cost = channel.modelCosts?.find((item) => item.model === modelOptionName(model));
-    if (!cost) return channel.scope === "system" ? null : undefined;
-    if (cost.pricePolicy === "channel") {
-        const tiers = cost.logicalPriceTiers || [];
-        if (!tiers.length) return null;
-        const matched = summary ? tiers : priceTiersForCurrentSelection(tiers, capability, config, requirements);
-        if (!summary && !matched.length) return { kind: "tiers", label: "当前规格无报价", compactLabel: "当前规格无报价", title: "请调整参数，或选择支持当前规格的渠道" };
-        return channelTierPriceSummary(matched.length ? matched : tiers, tiers, capability);
-    }
-    if (cost.billingMode === "token") {
-        const rate = cost.outputTokenPriceMicrocredits;
-        return capability === "video" && typeof rate === "number" && Number.isFinite(rate) && rate >= 0
-            ? { kind: "estimate", label: formatPriceRange([rate / 1_000_000], "积分/百万视频 Token"), title: "按视频 Token 单价预估，优先按有效上游用量结算；未返回用量时按视频公式结算" }
-            : { kind: "estimate" };
-    }
-    return { kind: "fixed", value: cost.unitPriceMicrocredits / 1_000_000, unit: cost.billingMode === "per_second" ? "秒" : "次" };
-}
-
 function pickerModelDisplayName(config: AiConfig, model: string, showConfiguredModelName: boolean) {
     const name = showConfiguredModelName ? configuredModelDisplayName(config, model) : modelDisplayName(config, model);
     return isDirectSystemModel(config, model) ? `${name} · ${modelChannelLabel(config, model)}` : name;
@@ -522,78 +460,6 @@ function pickerModelOptionLabel(config: AiConfig, model: string, showConfiguredM
     const displayName = showConfiguredModelName ? configuredModelDisplayName(config, model) : modelDisplayName(config, model);
     const channel = resolveModelChannel(config, model);
     return channel.scope === "system" ? pickerModelDisplayName(config, model, showConfiguredModelName) : `${displayName}（${channel.name}）`;
-}
-
-function channelTierPriceSummary(
-    visibleTiers: NonNullable<NonNullable<AiConfig["channels"][number]["modelCosts"]>[number]["logicalPriceTiers"]>,
-    allTiers: NonNullable<NonNullable<AiConfig["channels"][number]["modelCosts"]>[number]["logicalPriceTiers"]>,
-    capability?: ModelCapability,
-): Extract<ModelMenuPrice, { kind: "tiers" }> {
-    const label = priceTierSummaryLabel(visibleTiers, capability);
-    return {
-        kind: "tiers",
-        label,
-        compactLabel: label,
-        title: `系统规格价格：${allTiers.map((tier) => `${tierSpecificationLabel(tier)} ${priceTierSummaryLabel([tier], capability)}`).join("；")}${allTiers.some((tier) => tier.billingMode === "token") ? (capability === "video" ? "；优先按有效上游用量结算，未返回用量时按视频公式结算" : "；Token 费用为预估，最终按成功任务的实际用量结算") : ""}`,
-    };
-}
-
-function tierResolutionLabel(value: string) {
-    const normalized = normalizeTierResolution(value);
-    return normalized === "*" ? "全部分辨率" : normalized.toUpperCase();
-}
-
-function tierDurationLabel(seconds: number) {
-    return seconds > 0 ? `${seconds} 秒` : "全部时长";
-}
-
-function tierSpecificationLabel(tier: NonNullable<NonNullable<AiConfig["channels"][number]["modelCosts"]>[number]["logicalPriceTiers"]>[number]) {
-    const selector = tier.selector || {};
-    const operationLabels: Record<string, string> = { text_to_image: "文生图", image_to_image: "图生图", text_to_video: "文生视频", image_to_video: "图生视频", video_to_video: "视频生视频" };
-    const operation = selector.operation && selector.operation !== "*" ? operationLabels[selector.operation] || selector.operation : "";
-    const details = [
-        operation,
-        selector.quality && selector.quality !== "*" ? imageQualityLabel(selector.quality) : "",
-        selector.resolution && selector.resolution !== "*" ? imageQualityLabel(selector.resolution) : "",
-        selector.size && selector.size !== "*" ? selector.size : "",
-        tier.resolution !== "*" ? tierResolutionLabel(tier.resolution) : "",
-        tier.videoSeconds ? tierDurationLabel(tier.videoSeconds) : "",
-        selector.imageCount && selector.imageCount !== "*" ? `${selector.imageCount} 张参考图` : "",
-        selector.videoGenerateAudio === "true" ? "有声" : selector.videoGenerateAudio === "false" ? "无声" : "",
-    ].filter(Boolean);
-    return details.length ? details.join(" / ") : "默认规格";
-}
-
-function ModelPrice({ price, quote, compact = false }: { price: ModelMenuPrice | null | undefined; quote?: LogicalModelQuote; compact?: boolean }) {
-    if (quote) {
-        const amount = (quote.amountMicrocredits / 1_000_000).toLocaleString("zh-CN", { maximumFractionDigits: 6 });
-        const label = quote.estimated ? `预估:${amount}` : `${amount}`;
-        return (
-            <span className="model-picker-price inline-flex shrink-0 items-center gap-1 text-[var(--fs-tiny)] font-semibold tabular-nums" aria-label={modelQuoteDescription(quote)}>
-                <Coins className="model-picker-price-icon" aria-hidden="true" />
-                {compact ? label : `${label} 积分`}
-            </span>
-        );
-    }
-    if (price === undefined) return null;
-    if (price === null) return compact ? null : <span className="shrink-0 text-[var(--fs-tiny)] text-foreground/40">未配置</span>;
-    if (price.kind === "tiers") {
-        return (
-            <span className="model-picker-price inline-flex shrink-0 items-center gap-1 text-[var(--fs-tiny)] font-semibold tabular-nums">
-                <Coins className="model-picker-price-icon" aria-hidden="true" />
-                {compact ? price.compactLabel : price.label}
-            </span>
-        );
-    }
-    if (price.kind === "estimate") {
-        return <span className="model-picker-price inline-flex shrink-0 items-center text-[var(--fs-tiny)] font-semibold"><Coins className="model-picker-price-icon" aria-hidden="true" />{price.label || "按量预估"}</span>;
-    }
-    return (
-        <span className="model-picker-price inline-flex shrink-0 items-center gap-1 text-[var(--fs-tiny)] font-semibold tabular-nums">
-            <Coins className="model-picker-price-icon" aria-hidden="true" />
-            {price.value.toLocaleString("zh-CN", { maximumFractionDigits: compact ? 3 : 6 })}{compact ? "/" : " 积分/"}{price.unit}
-        </span>
-    );
 }
 
 function modelAvailability(config: AiConfig, model: string): PublicChannelModelAvailability | undefined {

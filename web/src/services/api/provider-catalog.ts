@@ -5,11 +5,7 @@ export type ProviderCatalogTag = { id: string; label: string; tone: string };
 
 export type ProviderCatalogPriceTier = {
     selector?: Record<string, string>;
-    billingMode: "fixed_request" | "per_second" | "token";
-    costUnitMicrocredits: number;
-    costInputMicrocredits: number;
-    costOutputMicrocredits: number;
-    costCachedMicrocredits: number;
+    providerModelKey?: string;
 };
 
 export type ProviderCatalogModel = {
@@ -59,8 +55,7 @@ export type ProviderCatalogVerifyResult = {
 export type ProviderCatalogInstallInput = {
     name: string;
     apiKey: string;
-    markupPercent: number;
-    models: Array<{ modelKey: string; markupPercent: number | null }>;
+    models: Array<{ modelKey: string }>;
     enabled: boolean;
 };
 
