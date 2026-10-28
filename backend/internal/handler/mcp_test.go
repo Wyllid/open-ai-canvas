@@ -135,3 +135,13 @@ func TestMCPRateLimiterWindow(t *testing.T) {
 		t.Fatal("limiter should reset after the window")
 	}
 }
+
+func TestMCPToolContentAddsImages(t *testing.T) {
+	content, err := mcpToolContent(&service.MCPToolResult{Value: map[string]int{"version": 2}, Images: []service.MCPImage{{MimeType: "image/jpeg", Data: []byte{1, 2}}}})
+	if err != nil || len(content) != 2 || content[0]["text"] != `{"version":2}` || content[1]["type"] != "image" || content[1]["data"] != "AQI=" {
+		t.Fatalf("content = %+v, %v", content, err)
+	}
+	if plain, err := mcpToolContent([]string{"a"}); err != nil || len(plain) != 1 || plain[0]["text"] != `["a"]` {
+		t.Fatalf("plain = %+v, %v", plain, err)
+	}
+}

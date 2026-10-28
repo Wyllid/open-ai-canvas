@@ -363,6 +363,8 @@ type DramaSegmentView struct {
 	VideoJob  *DramaJobView       `json:"videoJob,omitempty"`
 	// VideoWait 只在视频已请求（queued）但尚未提交时出现：调度实际卡住的原因，例如等待上一段或参考图。
 	VideoWait string `json:"videoWait,omitempty"`
+	// Takes 是本段的全部视频版本，新版本在前；Selected 的那一版进入成片。
+	Takes []DramaTakeView `json:"takes"`
 }
 
 // DramaSegmentRequest 是一段视频请求的预演，与提交时同一函数计算。

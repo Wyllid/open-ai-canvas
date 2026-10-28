@@ -103,7 +103,9 @@ type Service struct {
 	modelAvailabilityAt      time.Time
 	// dramaTaskHook 只在测试中替换短剧调度的任务提交，生产路径始终走 CreateTask 准入。
 	dramaTailFrameHook func(userID, resourceID string) (string, error)
-	dramaTaskHook      func(userID string, req CreateTaskRequest, timeline *renderProject) (*model.Task, error)
+	// dramaTakeFramesHook 替换抽帧（测试环境没有 ffmpeg）。
+	dramaTakeFramesHook func(userID, resourceID string, count int) ([][]byte, error)
+	dramaTaskHook       func(userID string, req CreateTaskRequest, timeline *renderProject) (*model.Task, error)
 }
 
 const taskWorkerConcurrency = 3

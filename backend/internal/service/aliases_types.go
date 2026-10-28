@@ -113,6 +113,8 @@ type (
 	ChannelOrderRequest                    = app.ChannelOrderRequest
 	ChannelRequest                         = app.ChannelRequest
 	AgentModelSetup                        = app.AgentModelSetup
+	MCPToolResult                          = app.MCPToolResult
+	MCPImage                               = app.MCPImage
 	AgentModelSetupRequest                 = app.AgentModelSetupRequest
 	SystemChannelExport                    = app.SystemChannelExport
 	SystemChannelImportResult              = app.SystemChannelImportResult

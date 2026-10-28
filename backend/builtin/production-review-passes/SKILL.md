@@ -75,6 +75,13 @@ For each take, check against its shot:
 
 Verdict per take: **approve**, **fix prompt** (say what to change), or **new take** (say why a prompt fix is not enough).
 
+On a drama with the MCP tools:
+
+1. Read the episode with `drama_episode_get`; each segment lists its `takes`, newest first, with the one in the cut marked `selected`.
+2. Look at a take with `drama_take_frames` (evenly spaced frames). Judge only what the frames show; say so when a problem could sit between frames.
+3. Record the verdict with `drama_take_review` (`approve`, `fix_prompt` with a `promptFix`, or `new_take` with the reason in `notes`). This never regenerates anything.
+4. When an older take is better, propose it. Call `drama_take_select` only after the person picks it: the episode is re-rendered locally, and the result warns when the next segment was generated from the replaced take's last frame.
+
 ## Output
 
 End with one list, ranked by impact on the finished film:

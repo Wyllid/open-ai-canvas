@@ -378,13 +378,11 @@ func (s *Service) ReprocessDramaSegmentVideo(userID, projectID, episodeID string
 // dramaTailDownloadTimeout 是抽尾帧前读取段视频的上限；超时转为可重新处理的失败，而不是一直“生成中”。
 const dramaTailDownloadTimeout = 3 * time.Minute
 
-func (s *Service) extractDramaTailFrame(userID, resourceID string) (string, error) {
-	if s.dramaTailFrameHook != nil {
-		return s.dramaTailFrameHook(userID, resourceID)
-	}
+// downloadDramaVideo 把段视频下载到 dir/input.mp4，供 ffmpeg 抽帧。
+func (s *Service) downloadDramaVideo(userID, resourceID, dir string) (*model.Resource, string, error) {
 	resource, body, err := s.OpenResource(userID, resourceID)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 	defer body.Close()
 	// 读取对象存储可能卡住：超时后关闭读取流让 io.Copy 返回，避免一段视频阻塞整个调度循环。
@@ -395,7 +393,31 @@ func (s *Service) extractDramaTailFrame(userID, resourceID string) (string, erro
 	})
 	defer watchdog.Stop()
 	if !strings.HasPrefix(resource.MimeType, "video/") {
-		return "", errors.New("尾帧来源不是视频")
+		return nil, "", errors.New("尾帧来源不是视频")
+	}
+	input := filepath.Join(dir, "input.mp4")
+	file, err := os.Create(input)
+	if err != nil {
+		return nil, "", err
+	}
+	_, copyErr := io.Copy(file, body)
+	watchdog.Stop()
+	closeErr := file.Close()
+	if copyErr != nil {
+		if stalled.Load() {
+			return nil, "", fmt.Errorf("读取段视频超时（%d 秒），可稍后点“重新处理”", int(dramaTailDownloadTimeout.Seconds()))
+		}
+		return nil, "", copyErr
+	}
+	if closeErr != nil {
+		return nil, "", closeErr
+	}
+	return resource, input, nil
+}
+
+func (s *Service) extractDramaTailFrame(userID, resourceID string) (string, error) {
+	if s.dramaTailFrameHook != nil {
+		return s.dramaTailFrameHook(userID, resourceID)
 	}
 	ffmpegBin, err := renderFfmpegBinary()
 	if err != nil {
@@ -406,22 +428,9 @@ func (s *Service) extractDramaTailFrame(userID, resourceID string) (string, erro
 		return "", err
 	}
 	defer os.RemoveAll(dir)
-	input := filepath.Join(dir, "input.mp4")
-	file, err := os.Create(input)
+	resource, input, err := s.downloadDramaVideo(userID, resourceID, dir)
 	if err != nil {
 		return "", err
-	}
-	_, copyErr := io.Copy(file, body)
-	watchdog.Stop()
-	closeErr := file.Close()
-	if copyErr != nil {
-		if stalled.Load() {
-			return "", fmt.Errorf("读取段视频超时（%d 秒），可稍后点“重新处理”", int(dramaTailDownloadTimeout.Seconds()))
-		}
-		return "", copyErr
-	}
-	if closeErr != nil {
-		return "", closeErr
 	}
 	output := filepath.Join(dir, "tail.png")
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)

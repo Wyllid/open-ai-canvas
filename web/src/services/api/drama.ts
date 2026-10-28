@@ -280,6 +280,8 @@ export type DramaSegment = {
     /** 视频已生成，只是后处理（如抽尾帧）失败；可重新处理已有视频，不重新生成。 */
     videoReprocessable?: boolean;
     videoModel: DramaModelChoice;
+    /** Every video take of this segment, newest first; the selected one is in the cut. */
+    takes?: DramaTake[];
     /** auto 按本段镜头自动取参考图；custom 为手动指定（顺序即参考图编号）。 */
     referenceMode: "auto" | "custom";
     request: DramaSegmentRequest;
@@ -377,6 +379,37 @@ export type CreateDramaInput = {
 };
 
 const base = (projectId: string) => `/dramas/${encodeURIComponent(projectId)}`;
+
+export type DramaTakeVerdict = "approve" | "fix_prompt" | "new_take";
+
+export type DramaTakeReview = {
+    verdict: DramaTakeVerdict;
+    score?: number;
+    notes?: string;
+    promptFix?: string;
+    reviewer?: string;
+    reviewedAt?: string;
+};
+
+export type DramaTake = {
+    id: string;
+    version: number;
+    resourceId: string;
+    durationMs: number;
+    createdAt: string;
+    selected: boolean;
+    review?: DramaTakeReview;
+};
+
+/** Puts a take into the episode cut; the episode is rendered again, no video is generated. */
+export function selectDramaTake(projectId: string, takeId: string) {
+    return http.post<{ segmentId: string; takeId: string; changed: boolean; warning?: string }>(`${base(projectId)}/takes/${encodeURIComponent(takeId)}/select`);
+}
+
+/** Records a review of a take; an empty verdict clears it. Never regenerates anything. */
+export function reviewDramaTake(projectId: string, takeId: string, review: { verdict: DramaTakeVerdict | ""; score?: number; notes?: string; promptFix?: string }) {
+    return http.put<{ review: DramaTakeReview | null }>(`${base(projectId)}/takes/${encodeURIComponent(takeId)}/review`, review);
+}
 
 export function listDramas(params: { page: number; pageSize: number; q?: string; status?: DramaStatus }, signal?: AbortSignal) {
     return http.get<DramaListPage>("/dramas", { params: compactApiParams(params), signal });

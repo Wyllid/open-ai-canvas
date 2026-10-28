@@ -5380,3 +5380,64 @@
     flex: 1;
     min-width: 0;
 }
+
+/* Takes of a segment: the one in the cut is marked, others can be previewed and picked. */
+.drama-sd-takes {
+    display: grid;
+    gap: 6px;
+}
+.drama-sd-take {
+    display: grid;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--drama-line);
+    border-radius: 8px;
+}
+.drama-sd-take[data-selected] {
+    border-color: var(--workspace-accent);
+}
+.drama-sd-take-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.drama-sd-take-name {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: baseline;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.drama-sd-take-name small {
+    overflow: hidden;
+    color: var(--drama-faint);
+    font-size: var(--fs-micro);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.drama-sd-take-verdict,
+.drama-sd-take-cut {
+    flex: none;
+    color: var(--drama-muted);
+    font-size: var(--fs-micro);
+}
+.drama-sd-take-verdict.is-approve,
+.drama-sd-take-cut {
+    color: var(--workspace-accent);
+}
+.drama-sd-take-verdict.is-fix_prompt {
+    color: var(--drama-warn);
+}
+.drama-sd-take-verdict.is-new_take {
+    color: var(--drama-err);
+}
+.drama-sd-take-body {
+    display: grid;
+    gap: 8px;
+}

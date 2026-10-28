@@ -188,15 +188,17 @@ type DramaSegment struct {
 
 // DramaTake 保存每个产物的全部版本：角色/场景参考图（cast）、剧情段视频（video）与成片（final）。
 type DramaTake struct {
-	ID         string    `json:"id" gorm:"primaryKey;size:36"`
-	ProjectID  string    `json:"projectId" gorm:"index;size:36"`
-	OwnerID    string    `json:"ownerId" gorm:"size:36;index:idx_drama_takes_owner_kind,priority:1"`
-	Kind       string    `json:"kind" gorm:"size:16;index:idx_drama_takes_owner_kind,priority:2"`
-	Version    int       `json:"version"`
-	ResourceID string    `json:"resourceId" gorm:"size:36"`
-	TaskID     string    `json:"taskId" gorm:"size:36"`
-	Prompt     string    `json:"prompt" gorm:"type:text"`
-	DurationMs int64     `json:"durationMs"`
+	ID         string `json:"id" gorm:"primaryKey;size:36"`
+	ProjectID  string `json:"projectId" gorm:"index;size:36"`
+	OwnerID    string `json:"ownerId" gorm:"size:36;index:idx_drama_takes_owner_kind,priority:1"`
+	Kind       string `json:"kind" gorm:"size:16;index:idx_drama_takes_owner_kind,priority:2"`
+	Version    int    `json:"version"`
+	ResourceID string `json:"resourceId" gorm:"size:36"`
+	TaskID     string `json:"taskId" gorm:"size:36"`
+	Prompt     string `json:"prompt" gorm:"type:text"`
+	DurationMs int64  `json:"durationMs"`
+	// ReviewJSON 是对这一版的审阅结论（DramaTakeReview）；空串表示未审阅。
+	ReviewJSON string    `json:"-" gorm:"type:text"`
 	CreatedAt  time.Time `json:"createdAt"`
 }
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"crypto/subtle"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
@@ -185,14 +186,32 @@ func dispatchMCP(svc *service.Service, userID string, request mcpRequest) mcpRes
 		if err != nil {
 			return mcpResult(request.ID, mcpToolError(params.Name, err))
 		}
-		text, err := json.Marshal(result)
+		content, err := mcpToolContent(result)
 		if err != nil {
 			return mcpResult(request.ID, mcpToolError(params.Name, err))
 		}
-		return mcpResult(request.ID, gin.H{"content": []gin.H{{"type": "text", "text": string(text)}}, "isError": false})
+		return mcpResult(request.ID, gin.H{"content": content, "isError": false})
 	default:
 		return mcpErrorResponse(request.ID, jsonRPCNoMethod, "method not found: "+request.Method)
 	}
+}
+
+// mcpToolContent turns a tool result into MCP content: the JSON value as text, then
+// any images (frames of a take) as base64 image items.
+func mcpToolContent(result any) ([]gin.H, error) {
+	var images []service.MCPImage
+	if withImages, ok := result.(*service.MCPToolResult); ok {
+		result, images = withImages.Value, withImages.Images
+	}
+	text, err := json.Marshal(result)
+	if err != nil {
+		return nil, err
+	}
+	content := []gin.H{{"type": "text", "text": string(text)}}
+	for _, image := range images {
+		content = append(content, gin.H{"type": "image", "mimeType": image.MimeType, "data": base64.StdEncoding.EncodeToString(image.Data)})
+	}
+	return content, nil
 }
 
 // mcpToolError reports a failed call to the agent so it can correct itself. Only

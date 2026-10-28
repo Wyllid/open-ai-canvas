@@ -19,6 +19,18 @@ type MCPTool struct {
 	InputSchema json.RawMessage `json:"inputSchema"`
 }
 
+// MCPToolResult is a tool result that carries images next to its JSON value, so an
+// agent with vision can look at them (for example frames of a rendered take).
+type MCPToolResult struct {
+	Value  any
+	Images []MCPImage
+}
+
+type MCPImage struct {
+	MimeType string
+	Data     []byte
+}
+
 // ErrMCPToolNotFound reports a tools/call for a name the endpoint does not expose.
 var ErrMCPToolNotFound = errors.New("unknown MCP tool")
 
@@ -57,6 +69,9 @@ const (
 	mcpDramaEpisodeSet = "drama_episode_update"
 	mcpDramaMusicSet   = "drama_music_set"
 	mcpAudioResources  = "audio_resources"
+	mcpDramaTakeFrames = "drama_take_frames"
+	mcpDramaTakeReview = "drama_take_review"
+	mcpDramaTakeSelect = "drama_take_select"
 )
 
 const mcpCanvasIDDescription = "Canvas ID from canvas_list."
@@ -149,6 +164,23 @@ func (s *Service) MCPTools() ([]MCPTool, error) {
 				"required": []string{"resourceId", "startMs", "durationMs"},
 			}},
 		}, "projectId", "episodeId", "cues"),
+		mcpTool(mcpDramaTakeFrames, "Look at a segment video take: returns evenly spaced frames as images plus the take's details. Take ids are in the takes list of each segment in drama_episode_get.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"takeId":    map[string]any{"type": "string"},
+			"count":     map[string]any{"type": "integer", "minimum": 1, "maximum": dramaMaxTakeFrames, "description": "Frames to return, default 4."},
+		}, "projectId", "takeId"),
+		mcpTool(mcpDramaTakeReview, "Record the review of a segment take: approve, fix_prompt (say what to change in promptFix) or new_take (say why a prompt fix is not enough). Recording a review never regenerates anything. An empty verdict clears the review.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"takeId":    map[string]any{"type": "string"},
+			"verdict":   map[string]any{"type": "string", "enum": []string{"", DramaTakeApprove, DramaTakeFixPrompt, DramaTakeNewTake}},
+			"score":     map[string]any{"type": "integer", "minimum": 1, "maximum": 5},
+			"notes":     map[string]any{"type": "string", "description": "What is right or wrong, shot by shot. Required unless approved."},
+			"promptFix": map[string]any{"type": "string", "description": "Suggested change to the segment prompt."},
+		}, "projectId", "takeId", "verdict"),
+		mcpTool(mcpDramaTakeSelect, "Use this take of a segment in the episode cut. The episode is rendered again locally; no video is generated. Do it only when the person chose the take.", map[string]any{
+			"projectId": map[string]any{"type": "string"},
+			"takeId":    map[string]any{"type": "string"},
+		}, "projectId", "takeId"),
 	}
 	registry := cloudAgentRegistry()
 	for _, name := range append(append([]string{}, mcpCanvasTools...), mcpSkillTools...) {
@@ -314,6 +346,44 @@ func (s *Service) CallMCPTool(userID, name string, arguments json.RawMessage) (a
 			return nil, err
 		}
 		return s.SetDramaMusic(userID, args.ProjectID, args.EpisodeID, SetDramaMusicRequest{Cues: args.Cues})
+	case mcpDramaTakeFrames:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			TakeID    string `json:"takeId"`
+			Count     int    `json:"count"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.TakeID); err != nil {
+			return nil, err
+		}
+		take, frames, err := s.DramaTakeFrames(userID, args.ProjectID, args.TakeID, args.Count)
+		if err != nil {
+			return nil, err
+		}
+		result := &MCPToolResult{Value: take}
+		for _, frame := range frames {
+			result.Images = append(result.Images, MCPImage{MimeType: "image/jpeg", Data: frame})
+		}
+		return result, nil
+	case mcpDramaTakeReview:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			TakeID    string `json:"takeId"`
+			DramaTakeReview
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.TakeID); err != nil {
+			return nil, err
+		}
+		args.Reviewer = "agent"
+		return s.ReviewDramaTake(userID, args.ProjectID, args.TakeID, args.DramaTakeReview)
+	case mcpDramaTakeSelect:
+		var args struct {
+			ProjectID string `json:"projectId"`
+			TakeID    string `json:"takeId"`
+		}
+		if err := decodeMCPDramaArgs(arguments, &args, &args.ProjectID, &args.TakeID); err != nil {
+			return nil, err
+		}
+		return s.SelectDramaTake(userID, args.ProjectID, args.TakeID)
 	}
 	if isMCPCanvasTool(name) {
 		canvasID, rest, err := splitMCPCanvasID(arguments)
