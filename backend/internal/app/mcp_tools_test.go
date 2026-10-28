@@ -57,7 +57,22 @@ func TestMCPToolsExposeOnlyPreparationTools(t *testing.T) {
 			t.Fatalf("generation tool %s must stay in the canvas", tool.Name)
 		}
 	}
-	if len(tools) != 4+len(mcpCanvasTools)+len(mcpSkillTools) {
+	if len(tools) != 10+len(mcpCanvasTools)+len(mcpSkillTools) {
 		t.Fatalf("got %d tools", len(tools))
+	}
+}
+
+func TestMCPDramaEditToolsNeedTheirIDs(t *testing.T) {
+	svc := &Service{}
+	for name, args := range map[string]string{
+		mcpDramaShotUpdate: `{"projectId":"p1","dialogue":"Hi"}`,
+		mcpDramaShotInsert: `{"projectId":" ","shotId":"s1","position":"after"}`,
+		mcpDramaCastUpdate: `{"castId":"c1"}`,
+		mcpDramaEpisodeSet: `{"projectId":"p1","episodeId":"e1","title":"  "}`,
+		mcpDramaJobs:       `{"projectId":"p1","unknown":true}`,
+	} {
+		if _, err := svc.CallMCPTool("user", name, json.RawMessage(args)); err == nil {
+			t.Errorf("%s %s: want an argument error", name, args)
+		}
 	}
 }
