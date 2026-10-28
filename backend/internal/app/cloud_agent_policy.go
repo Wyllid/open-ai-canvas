@@ -122,7 +122,7 @@ func compileCloudAgentPolicies(req CloudAgentRequest, agentName string, skills [
 	context := map[string]any{
 		"source": "server_snapshot", "permissionMode": req.PermissionMode,
 		"agentIdentity": map[string]string{"name": firstNonEmpty(strings.TrimSpace(agentName), defaultCanvasAppearance().AgentName)},
-		"reasoningMode": mode,
+		"reasoningMode": mode, "replyLanguage": cloudAgentReplyLanguages[req.Locale],
 		"budget": map[string]any{
 			"maxSteps":           cloudAgentStepLimit(req),
 			"maxGenerationTasks": req.Budget.MaxGenerationTasks, "maxVideoSeconds": req.Budget.MaxVideoSeconds,
@@ -161,4 +161,13 @@ func compileCloudAgentPolicies(req CloudAgentRequest, agentName string, skills [
 		return "", cloudAgentPolicySnapshot{}, fmt.Errorf("compiled Agent policy is empty")
 	}
 	return text, snapshot, nil
+}
+
+// cloudAgentReplyLanguages maps the interface locale sent with a run to the language the agent writes in.
+// An empty locale (older clients) keeps the Chinese default.
+var cloudAgentReplyLanguages = map[string]string{
+	"":      "简体中文",
+	"zh-CN": "简体中文",
+	"en":    "English",
+	"pt-BR": "Português (Brasil)",
 }
