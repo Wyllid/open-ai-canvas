@@ -10,8 +10,6 @@ import { readAnnouncementPendingReview } from "./components/admin-announcement-s
 const AnalyticsPanel = lazy(() => import("./components/analytics-panel"));
 const AdminAnnouncementsPanel = lazy(() => import("./components/admin-announcements-panel"));
 const AdminBannerAnnouncementsPanel = lazy(() => import("./components/admin-banner-announcements-panel"));
-const AccessSettingsPanel = lazy(() => import("./components/access-settings-panel"));
-const EmailSettingsPanel = lazy(() => import("./components/email-settings-panel"));
 const FeatureAvailabilityPanel = lazy(() => import("./components/feature-availability-panel"));
 const StorageResourcesPanel = lazy(() => import("./components/storage-resources-panel"));
 const AgentLessonsPanel = lazy(() => import("./components/agent-lessons-panel"));
@@ -71,22 +69,6 @@ export function BannerAnnouncementsPage() {
             }
         >
             <AdminBannerAnnouncementsPanel createOpen={createOpen} onCreateOpenChange={setCreateOpen} />
-        </AdminPageFrame>
-    );
-}
-
-export function AccessSettingsPage() {
-    return (
-        <AdminPageFrame title={tr("登录与注册")} description={tr("先控制账号创建，再配置第三方登录入口与服务协议")} scroll>
-            <AccessSettingsPanel />
-        </AdminPageFrame>
-    );
-}
-
-export function EmailSettingsPage() {
-    return (
-        <AdminPageFrame title={tr("邮件服务")} description={tr("先决定是否发送注册验证码，再配置 SMTP")} scroll>
-            <EmailSettingsPanel />
         </AdminPageFrame>
     );
 }

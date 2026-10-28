@@ -15,7 +15,19 @@
             html,
             body {
                 margin: 0;
+                background: #0f0f11;
+            }
+            html:not(.dark),
+            html:not(.dark) body {
                 background: #ffffff;
+            }
+            html:not(.dark) #root:empty::before {
+                background: rgba(15, 15, 17, 0.7);
+                box-shadow: 0 0 0 7px rgba(15, 15, 17, 0.06);
+            }
+            html:not(.dark) #root:empty::after {
+                border-color: rgba(15, 15, 17, 0.14);
+                border-right-color: transparent;
             }
             #root:empty {
                 min-height: 100vh;
@@ -58,13 +70,14 @@
         <script>
             try {
                 var s = JSON.parse(localStorage.getItem("yingce:theme_store") || "{}");
-                var t = s.state && s.state.theme === "dark" ? "dark" : "light";
+                // Dark is the default; only an explicit light choice switches it off.
+                var t = s.state && s.state.theme === "light" ? "light" : "dark";
                 document.documentElement.classList.toggle("dark", t === "dark");
                 document.documentElement.style.colorScheme = t;
             } catch (e) {}
         </script>
     </head>
-    <body class="bg-background text-foreground antialiased" style="background:#ffffff">
+    <body class="bg-background text-foreground antialiased">
         <div id="root"></div>
         <script type="module" src="/src/main.tsx"></script>
     </body>

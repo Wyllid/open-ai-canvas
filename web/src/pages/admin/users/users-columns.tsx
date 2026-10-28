@@ -14,7 +14,7 @@ export const userColumnOptions: Array<{ key: UserColumnKey; label: string; locke
     { key: "credits", label: tr("当前积分") },
     { key: "role", label: trIn("user", "角色") },
     { key: "status", label: tr("状态") },
-    { key: "createdAt", label: tr("注册时间") },
+    { key: "createdAt", label: tr("创建时间") },
     { key: "actions", label: tr("操作"), locked: true },
 ];
 
@@ -57,7 +57,7 @@ export function createUserColumns({
             ),
         },
         { key: "status", title: tr("状态"), dataIndex: "status", width: 110, align: "center", render: (status) => <AdminStatusBadge label={status === "active" ? tr("已启用") : tr("已停用")} tone={status === "active" ? "success" : "neutral"} /> },
-        { key: "createdAt", title: tr("注册时间"), dataIndex: "createdAt", width: 112, align: "center", render: (value) => <span className="tabular-nums" title={formatTime(value)}>{formatCompactTime(value)}</span> },
+        { key: "createdAt", title: tr("创建时间"), dataIndex: "createdAt", width: 112, align: "center", render: (value) => <span className="tabular-nums" title={formatTime(value)}>{formatCompactTime(value)}</span> },
         {
             key: "actions",
             title: tr("操作"),

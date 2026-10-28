@@ -1,7 +1,7 @@
 import { tr } from "@/i18n";
 import { App, Button, Dropdown, Input } from "antd";
 import { Checkbox } from "@/pages/admin/ui/controls";
-import { Ban, Search, Settings2, UserPlus } from "lucide-react";
+import { Ban, Search, Settings2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PaginationBar } from "@/pages/admin/components/admin-ui";
@@ -12,7 +12,7 @@ import { AdminBatchBar, AdminDataTable, AdminTableEmpty } from "../components/ad
 import { useTableUrlState } from "../lib/use-table-url-state";
 import { AdminUserDetailDrawer } from "../components/admin-user-detail-drawer";
 import { createUserColumns, userColumnOptions, type UserColumnKey } from "./users-columns";
-import { AdminUserCreateDrawer, AdminUserEditDrawer } from "./users-drawer";
+import { AdminUserEditDrawer } from "./users-drawer";
 import { Select } from "@/components/ui/base/select";
 import { AdminSearchInput } from "../components/admin-search-input";
 
@@ -31,7 +31,6 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
     const [retry, setRetry] = useState(0);
     const [detailUserId, setDetailUserId] = useState<string | null>(null);
     const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-    const [createUserOpen, setCreateUserOpen] = useState(false);
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
     const [bulkDisabling, setBulkDisabling] = useState(false);
     const [visibleColumns, setVisibleColumns] = useState<Set<UserColumnKey>>(() => {
@@ -90,13 +89,6 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
         onUserChanged?.(nextUser);
     }, [onUserChanged]);
 
-    const addUser = useCallback((user: AdminUser) => {
-        setUsers((items) => [user, ...items].slice(0, state.pageSize));
-        setTotal((value) => value + 1);
-        onUserChanged?.(user);
-        setCreateUserOpen(false);
-    }, [onUserChanged, state.pageSize]);
-
     const toggleStatus = useCallback(async (user: AdminUser) => {
         try {
             if (user.status === "active") {
@@ -117,7 +109,7 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
         actorId: actor?.id,
         visibleColumns,
         onView: (user) => setDetailUserId(user.id),
-        onEdit: (user) => { setCreateUserOpen(false); setEditingUser(user); },
+        onEdit: (user) => setEditingUser(user),
         onToggleStatus: toggleStatus,
     }), [actor?.id, toggleStatus, visibleColumns]);
 
@@ -184,7 +176,6 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
                 }
                 trailing={
                     <div className="flex items-center gap-2">
-                        <Button icon={<UserPlus className="size-4" />} onClick={() => { setEditingUser(null); setCreateUserOpen(true); }}>{tr("添加用户")}</Button>
                         <Dropdown
                             trigger={["click"]}
                             popupRender={() => (
@@ -238,7 +229,6 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
             />
 
             <AdminUserDetailDrawer userId={detailUserId} previousUserId={previousUserId} nextUserId={nextUserId} onNavigate={setDetailUserId} onClose={() => setDetailUserId(null)} />
-            <AdminUserCreateDrawer open={createUserOpen} onClose={() => setCreateUserOpen(false)} onCreated={addUser} />
             <AdminUserEditDrawer user={editingUser} actorId={actor?.id} onClose={() => setEditingUser(null)} onSaved={replaceUser} />
         </>
     );

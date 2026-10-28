@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { getAuthSession, login } from "@/services/api/auth";
 import { useUserStore } from "@/stores/use-user-store";
 
-/** Single local admin sign-in (credentials come from the server .env). The backend keeps the session in an HttpOnly cookie for a year. */
+/** Single local admin sign-in (credentials come from the server .env). The backend keeps the session in an HttpOnly cookie for 30 days. */
 export default function LoginPage() {
     const navigate = useNavigate();
     const [params] = useSearchParams();
@@ -35,7 +35,7 @@ export default function LoginPage() {
             message.success(tr("Signed in"));
             navigate(next, { replace: true });
         } catch (error) {
-            message.error(error instanceof Error ? error.message : tr("Sign-in failed"));
+            message.error(signInErrorMessage(error));
         } finally {
             setSubmitting(false);
         }
@@ -85,6 +85,23 @@ function AuthField({ label, htmlFor, children }: { label: string; htmlFor: strin
             {children}
         </div>
     );
+}
+
+/** The server answers in Chinese; translate the sign-in failures this page can receive. */
+function signInErrorMessage(error: unknown) {
+    const text = error instanceof Error ? error.message : "";
+    const retryAfter = /^请求次数已达上限，请在 (\d+) 秒后重试$/.exec(text);
+    if (retryAfter) return tr("请求次数已达上限，请在 {0} 秒后重试", retryAfter[1]);
+    switch (text) {
+        case "用户名、邮箱或密码不正确":
+            return tr("用户名、邮箱或密码不正确");
+        case "该账号已被禁用":
+            return tr("该账号已被禁用");
+        case "管理员密码过于简单，只能从本机或内网登录。请在服务器 .env 中设置至少 12 位的 CANVAS_ADMIN_PASSWORD 并重启服务。":
+            return tr("管理员密码过于简单，只能从本机或内网登录。请在服务器 .env 中设置至少 12 位的 CANVAS_ADMIN_PASSWORD 并重启服务。");
+        default:
+            return text || tr("Sign-in failed");
+    }
 }
 
 function safeNext(value: string | null) {

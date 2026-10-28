@@ -103,8 +103,7 @@ export function AgentLauncher({
         const next = !collapsed;
         setCollapsed(next);
         try {
-            if (next) localStorage.setItem(AGENT_LAUNCHER_COLLAPSED_KEY, "1");
-            else localStorage.removeItem(AGENT_LAUNCHER_COLLAPSED_KEY);
+            localStorage.setItem(AGENT_LAUNCHER_COLLAPSED_KEY, next ? "1" : "0");
         } catch (error) {
             console.warn("Agent 形象收起状态无法保存", error);
         }
@@ -114,7 +113,9 @@ export function AgentLauncher({
     const largeAvatar = live || media || bundleManifestLoading;
     // 收起后只留小圆球入口：不加载 Live2D / 动画，也不挡画布。位置以右下角为锚点，收起展开不跳位。
     const keepsAvatarSize = largeAvatar && !collapsed;
-    const height = collapsed ? AGENT_LAUNCHER_COLLAPSED_SIZE : keepsAvatarSize ? Math.max(40, Math.min(appearance.avatarHeight, viewport.height - 60, (viewport.width - 40) / aspectRatio)) : 76;
+    // On phones an expanded avatar may take at most about a quarter of the screen height.
+    const narrowLimit = viewport.width < NARROW_VIEWPORT_WIDTH ? viewport.height * 0.26 : Infinity;
+    const height = collapsed ? AGENT_LAUNCHER_COLLAPSED_SIZE : keepsAvatarSize ? Math.max(40, Math.min(appearance.avatarHeight, viewport.height - 60, (viewport.width - 40) / aspectRatio, narrowLimit)) : 76;
     const width = collapsed ? AGENT_LAUNCHER_COLLAPSED_SIZE : keepsAvatarSize ? Math.round(height * aspectRatio) : 76;
     const { position, dragging, handlers } = useAgentLauncherPosition(onOpen, width, height);
     const showToggle = !hidden && (largeAvatar || collapsed);
@@ -197,12 +198,18 @@ export function AgentLauncher({
 const AGENT_LAUNCHER_COLLAPSED_KEY = "canvas:agent-launcher-collapsed:v1";
 const AGENT_LAUNCHER_COLLAPSED_SIZE = 48;
 
+const NARROW_VIEWPORT_WIDTH = 640;
+
+/** The saved choice wins; without one, phones start with the small orb so the avatar does not cover the page. */
 function readAgentLauncherCollapsed() {
+    let stored: string | null = null;
     try {
-        return localStorage.getItem(AGENT_LAUNCHER_COLLAPSED_KEY) === "1";
+        stored = localStorage.getItem(AGENT_LAUNCHER_COLLAPSED_KEY);
     } catch {
-        return false;
+        // Storage can be blocked; fall back to the screen-size default.
     }
+    if (stored === "1" || stored === "0") return stored === "1";
+    return window.innerWidth < NARROW_VIEWPORT_WIDTH;
 }
 
 export function AgentHeader({

@@ -3,7 +3,7 @@ import { commitPublicAppearance, DEFAULT_PUBLIC_APPEARANCE } from "@/stores/use-
 import { deleteAdminResources } from "@/services/api/admin-storage";
 import { AdminStatusBadge, SettingsSectionCard } from "@/pages/admin/components/admin-ui";
 import { AdminPageFrame } from "@/pages/admin/components/admin-shell";
-import { Palette, RefreshCw, Undo2, RotateCcw, Save, Sun, Moon, MonitorPlay, Globe2, Search, Copyright, Type } from "lucide-react";
+import { Palette, RefreshCw, Undo2, RotateCcw, Save, Sun, Moon, Globe2, Search, Copyright, Type } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/pages/admin/ui/controls";
 import { WelcomeSetting } from "@/pages/admin/settings/components/welcome-setting";
@@ -305,16 +305,6 @@ export default function AppearanceSettingsPage() {
             message.error(tr("英文品牌标识须为 1 到 48 位小写字母、数字或连字符"));
             return;
         }
-        if (!nextAuthHeroTitle || Array.from(nextAuthHeroTitle).length > 80 || hasUnsupportedControlCharacter(nextAuthHeroTitle)) {
-            setActiveTab("auth");
-            message.error(tr("登录页主标题必须为 1 到 80 个字符，可使用换行"));
-            return;
-        }
-        if (Array.from(nextAuthHeroDescription).length > 160 || hasUnsupportedControlCharacter(nextAuthHeroDescription)) {
-            setActiveTab("auth");
-            message.error(tr("登录页说明文案不能超过 160 个字符，可使用换行"));
-            return;
-        }
         for (const [value, label, max, tab] of [
             [nextSeoTitle, tr("SEO 标题"), 70, "seo"],
             [nextSeoDescription, tr("SEO 描述"), 200, "seo"],
@@ -580,102 +570,6 @@ export default function AppearanceSettingsPage() {
                                                     <LogoThemePreview label={tr("浅色界面")} icon={<Sun />} src={previews.logoLight} dark={false} frameEnabled={logoFrameEnabled} />
                                                     <LogoThemePreview label={tr("深色界面")} icon={<Moon />} src={previews.logoDark} dark frameEnabled={logoFrameEnabled} />
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </SettingsSectionCard>
-                                ),
-                            },
-                            {
-                                key: "auth",
-                                label: tr("登录页"),
-                                destroyOnHidden: true,
-                                children: (
-                                    <SettingsSectionCard
-                                        className="admin-appearance-section admin-appearance-auth-section"
-                                        icon={<MonitorPlay className="size-4" aria-hidden="true" />}
-                                        title={tr("登录页内容与媒体")}
-                                        description={tr("登录、注册与找回密码共享左侧品牌文案和影片；更换视频会同时取消旧封面，避免品牌串帧。")}
-                                        status={
-                                            <AdminStatusBadge
-                                                label={copyCustomized || setting.authVideoResourceId || setting.authVideoPosterResourceId ? tr("已配置") : tr("使用原始内容")}
-                                                tone={copyCustomized || setting.authVideoResourceId || setting.authVideoPosterResourceId ? "success" : "neutral"}
-                                            />
-                                        }
-                                    >
-                                        <div className="admin-appearance-auth-layout">
-                                            <div className="admin-appearance-auth-controls">
-                                                <Form className="admin-appearance-form" layout="vertical" requiredMark={false} disabled={saving || refreshing || restoring}>
-                                                    <Form.Item label={tr("登录页主标题")} extra={tr("1–80 个字符，可换行；登录、注册和找回密码页面共用。")}>
-                                                        <Input.TextArea value={authHeroTitle} maxLength={80} showCount autoSize={{ minRows: 2, maxRows: 4 }} placeholder={tr("输入登录页主标题")} onChange={(event) => setAuthHeroTitle(event.target.value)} />
-                                                    </Form.Item>
-                                                    <Form.Item label={tr("登录页说明文案（可选）")} extra={tr("最多 160 个字符，可换行；留空时不显示说明。")}>
-                                                        <Input.TextArea
-                                                            value={authHeroDescription}
-                                                            maxLength={160}
-                                                            showCount
-                                                            autoSize={{ minRows: 2, maxRows: 5 }}
-                                                            placeholder={tr("补充一句品牌介绍或产品定位")}
-                                                            onChange={(event) => setAuthHeroDescription(event.target.value)}
-                                                        />
-                                                    </Form.Item>
-                                                </Form>
-                                                <div className="admin-appearance-media-list">
-                                                    <div className="admin-appearance-video-autoplay-option">
-                                                        <span className="admin-appearance-video-autoplay-copy">
-                                                            <strong>{tr("登录页视频自动播放")}</strong>
-                                                            <small>{tr("默认开启并静音循环播放；访客启用“减少动态效果”时仍尊重其系统偏好。")}</small>
-                                                        </span>
-                                                        <span className="admin-appearance-video-autoplay-control">
-                                                            <span>{authVideoAutoplay ? tr("已开启") : tr("已关闭")}</span>
-                                                            <Switch checked={authVideoAutoplay} disabled={saving || refreshing || restoring} aria-label={tr("登录页视频自动播放")} onChange={setAuthVideoAutoplay} />
-                                                        </span>
-                                                    </div>
-                                                    <AssetPicker
-                                                        slot="video"
-                                                        title={tr("品牌视频")}
-                                                        description={tr("支持 MP4 或 WebM，最多 256MB；服务器运行时上传配额仍会同时生效。")}
-                                                        configured={Boolean(setting.authVideoResourceId) && !resets.video}
-                                                        file={files.video}
-                                                        inputRef={inputRefs.video}
-                                                        onSelect={selectFile}
-                                                        onReset={resetAsset}
-                                                        disabled={saving || refreshing || restoring}
-                                                    />
-                                                    <AssetPicker
-                                                        slot="poster"
-                                                        title={tr("视频封面（可选）")}
-                                                        description={tr("自定义视频未设置封面时保持中性背景，不显示原品牌封面。")}
-                                                        configured={Boolean(setting.authVideoPosterResourceId) && !resets.poster}
-                                                        file={files.poster}
-                                                        inputRef={inputRefs.poster}
-                                                        onSelect={selectFile}
-                                                        onReset={resetAsset}
-                                                        disabled={saving || refreshing || restoring}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="admin-appearance-preview" aria-label={tr("登录页实时预览")}>
-                                                <div className="admin-appearance-preview-heading">
-                                                    <div>
-                                                        <span>{tr("登录页实时预览")}</span>
-                                                        <strong>{brandName.trim() || tr("未命名品牌")}</strong>
-                                                    </div>
-                                                    <AdminStatusBadge label={dirty ? tr("未保存") : tr("线上版本")} tone={dirty ? "warning" : "success"} />
-                                                </div>
-                                                <div className="admin-appearance-preview-stage">
-                                                    <video key={`${previews.video}-${authVideoAutoplay}`} src={previews.video} poster={previews.poster || undefined} muted loop playsInline autoPlay={authVideoAutoplay} preload="metadata" />
-                                                    <span className="admin-appearance-preview-shade" />
-                                                    <span className="admin-appearance-preview-brand">
-                                                        <img src={previews.logoDark} alt="" />
-                                                        <strong>{brandName.trim() || tr("未命名品牌")}</strong>
-                                                    </span>
-                                                    <span className="admin-appearance-preview-copy">
-                                                        <small>{(brandSlug.trim() || "brand-studio").replace(/-+/g, " ").toLocaleUpperCase()}</small>
-                                                        <strong>{normalizeDraftCopy(authHeroTitle) || tr("请输入登录页主标题")}</strong>
-                                                        {normalizeDraftCopy(authHeroDescription) ? <span>{normalizeDraftCopy(authHeroDescription)}</span> : null}
-                                                    </span>
-                                                </div>
-                                                <p>{tr("预览与正式登录页使用同一文案和媒体。正式页面会先解析公开配置，再渲染品牌内容。")}</p>
                                             </div>
                                         </div>
                                     </SettingsSectionCard>

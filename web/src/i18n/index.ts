@@ -20,7 +20,6 @@ const PLACEHOLDER = /\{(\d+)\}/g;
 
 let active: ActiveLocale = "zh-CN";
 let catalog: Catalog | null = null;
-let fallback: Catalog | null = null;
 
 const loaders: Record<Locale, () => Promise<{ default: Catalog }>> = {
     en: () => import("./locales/en.json"),
@@ -46,13 +45,13 @@ export function detectLocale(): Locale {
 export async function initI18n(): Promise<Locale> {
     const locale = detectLocale();
     try {
+        // Only the chosen catalog is downloaded: `i18n-keys.mjs --check` keeps every catalog complete,
+        // so a second language as fallback would only double the first load.
         catalog = (await loaders[locale]()).default;
-        fallback = locale === "en" ? null : (await loaders.en()).default;
         active = locale;
     } catch {
         // A missing chunk keeps the source text rather than blocking the app.
         catalog = null;
-        fallback = null;
     }
     if (typeof document !== "undefined") document.documentElement.lang = active;
     return locale;
@@ -84,23 +83,22 @@ function format(text: string, args: unknown[]) {
 
 /** Translates a source string; "{0}", "{1}"… are replaced by args. */
 export function tr(source: string, ...args: unknown[]): string {
-    const text = catalog?.[source] || fallback?.[source] || source;
-    return format(text, args);
+    return format(catalog?.[source] || source, args);
 }
 
 /** tr for a word whose meaning depends on where it is shown: the catalog key is "source@context". */
 export function trIn(context: string, source: string, ...args: unknown[]): string {
     const key = `${source}@${context}`;
-    return format(catalog?.[key] || fallback?.[key] || catalog?.[source] || fallback?.[source] || source, args);
+    return format(catalog?.[key] || catalog?.[source] || source, args);
 }
 
 /** Like tr, but keeps args as values (e.g. React elements) so a whole sentence can wrap rich parts. */
 export function trParts<T>(source: string, ...args: Array<T | string>): Array<string | T> {
-    const text = catalog?.[source] || fallback?.[source] || source;
+    const text = catalog?.[source] || source;
     return text.split(PLACEHOLDER).map((part, index) => (index % 2 ? args[Number(part)] : part));
 }
 
 /** Translates a message that came from the backend when it matches a catalog key exactly. */
 export function trMessage(message: string): string {
-    return catalog?.[message] || fallback?.[message] || message;
+    return catalog?.[message] || message;
 }

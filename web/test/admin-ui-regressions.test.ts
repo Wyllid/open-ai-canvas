@@ -175,10 +175,8 @@ test("admin settings use full-width summaries without selected-card side stripes
 });
 
 test("task-first settings reveal dependent configuration only after the primary choice", async () => {
-    const [storageSource, emailSource, accessSource, featureSource, appearanceSource, welcomeSource, drawingSource, arkSource, interceptionSource, thirdPartySource, cssSource] = await Promise.all([
+    const [storageSource, featureSource, appearanceSource, welcomeSource, drawingSource, arkSource, interceptionSource, thirdPartySource, cssSource] = await Promise.all([
         Promise.resolve(moduleGroupSource("pages/admin/settings/storage-settings-page.tsx")),
-        Bun.file(new URL("../src/pages/admin/components/email-settings-panel.tsx", import.meta.url)).text(),
-        Bun.file(new URL("../src/pages/admin/components/access-settings-panel.tsx", import.meta.url)).text(),
         Bun.file(new URL("../src/pages/admin/components/feature-availability-panel.tsx", import.meta.url)).text(),
         Promise.resolve(moduleGroupSource("pages/admin/settings/appearance-settings-page.tsx")),
         Bun.file(new URL("../src/pages/admin/settings/components/welcome-setting.tsx", import.meta.url)).text(),
@@ -192,15 +190,6 @@ test("task-first settings reveal dependent configuration only after the primary 
     expect(storageSource).toContain('title={tr("1. 选择新资源存储位置")}');
     expect(storageSource).toContain("选择后继续完成第 2 步并保存");
     expect(sourceSection(storageSource, "const requestModeChange", "const save")).not.toContain("save(values)");
-
-    expect(emailSource).toContain("{draftEnabled ? (");
-    expect(emailSource).toContain('id="admin-email-smtp"');
-    expect(emailSource).toContain('title={tr("1. 是否发送账户安全邮件")}');
-    expect(emailSource).toContain('title={tr("2. 配置 SMTP 连接与发件身份")}');
-
-    expect(accessSource).toContain("{draftLinuxDOEnabled ? (");
-    expect(accessSource).toContain('title={tr("1. 是否允许创建新账号")}');
-    expect(accessSource).toContain('title={tr("2. 是否开放 Linux.do 登录")}');
 
     expect(featureSource).toContain('title={tr("1. 用户工作台入口")}');
     expect(featureSource).toContain('title={tr("2. 插件开放范围")}');
