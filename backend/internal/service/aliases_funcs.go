@@ -5,6 +5,7 @@ import "yingce/backend/internal/app"
 var (
 	ErrPlaybackNotReady                     = app.ErrPlaybackNotReady
 	ErrNotBuiltinSkill                      = app.ErrNotBuiltinSkill
+	ErrMCPToolNotFound                      = app.ErrMCPToolNotFound
 	AllowedPrivateUpstreamHost              = app.AllowedPrivateUpstreamHost
 	AppearanceAssetMaxBytes                 = app.AppearanceAssetMaxBytes
 	ApplyDefaultOutboundHeaders             = app.ApplyDefaultOutboundHeaders
