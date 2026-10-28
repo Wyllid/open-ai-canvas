@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { agentCanvasFocusTargets, type AgentCanvasFocus } from "@/lib/canvas/agent-canvas-focus";
 import { mergeAgentCanvasEditor } from "@/lib/canvas/agent-canvas-patch";
 import { rebaseCanvasLocalEdits } from "@/lib/canvas/canvas-sync-rebase";
@@ -186,7 +187,7 @@ export function useCanvasProjectLifecycle({
                     });
                 })
                 .catch(() => {
-                    if (!cancelled) message.warning("部分助手会话素材恢复失败，已使用项目记录继续打开");
+                    if (!cancelled) message.warning(tr("部分助手会话素材恢复失败，已使用项目记录继续打开"));
                 });
         };
         void load()
@@ -195,11 +196,11 @@ export function useCanvasProjectLifecycle({
             })
             .catch((error) => {
                 if (cancelled) return;
-                useSyncProgressStore.getState().setProjectProgress(projectId, { phase: "pending", errorKind: "network", message: error instanceof Error ? `画布同步失败：${error.message}` : "画布同步失败" });
+                useSyncProgressStore.getState().setProjectProgress(projectId, { phase: "pending", errorKind: "network", message: error instanceof Error ? tr("画布同步失败：{0}", error.message) : tr("画布同步失败") });
                 // A cached editor may have become ready during this very load.
                 // Do not cover it with the cold-start error screen.
                 if (editorReadyRef.current) setLoadError("");
-                else setLoadError(error instanceof Error ? error.message : "画布加载失败");
+                else setLoadError(error instanceof Error ? error.message : tr("画布加载失败"));
             });
         return () => {
             cancelled = true;
@@ -341,7 +342,7 @@ export function useCanvasProjectLifecycle({
     }, [projectId, projectLoaded, updateProject, viewportRef]);
 
     const createAndOpenProject = useCallback(() => {
-        void createCanvasProjectWithRemoteSync(`自由画布 ${useCanvasStore.getState().projects.length + 1}`).then(({ id, syncError }) => {
+        void createCanvasProjectWithRemoteSync(tr("自由画布 {0}", useCanvasStore.getState().projects.length + 1)).then(({ id, syncError }) => {
             if (syncError) console.warn("新画布等待后台同步", syncError);
             navigate(`/canvas/${id}`);
         });
@@ -352,12 +353,12 @@ export function useCanvasProjectLifecycle({
         try {
             await deleteCanvasProjectsWithRemoteSync([projectId]);
         } catch (error) {
-            message.error(error instanceof Error ? `删除画布失败：${error.message}` : "删除画布失败，请稍后重试");
+            message.error(error instanceof Error ? tr("删除画布失败：{0}", error.message) : tr("删除画布失败，请稍后重试"));
             return;
         }
         if (drawingIds.length) {
             void Promise.all(drawingIds.map((drawingId) => removeCanvasDrawing(projectId, drawingId)))
-                .catch(() => message.warning("项目已删除，但部分本地绘图缓存清理失败"));
+                .catch(() => message.warning(tr("项目已删除，但部分本地绘图缓存清理失败")));
         }
         cleanupAssetImages();
         navigate("/canvas");
@@ -401,10 +402,10 @@ export function useCanvasProjectLifecycle({
         try {
             if (options.requireRemote === false) {
                 await saveRemoteUserDataNow(projectId);
-                message.success("画布已保存到云端");
+                message.success(tr("画布已保存到云端"));
             } else {
                 await prepareCanvasForCloudAction(projectId);
-                message.success("画布已保存到云端");
+                message.success(tr("画布已保存到云端"));
             }
             return true;
         } catch (error) {

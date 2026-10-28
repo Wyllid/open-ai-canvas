@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 技能工作台的纯函数：工作副本 → 文件树、路径校验（与后端 normalizeSkillEditPath 对齐）、
 // 以及把本地修改折叠成 PUT /skills/:id/files 的有序批量操作。
 
@@ -97,20 +98,20 @@ const controlCharacter = /[\u0000-\u001f\u007f-\u009f]/;
 
 /** 返回错误文案；合法时返回 null。规则与后端保持一致，提交前尽早拦截。 */
 export function validateSkillPath(filePath: string): string | null {
-    if (!filePath) return "名称不能为空";
-    if (filePath.includes("\\")) return "路径不能包含反斜杠";
-    if (filePath.startsWith("/")) return "请使用相对路径";
+    if (!filePath) return tr("名称不能为空");
+    if (filePath.includes("\\")) return tr("路径不能包含反斜杠");
+    if (filePath.startsWith("/")) return tr("请使用相对路径");
     const segments = filePath.split("/");
-    if (segments.length > SKILL_MAX_PATH_DEPTH) return `目录层级不能超过 ${SKILL_MAX_PATH_DEPTH} 层`;
+    if (segments.length > SKILL_MAX_PATH_DEPTH) return tr("目录层级不能超过 {0} 层", SKILL_MAX_PATH_DEPTH);
     for (const segment of segments) {
-        if (!segment) return "路径不能包含空的层级";
-        if (segment === "." || segment === "..") return "路径不能包含 . 或 ..";
-        if (segment.trim() !== segment) return "名称不能以空格开头或结尾";
-        if (controlCharacter.test(segment)) return "名称不能包含控制字符";
-        if (utf8ByteLength(segment) > 255) return "名称过长";
+        if (!segment) return tr("路径不能包含空的层级");
+        if (segment === "." || segment === "..") return tr("路径不能包含 . 或 ..");
+        if (segment.trim() !== segment) return tr("名称不能以空格开头或结尾");
+        if (controlCharacter.test(segment)) return tr("名称不能包含控制字符");
+        if (utf8ByteLength(segment) > 255) return tr("名称过长");
     }
-    if (segments[0] === ".git" || segments[0] === "__MACOSX") return "不能使用系统保留目录";
-    if (segments[segments.length - 1] === ".DS_Store") return "不能使用系统保留文件名";
+    if (segments[0] === ".git" || segments[0] === "__MACOSX") return tr("不能使用系统保留目录");
+    if (segments[segments.length - 1] === ".DS_Store") return tr("不能使用系统保留文件名");
     return null;
 }
 
@@ -134,9 +135,9 @@ export function collectFolders(paths: Iterable<string>, explicitFolders: Iterabl
 
 /** 新路径不能与已有文件或文件夹重名，也不能把文件当作文件夹使用。 */
 export function pathConflict(target: string, filePaths: Set<string>, folders: Set<string>, ignore?: (filePath: string) => boolean): string | null {
-    if ((filePaths.has(target) && !ignore?.(target)) || folders.has(target)) return "同名文件或文件夹已存在";
+    if ((filePaths.has(target) && !ignore?.(target)) || folders.has(target)) return tr("同名文件或文件夹已存在");
     for (let dir = parentPath(target); dir; dir = parentPath(dir)) {
-        if (filePaths.has(dir) && !ignore?.(dir)) return `“${dir}” 是文件，不能作为文件夹`;
+        if (filePaths.has(dir) && !ignore?.(dir)) return tr("“{0}” 是文件，不能作为文件夹", dir);
     }
     return null;
 }
@@ -299,8 +300,8 @@ export function languageLabel(filePath: string) {
         go: "Go",
         html: "HTML",
         css: "CSS",
-        txt: "纯文本",
+        txt: tr("纯文本"),
         csv: "CSV",
     };
-    return labels[extension] || "纯文本";
+    return labels[extension] || tr("纯文本");
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useState } from "react";
 import { AudioLines, FileText, Image as ImageIcon, LoaderCircle, Video } from "lucide-react";
 
@@ -63,8 +64,8 @@ export function CanvasAssetPreview({ node, kind }: { node: CanvasNodeData; kind:
                 eager
                 draggable={false}
                 className="max-h-full max-w-full object-contain"
-                fallback={<PreviewMessage text="图片资源不可用" />}
-                loadingFallback={<PreviewMessage text="正在加载图片" loading />}
+                fallback={<PreviewMessage text={tr("图片资源不可用")} />}
+                loadingFallback={<PreviewMessage text={tr("正在加载图片")} loading />}
             />
         );
     }
@@ -91,9 +92,9 @@ function PreviewMessage({ text, loading = false }: { text: string; loading?: boo
 
 function VideoPreview({ node }: { node: CanvasNodeData }) {
     const { url, loading, onError } = useVideoPlaybackUrl(node, true);
-    if (loading && !url) return <PreviewMessage text="正在加载视频" loading />;
-    if (!url) return <PreviewMessage text="视频资源不可用" />;
-    return <video src={url} controls playsInline preload="metadata" className="max-h-full max-w-full bg-black" aria-label={node.title || "视频"} onError={onError} />;
+    if (loading && !url) return <PreviewMessage text={tr("正在加载视频")} loading />;
+    if (!url) return <PreviewMessage text={tr("视频资源不可用")} />;
+    return <video src={url} controls playsInline preload="metadata" className="max-h-full max-w-full bg-black" aria-label={node.title || tr("视频")} onError={onError} />;
 }
 
 function AudioPreview({ node }: { node: CanvasNodeData }) {
@@ -109,12 +110,12 @@ function AudioPreview({ node }: { node: CanvasNodeData }) {
             active = false;
         };
     }, [fallback, storageKey]);
-    if (state.loading) return <PreviewMessage text="正在加载音频" loading />;
-    if (!state.url) return <PreviewMessage text="音频资源不可用" />;
+    if (state.loading) return <PreviewMessage text={tr("正在加载音频")} loading />;
+    if (!state.url) return <PreviewMessage text={tr("音频资源不可用")} />;
     return (
         <div className="flex w-full max-w-xl flex-col items-center gap-4 px-6">
             <AudioLines className="size-10 text-muted-foreground" aria-hidden="true" />
-            <audio src={state.url} controls preload="metadata" className="w-full" aria-label={node.title || "音频"} />
+            <audio src={state.url} controls preload="metadata" className="w-full" aria-label={node.title || tr("音频")} />
         </div>
     );
 }

@@ -102,7 +102,7 @@ describe("模式接线", () => {
         const normalizedWorkbench = workbench.replace(/\s+/g, " ");
         expect(normalizedWorkbench).toContain('const isActor = object.kind === "actor" || object.primitive === "character";');
         // 姿态是检查器里的一个标签页：只对演员、且由 bones 能力放行。
-        expect(normalizedWorkbench).toContain('...(isActor && capabilities.bones ? [{ id: "pose" as const, label: "姿态" }] : []),');
+        expect(normalizedWorkbench).toContain('...(isActor && capabilities.bones ? [{ id: "pose" as const, label: tr("姿态") }] : []),');
         // motionClips 不得再作为放行条件：带动画的普通模型不是演员。
         expect(workbench).not.toContain('object.primitive === "character" || motionClips.length) ? <>');
     });
@@ -110,9 +110,9 @@ describe("模式接线", () => {
     test("姿态模式提供全身与当前骨骼重置，不删除动画轨道", () => {
         const inspector = slice(workbench, "function ObjectInspector(", "function LightInspector(");
         const normalizedInspector = inspector.replace(/\s+/g, " ");
-        expect(normalizedInspector).toContain('onClick={() => applyPose("stand")}> 重置姿态 </Button>');
+        expect(normalizedInspector).toContain('onClick={() => applyPose("stand")}> {tr("重置姿态")} </Button>');
         expect(inspector).toContain("delete boneOverrides[selectedBoneId]");
-        expect(normalizedInspector).toContain("> 重置当前部位 </Button>");
+        expect(normalizedInspector).toContain('> {tr("重置当前部位")} </Button>');
         expect(inspector).not.toContain("boneTracks: []");
     });
 
@@ -241,7 +241,7 @@ describe("模式控件可发现、可键盘、小屏可达", () => {
     test("有可见文字标签与 hint title，不是纯图标", () => {
         expect(nav).toContain("{item.label}");
         expect(nav).toContain("title={item.hint}");
-        expect(nav).toContain('aria-label="预演台模式"');
+        expect(nav).toContain('aria-label={tr("预演台模式")}');
     });
 
     test("带 data-mode 测试锚点：E2E 不靠中文文案定位模式按钮", () => {

@@ -1,12 +1,13 @@
+import { tr } from "@/i18n";
 export const DEFAULT_USER_AVATARS = [
-    { id: "person", label: "默认人像" },
-    { id: "director", label: "导演" },
-    { id: "camera", label: "摄影师" },
-    { id: "cat", label: "小猫" },
-    { id: "rabbit", label: "小兔" },
-    { id: "robot", label: "机器人" },
-    { id: "rocket", label: "探索者" },
-    { id: "sparkles", label: "灵感" },
+    { id: "person", label: tr("默认人像") },
+    { id: "director", label: tr("导演") },
+    { id: "camera", label: tr("摄影师") },
+    { id: "cat", label: tr("小猫") },
+    { id: "rabbit", label: tr("小兔") },
+    { id: "robot", label: tr("机器人") },
+    { id: "rocket", label: tr("探索者") },
+    { id: "sparkles", label: tr("灵感") },
 ] as const;
 
 export type DefaultUserAvatarID = (typeof DEFAULT_USER_AVATARS)[number]["id"];

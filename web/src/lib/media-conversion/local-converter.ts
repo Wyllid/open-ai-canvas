@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { MediaConversionOperation } from "./contracts";
 
 export type LocalImageConversionResult = {
@@ -16,7 +17,7 @@ export class LocalImageConversionError extends Error {
 export async function convertImageLocally(sourceUrl: string, operation: MediaConversionOperation, options: { signal?: AbortSignal; maxDimension?: number } = {}): Promise<LocalImageConversionResult> {
     throwIfAborted(options.signal);
     if (operation !== "grayscale" && operation !== "edge-canny") {
-        throw new LocalImageConversionError("model_missing", "该转换需要先安装并验证本地模型");
+        throw new LocalImageConversionError("model_missing", tr("该转换需要先安装并验证本地模型"));
     }
 
     const image = await loadImage(sourceUrl, options.signal);
@@ -29,7 +30,7 @@ export async function convertImageLocally(sourceUrl: string, operation: MediaCon
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (!context) throw new LocalImageConversionError("browser_unsupported", "当前浏览器无法创建图片处理画布");
+    if (!context) throw new LocalImageConversionError("browser_unsupported", tr("当前浏览器无法创建图片处理画布"));
     context.drawImage(image, 0, 0, width, height);
     const input = context.getImageData(0, 0, width, height);
     const output = transformPixels(input.data, width, height, operation, options.signal);
@@ -42,7 +43,7 @@ export async function convertImageLocally(sourceUrl: string, operation: MediaCon
 
 /** Pure pixel transform used by the browser executor and unit tests. */
 export function transformPixels(source: Uint8ClampedArray, width: number, height: number, operation: "grayscale" | "edge-canny", signal?: AbortSignal) {
-    if (source.length !== width * height * 4) throw new Error("图片像素尺寸不匹配");
+    if (source.length !== width * height * 4) throw new Error(tr("图片像素尺寸不匹配"));
     if (operation === "grayscale") return grayscalePixels(source, width, height, signal);
     return cannyPixels(source, width, height, signal);
 }
@@ -191,13 +192,13 @@ function nonMaximumSuppression(magnitude: Float32Array, direction: Float32Array,
 }
 
 async function loadImage(sourceUrl: string, signal?: AbortSignal) {
-    if (!sourceUrl) throw new LocalImageConversionError("source_unreadable", "没有可读取的图片输入");
+    if (!sourceUrl) throw new LocalImageConversionError("source_unreadable", tr("没有可读取的图片输入"));
     const image = new Image();
     image.crossOrigin = "anonymous";
     return await new Promise<HTMLImageElement>((resolve, reject) => {
         const abort = () => {
             image.src = "";
-            reject(new LocalImageConversionError("aborted", "转换已取消"));
+            reject(new LocalImageConversionError("aborted", tr("转换已取消")));
         };
         if (signal?.aborted) return abort();
         signal?.addEventListener("abort", abort, { once: true });
@@ -207,7 +208,7 @@ async function loadImage(sourceUrl: string, signal?: AbortSignal) {
         };
         image.onerror = () => {
             signal?.removeEventListener("abort", abort);
-            reject(new LocalImageConversionError("source_unreadable", "图片无法读取，可能是跨域资源或已失效"));
+            reject(new LocalImageConversionError("source_unreadable", tr("图片无法读取，可能是跨域资源或已失效")));
         };
         image.src = sourceUrl;
     });
@@ -218,11 +219,11 @@ function canvasToBlob(canvas: HTMLCanvasElement, signal?: AbortSignal) {
     return new Promise<Blob>((resolve, reject) => {
         canvas.toBlob((blob) => {
             if (blob) resolve(blob);
-            else reject(new LocalImageConversionError("browser_unsupported", "当前浏览器无法导出图片结果"));
+            else reject(new LocalImageConversionError("browser_unsupported", tr("当前浏览器无法导出图片结果")));
         }, "image/png");
     });
 }
 
 function throwIfAborted(signal?: AbortSignal): asserts signal is AbortSignal | undefined {
-    if (signal?.aborted) throw new LocalImageConversionError("aborted", "转换已取消");
+    if (signal?.aborted) throw new LocalImageConversionError("aborted", tr("转换已取消"));
 }

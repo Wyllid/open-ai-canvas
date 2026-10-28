@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useCallback, useMemo, useState } from "react";
 import { Button, Table } from "antd";
 import { Switch } from "@/components/ui/base/switch";
@@ -66,28 +67,28 @@ export default function PrevisReproLab() {
     return (
         <div className="min-h-dvh overflow-y-auto p-5" style={{ background: "var(--bg)", color: "var(--fg)" }}>
             <header className="mb-4 flex flex-wrap items-center gap-3">
-                <h1 className="text-lg font-semibold">预演台 P0 复现台</h1>
-                <StatusBadge tone={previsReproSceneIsOffline(scene) ? "error" : "success"} data-testid="offline-tag" label={previsReproSceneIsOffline(scene) ? "fixture 无网络资产" : "已注入模型资产"} />
+                <h1 className="text-lg font-semibold">{tr("预演台 P0 复现台")}</h1>
+                <StatusBadge tone={previsReproSceneIsOffline(scene) ? "error" : "success"} data-testid="offline-tag" label={previsReproSceneIsOffline(scene) ? tr("fixture 无网络资产") : tr("已注入模型资产")} />
                 <span className="text-[var(--fs-tiny)] opacity-70" data-testid="object-count">
-                    对象数 {scene.objects.length}
+                    {tr("对象数")} {scene.objects.length}
                 </span>
                 <span className="ml-auto flex flex-wrap items-center gap-2">
                     <Button size="small" data-testid="inject-local-model" onClick={() => injectModel("local")}>
-                        注入本地模型
+                        {tr("注入本地模型")}
                     </Button>
                     <Button size="small" data-testid="inject-missing-model" onClick={() => injectModel("missing")}>
-                        注入缺失模型
+                        {tr("注入缺失模型")}
                     </Button>
-                    <span className="text-[var(--fs-tiny)] opacity-70">强制保存失败</span>
+                    <span className="text-[var(--fs-tiny)] opacity-70">{tr("强制保存失败")}</span>
                     <Switch checked={forceSaveFailure} onChange={setForceSaveFailure} data-testid="force-save-failure" />
                     <Button size="small" data-testid="toggle-workbench" onClick={() => setWorkbenchOpen((open) => !open)}>
-                        {workbenchOpen ? "关闭预演台" : "打开预演台"}
+                        {workbenchOpen ? tr("关闭预演台") : tr("打开预演台")}
                     </Button>
                     <Button size="small" data-testid="refresh-events" onClick={refreshEvents}>
-                        刷新事件
+                        {tr("刷新事件")}
                     </Button>
                     <Button size="small" data-testid="reset-lab" onClick={reset}>
-                        重置
+                        {tr("重置")}
                     </Button>
                 </span>
             </header>
@@ -116,34 +117,34 @@ function readPrevisEvents(): PrevisEventRow[] {
 function EnvironmentSnapshot({ snapshot, appliedCount, flushCount, sceneRevisionHint }: { snapshot: PrevisReproSnapshot; appliedCount: number; flushCount: number; sceneRevisionHint: string }) {
     const { runtime, webgl } = snapshot;
     const rows: Array<[string, string]> = [
-        ["应用版本", runtime.appVersion],
-        ["构建提交", runtime.buildCommit],
-        ["浏览器", runtime.browser || "(不可用)"],
-        ["操作系统", runtime.os || "(不可用)"],
-        ["时区", runtime.timezone || "(不可用)"],
+        [tr("应用版本"), runtime.appVersion],
+        [tr("构建提交"), runtime.buildCommit],
+        [tr("浏览器"), runtime.browser || tr("(不可用)")],
+        [tr("操作系统"), runtime.os || tr("(不可用)")],
+        [tr("时区"), runtime.timezone || tr("(不可用)")],
         ["DPR", String(runtime.devicePixelRatio)],
-        ["本地 onApply 次数", String(appliedCount)],
-        ["本地 onFlush 次数", String(flushCount)],
-        ["场景 updatedAt", sceneRevisionHint],
+        [tr("本地 onApply 次数"), String(appliedCount)],
+        [tr("本地 onFlush 次数"), String(flushCount)],
+        [tr("场景 updatedAt"), sceneRevisionHint],
     ];
 
     if (webgl.available) {
         rows.push(
-            ["WebGL 版本", webgl.version || "(空)"],
-            ["WebGL vendor", webgl.vendor || "(空)"],
-            ["WebGL renderer", webgl.renderer || "(空)"],
-            ["最大纹理尺寸", String(webgl.maxTextureSize)],
-            ["最大 renderbuffer", String(webgl.maxRenderbufferSize)],
-            ["最大视口", webgl.maxViewportWidth + "×" + webgl.maxViewportHeight],
+            [tr("WebGL 版本"), webgl.version || tr("(空)")],
+            ["WebGL vendor", webgl.vendor || tr("(空)")],
+            ["WebGL renderer", webgl.renderer || tr("(空)")],
+            [tr("最大纹理尺寸"), String(webgl.maxTextureSize)],
+            [tr("最大 renderbuffer"), String(webgl.maxRenderbufferSize)],
+            [tr("最大视口"), webgl.maxViewportWidth + "×" + webgl.maxViewportHeight],
         );
     } else {
-        rows.push(["WebGL", webgl.reason === "unsupported" ? "不支持（已稳定降级）" : "上下文创建失败（已稳定降级）"]);
+        rows.push(["WebGL", webgl.reason === "unsupported" ? tr("不支持（已稳定降级）") : tr("上下文创建失败（已稳定降级）")]);
     }
 
     return (
         <section className="mb-4">
-            <h2 className="mb-2 text-[var(--fs-label)] font-semibold opacity-75">环境快照</h2>
-            <p className="mb-2 text-[var(--fs-tiny)] opacity-60">仅本地展示，不上报；字符串已限长并剥离 URL query/hash 与凭证片段。</p>
+            <h2 className="mb-2 text-[var(--fs-label)] font-semibold opacity-75">{tr("环境快照")}</h2>
+            <p className="mb-2 text-[var(--fs-tiny)] opacity-60">{tr("仅本地展示，不上报；字符串已限长并剥离 URL query/hash 与凭证片段。")}</p>
             <div className="grid grid-cols-2 gap-x-6 gap-y-1 md:grid-cols-3">
                 {rows.map(([label, value]) => (
                     <div key={label} className="flex min-w-0 gap-2 text-[var(--fs-tiny)]">
@@ -161,8 +162,8 @@ function EnvironmentSnapshot({ snapshot, appliedCount, flushCount, sceneRevision
 function DiagnosticEventList({ events }: { events: PrevisEventRow[] }) {
     return (
         <section className="mb-4">
-            <h2 className="mb-2 text-[var(--fs-label)] font-semibold opacity-75">结构化事件（{events.length}）</h2>
-            <p className="mb-2 text-[var(--fs-tiny)] opacity-60">来自统一 client-diagnostics 缓冲区，只筛选 PREVIS_ 稳定码；不含 stack、URL 与业务正文。</p>
+            <h2 className="mb-2 text-[var(--fs-label)] font-semibold opacity-75">{tr("结构化事件（")}{events.length}）</h2>
+            <p className="mb-2 text-[var(--fs-tiny)] opacity-60">{tr("来自统一 client-diagnostics 缓冲区，只筛选 PREVIS_ 稳定码；不含 stack、URL 与业务正文。")}</p>
             {events.length ? (
                 <Table
                     size="small"
@@ -171,14 +172,14 @@ function DiagnosticEventList({ events }: { events: PrevisEventRow[] }) {
                     pagination={false}
                     scroll={{ y: 220 }}
                     columns={[
-                        { title: "时间", dataIndex: "timestamp", width: 200, render: (value: string) => <span className="font-mono text-[var(--fs-tiny)]">{value}</span> },
-                        { title: "级别", dataIndex: "level", width: 96, render: (value: string) => <StatusBadge size="sm" tone={value === "error" ? "error" : value === "warning" ? "warning" : "neutral"} label={value} /> },
-                        { title: "稳定码", dataIndex: "code", render: (value: string) => <span className="font-mono text-[var(--fs-tiny)]">{value}</span> },
-                        { title: "消息", dataIndex: "message" },
+                        { title: tr("时间"), dataIndex: "timestamp", width: 200, render: (value: string) => <span className="font-mono text-[var(--fs-tiny)]">{value}</span> },
+                        { title: tr("级别"), dataIndex: "level", width: 96, render: (value: string) => <StatusBadge size="sm" tone={value === "error" ? "error" : value === "warning" ? "warning" : "neutral"} label={value} /> },
+                        { title: tr("稳定码"), dataIndex: "code", render: (value: string) => <span className="font-mono text-[var(--fs-tiny)]">{value}</span> },
+                        { title: tr("消息"), dataIndex: "message" },
                     ]}
                 />
             ) : (
-                <p className="text-[var(--fs-tiny)] opacity-55">暂无预演台事件。触发下方矩阵中的失败场景后点击「刷新事件」。</p>
+                <p className="text-[var(--fs-tiny)] opacity-55">{tr("暂无预演台事件。触发下方矩阵中的失败场景后点击「刷新事件」。")}</p>
             )}
         </section>
     );
@@ -187,17 +188,17 @@ function DiagnosticEventList({ events }: { events: PrevisEventRow[] }) {
 function ReproMatrix() {
     return (
         <section className="mb-4">
-            <h2 className="mb-2 text-[var(--fs-label)] font-semibold opacity-75">P0 手工复现矩阵（{PREVIS_REPRO_MATRIX.length}）</h2>
+            <h2 className="mb-2 text-[var(--fs-label)] font-semibold opacity-75">{tr("P0 手工复现矩阵（")}{PREVIS_REPRO_MATRIX.length}）</h2>
             <Table
                 size="small"
                 rowKey="id"
                 dataSource={[...PREVIS_REPRO_MATRIX]}
                 pagination={false}
                 columns={[
-                    { title: "分组", dataIndex: "group", width: 108 },
-                    { title: "场景", dataIndex: "title", width: 190 },
-                    { title: "操作", dataIndex: "steps" },
-                    { title: "预期", dataIndex: "expected" },
+                    { title: tr("分组"), dataIndex: "group", width: 108 },
+                    { title: tr("场景"), dataIndex: "title", width: 190 },
+                    { title: tr("操作"), dataIndex: "steps" },
+                    { title: tr("预期"), dataIndex: "expected" },
                 ]}
             />
         </section>

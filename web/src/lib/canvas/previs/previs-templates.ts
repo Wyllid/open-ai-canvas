@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 
 import { createPrevisActor, createPrevisCamera, createPrevisLight, createPrevisObject, PREVIS_ACTOR_COLORS } from "@/lib/canvas/previs/previs-scene";
@@ -74,7 +75,7 @@ function buildBlueprint(id: PrevisTemplateId): TemplateBlueprint {
         return {
             objects: [createPrevisActor("演员 1", [0, 0, 0], PREVIS_ACTOR_COLORS[0])],
             camera: templateCamera({ name: "主摄影机", position: [1.5, 1.65, 3.1], target: [0, 1.15, 0], focalLength: 50, focusDistance: 3.4, aperture: 2.2 }),
-            shot: { name: "镜头 1", duration: 5, fps: 24, shotSize: "medium", cameraMove: "static", prompt: "" },
+            shot: { name: tr("镜头 1"), duration: 5, fps: 24, shotSize: "medium", cameraMove: "static", prompt: "" },
         };
     }
 
@@ -83,7 +84,7 @@ function buildBlueprint(id: PrevisTemplateId): TemplateBlueprint {
         return {
             objects: [facing(createPrevisActor("演员 1", [-0.8, 0, 0.3], PREVIS_ACTOR_COLORS[0]), Math.PI / 2), facing(createPrevisActor("演员 2", [0.8, 0, -0.3], PREVIS_ACTOR_COLORS[2]), -Math.PI / 2)],
             camera: templateCamera({ name: "主摄影机", position: [2.9, 1.7, 3.4], target: [0, 1.1, 0], focalLength: 40, focusDistance: 4.2, aperture: 2.8 }),
-            shot: { name: "镜头 1", duration: 6, fps: 24, shotSize: "medium", cameraMove: "static", prompt: "" },
+            shot: { name: tr("镜头 1"), duration: 6, fps: 24, shotSize: "medium", cameraMove: "static", prompt: "" },
         };
     }
 
@@ -92,7 +93,7 @@ function buildBlueprint(id: PrevisTemplateId): TemplateBlueprint {
         return {
             objects: [createPrevisActor("演员 1", [-1.8, 0, 0.6], PREVIS_ACTOR_COLORS[0]), createPrevisActor("演员 2", [0, 0, -0.4], PREVIS_ACTOR_COLORS[2]), createPrevisActor("演员 3", [1.8, 0, 0.8], PREVIS_ACTOR_COLORS[3])],
             camera: templateCamera({ name: "主摄影机", position: [0.6, 3.1, 7.4], target: [0, 1, 0], focalLength: 28, focusDistance: 7.6, aperture: 4 }),
-            shot: { name: "镜头 1", duration: 8, fps: 24, shotSize: "wide", cameraMove: "static", prompt: "" },
+            shot: { name: tr("镜头 1"), duration: 8, fps: 24, shotSize: "wide", cameraMove: "static", prompt: "" },
         };
     }
 
@@ -108,14 +109,14 @@ function buildBlueprint(id: PrevisTemplateId): TemplateBlueprint {
                 { ...prop, transform: { ...prop.transform, scale: [0.5, 0.8, 0.5] } },
             ],
             camera: templateCamera({ name: "主摄影机", position: [1.1, 1.05, 2.35], target: [0, 0.55, 0], focalLength: 85, focusDistance: 2.6, aperture: 2.8 }),
-            shot: { name: "镜头 1", duration: 4, fps: 24, shotSize: "close_up", cameraMove: "push_in", prompt: "" },
+            shot: { name: tr("镜头 1"), duration: 4, fps: 24, shotSize: "close_up", cameraMove: "push_in", prompt: "" },
         };
     }
 
     return {
         objects: [],
         camera: templateCamera({ name: "主摄影机", position: [4.8, 2.7, 6.8], target: [0, 1, 0], focalLength: 35, focusDistance: 5, aperture: 2.8 }),
-        shot: { name: "镜头 1", duration: 5, fps: 24, shotSize: "medium", cameraMove: "static", prompt: "" },
+        shot: { name: tr("镜头 1"), duration: 5, fps: 24, shotSize: "medium", cameraMove: "static", prompt: "" },
     };
 }
 

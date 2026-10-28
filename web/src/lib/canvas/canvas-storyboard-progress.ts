@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { CanvasNodeType, type CanvasConnection, type CanvasNodeData, type StoryboardRow } from "@/types/canvas";
 
 export type StoryboardPipelineItemState = "missing" | "idle" | "loading" | "success" | "error";
@@ -102,10 +103,10 @@ function summarizeFinalStage(nodes: CanvasNodeData[], enabled: boolean): Storybo
 }
 
 export function pipelineStatusLabel(stage: StoryboardPipelineStage) {
-    if (!stage.total) return "待开始";
-    if (stage.success >= stage.total) return "已完成";
-    if (stage.loading) return `${stage.success}/${stage.total} · 进行中`;
-    if (stage.failed) return `${stage.success}/${stage.total} · 失败 ${stage.failed}`;
-    if (stage.created) return `${stage.success}/${stage.total} · 已创建 ${stage.created}`;
+    if (!stage.total) return tr("待开始");
+    if (stage.success >= stage.total) return tr("已完成");
+    if (stage.loading) return tr("{0}/{1} · 进行中", stage.success, stage.total);
+    if (stage.failed) return tr("{0}/{1} · 失败 {2}", stage.success, stage.total, stage.failed);
+    if (stage.created) return tr("{0}/{1} · 已创建 {2}", stage.success, stage.total, stage.created);
     return `0/${stage.total}`;
 }

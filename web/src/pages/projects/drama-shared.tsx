@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
 import { CachedResourceImage } from "@/components/cached-resource-image";
@@ -5,58 +6,58 @@ import { getResourceAccess, resolveResourceAccessURL, resourceFileUrl, type Reso
 import type { DramaCastKind, DramaEpisodeRow, DramaEpisodeStage, DramaMediaMode, DramaMediaStatus, DramaSourceFormat, DramaStatus } from "@/services/api/drama";
 
 export const PIPELINE_STEPS: Array<{ key: Exclude<DramaEpisodeStage, "queued" | "review" | "done">; label: string }> = [
-    { key: "script", label: "剧本" },
-    { key: "prompts", label: "段提示词" },
-    { key: "video", label: "视频" },
-    { key: "render", label: "成片" },
+    { key: "script", label: tr("剧本") },
+    { key: "prompts", label: tr("段提示词") },
+    { key: "video", label: tr("视频") },
+    { key: "render", label: tr("成片") },
 ];
 
 const STAGE_INDEX: Record<DramaEpisodeStage, number> = { queued: -1, script: 0, prompts: 1, review: 2, video: 2, render: 3, done: 4 };
 
 export const STAGE_LABEL: Record<DramaEpisodeStage, string> = {
-    queued: "排队中",
-    script: "改编剧本",
+    queued: tr("排队中"),
+    script: tr("改编剧本"),
     prompts: "撰写段提示词",
-    review: "等待审阅",
-    video: "生成视频",
-    render: "合成成片",
-    done: "已完成",
+    review: tr("等待审阅"),
+    video: tr("生成视频"),
+    render: tr("合成成片"),
+    done: tr("已完成"),
 };
 
 export const STATUS_LABEL: Record<DramaStatus, string> = {
-    draft: "未开始",
-    running: "制作中",
-    paused: "已暂停",
-    completed: "已完成",
+    draft: tr("未开始"),
+    running: tr("制作中"),
+    paused: tr("已暂停"),
+    completed: tr("已完成"),
 };
 
-export const CAST_KIND_LABEL: Record<DramaCastKind, string> = { character: "角色", prop: "道具", scene: "场景" };
+export const CAST_KIND_LABEL: Record<DramaCastKind, string> = { character: tr("角色"), prop: tr("道具"), scene: tr("场景") };
 
 /** 生成节奏的文案：新建页与设置页共用。 */
 export const MEDIA_MODE_LABEL: Record<DramaMediaMode, { title: string; detail: string }> = {
-    manual: { title: "先出剧本与提示词，手动生成", detail: "只跑文本：作品圣经、分集、剧本、分镜、设定与各段视频提示词。确认后再逐集或全部生成参考图与视频" },
-    auto: { title: "全自动出片", detail: "剧本写好后直接生成参考图和带原声的段视频，一路跑到成片" },
+    manual: { title: tr("先出剧本与提示词，手动生成"), detail: tr("只跑文本：作品圣经、分集、剧本、分镜、设定与各段视频提示词。确认后再逐集或全部生成参考图与视频") },
+    auto: { title: tr("全自动出片"), detail: tr("剧本写好后直接生成参考图和带原声的段视频，一路跑到成片") },
 };
 
 /** 素材类型文案：新建页、追加单集与原文编辑共用。placeholder 是粘贴框的格式提示。 */
 export const SOURCE_FORMAT_LABEL: Record<DramaSourceFormat, { title: string; detail: string; placeholder: string; guide: string[] }> = {
     novel: {
-        title: "小说原文",
-        detail: "按原文改编成镜头，引号里的对白逐字保留",
-        placeholder: "粘贴小说正文。对白放在引号里，会逐字保留为台词。",
-        guide: ["引号“”「」里的对白逐字保留为台词", "叙述与心理描写改成可拍到的动作和表情", "需要旁白时只摘原文句子，不另写"],
+        title: tr("小说原文"),
+        detail: tr("按原文改编成镜头，引号里的对白逐字保留"),
+        placeholder: tr("粘贴小说正文。对白放在引号里，会逐字保留为台词。"),
+        guide: [tr("引号“”「」里的对白逐字保留为台词"), tr("叙述与心理描写改成可拍到的动作和表情"), tr("需要旁白时只摘原文句子，不另写")],
     },
     script: {
-        title: "剧本",
-        detail: "已写好的剧情与台词，只拆镜头，台词一字不改",
-        placeholder: "粘贴本集剧本，例如：\n第1场 内景 客厅 夜\n△林晚推门而入。\n林晚（冷笑）：你怎么还在这里？\n顾言：我等你很久了。",
-        guide: ["一行一句：角色：台词，或 角色（表情）：台词", "△ 开头的行写动作与画面", "旁白写成 旁白：……；台词一字不改"],
+        title: tr("剧本"),
+        detail: tr("已写好的剧情与台词，只拆镜头，台词一字不改"),
+        placeholder: tr("粘贴本集剧本，例如：\n第1场 内景 客厅 夜\n△林晚推门而入。\n林晚（冷笑）：你怎么还在这里？\n顾言：我等你很久了。"),
+        guide: [tr("一行一句：角色：台词，或 角色（表情）：台词"), tr("△ 开头的行写动作与画面"), tr("旁白写成 旁白：……；台词一字不改")],
     },
     storyboard: {
-        title: "分镜",
-        detail: "已做好的分镜表，按原镜头转录；表格可直接导入",
-        placeholder: "粘贴分镜表（Markdown 表格或从表格软件复制的内容），第一行为表头，例如：\n| 场景 | 角色 | 景别 | 画面 | 台词 | 时长 |\n| 客厅 | 林晚 | 近景 | 林晚推门而入 | 林晚：你怎么还在这里？ | 3 |",
-        guide: ["第一行是表头：场景、角色、景别、运镜、画面、台词、时长、转场", "Markdown 表格或从 Excel 复制的内容直接导入，不经过模型", "一格多句台词用 <br> 分开，会拆成连续镜头"],
+        title: tr("分镜"),
+        detail: tr("已做好的分镜表，按原镜头转录；表格可直接导入"),
+        placeholder: tr("粘贴分镜表（Markdown 表格或从表格软件复制的内容），第一行为表头，例如：\n| 场景 | 角色 | 景别 | 画面 | 台词 | 时长 |\n| 客厅 | 林晚 | 近景 | 林晚推门而入 | 林晚：你怎么还在这里？ | 3 |"),
+        guide: [tr("第一行是表头：场景、角色、景别、运镜、画面、台词、时长、转场"), tr("Markdown 表格或从 Excel 复制的内容直接导入，不经过模型"), tr("一格多句台词用 <br> 分开，会拆成连续镜头")],
     },
 };
 
@@ -66,7 +67,7 @@ export function sourceFormatOf(value: string | undefined): DramaSourceFormat {
 
 export function SourceFormatPicker({ value, onChange, disabled, row }: { value: DramaSourceFormat; onChange: (value: DramaSourceFormat) => void; disabled?: boolean; row?: boolean }) {
     return (
-        <div className={`drama-media-modes ${row ? "is-row" : ""}`} role="radiogroup" aria-label="素材类型">
+        <div className={`drama-media-modes ${row ? "is-row" : ""}`} role="radiogroup" aria-label={tr("素材类型")}>
             {(Object.keys(SOURCE_FORMAT_LABEL) as DramaSourceFormat[]).map((format) => (
                 <button key={format} type="button" role="radio" aria-checked={value === format} className="drama-media-mode" disabled={disabled} onClick={() => onChange(format)}>
                     <span className="drama-radio" />
@@ -92,17 +93,17 @@ export function episodeTone(episode: DramaEpisodeRow): EpisodeTone {
 }
 
 export function episodeStatusText(episode: DramaEpisodeRow) {
-    if (episode.error) return "需要处理";
-    if (episode.awaitingMedia) return `剧本就绪 · ${episode.shotCount} 镜 · 待生成画面`;
-    if (episode.stage === "done" && episode.finalStale) return "已修改 · 待重新合成";
+    if (episode.error) return tr("需要处理");
+    if (episode.awaitingMedia) return tr("剧本就绪 · {0} 镜 · 待生成画面", episode.shotCount);
+    if (episode.stage === "done" && episode.finalStale) return tr("已修改 · 待重新合成");
     const { stats } = episode;
     switch (episode.stage) {
         case "prompts":
-            return stats.segments ? `提示词 ${stats.promptReady}/${stats.segments}` : STAGE_LABEL.prompts;
+            return stats.segments ? tr("提示词 {0}/{1}", stats.promptReady, stats.segments) : STAGE_LABEL.prompts;
         case "video":
-            return stats.segments ? `视频 ${stats.videoReady}/${stats.segments}` : STAGE_LABEL.video;
+            return stats.segments ? tr("视频 {0}/{1}", stats.videoReady, stats.segments) : STAGE_LABEL.video;
         case "done":
-            return `已完成 · ${formatDuration(episode.durationMs)}`;
+            return tr("已完成 · {0}", formatDuration(episode.durationMs));
     }
     return STAGE_LABEL[episode.stage];
 }
@@ -139,7 +140,7 @@ export function StagePips({ episode, size = "sm" }: { episode: DramaEpisodeRow; 
 export function formatDuration(ms: number) {
     const seconds = Math.max(0, Math.round(ms / 1000));
     const minutes = Math.floor(seconds / 60);
-    return minutes ? `${minutes}分${String(seconds % 60).padStart(2, "0")}秒` : `${seconds}秒`;
+    return minutes ? tr("{0}分{1}秒", minutes, String(seconds % 60).padStart(2, "0")) : tr("{0}秒", seconds);
 }
 
 export function formatClock(ms: number) {
@@ -148,8 +149,8 @@ export function formatClock(ms: number) {
 }
 
 export function formatCount(value: number) {
-    if (value >= 10_000) return `${(value / 10_000).toFixed(value >= 100_000 ? 0 : 1)}万`;
-    return value.toLocaleString("zh-CN");
+    if (value >= 10_000) return tr("{0}万", (value / 10_000).toFixed(value >= 100_000 ? 0 : 1));
+    return value.toLocaleString(currentLocale());
 }
 
 export function aspectRatioValue(aspect: string) {

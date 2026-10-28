@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import localforage from "localforage";
 import { nanoid } from "nanoid";
 
@@ -107,7 +108,7 @@ export async function uploadMediaFile(input: Blob, prefix = "file", onProgress?:
         } catch (error) {
             // 与图片上传同一套判定：永久性失败必须当场暴露，不能混进“稍后自动同步”。
             if (error instanceof ResourceUploadError && error.permanent) throw error;
-            remoteUploadError = error instanceof Error ? error.message : "媒体直传失败";
+            remoteUploadError = error instanceof Error ? error.message : tr("媒体直传失败");
         }
 
         // 瞬时失败退回本机：文件仍可用，且云端数据同步会用同一幂等键重传。

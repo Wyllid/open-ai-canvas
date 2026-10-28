@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { CanvasNodeType, type CanvasNodeData } from "@/types/canvas";
 
 /** 已有媒体但没有生成配置的图片是输入素材，不提供原地生成入口。 */
@@ -16,13 +17,13 @@ export function createPortraitTextureNode(source: CanvasNodeData, id: string): C
     return {
         id,
         type: CanvasNodeType.Image,
-        title: `${source.title || "图片"} · 人物质感`,
+        title: tr("{0} · 人物质感", source.title || tr("图片")),
         position: { x: source.position.x + source.width + 96, y: source.position.y },
         width: source.width,
         height: source.height,
         metadata: {
             prompt: "@图片1",
-            composerContent: "@图片1",
+            composerContent: tr("@图片1"),
             generationType: "edit",
             portraitTexture: source.metadata?.portraitTexture,
         },
@@ -32,7 +33,7 @@ export function createNineGridNode(source: CanvasNodeData, id: string, toolId: n
     return {
         id,
         type: CanvasNodeType.Image,
-        title: `${source.title || "图片"} · ${label}`,
+        title: `${source.title || tr("图片")} · ${label}`,
         position: { x: source.position.x + source.width + 96, y: source.position.y },
         width: source.width,
         height: source.height,

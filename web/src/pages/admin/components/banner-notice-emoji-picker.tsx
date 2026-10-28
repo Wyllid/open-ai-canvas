@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Input, Popover, Button } from "antd";
 import { SmilePlus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -28,8 +29,8 @@ export function BannerNoticeEmojiPanel({ onPick }: { onPick: (emoji: string) => 
                 <Input
                     size="small"
                     allowClear
-                    aria-label="搜索图标素材"
-                    placeholder="搜索素材（如 礼物、火箭）"
+                    aria-label={tr("搜索图标素材")}
+                    placeholder={tr("搜索素材（如 礼物、火箭）")}
                     prefix={<Search className="size-3.5 text-foreground/40" aria-hidden="true" />}
                     value={keyword}
                     onChange={(event) => setKeyword(event.target.value)}
@@ -41,7 +42,7 @@ export function BannerNoticeEmojiPanel({ onPick }: { onPick: (emoji: string) => 
                     groups.map((group) => (
                         <div key={group.key} className="admin-banner-icon-picker-group">
                             <span className="admin-banner-icon-picker-group-label">{group.label}</span>
-                            <div className="admin-banner-icon-picker-grid" role="listbox" aria-label={`${group.label}素材`}>
+                            <div className="admin-banner-icon-picker-grid" role="listbox" aria-label={tr("{0}素材", group.label)}>
                                 {group.emoji.map((item) => (
                                     <button
                                         key={item.char}
@@ -60,7 +61,7 @@ export function BannerNoticeEmojiPanel({ onPick }: { onPick: (emoji: string) => 
                         </div>
                     ))
                 ) : (
-                    <p className="admin-banner-icon-picker-empty">没有匹配「{keyword.trim()}」的素材</p>
+                    <p className="admin-banner-icon-picker-empty">{tr("没有匹配「")}{keyword.trim()}{tr("」的素材")}</p>
                 )}
             </div>
         </div>
@@ -82,8 +83,8 @@ export function BannerNoticeEmojiPopover({ onPick }: { onPick: (emoji: string) =
             // container 对应 .ant-popover-inner（内边距所在元素）。
             styles={{ container: { padding: 0 } }}
         >
-            <Button size="small" type="text" title="在光标处插入 emoji 图标素材" icon={<SmilePlus className="size-3.5" />} aria-label="插入图标素材">
-                图标
+            <Button size="small" type="text" title={tr("在光标处插入 emoji 图标素材")} icon={<SmilePlus className="size-3.5" />} aria-label={tr("插入图标素材")}>
+                {tr("图标")}
             </Button>
         </Popover>
     );

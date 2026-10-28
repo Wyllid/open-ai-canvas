@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Input, Skeleton, type InputRef } from "antd";
 import { AlertTriangle, Brush, KeyRound, RefreshCw, RotateCcw, Save, Shapes } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -23,12 +24,12 @@ const engineOptions: Array<{
     {
         value: "excalidraw",
         title: "Excalidraw",
-        description: "无需授权，适合草图、结构标注和轻量协作。",
+        description: tr("无需授权，适合草图、结构标注和轻量协作。"),
     },
     {
         value: "tldraw",
         title: "tldraw",
-        description: "需要浏览器端 License Key，也用于打开已有 tldraw 绘图。",
+        description: tr("需要浏览器端 License Key，也用于打开已有 tldraw 绘图。"),
     },
 ];
 
@@ -61,10 +62,10 @@ export default function DrawingEngineSettingsPage() {
                 setDraft(toDraft(setting));
                 setDrawingEngine(setting);
                 setSaveError("");
-                if (announce) message.success("已重新读取当前绘图工具配置");
+                if (announce) message.success(tr("已重新读取当前绘图工具配置"));
             } catch (error) {
                 if (requestVersion !== requestVersionRef.current) return;
-                const errorMessage = error instanceof Error ? error.message : "读取绘图工具配置失败";
+                const errorMessage = error instanceof Error ? error.message : tr("读取绘图工具配置失败");
                 setLoadError(errorMessage);
                 if (!initial) message.error(errorMessage);
             } finally {
@@ -109,10 +110,10 @@ export default function DrawingEngineSettingsPage() {
         navigationConfirmOpenRef.current = true;
         navigationTriggerRef.current = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
         modal.confirm({
-            title: "放弃绘图工具调整？",
-            content: `当前有 ${dirtyFields.length} 项调整尚未保存，离开后暂存内容会丢失。`,
-            okText: "放弃并离开",
-            cancelText: "继续编辑",
+            title: tr("放弃绘图工具调整？"),
+            content: tr("当前有 {0} 项调整尚未保存，离开后暂存内容会丢失。", dirtyFields.length),
+            okText: tr("放弃并离开"),
+            cancelText: tr("继续编辑"),
             okButtonProps: { danger: true },
             onOk: () => {
                 navigationConfirmOpenRef.current = false;
@@ -141,7 +142,7 @@ export default function DrawingEngineSettingsPage() {
         if (!savedSetting || saving) return;
         setDraft(toDraft(savedSetting));
         setSaveError("");
-        message.info("已撤销本页尚未保存的调整");
+        message.info(tr("已撤销本页尚未保存的调整"));
     };
 
     const requestRefresh = () => {
@@ -150,10 +151,10 @@ export default function DrawingEngineSettingsPage() {
             return;
         }
         modal.confirm({
-            title: "放弃调整并重新读取？",
-            content: `当前有 ${dirtyFields.length} 项调整尚未保存。重新读取会丢弃暂存内容，并以服务端当前配置为准。`,
-            okText: "放弃并刷新",
-            cancelText: "继续编辑",
+            title: tr("放弃调整并重新读取？"),
+            content: tr("当前有 {0} 项调整尚未保存。重新读取会丢弃暂存内容，并以服务端当前配置为准。", dirtyFields.length),
+            okText: tr("放弃并刷新"),
+            cancelText: tr("继续编辑"),
             okButtonProps: { danger: true },
             onOk: () => load(false, true),
         });
@@ -170,9 +171,9 @@ export default function DrawingEngineSettingsPage() {
         const hasChanges = Boolean(savedSetting && (savedSetting.defaultEngine !== expected.defaultEngine || (savedSetting.tldrawLicenseKey || "").trim() !== expected.tldrawLicenseKey));
         if (!savedSetting || !hasChanges || saving) return;
         if (!isDrawingEngineAvailable(expected.defaultEngine, expected.tldrawLicenseKey)) {
-            setSaveError("当前选择的 tldraw 不可用，请先配置授权或改用 Excalidraw。");
+            setSaveError(tr("当前选择的 tldraw 不可用，请先配置授权或改用 Excalidraw。"));
             licenseInputRef.current?.focus();
-            throw new Error("请先配置 tldraw License Key");
+            throw new Error(tr("请先配置 tldraw License Key"));
         }
         setSaving(true);
         setSaveError("");
@@ -180,15 +181,15 @@ export default function DrawingEngineSettingsPage() {
             const result = await updateAdminDrawingEngineSetting(expected);
             const setting = parseDrawingEngineSetting(result.setting);
             if (setting.defaultEngine !== expected.defaultEngine || (setting.tldrawLicenseKey || "").trim() !== expected.tldrawLicenseKey) {
-                throw new Error("服务端返回的绘图工具配置与本次保存内容不一致，请重新读取后核对");
+                throw new Error(tr("服务端返回的绘图工具配置与本次保存内容不一致，请重新读取后核对"));
             }
             setSavedSetting(setting);
             setDraft(toDraft(setting));
             setDrawingEngine(setting);
-            message.success("绘图工具配置已保存");
+            message.success(tr("绘图工具配置已保存"));
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "保存绘图工具配置失败";
-            setSaveError(`${errorMessage}。未自动重试，请重新读取当前配置后再决定是否保存。`);
+            const errorMessage = error instanceof Error ? error.message : tr("保存绘图工具配置失败");
+            setSaveError(tr("{0}。未自动重试，请重新读取当前配置后再决定是否保存。", errorMessage));
             message.error(errorMessage);
             throw error;
         } finally {
@@ -206,8 +207,8 @@ export default function DrawingEngineSettingsPage() {
 
     if (loading && !draft) {
         return (
-            <AdminPageFrame title="绘图工具" description="管理新建绘图的默认编辑器与 tldraw 授权" scroll>
-                <div className="admin-settings-stack admin-drawing-settings" aria-label="正在读取绘图工具配置" role="status">
+            <AdminPageFrame title={tr("绘图工具")} description={tr("管理新建绘图的默认编辑器与 tldraw 授权")} scroll>
+                <div className="admin-settings-stack admin-drawing-settings" aria-label={tr("正在读取绘图工具配置")} role="status">
                     <div className="admin-drawing-command-bar">
                         <Skeleton active title={{ width: 180 }} paragraph={false} />
                     </div>
@@ -221,18 +222,18 @@ export default function DrawingEngineSettingsPage() {
 
     if (!draft || !savedSetting) {
         return (
-            <AdminPageFrame title="绘图工具" description="管理新建绘图的默认编辑器与 tldraw 授权" scroll>
+            <AdminPageFrame title={tr("绘图工具")} description={tr("管理新建绘图的默认编辑器与 tldraw 授权")} scroll>
                 <div className="admin-settings-stack admin-drawing-settings">
                     <div className="admin-drawing-load-error" role="alert">
                         <span className="admin-drawing-load-error-icon">
                             <AlertTriangle className="size-5" aria-hidden="true" />
                         </span>
                         <div>
-                            <h2>无法读取绘图工具配置</h2>
-                            <p>{loadError || "当前没有可显示的配置，请稍后重试。"}</p>
+                            <h2>{tr("无法读取绘图工具配置")}</h2>
+                            <p>{loadError || tr("当前没有可显示的配置，请稍后重试。")}</p>
                         </div>
                         <Button icon={<RefreshCw className="size-4" />} loading={loading} onClick={() => void load(true)}>
-                            重新读取
+                            {tr("重新读取")}
                         </Button>
                     </div>
                 </div>
@@ -240,29 +241,29 @@ export default function DrawingEngineSettingsPage() {
         );
     }
 
-    const licenseStatus = draftHasStoredLicense ? "后台已配置" : usingEnvironmentLicense ? "部署环境提供" : "未配置";
+    const licenseStatus = draftHasStoredLicense ? tr("后台已配置") : usingEnvironmentLicense ? tr("部署环境提供") : tr("未配置");
 
     return (
-        <AdminPageFrame title="绘图工具" description="管理新建绘图的默认编辑器与 tldraw 授权" scroll>
+        <AdminPageFrame title={tr("绘图工具")} description={tr("管理新建绘图的默认编辑器与 tldraw 授权")} scroll>
             <div className="admin-settings-stack admin-drawing-settings">
                 <div className={cn("admin-drawing-command-bar", dirty && "is-dirty")}>
                     <div className="admin-drawing-command-copy" aria-live="polite">
                         <div className="flex flex-wrap items-center gap-2">
-                            <strong>{dirty ? `${dirtyFields.length} 项调整待保存` : "绘图工具配置已同步"}</strong>
-                            <AdminStatusBadge label={dirty ? "尚未生效" : savedSetting.configured ? "服务端配置" : "系统默认"} tone={dirty ? "warning" : "neutral"} />
+                            <strong>{dirty ? tr("{0} 项调整待保存", dirtyFields.length) : tr("绘图工具配置已同步")}</strong>
+                            <AdminStatusBadge label={dirty ? tr("尚未生效") : savedSetting.configured ? tr("服务端配置") : tr("系统默认")} tone={dirty ? "warning" : "neutral"} />
                         </div>
                     </div>
                     <div className="admin-drawing-command-actions">
                         {dirty ? (
                             <Button icon={<RotateCcw className="size-4" />} disabled={saving} onClick={resetDraft}>
-                                撤销改动
+                                {tr("撤销改动")}
                             </Button>
                         ) : null}
                         <Button icon={<RefreshCw className="size-4" />} loading={refreshing} disabled={saving} onClick={requestRefresh}>
-                            刷新状态
+                            {tr("刷新状态")}
                         </Button>
                         <Button type="primary" icon={<Save className="size-4" />} loading={saving} disabled={!dirty || !selectedEngineAvailable} onClick={() => void submitSave()}>
-                            保存修改
+                            {tr("保存修改")}
                         </Button>
                     </div>
                 </div>
@@ -270,7 +271,7 @@ export default function DrawingEngineSettingsPage() {
                 {loadError || saveError ? (
                     <div className="admin-drawing-inline-alert" role="alert">
                         <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
-                        <span>{saveError || `${loadError}。页面仍显示上一次成功读取的配置。`}</span>
+                        <span>{saveError || tr("{0}。页面仍显示上一次成功读取的配置。", loadError)}</span>
                     </div>
                 ) : null}
 
@@ -278,11 +279,11 @@ export default function DrawingEngineSettingsPage() {
                     <div id="admin-drawing-default-engine" className="admin-settings-anchor">
                         <SettingsSectionCard
                             icon={<Brush className="size-4" aria-hidden="true" />}
-                            title="1. 选择新建绘图默认编辑器"
-                            description="仅影响之后新建的绘图，不转换已有节点。"
+                            title={tr("1. 选择新建绘图默认编辑器")}
+                            description={tr("仅影响之后新建的绘图，不转换已有节点。")}
                             status={<AdminStatusBadge label={drawingEngineLabel(draft.defaultEngine)} tone={selectedEngineAvailable ? "info" : "warning"} />}
                         >
-                            <div className="admin-drawing-engine-grid" role="group" aria-label="选择新建绘图默认编辑器">
+                            <div className="admin-drawing-engine-grid" role="group" aria-label={tr("选择新建绘图默认编辑器")}>
                                 {engineOptions.map((option) => {
                                     const available = isDrawingEngineAvailable(option.value, draft.tldrawLicenseKey);
                                     const selected = draft.defaultEngine === option.value;
@@ -291,7 +292,7 @@ export default function DrawingEngineSettingsPage() {
                                             key={option.value}
                                             type="button"
                                             className={cn("admin-drawing-engine-choice", selected && "is-selected", !available && "is-unavailable")}
-                                            aria-label={`选择 ${option.title} 作为新建绘图默认编辑器${available ? "" : "，保存前需要配置授权"}`}
+                                            aria-label={tr("选择 {0} 作为新建绘图默认编辑器{1}", option.title, available ? "" : tr("，保存前需要配置授权"))}
                                             aria-pressed={selected}
                                             disabled={saving}
                                             onClick={() => selectEngine(option.value)}
@@ -301,7 +302,7 @@ export default function DrawingEngineSettingsPage() {
                                                 <span className="min-w-0 flex-1">
                                                     <strong>{option.title}</strong>
                                                 </span>
-                                                <AdminStatusBadge label={selected ? "已选择" : available ? "可用" : "需要授权"} tone={selected ? "info" : available ? "success" : "warning"} />
+                                                <AdminStatusBadge label={selected ? tr("已选择") : available ? tr("可用") : tr("需要授权")} tone={selected ? "info" : available ? "success" : "warning"} />
                                             </span>
                                             <span className="admin-drawing-engine-choice-description">{option.description}</span>
                                         </button>
@@ -314,8 +315,8 @@ export default function DrawingEngineSettingsPage() {
                     <div id="admin-drawing-tldraw-license" className="admin-settings-anchor">
                         <SettingsSectionCard
                             icon={<KeyRound className="size-4" aria-hidden="true" />}
-                            title="2. 配置 tldraw 授权（按需）"
-                            description="选择 tldraw 或需要打开已有 tldraw 绘图时配置。"
+                            title={tr("2. 配置 tldraw 授权（按需）")}
+                            description={tr("选择 tldraw 或需要打开已有 tldraw 绘图时配置。")}
                             status={<AdminStatusBadge label={licenseStatus} tone={tldrawAvailable ? "success" : "warning"} />}
                         >
                             <div className="admin-drawing-license-layout">
@@ -329,12 +330,12 @@ export default function DrawingEngineSettingsPage() {
                                             setDraft({ ...draft, tldrawLicenseKey: event.target.value });
                                             setSaveError("");
                                         }}
-                                        placeholder="输入用于浏览器端的 tldraw License Key"
+                                        placeholder={tr("输入用于浏览器端的 tldraw License Key")}
                                         disabled={saving}
                                         autoComplete="new-password"
                                         aria-describedby="admin-tldraw-license-help"
                                     />
-                                    <p id="admin-tldraw-license-help">留空时使用部署环境授权；两处都未配置时 tldraw 不可用。</p>
+                                    <p id="admin-tldraw-license-help">{tr("留空时使用部署环境授权；两处都未配置时 tldraw 不可用。")}</p>
                                 </div>
                             </div>
                         </SettingsSectionCard>
@@ -360,10 +361,10 @@ function normalizeDraft(draft: DrawingEngineDraft): DrawingEngineDraft {
 }
 
 function parseDrawingEngineSetting(value: unknown): CanvasDrawingEngineSetting {
-    if (!value || typeof value !== "object") throw new Error("绘图工具配置响应格式无效");
+    if (!value || typeof value !== "object") throw new Error(tr("绘图工具配置响应格式无效"));
     const record = value as Record<string, unknown>;
-    if (record.defaultEngine !== "excalidraw" && record.defaultEngine !== "tldraw") throw new Error("绘图工具配置缺少有效的默认编辑器");
-    if (record.tldrawLicenseKey !== undefined && typeof record.tldrawLicenseKey !== "string") throw new Error("绘图工具配置中的 tldraw 授权格式无效");
+    if (record.defaultEngine !== "excalidraw" && record.defaultEngine !== "tldraw") throw new Error(tr("绘图工具配置缺少有效的默认编辑器"));
+    if (record.tldrawLicenseKey !== undefined && typeof record.tldrawLicenseKey !== "string") throw new Error(tr("绘图工具配置中的 tldraw 授权格式无效"));
     return {
         defaultEngine: record.defaultEngine,
         tldrawLicenseKey: typeof record.tldrawLicenseKey === "string" ? record.tldrawLicenseKey : "",

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { ChoiceBrowser } from "./choice-browser";
 import type { ModelProtocolDefinition, ProtocolCapability } from "@/lib/model-protocols";
 
@@ -24,13 +25,13 @@ export function ModelProtocolBrowser({
             vendor: protocol.vendor,
             searchText: protocol.value,
             details: [
-                { label: "请求", value: <code>{protocol.create}</code> },
-                { label: "请求体", value: protocol.contentType },
-                { label: "响应", value: protocol.poll ? "异步轮询" : "同步响应" },
-                { label: "来源", value: protocol.media },
-                ...(protocol.imageParameters ? [{ label: "图片参数", value: protocol.imageParameters.map((p) => p.label).join("、") }] : []),
+                { label: tr("请求"), value: <code>{protocol.create}</code> },
+                { label: tr("请求体"), value: protocol.contentType },
+                { label: tr("响应"), value: protocol.poll ? tr("异步轮询") : tr("同步响应") },
+                { label: tr("来源"), value: protocol.media },
+                ...(protocol.imageParameters ? [{ label: tr("图片参数"), value: protocol.imageParameters.map((p) => p.label).join("、") }] : []),
             ],
         }));
 
-    return <ChoiceBrowser key={capability || "all"} {...props} label="调用协议" placeholder="搜索协议名称、厂商或请求路径" options={options} />;
+    return <ChoiceBrowser key={capability || "all"} {...props} label={tr("调用协议")} placeholder={tr("搜索协议名称、厂商或请求路径")} options={options} />;
 }

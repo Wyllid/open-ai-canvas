@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { createClientUUID } from "@/lib/client-id";
 import { useRef, useState } from "react";
 import { App, Button, Form, Input, Select } from "antd";
@@ -28,7 +29,7 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
         const allowed = video ? ["video/mp4", "video/webm"] : ["image/png", "image/jpeg", "image/webp"];
         const maxMB = video ? 256 : 10;
         if (!allowed.includes(file.type) || file.size <= 0 || file.size > maxMB * 1024 * 1024) {
-            message.error(`请选择${video ? "MP4 / WebM 视频" : "PNG / JPEG / WebP 图片"}，最大 ${maxMB}MB`);
+            message.error(tr("请选择{0}，最大 {1}MB", video ? tr("MP4 / WebM 视频") : tr("PNG / JPEG / WebP 图片"), maxMB));
             return;
         }
         setUploading(selected.blockId);
@@ -37,9 +38,9 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
             const resource = await uploadAppearanceAsset(video ? "update-video" : "update-image", file);
             const release = value.releases.find((item) => item.id === selected.releaseId);
             if (release) changeBlock(release, selected.blockId, { resourceId: resource.id });
-            message.success("媒体已上传，保存修改后随公告生效");
+            message.success(tr("媒体已上传，保存修改后随公告生效"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "公告媒体上传失败");
+            message.error(error instanceof Error ? error.message : tr("公告媒体上传失败"));
         } finally {
             setUploading("");
             onUploading(false);
@@ -50,10 +51,10 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
         <div className="admin-update-announcement-editor">
             <div className="admin-update-announcement-switch">
                 <div>
-                    <h3>自定义更新公告</h3>
-                    <p>关闭时展示原有更新日志；开启时展示下方自定义版本与内容。修改后点击页面顶部“保存修改”生效。</p>
+                    <h3>{tr("自定义更新公告")}</h3>
+                    <p>{tr("关闭时展示原有更新日志；开启时展示下方自定义版本与内容。修改后点击页面顶部“保存修改”生效。")}</p>
                 </div>
-                <Switch checked={value.enabled} disabled={locked} aria-label="启用自定义更新公告" onChange={(enabled) => change({ enabled })} />
+                <Switch checked={value.enabled} disabled={locked} aria-label={tr("启用自定义更新公告")} onChange={(enabled) => change({ enabled })} />
             </div>
             <input
                 ref={fileInput}
@@ -67,11 +68,11 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
             <div className="admin-update-announcement-layout">
                 <div className="admin-update-announcement-fields">
                     <Form layout="vertical" disabled={locked}>
-                        <Form.Item label="当前展示版本" htmlFor="update-current-version">
+                        <Form.Item label={tr("当前展示版本")} htmlFor="update-current-version">
                             <Select
                                 id="update-current-version"
-                                aria-label="当前展示版本"
-                                placeholder="添加公告版本后选择"
+                                aria-label={tr("当前展示版本")}
+                                placeholder={tr("添加公告版本后选择")}
                                 value={value.currentVersion || undefined}
                                 options={value.releases.filter((release) => release.version.trim()).map((release) => ({ value: release.version, label: release.version }))}
                                 onChange={(currentVersion) => change({ currentVersion })}
@@ -81,17 +82,17 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
                     {value.releases.map((release, index) => (
                         <section className="admin-update-announcement-release" key={release.id}>
                             <div className="admin-update-announcement-toolbar">
-                                <strong>公告版本 {index + 1}</strong>
+                                <strong>{tr("公告版本")} {index + 1}</strong>
                                 <div>
-                                    <Button aria-label={`上移公告版本 ${index + 1}`} icon={<ArrowUp className="size-4" />} disabled={locked || index === 0} onClick={() => change({ releases: moveUpdateItem(value.releases, index, -1) })} />
+                                    <Button aria-label={tr("上移公告版本 {0}", index + 1)} icon={<ArrowUp className="size-4" />} disabled={locked || index === 0} onClick={() => change({ releases: moveUpdateItem(value.releases, index, -1) })} />
                                     <Button
-                                        aria-label={`下移公告版本 ${index + 1}`}
+                                        aria-label={tr("下移公告版本 {0}", index + 1)}
                                         icon={<ArrowDown className="size-4" />}
                                         disabled={locked || index === value.releases.length - 1}
                                         onClick={() => change({ releases: moveUpdateItem(value.releases, index, 1) })}
                                     />
                                     <Button
-                                        aria-label={`删除公告版本 ${index + 1}`}
+                                        aria-label={tr("删除公告版本 {0}", index + 1)}
                                         icon={<Trash2 className="size-4" />}
                                         disabled={locked}
                                         onClick={() => {
@@ -103,38 +104,38 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
                             </div>
                             <Form layout="vertical" disabled={locked}>
                                 <div className="admin-update-announcement-meta">
-                                    <Form.Item label="版本号" htmlFor={`update-version-${release.id}`}>
-                                        <Input id={`update-version-${release.id}`} value={release.version} maxLength={40} placeholder="例如 v2.0.0" onChange={(event) => changeRelease(release.id, { version: event.target.value })} />
+                                    <Form.Item label={tr("版本号")} htmlFor={`update-version-${release.id}`}>
+                                        <Input id={`update-version-${release.id}`} value={release.version} maxLength={40} placeholder={tr("例如 v2.0.0")} onChange={(event) => changeRelease(release.id, { version: event.target.value })} />
                                     </Form.Item>
-                                    <Form.Item label="发布日期（可选）" htmlFor={`update-date-${release.id}`}>
+                                    <Form.Item label={tr("发布日期（可选）")} htmlFor={`update-date-${release.id}`}>
                                         <Input id={`update-date-${release.id}`} type="date" value={release.date} onChange={(event) => changeRelease(release.id, { date: event.target.value })} />
                                     </Form.Item>
                                 </div>
-                                <Form.Item label="标题（可选）" htmlFor={`update-title-${release.id}`}>
-                                    <Input id={`update-title-${release.id}`} value={release.title} maxLength={100} placeholder="本次更新的主题" onChange={(event) => changeRelease(release.id, { title: event.target.value })} />
+                                <Form.Item label={tr("标题（可选）")} htmlFor={`update-title-${release.id}`}>
+                                    <Input id={`update-title-${release.id}`} value={release.title} maxLength={100} placeholder={tr("本次更新的主题")} onChange={(event) => changeRelease(release.id, { title: event.target.value })} />
                                 </Form.Item>
                             </Form>
                             {release.blocks.map((block, blockIndex) => (
                                 <div className="admin-update-announcement-block" key={block.id}>
                                     <div className="admin-update-announcement-toolbar">
                                         <strong>
-                                            {block.type === "text" ? "文字" : block.type === "image" ? "图片" : "视频"} {blockIndex + 1}
+                                            {block.type === "text" ? tr("文字") : block.type === "image" ? tr("图片") : tr("视频")} {blockIndex + 1}
                                         </strong>
                                         <div>
                                             <Button
-                                                aria-label={`上移内容块 ${blockIndex + 1}（版本 ${index + 1}）`}
+                                                aria-label={tr("上移内容块 {0}（版本 {1}）", blockIndex + 1, index + 1)}
                                                 icon={<ArrowUp className="size-4" />}
                                                 disabled={locked || blockIndex === 0}
                                                 onClick={() => changeRelease(release.id, { blocks: moveUpdateItem(release.blocks, blockIndex, -1) })}
                                             />
                                             <Button
-                                                aria-label={`下移内容块 ${blockIndex + 1}（版本 ${index + 1}）`}
+                                                aria-label={tr("下移内容块 {0}（版本 {1}）", blockIndex + 1, index + 1)}
                                                 icon={<ArrowDown className="size-4" />}
                                                 disabled={locked || blockIndex === release.blocks.length - 1}
                                                 onClick={() => changeRelease(release.id, { blocks: moveUpdateItem(release.blocks, blockIndex, 1) })}
                                             />
                                             <Button
-                                                aria-label={`删除内容块 ${blockIndex + 1}（版本 ${index + 1}）`}
+                                                aria-label={tr("删除内容块 {0}（版本 {1}）", blockIndex + 1, index + 1)}
                                                 icon={<Trash2 className="size-4" />}
                                                 disabled={locked}
                                                 onClick={() => changeRelease(release.id, { blocks: release.blocks.filter((item) => item.id !== block.id) })}
@@ -142,19 +143,19 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
                                         </div>
                                     </div>
                                     <Form layout="vertical" disabled={locked}>
-                                        <Form.Item label="布局" htmlFor={`update-layout-${block.id}`}>
+                                        <Form.Item label={tr("布局")} htmlFor={`update-layout-${block.id}`}>
                                             <Select
                                                 id={`update-layout-${block.id}`}
                                                 value={block.layout}
                                                 options={[
-                                                    { value: "full", label: "整行" },
-                                                    { value: "half", label: "半行（相邻半行内容并排）" },
+                                                    { value: "full", label: tr("整行") },
+                                                    { value: "half", label: tr("半行（相邻半行内容并排）") },
                                                 ]}
                                                 onChange={(layout) => changeBlock(release, block.id, { layout })}
                                             />
                                         </Form.Item>
                                         {block.type === "text" ? (
-                                            <Form.Item label="正文" htmlFor={`update-text-${block.id}`} extra="支持换行、列表和 Markdown 加粗。">
+                                            <Form.Item label={tr("正文")} htmlFor={`update-text-${block.id}`} extra={tr("支持换行、列表和 Markdown 加粗。")}>
                                                 <Input.TextArea
                                                     id={`update-text-${block.id}`}
                                                     value={block.text}
@@ -177,10 +178,10 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
                                                         }
                                                     }}
                                                 >
-                                                    {block.resourceId ? "更换" : "上传"}
-                                                    {block.type === "image" ? "图片（最大 10MB）" : "视频（最大 256MB）"}
+                                                    {block.resourceId ? tr("更换") : tr("上传")}
+                                                    {block.type === "image" ? tr("图片（最大 10MB）") : tr("视频（最大 256MB）")}
                                                 </Button>
-                                                <Form.Item label="媒体说明（可选）" htmlFor={`update-caption-${block.id}`}>
+                                                <Form.Item label={tr("媒体说明（可选）")} htmlFor={`update-caption-${block.id}`}>
                                                     <Input id={`update-caption-${block.id}`} value={block.caption} maxLength={200} onChange={(event) => changeBlock(release, block.id, { caption: event.target.value })} />
                                                 </Form.Item>
                                             </>
@@ -191,9 +192,9 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
                             <div className="admin-update-announcement-add-actions">
                                 {(
                                     [
-                                        ["text", "添加文字", Type],
-                                        ["image", "添加图片", ImagePlus],
-                                        ["video", "添加视频", Video],
+                                        ["text", tr("添加文字"), Type],
+                                        ["image", tr("添加图片"), ImagePlus],
+                                        ["video", tr("添加视频"), Video],
                                     ] as const
                                 ).map(([type, label, Icon]) => (
                                     <Button key={type} disabled={locked || release.blocks.length >= 50} icon={<Icon className="size-4" />} onClick={() => addBlock(release, type)}>
@@ -208,13 +209,13 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
                         icon={<Plus className="size-4" />}
                         onClick={() => change({ releases: [...value.releases, { id: createClientUUID(), version: "", title: "", date: "", blocks: [{ id: createClientUUID(), type: "text", text: "", resourceId: "", caption: "", layout: "full" }] }] })}
                     >
-                        添加公告版本
+                        {tr("添加公告版本")}
                     </Button>
                 </div>
-                <aside className="admin-update-announcement-preview" aria-label="更新公告实时预览">
+                <aside className="admin-update-announcement-preview" aria-label={tr("更新公告实时预览")}>
                     <div className="admin-update-announcement-preview-heading">
-                        <strong>更新公告 · {value.currentVersion || "待填写版本"}</strong>
-                        <span>实时预览 · 保存后生效</span>
+                        <strong>{tr("更新公告 ·")} {value.currentVersion || tr("待填写版本")}</strong>
+                        <span>{tr("实时预览 · 保存后生效")}</span>
                     </div>
                     <UpdateAnnouncementContent value={value} mediaURL={(block) => (block.resourceId ? updateAnnouncementPreviewURL(block.resourceId) : "")} />
                 </aside>

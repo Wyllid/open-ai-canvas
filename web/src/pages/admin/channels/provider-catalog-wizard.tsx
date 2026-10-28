@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { App, Button, Checkbox, Input, Spin } from "antd";
 import { ArrowLeft, Check, ExternalLink, Gift, RefreshCw, Search, SlidersHorizontal, TriangleAlert } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -19,11 +20,11 @@ import "./provider-catalog-wizard.css";
 
 type Step = "pick" | "connect" | "pricing";
 
-const capabilityLabels: Record<ProviderCatalogModel["capability"], string> = { text: "文本", image: "图片", video: "视频", audio: "音频" };
+const capabilityLabels: Record<ProviderCatalogModel["capability"], string> = { text: tr("文本"), image: tr("图片"), video: tr("视频"), audio: tr("音频") };
 const stepLabels: Array<{ key: Step; label: string }> = [
-    { key: "pick", label: "选择服务商" },
-    { key: "connect", label: "填写 Key" },
-    { key: "pricing", label: "选择模型" },
+    { key: "pick", label: tr("选择服务商") },
+    { key: "connect", label: tr("填写 Key") },
+    { key: "pricing", label: tr("选择模型") },
 ];
 
 type Props = {
@@ -56,7 +57,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
         try {
             setCatalog(await (refresh ? refreshProviderCatalog() : getProviderCatalog()));
         } catch (error) {
-            setLoadError(error instanceof Error ? error.message : "读取服务商目录失败");
+            setLoadError(error instanceof Error ? error.message : tr("读取服务商目录失败"));
         } finally {
             setLoading(false);
         }
@@ -97,7 +98,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
     const verify = async (skip: boolean) => {
         if (!provider) return;
         if (!apiKey.trim()) {
-            setVerifyError("请填写 API Key");
+            setVerifyError(tr("请填写 API Key"));
             return;
         }
         if (skip) {
@@ -113,7 +114,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
             setSelected((current) => Object.fromEntries(provider.models.map((item) => [item.modelKey, Boolean(current[item.modelKey]) && item.supported && !result.missingModels.includes(item.modelKey)])));
             setStep("pricing");
         } catch (error) {
-            setVerifyError(error instanceof Error ? error.message : "验证失败，请检查 Key");
+            setVerifyError(error instanceof Error ? error.message : tr("验证失败，请检查 Key"));
         } finally {
             setVerifying(false);
         }
@@ -133,10 +134,10 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                 // 跳过验证时先停用，避免未确认可用的渠道进入线上路由。
                 enabled: verified !== null,
             });
-            message.success(`已接入 ${provider.name}，${chosenModels.length} 个模型${verified ? "已上线" : "已创建（渠道默认停用）"}`);
+            message.success(tr("已接入 {0}，{1} 个模型{2}", provider.name, chosenModels.length, verified ? tr("已上线") : tr("已创建（渠道默认停用）")));
             await onInstalled(channel);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "一键接入失败");
+            message.error(error instanceof Error ? error.message : tr("一键接入失败"));
         } finally {
             setInstalling(false);
         }
@@ -149,10 +150,10 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
             <div className="pcw">
                 <header className="pcw-header">
                     <div className="pcw-title-row">
-                        {step !== "pick" ? <Button type="text" size="small" aria-label="上一步" icon={<ArrowLeft className="size-4" />} disabled={installing || verifying} onClick={() => setStep(step === "pricing" ? "connect" : "pick")} /> : null}
-                        <h2 className="pcw-title">新增系统渠道</h2>
+                        {step !== "pick" ? <Button type="text" size="small" aria-label={tr("上一步")} icon={<ArrowLeft className="size-4" />} disabled={installing || verifying} onClick={() => setStep(step === "pricing" ? "connect" : "pick")} /> : null}
+                        <h2 className="pcw-title">{tr("新增系统渠道")}</h2>
                     </div>
-                    <ol className="pcw-steps" aria-label="接入步骤">
+                    <ol className="pcw-steps" aria-label={tr("接入步骤")}>
                         {stepLabels.map((item, index) => (
                             <li key={item.key} className="pcw-step" data-state={index < stepIndex ? "done" : index === stepIndex ? "current" : "todo"} aria-current={index === stepIndex ? "step" : undefined}>
                                 <span className="pcw-step-dot">{index < stepIndex ? <Check className="size-3" /> : index + 1}</span>
@@ -169,7 +170,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
     );
 
     function renderPick() {
-        const sourceText = catalog?.source === "cache" ? "离线目录" : catalog?.source === "unavailable" ? "目录暂不可用" : catalog?.source === "disabled" ? "目录已关闭" : "目录";
+        const sourceText = catalog?.source === "cache" ? tr("离线目录") : catalog?.source === "unavailable" ? tr("目录暂不可用") : catalog?.source === "disabled" ? tr("目录已关闭") : tr("目录");
         return (
             <div className="pcw-body">
                 <div className="pcw-toolbar">
@@ -178,21 +179,21 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                         allowClear
                         autoFocus
                         prefix={<Search className="size-4 text-foreground/40" />}
-                        placeholder="搜索服务商、模型或网址，例如 seedance、sora、kimi"
-                        aria-label="搜索服务商"
+                        placeholder={tr("搜索服务商、模型或网址，例如 seedance、sora、kimi")}
+                        aria-label={tr("搜索服务商")}
                         value={keyword}
                         onChange={(event) => setKeyword(event.target.value)}
                     />
-                    <span className="pcw-source" title={catalog?.fetchedAt ? `同步于 ${new Date(catalog.fetchedAt).toLocaleString("zh-CN")}` : undefined}>
+                    <span className="pcw-source" title={catalog?.fetchedAt ? tr("同步于 {0}", new Date(catalog.fetchedAt).toLocaleString(currentLocale())) : undefined}>
                         {sourceText}
-                        {catalog?.updatedAt ? ` · 更新于 ${catalog.updatedAt.slice(5, 10)}` : ""}
-                        <Button type="text" size="small" aria-label="刷新目录" icon={<RefreshCw className="size-3.5" />} loading={loading} onClick={() => void load(true)} />
+                        {catalog?.updatedAt ? tr(" · 更新于 {0}", catalog.updatedAt.slice(5, 10)) : ""}
+                        <Button type="text" size="small" aria-label={tr("刷新目录")} icon={<RefreshCw className="size-3.5" />} loading={loading} onClick={() => void load(true)} />
                     </span>
                 </div>
                 {usedTags.length ? (
-                    <div className="pcw-tags" role="group" aria-label="按标签筛选">
+                    <div className="pcw-tags" role="group" aria-label={tr("按标签筛选")}>
                         <button type="button" className="pcw-tag-filter" aria-pressed={!tag} onClick={() => setTag("")}>
-                            全部 <span>{catalog?.providers.length || 0}</span>
+                            {tr("全部")} <span>{catalog?.providers.length || 0}</span>
                         </button>
                         {usedTags.map((item) => (
                             <button type="button" key={item.id} className="pcw-tag-filter" aria-pressed={tag === item.id} onClick={() => setTag(tag === item.id ? "" : item.id)}>
@@ -207,15 +208,15 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                             <TriangleAlert className="size-4" /> {loadError}
                         </p>
                     ) : null}
-                    {catalog && (catalog.source === "unavailable" || catalog.source === "disabled") ? <p className="pcw-notice">{catalog.notice || "暂时无法获取推荐服务商，可以先用自定义配置手动添加。"}</p> : null}
+                    {catalog && (catalog.source === "unavailable" || catalog.source === "disabled") ? <p className="pcw-notice">{catalog.notice || tr("暂时无法获取推荐服务商，可以先用自定义配置手动添加。")}</p> : null}
                     <div className="pcw-grid">
                         <button type="button" className="pcw-card pcw-card-custom" onClick={onCustom}>
                             <span className="pcw-logo pcw-logo-custom">
                                 <SlidersHorizontal className="size-5" />
                             </span>
                             <span className="pcw-card-main">
-                                <span className="pcw-card-name">自定义配置</span>
-                                <span className="pcw-card-summary">手动填写 Base URL 和 API Key</span>
+                                <span className="pcw-card-name">{tr("自定义配置")}</span>
+                                <span className="pcw-card-summary">{tr("手动填写 Base URL 和 API Key")}</span>
                             </span>
                         </button>
                         {visibleProviders.map((item) => (
@@ -235,29 +236,29 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                                     ))}
                                 </span>
                                 <span className="pcw-card-meta">
-                                    <span>{item.models.length} 个推荐模型</span>
+                                    <span>{item.models.length} {tr("个推荐模型")}</span>
                                     {item.installedCount ? (
                                         <span className="pcw-installed">
-                                            <Check className="size-3" /> 已接入 {item.installedCount}
+                                            <Check className="size-3" /> {tr("已接入")} {item.installedCount}
                                         </span>
                                     ) : null}
                                 </span>
                                 <span className="pcw-card-summary" title={item.models.map((model) => model.providerModelKey).join("、")}>
-                                    推荐：{item.models.map((model) => (model.displayName === model.providerModelKey ? model.displayName : `${model.displayName} / ${model.providerModelKey}`)).join("、")}
+                                    {tr("推荐：")}{item.models.map((model) => (model.displayName === model.providerModelKey ? model.displayName : `${model.displayName} / ${model.providerModelKey}`)).join("、")}
                                 </span>
                                 <span className="pcw-card-window">
-                                    <span>{item.permanent ? formatWindow(item) : `推广期 · ${formatWindow(item)}`}</span>
+                                    <span>{item.permanent ? formatWindow(item) : tr("推广期 · {0}", formatWindow(item))}</span>
                                     <span className="block mt-1">{promotionExpiry(item)}</span>
                                 </span>
                             </button>
                         ))}
                     </div>
                     {loading && !catalog ? (
-                        <div className="pcw-loading" role="status" aria-label="正在加载服务商目录">
+                        <div className="pcw-loading" role="status" aria-label={tr("正在加载服务商目录")}>
                             <Spin />
                         </div>
                     ) : null}
-                    {catalog && catalog.providers.length > 0 && !visibleProviders.length ? <p className="pcw-notice">没有匹配的服务商，换个关键词试试。</p> : null}
+                    {catalog && catalog.providers.length > 0 && !visibleProviders.length ? <p className="pcw-notice">{tr("没有匹配的服务商，换个关键词试试。")}</p> : null}
                 </div>
             </div>
         );
@@ -267,16 +268,16 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
         const guide = current.keyGuide;
         return (
             <div className="pcw-body pcw-split">
-                <section className="pcw-form" aria-label={`连接 ${current.name}`}>
+                <section className="pcw-form" aria-label={tr("连接 {0}", current.name)}>
                     <div className="pcw-provider-head">
                         <ProviderLogo provider={current} />
                         <div className="min-w-0">
                             <div className="pcw-card-name">{current.name}</div>
-                            <div className="pcw-card-window">{current.permanent ? formatWindow(current) : `推广期 · ${formatWindow(current)}`}</div>
+                            <div className="pcw-card-window">{current.permanent ? formatWindow(current) : tr("推广期 · {0}", formatWindow(current))}</div>
                         </div>
                     </div>
                     <label className="pcw-field">
-                        <span>渠道名称</span>
+                        <span>{tr("渠道名称")}</span>
                         <Input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} />
                     </label>
                     <label className="pcw-field">
@@ -285,7 +286,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                             autoFocus
                             autoComplete="new-password"
                             value={apiKey}
-                            placeholder="粘贴从服务商控制台复制的密钥"
+                            placeholder={tr("粘贴从服务商控制台复制的密钥")}
                             onChange={(event) => {
                                 setApiKey(event.target.value);
                                 setVerifyError("");
@@ -294,12 +295,12 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                         />
                         {keyHint === true ? (
                             <em className="pcw-hint" data-tone="success">
-                                格式正确
+                                {tr("格式正确")}
                             </em>
                         ) : null}
                         {keyHint === false ? (
                             <em className="pcw-hint" data-tone="warning">
-                                格式与该服务商常见密钥不同，请确认是否复制完整
+                                {tr("格式与该服务商常见密钥不同，请确认是否复制完整")}
                             </em>
                         ) : null}
                     </label>
@@ -316,17 +317,17 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                     <div className="pcw-actions">
                         {verifyError ? (
                             <Button disabled={verifying || !apiKey.trim()} onClick={() => void verify(true)}>
-                                跳过验证继续
+                                {tr("跳过验证继续")}
                             </Button>
                         ) : null}
                         <Button type="primary" loading={verifying} disabled={!apiKey.trim() || !name.trim()} onClick={() => void verify(false)}>
-                            验证并继续
+                            {tr("验证并继续")}
                         </Button>
                     </div>
-                    {verifyError ? <p className="pcw-footnote">跳过验证创建的渠道默认停用，确认可用后再手动启用。</p> : null}
+                    {verifyError ? <p className="pcw-footnote">{tr("跳过验证创建的渠道默认停用，确认可用后再手动启用。")}</p> : null}
                 </section>
-                <aside className="pcw-guide" aria-label="获取 API Key">
-                    <h3>获取 API Key</h3>
+                <aside className="pcw-guide" aria-label={tr("获取 API Key")}>
+                    <h3>{tr("获取 API Key")}</h3>
                     {guide.steps.length ? (
                         <ol>
                             {guide.steps.map((stepText, index) => (
@@ -337,7 +338,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                             ))}
                         </ol>
                     ) : (
-                        <p className="pcw-footnote">在服务商控制台创建 API Key 后粘贴到左侧。</p>
+                        <p className="pcw-footnote">{tr("在服务商控制台创建 API Key 后粘贴到左侧。")}</p>
                     )}
                     {guide.promo ? (
                         <p className="pcw-promo">
@@ -346,7 +347,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                     ) : null}
                     {guide.url || current.website ? (
                         <Button block href={guide.url || current.website} target="_blank" rel="noopener noreferrer" icon={<ExternalLink className="size-4" />}>
-                            前往 {current.name} 获取 Key
+                            {tr("前往")} {current.name} {tr("获取 Key")}
                         </Button>
                     ) : null}
                 </aside>
@@ -361,17 +362,17 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                 <div className="pcw-pricing-bar">
                     {verified ? (
                         <span className="pcw-verified">
-                            <Check className="size-3.5" /> 连接成功 · 上游可用 {verified.availableModels.length}/{current.models.length} 个推荐模型
+                            <Check className="size-3.5" /> {tr("连接成功 · 上游可用")} {verified.availableModels.length}/{current.models.length} {tr("个推荐模型")}
                         </span>
                     ) : (
-                        <span className="pcw-unverified">未验证 · 渠道将默认停用</span>
+                        <span className="pcw-unverified">{tr("未验证 · 渠道将默认停用")}</span>
                     )}
                 </div>
                 <div className="pcw-scroll">
                     <ul className="pcw-models">
                         {current.models.map((item) => {
                             const missing = verified?.missingModels.includes(item.modelKey);
-                            const disabledReason = !item.supported ? item.unsupportedReason || "当前版本不支持" : missing ? "上游未返回该模型" : "";
+                            const disabledReason = !item.supported ? item.unsupportedReason || tr("当前版本不支持") : missing ? tr("上游未返回该模型") : "";
                             const checked = Boolean(selected[item.modelKey]);
                             return (
                                 <li key={item.modelKey} className="pcw-model" data-disabled={Boolean(disabledReason) || undefined} data-checked={checked || undefined}>
@@ -390,8 +391,8 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                                     <table className="pcw-tiers">
                                         <thead>
                                             <tr>
-                                                <th scope="col">规格</th>
-                                                <th scope="col">上游模型 ID</th>
+                                                <th scope="col">{tr("规格")}</th>
+                                                <th scope="col">{tr("上游模型 ID")}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -410,14 +411,14 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                 </div>
                 <footer className="pcw-footer">
                     <span>
-                        将创建：1 个渠道 · {chosenModels.length} 个模型 · {totalTiers} 个规格档
+                        {tr("将创建：1 个渠道 ·")} {chosenModels.length} {tr("个模型 ·")} {totalTiers} {tr("个规格档")}
                     </span>
                     <div className="pcw-actions">
                         <Button disabled={installing} onClick={() => setStep("connect")}>
-                            上一步
+                            {tr("上一步")}
                         </Button>
                         <Button type="primary" loading={installing} disabled={!canInstall} onClick={() => void install()}>
-                            一键接入
+                            {tr("一键接入")}
                         </Button>
                     </div>
                 </footer>

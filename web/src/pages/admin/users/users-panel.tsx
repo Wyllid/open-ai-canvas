@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Dropdown, Input } from "antd";
 import { Checkbox } from "@/pages/admin/ui/controls";
 import { Ban, Search, Settings2, UserPlus } from "lucide-react";
@@ -75,7 +76,7 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
             })
             .catch((error) => {
                 if (sequence !== requestSequence.current) return;
-                const text = error instanceof Error ? error.message : "读取用户失败";
+                const text = error instanceof Error ? error.message : tr("读取用户失败");
                 setLoadError(text);
                 message.error(text);
             })
@@ -101,14 +102,14 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
             if (user.status === "active") {
                 await deleteAdminUser(user.id);
                 replaceUser({ ...user, status: "disabled" });
-                message.success("用户已停用并清除登录状态");
+                message.success(tr("用户已停用并清除登录状态"));
                 return;
             }
             const result = await updateAdminUser(user.id, { status: "active" });
             replaceUser(result.user);
-            message.success("用户已重新启用");
+            message.success(tr("用户已重新启用"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "更新用户状态失败");
+            message.error(error instanceof Error ? error.message : tr("更新用户状态失败"));
         }
     }, [message, replaceUser]);
 
@@ -124,10 +125,10 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
 
     const bulkDisable = () => {
         modal.confirm({
-            title: `停用选中的 ${selectedUserIds.length} 个用户？`,
-            content: "这些用户的全部登录态会被清除，身份、任务和积分流水继续保留。操作会整体成功或整体回滚。",
-            okText: "确认批量停用",
-            cancelText: "取消",
+            title: tr("停用选中的 {0} 个用户？", selectedUserIds.length),
+            content: tr("这些用户的全部登录态会被清除，身份、任务和积分流水继续保留。操作会整体成功或整体回滚。"),
+            okText: tr("确认批量停用"),
+            cancelText: tr("取消"),
             okButtonProps: { danger: true },
             onOk: async () => {
                 setBulkDisabling(true);
@@ -135,9 +136,9 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
                     const result = await bulkDisableAdminUsers(selectedUserIds);
                     result.users.forEach(replaceUser);
                     setSelectedUserIds([]);
-                    message.success(`已停用 ${result.disabledCount} 个用户`);
+                    message.success(tr("已停用 {0} 个用户", result.disabledCount));
                 } catch (error) {
-                    message.error(error instanceof Error ? error.message : "批量停用用户失败");
+                    message.error(error instanceof Error ? error.message : tr("批量停用用户失败"));
                 } finally {
                     setBulkDisabling(false);
                 }
@@ -155,8 +156,8 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
                             className="app-list-search"
                             prefix={<Search className="size-4 text-foreground/40" />}
                             value={state.filter}
-                            aria-label="搜索用户"
-                            placeholder="搜索用户名、名称或邮箱"
+                            aria-label={tr("搜索用户")}
+                            placeholder={tr("搜索用户名、名称或邮箱")}
                             onValueChange={(value) => update({ filter: value, page: 1 }, true)}
                         />
                     </>
@@ -166,29 +167,29 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
                 toolbarFilters={
                     <>
                         <Select
-                            aria-label="筛选用户角色"
+                            aria-label={tr("筛选用户角色")}
                             className="w-32"
                             value={state.role}
-                            options={[{ value: "all", label: "全部角色" }, { value: "admin", label: "管理员" }, { value: "user", label: "普通用户" }]}
+                            options={[{ value: "all", label: tr("全部角色") }, { value: "admin", label: tr("管理员") }, { value: "user", label: tr("普通用户") }]}
                             onChange={(role) => update({ role, page: 1 })}
                         />
                         <Select
-                            aria-label="筛选用户状态"
+                            aria-label={tr("筛选用户状态")}
                             className="w-32"
                             value={state.status}
-                            options={[{ value: "all", label: "全部状态" }, { value: "active", label: "已启用" }, { value: "disabled", label: "已停用" }]}
+                            options={[{ value: "all", label: tr("全部状态") }, { value: "active", label: tr("已启用") }, { value: "disabled", label: tr("已停用") }]}
                             onChange={(status) => update({ status, page: 1 })}
                         />
                     </>
                 }
                 trailing={
                     <div className="flex items-center gap-2">
-                        <Button icon={<UserPlus className="size-4" />} onClick={() => { setEditingUser(null); setCreateUserOpen(true); }}>{"\u6dfb\u52a0\u7528\u6237"}</Button>
+                        <Button icon={<UserPlus className="size-4" />} onClick={() => { setEditingUser(null); setCreateUserOpen(true); }}>{tr("添加用户")}</Button>
                         <Dropdown
                             trigger={["click"]}
                             popupRender={() => (
                                 <div className="w-48 rounded-md border border-border bg-popover p-2 shadow-lg">
-                                    <div className="px-2 pb-2 text-xs font-medium text-foreground/55">显示列</div>
+                                    <div className="px-2 pb-2 text-xs font-medium text-foreground/55">{tr("显示列")}</div>
                                     <div className="space-y-0.5">
                                         {userColumnOptions.map((option) => (
                                             <label key={option.key} className="flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm hover:bg-muted/60">
@@ -210,11 +211,11 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
                                 </div>
                             )}
                         >
-                            <Button icon={<Settings2 className="size-4" />}>列设置</Button>
+                            <Button icon={<Settings2 className="size-4" />}>{tr("列设置")}</Button>
                         </Dropdown>
                     </div>
                 }
-                batchActions={<AdminBatchBar count={selectedUserIds.length} onClear={() => setSelectedUserIds([])}><Button danger size="small" icon={<Ban className="size-3.5" />} loading={bulkDisabling} onClick={bulkDisable}>批量停用</Button></AdminBatchBar>}
+                batchActions={<AdminBatchBar count={selectedUserIds.length} onClear={() => setSelectedUserIds([])}><Button danger size="small" icon={<Ban className="size-3.5" />} loading={bulkDisabling} onClick={bulkDisable}>{tr("批量停用")}</Button></AdminBatchBar>}
                 skeletonColumns={Math.max(4, columns.length)}
                 table={{
                     className: "app-data-table admin-users-table",
@@ -232,7 +233,7 @@ export default function UsersPanel({ onUserChanged }: { onUserChanged?: (user: L
                     pagination: false,
                     scroll: { x: 860 },
                 }}
-                empty={loadError ? <div className="admin-inline-load-error" role="status"><span>用户数据暂不可用：{loadError}</span><Button size="small" onClick={() => setRetry((value) => value + 1)}>重试</Button></div> : <AdminTableEmpty filtered={hasFilters} />}
+                empty={loadError ? <div className="admin-inline-load-error" role="status"><span>{tr("用户数据暂不可用：")}{loadError}</span><Button size="small" onClick={() => setRetry((value) => value + 1)}>{tr("重试")}</Button></div> : <AdminTableEmpty filtered={hasFilters} />}
                 footer={<PaginationBar alwaysShow current={state.page} pageSize={state.pageSize} total={total} onChange={(page, pageSize) => update({ page: pageSize !== state.pageSize ? 1 : page, pageSize })} />}
             />
 

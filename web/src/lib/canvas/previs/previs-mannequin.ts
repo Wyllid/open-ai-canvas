@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Bone, Color, ConeGeometry, CylinderGeometry, Group, Matrix4, Mesh, MeshStandardMaterial, Object3D, Quaternion, TorusGeometry, Vector3, type BufferGeometry, type SkinnedMesh } from "three";
 import { GLTFLoader, SkeletonUtils } from "three-stdlib";
 
@@ -188,7 +189,7 @@ export function buildPrevisMannequin(input: { template: Object3D; archetype?: Pr
 
     const ual = (name: string) => {
         const found = model.getObjectByName(name);
-        if (!found) throw new Error(`标准人偶缺少骨骼 ${name}`);
+        if (!found) throw new Error(tr("标准人偶缺少骨骼 {0}", name));
         return found;
     };
 

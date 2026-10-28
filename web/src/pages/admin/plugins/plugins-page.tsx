@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Input } from "antd";
 import { Switch } from "@/pages/admin/ui/controls";
 import type { ColumnsType } from "antd/es/table";
@@ -46,7 +47,7 @@ export default function AdminPluginsPage() {
             setPlugins(result.plugins);
             setStates(result.states);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "读取插件管理数据失败");
+            message.error(error instanceof Error ? error.message : tr("读取插件管理数据失败"));
         } finally {
             setLoading(false);
         }
@@ -79,9 +80,9 @@ export default function AdminPluginsPage() {
         try {
             const state = await setPluginPlatformAvailability(item.manifest.id, available);
             setStates((current) => ({ ...current, [item.manifest.id]: state }));
-            message.success(`${item.manifest.name}${available ? "已开放" : "已停用"}`);
+            message.success(`${item.manifest.name}${available ? tr("已开放") : tr("已停用")}`);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "更新插件可用状态失败");
+            message.error(error instanceof Error ? error.message : tr("更新插件可用状态失败"));
         } finally {
             setSavingId("");
         }
@@ -91,27 +92,27 @@ export default function AdminPluginsPage() {
         try {
             await uploadPlugin(file);
             setUploadOpen(false);
-            message.success("自定义插件已安装");
+            message.success(tr("自定义插件已安装"));
             await reload();
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "安装插件失败");
+            message.error(error instanceof Error ? error.message : tr("安装插件失败"));
         }
     };
 
     const remove = (item: AdminPluginItem) => {
         modal.confirm({
-            title: `卸载 ${item.manifest.name}？`,
-            content: "插件包、平台状态和所有用户的启用记录都会删除。此操作不可撤销。",
-            okText: "确认卸载",
+            title: tr("卸载 {0}？", item.manifest.name),
+            content: tr("插件包、平台状态和所有用户的启用记录都会删除。此操作不可撤销。"),
+            okText: tr("确认卸载"),
             okButtonProps: { danger: true },
-            cancelText: "取消",
+            cancelText: tr("取消"),
             onOk: async () => {
                 try {
                     await uninstallPlugin(item.manifest.id);
-                    message.success("自定义插件已卸载");
+                    message.success(tr("自定义插件已卸载"));
                     await reload();
                 } catch (error) {
-                    message.error(error instanceof Error ? error.message : "卸载插件失败");
+                    message.error(error instanceof Error ? error.message : tr("卸载插件失败"));
                     throw error;
                 }
             },
@@ -126,7 +127,7 @@ export default function AdminPluginsPage() {
 
     const columns: ColumnsType<AdminPluginItem> = [
         {
-            title: "插件",
+            title: tr("插件"),
             key: "plugin",
             width: 410,
             render: (_, item) => (
@@ -144,8 +145,8 @@ export default function AdminPluginsPage() {
                             <span className="text-foreground/20" aria-hidden="true">
                                 ·
                             </span>
-                            <span className={`truncate ${item.error ? "text-status-error" : "text-foreground/52"}`} title={item.error || item.manifest.description || "未提供插件说明"}>
-                                {item.error || item.manifest.description || "未提供插件说明"}
+                            <span className={`truncate ${item.error ? "text-status-error" : "text-foreground/52"}`} title={item.error || item.manifest.description || tr("未提供插件说明")}>
+                                {item.error || item.manifest.description || tr("未提供插件说明")}
                             </span>
                         </div>
                     </div>
@@ -153,7 +154,7 @@ export default function AdminPluginsPage() {
             ),
         },
         {
-            title: "类型",
+            title: tr("类型"),
             key: "type",
             width: 160,
             align: "center",
@@ -162,35 +163,35 @@ export default function AdminPluginsPage() {
                     <AdminStatusBadge label={managementLabel(item.management)} tone={item.management.origin === "uploaded" ? "warning" : item.management.kind === "application" ? "info" : "neutral"} />
                     {!item.manifest.trusted ? (
                         <div className="mt-2">
-                            <AdminStatusBadge label="来源未验证" tone="warning" />
+                            <AdminStatusBadge label={tr("来源未验证")} tone="warning" />
                         </div>
                     ) : null}
                 </div>
             ),
         },
         {
-            title: "作用范围",
+            title: tr("作用范围"),
             key: "scope",
             width: 180,
             align: "center",
             render: (_, item) =>
                 item.management.activationScope === "user" ? (
                     <div>
-                        <div className="font-medium text-foreground/78">用户自主启用</div>
+                        <div className="font-medium text-foreground/78">{tr("用户自主启用")}</div>
                         <div className="mt-1 inline-flex items-center gap-1 text-xs text-foreground/48">
                             <UsersRound className="size-3.5" aria-hidden="true" />
-                            {states[item.manifest.id]?.enabledUserCount || 0} 位已启用
+                            {states[item.manifest.id]?.enabledUserCount || 0} {tr("位已启用")}
                         </div>
                     </div>
                 ) : (
                     <div>
-                        <div className="font-medium text-foreground/78">全局生效</div>
-                        <div className="mt-1 text-xs text-foreground/48">管理员统一控制</div>
+                        <div className="font-medium text-foreground/78">{tr("全局生效")}</div>
+                        <div className="mt-1 text-xs text-foreground/48">{tr("管理员统一控制")}</div>
                     </div>
                 ),
         },
         {
-            title: "平台状态",
+            title: tr("平台状态"),
             key: "status",
             width: 170,
             align: "center",
@@ -198,12 +199,12 @@ export default function AdminPluginsPage() {
                 const available = states[item.manifest.id]?.platformAvailable ?? item.status === "enabled";
                 return (
                     <div className="flex items-center justify-center gap-3">
-                        <AdminStatusBadge label={available ? "已开放" : "已停用"} tone={available ? "success" : "neutral"} />
+                        <AdminStatusBadge label={available ? tr("已开放") : tr("已停用")} tone={available ? "success" : "neutral"} />
                         <Switch
                             className="plugin-state-switch"
                             loading={savingId === item.manifest.id}
                             checked={available}
-                            aria-label={`${item.manifest.name}，当前${available ? "平台开放，点击停用" : "平台停用，点击开放"}`}
+                            aria-label={tr("{0}，当前{1}", item.manifest.name, available ? tr("平台开放，点击停用") : tr("平台停用，点击开放"))}
                             onChange={(checked) => void changeAvailability(item, checked)}
                         />
                     </div>
@@ -211,16 +212,16 @@ export default function AdminPluginsPage() {
             },
         },
         {
-            title: "卸载",
+            title: tr("卸载"),
             key: "actions",
             width: 72,
             align: "center",
             render: (_, item) =>
                 item.management.origin === "uploaded" ? (
-                    <Button danger type="text" size="small" aria-label={`卸载 ${item.manifest.name}`} icon={<Trash2 className="size-3.5" aria-hidden="true" />} onClick={() => remove(item)} />
+                    <Button danger type="text" size="small" aria-label={tr("卸载 {0}", item.manifest.name)} icon={<Trash2 className="size-3.5" aria-hidden="true" />} onClick={() => remove(item)} />
                 ) : (
-                    <span title="内置插件不可卸载">
-                        <Button type="text" size="small" disabled aria-label={`${item.manifest.name}为内置插件，不可卸载`} icon={<Trash2 className="size-3.5" aria-hidden="true" />} />
+                    <span title={tr("内置插件不可卸载")}>
+                        <Button type="text" size="small" disabled aria-label={tr("{0}为内置插件，不可卸载", item.manifest.name)} icon={<Trash2 className="size-3.5" aria-hidden="true" />} />
                     </span>
                 ),
         },
@@ -228,24 +229,24 @@ export default function AdminPluginsPage() {
 
     return (
         <AdminPageFrame
-            title="插件管理"
-            description="管理平台级可用性、自定义插件安装与用户启用范围"
+            title={tr("插件管理")}
+            description={tr("管理平台级可用性、自定义插件安装与用户启用范围")}
             actions={
                 <>
                     <Button icon={<RefreshCw className="size-4" />} loading={loading} onClick={() => void reload()}>
-                        刷新
+                        {tr("刷新")}
                     </Button>
                     <Button type="primary" icon={<CloudUpload className="size-4" />} onClick={() => setUploadOpen(true)}>
-                        上传插件
+                        {tr("上传插件")}
                     </Button>
                 </>
             }
         >
             <div className="my-4 grid min-h-16 grid-cols-2 divide-x divide-border/70 overflow-hidden rounded-lg border border-border/70 bg-card sm:grid-cols-4">
-                <OverviewItem label="全部插件" value={items.length} />
-                <OverviewItem label="官方应用" value={applicationCount} />
-                <OverviewItem label="系统协议" value={protocolCount} />
-                <OverviewItem label="平台已停用" value={unavailableCount} tone={unavailableCount ? "warning" : "default"} />
+                <OverviewItem label={tr("全部插件")} value={items.length} />
+                <OverviewItem label={tr("官方应用")} value={applicationCount} />
+                <OverviewItem label={tr("系统协议")} value={protocolCount} />
+                <OverviewItem label={tr("平台已停用")} value={unavailableCount} tone={unavailableCount ? "warning" : "default"} />
             </div>
             <AdminDataTable
                 toolbar={
@@ -254,8 +255,8 @@ export default function AdminPluginsPage() {
                         allowClear
                         prefix={<Search className="size-4 text-foreground/40" />}
                         value={search}
-                        aria-label="搜索插件"
-                        placeholder="搜索插件名称、ID 或作者"
+                        aria-label={tr("搜索插件")}
+                        placeholder={tr("搜索插件名称、ID 或作者")}
                         onChange={(event) => {
                             setSearch(event.target.value);
                             setPage(1);
@@ -265,7 +266,7 @@ export default function AdminPluginsPage() {
                 toolbarFilters={
                     <>
                         <Select
-                            aria-label="筛选插件类型"
+                            aria-label={tr("筛选插件类型")}
                             className="w-44"
                             value={kind}
                             onChange={(value) => {
@@ -273,14 +274,14 @@ export default function AdminPluginsPage() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "all", label: "全部类型" },
-                                { value: "application", label: "官方应用插件" },
-                                { value: "protocol", label: "系统协议插件" },
-                                { value: "uploaded", label: "上传的自定义插件" },
+                                { value: "all", label: tr("全部类型") },
+                                { value: "application", label: tr("官方应用插件") },
+                                { value: "protocol", label: tr("系统协议插件") },
+                                { value: "uploaded", label: tr("上传的自定义插件") },
                             ]}
                         />
                         <Select
-                            aria-label="筛选插件状态"
+                            aria-label={tr("筛选插件状态")}
                             className="w-32"
                             value={availability}
                             onChange={(value) => {
@@ -288,9 +289,9 @@ export default function AdminPluginsPage() {
                                 setPage(1);
                             }}
                             options={[
-                                { value: "all", label: "全部状态" },
-                                { value: "available", label: "平台开放" },
-                                { value: "unavailable", label: "平台停用" },
+                                { value: "all", label: tr("全部状态") },
+                                { value: "available", label: tr("平台开放") },
+                                { value: "unavailable", label: tr("平台停用") },
                             ]}
                         />
                     </>
@@ -304,7 +305,7 @@ export default function AdminPluginsPage() {
                 }}
                 skeletonColumns={5}
                 table={{ className: "app-data-table", size: "small", sticky: true, rowKey: (item) => item.manifest.id, loading, columns, dataSource: paginated, pagination: false, scroll: { x: 1120 } }}
-                empty={<AdminTableEmpty filtered={hasFilters} title={hasFilters ? undefined : "还没有可管理的插件"} />}
+                empty={<AdminTableEmpty filtered={hasFilters} title={hasFilters ? undefined : tr("还没有可管理的插件")} />}
                 footer={
                     <PaginationBar
                         alwaysShow
@@ -366,7 +367,7 @@ function managementOrder(value: PluginManagement) {
 }
 
 function managementLabel(value: PluginManagement) {
-    if (value.origin === "uploaded") return "自定义插件";
-    if (value.kind === "application") return "官方应用";
-    return "系统协议";
+    if (value.origin === "uploaded") return tr("自定义插件");
+    if (value.kind === "application") return tr("官方应用");
+    return tr("系统协议");
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { assertPixelSize, type ImageCropRect, type PixelSize } from "./image-operation-plan";
 export type CropGrip = readonly [-1 | 0 | 1, -1 | 0 | 1];
 const limit = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
@@ -5,7 +6,7 @@ const minimum = 0.06;
 
 export function centeredAspectSelection(size: PixelSize, aspect: number): ImageCropRect {
     assertPixelSize(size);
-    if (!Number.isFinite(aspect) || aspect <= 0) throw new RangeError("裁剪比例无效");
+    if (!Number.isFinite(aspect) || aspect <= 0) throw new RangeError(tr("裁剪比例无效"));
     const ratio = (aspect * size.height) / size.width;
     const height = Math.min(1, 1 / ratio);
     const width = height * ratio;
@@ -47,7 +48,7 @@ export function resizeSelection(box: ImageCropRect, grip: CropGrip, dx: number, 
 }
 
 export function selectAspect(box: ImageCropRect, normalizedRatio: number): ImageCropRect {
-    if (!Number.isFinite(normalizedRatio) || normalizedRatio <= 0) throw new RangeError("裁剪比例无效");
+    if (!Number.isFinite(normalizedRatio) || normalizedRatio <= 0) throw new RangeError(tr("裁剪比例无效"));
     const height = Math.min(1, 1 / normalizedRatio, Math.sqrt((box.width * box.height) / normalizedRatio));
     const width = height * normalizedRatio;
     return { width, height, x: limit(box.x + (box.width - width) / 2, 0, 1 - width), y: limit(box.y + (box.height - height) / 2, 0, 1 - height) };

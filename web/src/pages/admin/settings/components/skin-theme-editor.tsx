@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Button, Form, Input, InputNumber } from "antd";
 import { IconButton, SegmentedControl, Select, Tooltip } from "@/pages/admin/ui/controls";
 import { Check, Copy, LockKeyhole, Moon, Plus, Sparkles, Sun, Trash2 } from "lucide-react";
@@ -47,20 +48,20 @@ export function SkinThemeEditor({
         <div className="admin-skin-workspace">
             <div className="admin-skin-library-toolbar">
                 <div>
-                    <strong>主题库</strong>
-                    <span>共 {themes.length} 套，最多 16 套</span>
+                    <strong>{tr("主题库")}</strong>
+                    <span>{tr("共")} {themes.length} {tr("套，最多 16 套")}</span>
                 </div>
                 <div>
                     <Button icon={<Plus className="size-3.5" />} disabled={disabled || themes.length >= 16} onClick={onCreate}>
-                        从默认新建
+                        {tr("从默认新建")}
                     </Button>
                     <Button icon={<Copy className="size-3.5" />} disabled={disabled || themes.length >= 16} onClick={() => onDuplicate(selected.id)}>
-                        复制当前
+                        {tr("复制当前")}
                     </Button>
                 </div>
             </div>
 
-            <div className="admin-skin-library" role="radiogroup" aria-label="选择全站皮肤主题">
+            <div className="admin-skin-library" role="radiogroup" aria-label={tr("选择全站皮肤主题")}>
                 {themes.map((theme) => {
                     const active = theme.id === selected.id;
                     const swatches = skinSwatches(theme);
@@ -76,9 +77,9 @@ export function SkinThemeEditor({
                                 </span>
                                 <span className="admin-skin-card-copy">
                                     <strong>{theme.name}</strong>
-                                    <small>{theme.description || "暂无说明"}</small>
+                                    <small>{theme.description || tr("暂无说明")}</small>
                                 </span>
-                                {theme.locked ? <LockKeyhole className="admin-skin-card-lock" aria-label="系统默认主题不可修改" /> : null}
+                                {theme.locked ? <LockKeyhole className="admin-skin-card-lock" aria-label={tr("系统默认主题不可修改")} /> : null}
                                 {active ? (
                                     <span className="admin-skin-card-check" aria-hidden="true">
                                         <Check />
@@ -86,16 +87,16 @@ export function SkinThemeEditor({
                                 ) : null}
                             </button>
                             <div className="admin-skin-card-actions">
-                                <Tooltip title="复制这套主题">
-                                    <IconButton size="sm" variant="ghost" icon={Copy} aria-label={`复制 ${theme.name}`} disabled={disabled || themes.length >= 16} onClick={() => onDuplicate(theme.id)} />
+                                <Tooltip title={tr("复制这套主题")}>
+                                    <IconButton size="sm" variant="ghost" icon={Copy} aria-label={tr("复制 {0}", theme.name)} disabled={disabled || themes.length >= 16} onClick={() => onDuplicate(theme.id)} />
                                 </Tooltip>
-                                <Tooltip title={theme.locked ? "系统默认主题不可删除" : "删除这套主题"}>
+                                <Tooltip title={theme.locked ? tr("系统默认主题不可删除") : tr("删除这套主题")}>
                                     <Button
                                         className="admin-skin-delete-button"
                                         type="primary"
                                         danger
                                         size="small"
-                                        aria-label={`删除 ${theme.name}`}
+                                        aria-label={tr("删除 {0}", theme.name)}
                                         icon={<Trash2 className="size-3.5" />}
                                         disabled={disabled || theme.locked}
                                         onClick={() => onDelete(theme.id)}
@@ -110,25 +111,25 @@ export function SkinThemeEditor({
             <div className="admin-skin-editor">
                 <div className="admin-skin-editor-heading">
                     <div>
-                        <span>当前编辑</span>
+                        <span>{tr("当前编辑")}</span>
                         <strong>{selected.name}</strong>
                     </div>
-                    <AdminStatusBadge label={selected.locked ? "系统默认 · 只读" : "自定义主题"} tone={selected.locked ? "neutral" : "info"} />
+                    <AdminStatusBadge label={selected.locked ? tr("系统默认 · 只读") : tr("自定义主题")} tone={selected.locked ? "neutral" : "info"} />
                 </div>
 
                 {selected.locked ? (
                     <div className="admin-skin-locked-note">
                         <LockKeyhole className="size-4" aria-hidden="true" />
-                        <span>经典黑白采用黑白基础配色与紫蓝渐变主按钮，不能改名、修改或删除。点击“从默认新建”即可复制全部参数后自由调整。</span>
+                        <span>{tr("经典黑白采用黑白基础配色与紫蓝渐变主按钮，不能改名、修改或删除。点击“从默认新建”即可复制全部参数后自由调整。")}</span>
                     </div>
                 ) : null}
 
                 <Form className="admin-appearance-form admin-skin-identity-form" layout="vertical" requiredMark={false} disabled={editorDisabled}>
                     <div className="admin-appearance-form-grid">
-                        <Form.Item label="主题名称" extra="1–40 个字符，可随时更改。">
+                        <Form.Item label={tr("主题名称")} extra={tr("1–40 个字符，可随时更改。")}>
                             <Input value={selected.name} maxLength={40} showCount onChange={(event) => updateIdentity({ name: event.target.value })} />
                         </Form.Item>
-                        <Form.Item label="主题说明" extra="用于主题库辨识，不影响前台文案。">
+                        <Form.Item label={tr("主题说明")} extra={tr("用于主题库辨识，不影响前台文案。")}>
                             <Input value={selected.description} maxLength={100} showCount onChange={(event) => updateIdentity({ description: event.target.value })} />
                         </Form.Item>
                     </div>
@@ -136,18 +137,18 @@ export function SkinThemeEditor({
 
                 <div className="admin-skin-mode-bar">
                     <div>
-                        <strong>颜色体系</strong>
-                        <span>同一用途的控件统一消费下列语义颜色</span>
+                        <strong>{tr("颜色体系")}</strong>
+                        <span>{tr("同一用途的控件统一消费下列语义颜色")}</span>
                     </div>
                     <SegmentedControl<SkinThemeMode>
-                        ariaLabel="皮肤预览模式"
+                        ariaLabel={tr("皮肤预览模式")}
                         value={mode}
                         options={[
                             {
                                 label: (
                                     <span className="admin-skin-mode-label">
                                         <Sun />
-                                        浅色
+                                        {tr("浅色")}
                                     </span>
                                 ),
                                 value: "light",
@@ -156,7 +157,7 @@ export function SkinThemeEditor({
                                 label: (
                                     <span className="admin-skin-mode-label">
                                         <Moon />
-                                        深色
+                                        {tr("深色")}
                                     </span>
                                 ),
                                 value: "dark",
@@ -169,22 +170,22 @@ export function SkinThemeEditor({
                 <SkinThemePreview theme={selected} mode={mode} />
 
                 <details className="admin-skin-token-group" open>
-                    <summary><span>主按钮填充</span><small>{mode === "light" ? "浅色" : "深色"}模式</small></summary>
+                    <summary><span>{tr("主按钮填充")}</span><small>{mode === "light" ? tr("浅色") : tr("深色")}{tr("模式")}</small></summary>
                     <div className="admin-skin-component-grid">
                         <label className="admin-skin-number-field">
-                            <span>填充方式</span>
+                            <span>{tr("填充方式")}</span>
                             <Select value={buttonFill.mode} disabled={editorDisabled}
-                                options={[{ label: "纯色（使用主操作颜色）", value: "solid" }, { label: "渐变", value: "gradient" }]}
+                                options={[{ label: tr("纯色（使用主操作颜色）"), value: "solid" }, { label: tr("渐变"), value: "gradient" }]}
                                 onChange={(value) => updateButton({ mode: value })} />
                         </label>
                         {buttonFill.mode === "gradient" ? <label className="admin-skin-number-field">
-                            <span>渐变角度</span>
-                            <InputNumber aria-label="渐变角度" value={buttonFill.angle} min={0} max={360} precision={0} addonAfter="°" disabled={editorDisabled}
+                            <span>{tr("渐变角度")}</span>
+                            <InputNumber aria-label={tr("渐变角度")} value={buttonFill.angle} min={0} max={360} precision={0} addonAfter="°" disabled={editorDisabled}
                                 onChange={(value) => { if (typeof value === "number") updateButton({ angle: value }); }} />
                         </label> : null}
                     </div>
                     {buttonFill.mode === "gradient" ? <div className="admin-skin-color-grid">
-                        {SKIN_BUTTON_COLOR_FIELDS.map(({ key, label }) => <ColorTokenField key={key} label={label} help="仅影响主按钮，不改变选中态、开关和危险操作" value={buttonFill[key]} disabled={editorDisabled}
+                        {SKIN_BUTTON_COLOR_FIELDS.map(({ key, label }) => <ColorTokenField key={key} label={label} help={tr("仅影响主按钮，不改变选中态、开关和危险操作")} value={buttonFill[key]} disabled={editorDisabled}
                             onChange={(value) => updateButton({ [key]: value.trim().toLowerCase() })} />)}
                     </div> : null}
                 </details>
@@ -194,7 +195,7 @@ export function SkinThemeEditor({
                         <details key={group.key} className="admin-skin-token-group" open={index < 2}>
                             <summary>
                                 <span>{group.label}</span>
-                                <small>{group.fields.length} 项</small>
+                                <small>{group.fields.length} {tr("项")}</small>
                             </summary>
                             <div className="admin-skin-color-grid">
                                 {group.fields.map((field) => (
@@ -207,8 +208,8 @@ export function SkinThemeEditor({
 
                 <details className="admin-skin-token-group admin-skin-component-group" open>
                     <summary>
-                        <span>控件尺寸、圆角与反馈</span>
-                        <small>17 项</small>
+                        <span>{tr("控件尺寸、圆角与反馈")}</span>
+                        <small>{tr("17 项")}</small>
                     </summary>
                     <div className="admin-skin-component-grid">
                         {SKIN_COMPONENT_NUMBER_FIELDS.map((field) => (
@@ -228,14 +229,14 @@ export function SkinThemeEditor({
                             </label>
                         ))}
                         <label className="admin-skin-number-field">
-                            <span>阴影风格</span>
+                            <span>{tr("阴影风格")}</span>
                             <Select
                                 value={selected.tokens.components.shadowStyle}
                                 disabled={editorDisabled}
                                 options={[
-                                    { label: "无阴影", value: "none" },
-                                    { label: "柔和阴影", value: "soft" },
-                                    { label: "强层次阴影", value: "strong" },
+                                    { label: tr("无阴影"), value: "none" },
+                                    { label: tr("柔和阴影"), value: "soft" },
+                                    { label: tr("强层次阴影"), value: "strong" },
                                 ]}
                                 onChange={(value) => updateComponent("shadowStyle", value)}
                             />
@@ -256,7 +257,7 @@ function ColorTokenField({ label, help, value, disabled, onChange }: { label: st
                 <small>{help}</small>
             </span>
             <span className="admin-skin-color-control">
-                <input type="color" value={pickerValue} disabled={disabled} aria-label={`${label}取色器`} title={`选择${label}`} onChange={(event) => onChange(event.target.value)} />
+                <input type="color" value={pickerValue} disabled={disabled} aria-label={tr("{0}取色器", label)} title={tr("选择{0}", label)} onChange={(event) => onChange(event.target.value)} />
                 <Input value={value} maxLength={9} disabled={disabled} spellCheck={false} status={/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(value) ? undefined : "error"} onChange={(event) => onChange(event.target.value)} />
             </span>
         </div>
@@ -275,25 +276,25 @@ function SkinThemePreview({ theme, mode }: { theme: SkinDefinition; mode: SkinTh
                     <Sparkles />
                 </span>
                 <div>
-                    <strong>控件组合预览</strong>
-                    <small style={{ color: color.textMuted }}>按钮、输入、选中与状态均来自同一套主题参数</small>
+                    <strong>{tr("控件组合预览")}</strong>
+                    <small style={{ color: color.textMuted }}>{tr("按钮、输入、选中与状态均来自同一套主题参数")}</small>
                 </div>
                 <span className="admin-skin-live-preview-status" style={{ background: color.selected, color: color.selectedForeground, borderRadius: component.menuRadius }}>
-                    已选中
+                    {tr("已选中")}
                 </span>
                 <span className="admin-skin-live-preview-menu" style={{ background: color.selected, color: color.selectedForeground, borderRadius: component.menuRadius }}>
-                    后台菜单
+                    {tr("后台菜单")}
                 </span>
                 <span
                     className="admin-skin-live-preview-input"
                     style={{ height: component.controlHeight, background: color.control, borderColor: color.controlBorder, borderWidth: component.borderWidth, borderRadius: component.inputRadius, color: color.textMuted }}
                 >
-                    输入框状态
+                    {tr("输入框状态")}
                 </span>
                 <span className="admin-skin-live-preview-button" style={{ height: component.controlHeight, background: button.background, color: button.foreground, borderRadius: component.buttonRadius, fontWeight: component.buttonFontWeight }}>
-                    主要操作
+                    {tr("主要操作")}
                 </span>
-                <span className="admin-skin-live-preview-switches" aria-label="开关开启与关闭状态预览">
+                <span className="admin-skin-live-preview-switches" aria-label={tr("开关开启与关闭状态预览")}>
                     <i className="is-on" style={{ background: color.switchChecked }}>
                         <b style={{ background: color.switchCheckedHandle }} />
                     </i>
@@ -302,7 +303,7 @@ function SkinThemePreview({ theme, mode }: { theme: SkinDefinition; mode: SkinTh
                     </i>
                 </span>
                 <span className="admin-skin-live-preview-danger" style={{ background: color.danger, color: color.dangerForeground, borderRadius: component.buttonRadius }}>
-                    删除
+                    {tr("删除")}
                 </span>
                 <span className="admin-skin-live-preview-signals">
                     <i style={{ background: color.success }} />

@@ -1,15 +1,16 @@
+import { currentLocale, tr } from "@/i18n";
 import type { Skill, SkillCategory } from "@/services/api/skills";
 
 export const fallbackSkillCategories: SkillCategory[] = [
-    { value: "drama", label: "短剧影视" },
-    { value: "ecommerce", label: "电商营销" },
-    { value: "creative", label: "创意设计" },
-    { value: "social", label: "社媒内容" },
-    { value: "others", label: "其他" },
+    { value: "drama", label: tr("短剧影视") },
+    { value: "ecommerce", label: tr("电商营销") },
+    { value: "creative", label: tr("创意设计") },
+    { value: "social", label: tr("社媒内容") },
+    { value: "others", label: tr("其他") },
 ];
 
 export function skillCategoryLabel(value: string, categories: SkillCategory[] = fallbackSkillCategories) {
-    return categories.find((item) => item.value === value)?.label || "其他";
+    return categories.find((item) => item.value === value)?.label || tr("其他");
 }
 
 export function groupSkills(skills: Skill[], categories: SkillCategory[]) {
@@ -38,15 +39,15 @@ export function skillGlyph(name: string | undefined) {
     const first = typeof Intl !== "undefined" && "Segmenter" in Intl
         ? new Intl.Segmenter("zh-CN", { granularity: "grapheme" }).segment(value)[Symbol.iterator]().next().value?.segment
         : Array.from(value)[0];
-    return first ? first.toLocaleUpperCase("en-US") : "技";
+    return first ? first.toLocaleUpperCase("en-US") : tr("技");
 }
 
 export function formatSkillCount(value: number) {
-    return new Intl.NumberFormat("zh-CN", { notation: "compact", maximumFractionDigits: 1 }).format(value);
+    return new Intl.NumberFormat(currentLocale(), { notation: "compact", maximumFractionDigits: 1 }).format(value);
 }
 
 export function formatSkillDate(value: string) {
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "未知时间";
-    return new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "short", day: "numeric" }).format(date);
+    if (Number.isNaN(date.getTime())) return tr("未知时间");
+    return new Intl.DateTimeFormat(currentLocale(), { year: "numeric", month: "short", day: "numeric" }).format(date);
 }

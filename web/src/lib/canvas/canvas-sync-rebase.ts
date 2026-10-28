@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { canonicalize } from "json-canonicalize";
 import type { CanvasProject } from "@/stores/canvas/use-canvas-store";
 import { mergeCanvasRichText, mergeCanvasText } from "@/lib/canvas/canvas-text-merge";
@@ -16,7 +17,7 @@ function rebaseValue(before: unknown, remote: unknown, local: unknown, verified:
         const base = record(before) ? before : {};
         const result = { ...remote };
         for (const key of new Set([...Object.keys(base), ...Object.keys(local)])) {
-            if (["__proto__", "constructor", "prototype"].includes(key)) throw new Error("无效的画布同步字段");
+            if (["__proto__", "constructor", "prototype"].includes(key)) throw new Error(tr("无效的画布同步字段"));
             const value = rebaseValue(base[key], remote[key], local[key], verified);
             if (value === undefined) delete result[key];
             else result[key] = value;

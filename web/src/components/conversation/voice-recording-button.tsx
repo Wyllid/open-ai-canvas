@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Button } from "antd";
 import { Tooltip } from "@/components/ui/base/tooltip";
 import { useState } from "react";
@@ -27,7 +28,7 @@ export function VoiceRecordingButton({ onTranscribed, disabled, className }: Voi
 
     return (
         <>
-            <Tooltip title="实时对话">
+            <Tooltip title={tr("实时对话")}>
                 <Button
                     type="text"
                     shape="circle"
@@ -36,7 +37,7 @@ export function VoiceRecordingButton({ onTranscribed, disabled, className }: Voi
                     style={className ? undefined : { color: theme.node.muted }}
                     icon={<Mic className="size-4" />}
                     onClick={() => setOpen(true)}
-                    aria-label="实时对话"
+                    aria-label={tr("实时对话")}
                 />
             </Tooltip>
             {open ? (

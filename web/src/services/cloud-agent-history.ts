@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { applyAgentEvent } from "@/lib/canvas/cloud-agent-events";
 import type { CloudAgentChatMessage } from "@/components/canvas/canvas-cloud-agent-chat-ui";
 import { getActiveUserScope } from "@/lib/user-scope";
@@ -16,11 +17,11 @@ type HistoryOptions = { signal?: AbortSignal; scope?: string; client?: CloudAgen
 
 function checkRequest(options: HistoryOptions, scope: string) {
     options.signal?.throwIfAborted();
-    if (getActiveUserScope() !== scope) throw new DOMException("账号已切换，已停止恢复原账号对话", "AbortError");
+    if (getActiveUserScope() !== scope) throw new DOMException(tr("账号已切换，已停止恢复原账号对话"), "AbortError");
 }
 
 function assertConversation(conversationId: string, runs: AgentRun[]) {
-    if (runs.some((run) => run.conversationId !== conversationId)) throw new Error("Agent 对话归属不一致，已停止恢复");
+    if (runs.some((run) => run.conversationId !== conversationId)) throw new Error(tr("Agent 对话归属不一致，已停止恢复"));
 }
 
 function orderRuns(runs: AgentRun[]) {
@@ -34,7 +35,7 @@ function orderRuns(runs: AgentRun[]) {
     const seen = new Set<string>();
     const visit = (run: AgentRun) => {
         if (seen.has(run.id)) return;
-        if (visiting.has(run.id)) throw new Error("Agent 对话轮次关系异常，请重新读取历史");
+        if (visiting.has(run.id)) throw new Error(tr("Agent 对话轮次关系异常，请重新读取历史"));
         visiting.add(run.id);
         const parent = run.parentId ? byId.get(run.parentId) : undefined;
         if (parent) visit(parent);
@@ -129,9 +130,9 @@ async function restoreRun(run: AgentRun, cached: AgentRun | undefined, client: C
         checkRequest(options, scope);
         const { run: next } = await client.getRun(run.id, options.signal, { sinceSeq: seq, fromStart: seq === 0, eventLimit: 500 });
         checkRequest(options, scope);
-        if (next.id !== run.id || next.conversationId !== run.conversationId) throw new Error("Agent 轮次归属不一致，已停止恢复");
+        if (next.id !== run.id || next.conversationId !== run.conversationId) throw new Error(tr("Agent 轮次归属不一致，已停止恢复"));
         const page = [...new Map((next.events || []).filter((event) => event.runId === run.id && Number.isSafeInteger(event.seq) && event.seq > seq).map((event) => [event.seq, event])).values()].sort((a, b) => a.seq - b.seq);
-        if (page.some((event, index) => event.seq !== seq + index + 1) || (!page.length && seq < (next.eventCount || 0))) throw new Error("Agent 历史事件未完整返回，请重试读取");
+        if (page.some((event, index) => event.seq !== seq + index + 1) || (!page.length && seq < (next.eventCount || 0))) throw new Error(tr("Agent 历史事件未完整返回，请重试读取"));
         snapshot = next;
         events.push(...page);
         if (!page.length) break;
@@ -141,7 +142,7 @@ async function restoreRun(run: AgentRun, cached: AgentRun | undefined, client: C
 }
 
 export async function loadCloudAgentConversation(conversationId: string, options: HistoryOptions & { existing?: CloudAgentConversation } = {}): Promise<CloudAgentConversation> {
-    if (!conversationId.trim()) throw new Error("缺少 Agent 对话 ID");
+    if (!conversationId.trim()) throw new Error(tr("缺少 Agent 对话 ID"));
     const scope = options.scope || getActiveUserScope();
     const client = options.client || defaultClient;
     const runs: AgentRun[] = [];
@@ -154,7 +155,7 @@ export async function loadCloudAgentConversation(conversationId: string, options
         assertConversation(conversationId, page.items);
         runs.push(...page.items);
         after = page.nextCursor;
-        if (after && cursors.has(after)) throw new Error("Agent 历史分页未前进，请重新读取对话");
+        if (after && cursors.has(after)) throw new Error(tr("Agent 历史分页未前进，请重新读取对话"));
         if (after) cursors.add(after);
     } while (after);
     const ordered = orderRuns(runs);
@@ -179,7 +180,7 @@ export async function loadCloudAgentConversation(conversationId: string, options
 export function mergeCloudAgentConversation(local: CloudAgentConversation, remote: CloudAgentConversation): CloudAgentConversation {
     const identity = cloudAgentConversationServerId(local);
     // 旧浏览器缓存没有 conversationId 时，只能通过同一个已确认 run ID 认领，不能按文本或本地 ID 猜测。
-    if (identity ? identity !== cloudAgentConversationServerId(remote) : !local.run || !remote.runs?.some((run) => run.id === local.run?.id)) throw new Error("Agent 对话归属不一致，已保留原本地对话");
+    if (identity ? identity !== cloudAgentConversationServerId(remote) : !local.run || !remote.runs?.some((run) => run.id === local.run?.id)) throw new Error(tr("Agent 对话归属不一致，已保留原本地对话"));
     const byId = new Map(local.messages.map((message) => [message.id, message]));
     const submittedUserIds = new Map((remote.runs || []).filter((run) => run.idempotencyKey).map((run) => [`user-${run.id}`, `user-${run.idempotencyKey}`]));
     const consumed = new Set<string>();
@@ -238,7 +239,7 @@ export async function refreshCloudAgentConversations(options: HistoryOptions & {
             checkRequest(options, scope);
             summaries.push(...page.items);
             before = page.nextCursor;
-            if (before && cursors.has(before)) throw new Error("Agent 对话目录分页未前进");
+            if (before && cursors.has(before)) throw new Error(tr("Agent 对话目录分页未前进"));
             if (before) cursors.add(before);
         } while (before);
     const byId = new Map(summaries.map((summary) => [summary.id, summary]));
@@ -257,7 +258,7 @@ export async function refreshCloudAgentConversations(options: HistoryOptions & {
                     checkRequest(options, scope);
                     const observed = await client.getConversation(id, options.signal);
                     checkRequest(options, scope);
-                    if (observed.id !== id) throw new Error("Agent 对话归属不一致，已停止恢复");
+                    if (observed.id !== id) throw new Error(tr("Agent 对话归属不一致，已停止恢复"));
                     summary = observed;
                 }
                 conversations[current] = summary && unchanged(summary, cached) ? cached! : await loadCloudAgentConversation(id, { ...options, scope, client, existing: cached });

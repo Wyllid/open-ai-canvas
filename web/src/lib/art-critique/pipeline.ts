@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { requestToolResponse, type ResponseFunctionTool, type ResponseInputMessage, type ToolResponseResult } from "@/services/api/image";
 import type { AiConfig } from "@/stores/use-config-store";
 
@@ -195,7 +196,7 @@ function reviewerTool(name: string, description: string) {
 export const artCritiquePipelineTools = {
     scene: createTool(
         "analyze_art_scene",
-        "只理解图片类型、主体、意图和视觉上下文，不评价问题，不提交批改候选。",
+        tr("只理解图片类型、主体、意图和视觉上下文，不评价问题，不提交批改候选。"),
         {
             scene: {
                 type: "object",
@@ -229,13 +230,13 @@ export const artCritiquePipelineTools = {
         },
         ["scene"],
     ),
-    composition: reviewerTool("review_art_composition", "只检查构图与叙事关系，提交有证据的候选问题；允许返回空候选。"),
-    color: reviewerTool("review_art_color", "只检查色彩和调色关系，提交有证据的候选问题；允许返回空候选。"),
-    lighting: reviewerTool("review_art_lighting", "只检查光线和曝光关系，提交有证据的候选问题；允许返回空候选。"),
-    structure: reviewerTool("review_art_structure", "只检查结构、比例、透视和细节一致性，提交有证据的候选问题；允许返回空候选。"),
+    composition: reviewerTool("review_art_composition", tr("只检查构图与叙事关系，提交有证据的候选问题；允许返回空候选。")),
+    color: reviewerTool("review_art_color", tr("只检查色彩和调色关系，提交有证据的候选问题；允许返回空候选。")),
+    lighting: reviewerTool("review_art_lighting", tr("只检查光线和曝光关系，提交有证据的候选问题；允许返回空候选。")),
+    structure: reviewerTool("review_art_structure", tr("只检查结构、比例、透视和细节一致性，提交有证据的候选问题；允许返回空候选。")),
     aggregate: createTool(
         "aggregate_art_critique",
-        "合并多个 Reviewer 的候选问题，去重、排序并形成可执行的最终问题草案。",
+        tr("合并多个 Reviewer 的候选问题，去重、排序并形成可执行的最终问题草案。"),
         {
             summary: { type: "string", maxLength: 1600 },
             strengths: { type: "array", maxItems: 8, items: { type: "string", maxLength: 500 } },
@@ -246,7 +247,7 @@ export const artCritiquePipelineTools = {
     ),
     grounding: createTool(
         "ground_art_critique_issues",
-        "只把已有问题绑定到图片区域，不重新评价图片，也不创建新问题。",
+        tr("只把已有问题绑定到图片区域，不重新评价图片，也不创建新问题。"),
         {
             targets: {
                 type: "array",
@@ -275,7 +276,7 @@ export const artCritiquePipelineTools = {
     ),
     verification: createTool(
         "verify_art_critique",
-        "作为没有参与前面判断的复核者，逐项确认已有问题和位置是否有图像证据。不得新增问题。",
+        tr("作为没有参与前面判断的复核者，逐项确认已有问题和位置是否有图像证据。不得新增问题。"),
         {
             decisions: {
                 type: "array",
@@ -299,7 +300,7 @@ export const artCritiquePipelineTools = {
 
 export async function runArtCritiquePipeline(config: AiConfig, input: ArtCritiqueReviewInput, options: ArtCritiquePipelineOptions = {}) {
     const textModel = config.textModel.trim();
-    if (!textModel) throw new Error("未配置文本/视觉理解模型，请先在设置中选择支持图片理解的文本模型");
+    if (!textModel) throw new Error(tr("未配置文本/视觉理解模型，请先在设置中选择支持图片理解的文本模型"));
     // requestToolResponse resolves the request model from config.model first. Override it here so
     // an image-generation default cannot silently receive the critique's tool-calling requests.
     const critiqueConfig = { ...config, model: textModel };
@@ -334,7 +335,7 @@ export async function runArtCritiquePipeline(config: AiConfig, input: ArtCritiqu
         scene = sceneOutcome.scene;
     } else {
         rethrowIfAborted(sceneOutcome.error, options.signal);
-        warnings.push("场景理解阶段未完成，后续步骤使用了默认场景上下文。");
+        warnings.push(tr("场景理解阶段未完成，后续步骤使用了默认场景上下文。"));
     }
 
     const appendReviewerResult = (reviewer: ArtCritiqueReviewer, result: PromiseSettledResult<{ candidates: ArtCritiqueCandidate[] }>) => {
@@ -344,7 +345,7 @@ export async function runArtCritiquePipeline(config: AiConfig, input: ArtCritiqu
             return;
         }
         rethrowIfAborted(result.reason, options.signal);
-        warnings.push(`${reviewerLabel(reviewer)} Reviewer 未完成，已使用其他通道继续。`);
+        warnings.push(tr("{0} Reviewer 未完成，已使用其他通道继续。", reviewerLabel(reviewer)));
     };
     reviewerResults.forEach((result, index) => appendReviewerResult(reviewerSpecs[index].reviewer, result));
 
@@ -358,7 +359,7 @@ export async function runArtCritiquePipeline(config: AiConfig, input: ArtCritiqu
             aggregate = filterAggregateAgainstCandidates(parsed, candidates, warnings);
         } catch (error) {
             rethrowIfAborted(error, options.signal);
-            warnings.push("问题聚合阶段未完成，已使用本地规则整理候选问题。");
+            warnings.push(tr("问题聚合阶段未完成，已使用本地规则整理候选问题。"));
             aggregate = fallbackAggregate(scene, candidates, warnings);
         }
     }
@@ -390,7 +391,7 @@ export async function runArtCritiquePipeline(config: AiConfig, input: ArtCritiqu
             issues = applyGrounding(issues, grounding.targets);
         } catch (error) {
             rethrowIfAborted(error, options.signal);
-            warnings.push("问题定位阶段未完成，已根据问题描述使用参考区域坐标；坐标仅作辅助参考，文字报告仍然保留。");
+            warnings.push(tr("问题定位阶段未完成，已根据问题描述使用参考区域坐标；坐标仅作辅助参考，文字报告仍然保留。"));
             issues = applyReferenceCoordinates(issues);
         }
 
@@ -406,19 +407,19 @@ export async function runArtCritiquePipeline(config: AiConfig, input: ArtCritiqu
             issues = verified.issues;
             verificationSummary = verified.summary;
             if (!issues.length) {
-                warnings.push("独立复核未确认重点问题，已过滤不可靠的批改项。");
-                aggregate = { ...aggregate, summary: "独立复核后未确认需要优先修改的问题。" };
+                warnings.push(tr("独立复核未确认重点问题，已过滤不可靠的批改项。"));
+                aggregate = { ...aggregate, summary: tr("独立复核后未确认需要优先修改的问题。") };
             }
         } else {
             rethrowIfAborted(verificationResult.reason, options.signal);
-            warnings.push("独立复核阶段未完成，已保留聚合后的批改结果。");
+            warnings.push(tr("独立复核阶段未完成，已保留聚合后的批改结果。"));
         }
 
         if (promptResult.status === "fulfilled") {
             issues = applyEditPrompts(issues, promptResult.value.prompts, warnings);
         } else {
             rethrowIfAborted(promptResult.reason, options.signal);
-            warnings.push("AI 修改提示词阶段未完成，报告仍保留问题和定位结果；请重新批改后再复制提示词。");
+            warnings.push(tr("AI 修改提示词阶段未完成，报告仍保留问题和定位结果；请重新批改后再复制提示词。"));
         }
     } else {
         options.onDraftReport?.(buildReport());
@@ -509,9 +510,9 @@ async function requestPipelineStage<T>(config: AiConfig, messages: ResponseInput
 }
 
 function cleanAggregate(scene: ArtCritiqueScene): AggregateResult {
-    const focus = scene.intendedFocus === "未确定" ? "画面" : scene.intendedFocus;
+    const focus = scene.intendedFocus === "未确定" ? tr("画面") : scene.intendedFocus;
     return {
-        summary: `已完成对${focus}的多维检查，本轮未发现需要优先修改的可靠问题。`,
+        summary: tr("已完成对{0}的多维检查，本轮未发现需要优先修改的可靠问题。", focus),
         strengths: [],
         issues: [],
         options: [],
@@ -539,7 +540,7 @@ export function filterAggregateAgainstCandidates(aggregate: AggregateResult, can
         return sources.length > 0 && sources.every((candidate) => candidate.kind === "option" && candidate.category === option.category) && option.confidence >= MIN_REPORTABLE_CONFIDENCE;
     });
     if (accepted.length !== aggregate.issues.length || acceptedOptions.length !== aggregate.options.length) {
-        warnings.push(`聚合阶段返回了 ${aggregate.issues.length - accepted.length + aggregate.options.length - acceptedOptions.length} 个无可靠来源或低置信度结果，已过滤。`);
+        warnings.push(tr("聚合阶段返回了 {0} 个无可靠来源或低置信度结果，已过滤。", aggregate.issues.length - accepted.length + aggregate.options.length - acceptedOptions.length));
     }
     const deduplicated = deduplicateAggregateIssues(accepted, warnings);
     return { ...aggregate, issues: prioritizeIssues(deduplicated).slice(0, MAX_ISSUES), options: prioritizeOptions(acceptedOptions).slice(0, MAX_OPTIONS) };
@@ -557,7 +558,7 @@ export function deduplicateAggregateIssues(issues: readonly AggregateIssueDraft[
         merged[existingIndex] = mergeAggregateIssues(merged[existingIndex], issue);
         mergedCount += 1;
     }
-    if (mergedCount && warnings) warnings.push(`聚合阶段合并了 ${mergedCount} 个重复或同根因问题。`);
+    if (mergedCount && warnings) warnings.push(tr("聚合阶段合并了 {0} 个重复或同根因问题。", mergedCount));
     return merged;
 }
 
@@ -588,12 +589,12 @@ function mergeAggregateIssues(left: AggregateIssueDraft, right: AggregateIssueDr
 
 function issueTopicKey(issue: Pick<AggregateIssueDraft, "title" | "explanation" | "targetDescription">) {
     const text = `${issue.title} ${issue.explanation} ${issue.targetDescription}`.toLowerCase();
-    const subject = containsAny(text, ["主体", "人物", "女性", "脸", "面部", "人像", "subject", "person", "face"]);
-    const lighting = containsAny(text, ["受光", "暗部", "阴影", "亮度", "曝光", "轮廓光", "分离", "融入背景", "冷影", "lighting", "shadow"]);
-    const foreground = containsAny(text, ["前景", "近景", "背影", "foreground"]);
-    const focus = containsAny(text, ["焦点", "动线", "注意力", "视觉阅读", "视觉重量", "压过", "抢走", "focus", "attention"]);
-    const saturated = containsAny(text, ["高饱和", "饱和度", "亮点", "光点", "霓虹", "色彩焦点", "saturation", "highlight", "hotspot"]);
-    const space = containsAny(text, ["留白", "拥挤", "切线", "裁切", "边缘", "间距", "轮廓贴近", "negative space", "crop"]);
+    const subject = containsAny(text, [tr("主体"), tr("人物"), tr("女性"), tr("脸"), tr("面部"), tr("人像"), "subject", "person", "face"]);
+    const lighting = containsAny(text, [tr("受光"), tr("暗部"), tr("阴影"), tr("亮度"), tr("曝光"), tr("轮廓光"), tr("分离"), tr("融入背景"), tr("冷影"), "lighting", "shadow"]);
+    const foreground = containsAny(text, [tr("前景"), tr("近景"), tr("背影"), "foreground"]);
+    const focus = containsAny(text, [tr("焦点"), tr("动线"), tr("注意力"), tr("视觉阅读"), tr("视觉重量"), tr("压过"), tr("抢走"), "focus", "attention"]);
+    const saturated = containsAny(text, [tr("高饱和"), tr("饱和度"), tr("亮点"), tr("光点"), tr("霓虹"), tr("色彩焦点"), "saturation", "highlight", "hotspot"]);
+    const space = containsAny(text, [tr("留白"), tr("拥挤"), tr("切线"), tr("裁切"), tr("边缘"), tr("间距"), tr("轮廓贴近"), "negative space", "crop"]);
 
     if (subject && lighting) return "subject-lighting";
     if (foreground && focus) return "foreground-focus";
@@ -631,22 +632,22 @@ function fallbackAggregate(scene: ArtCritiqueScene, candidates: readonly ArtCrit
                     targetDescription: candidate.targetDescription,
                     sourceCandidateIds: [candidate.id],
                     suggestion: {
-                        goal: `降低“${candidate.title}”对画面表达的影响`,
-                        actions: [`围绕${candidate.targetDescription || "问题区域"}进行针对性调整，并先保留当前主体和画面意图。`],
-                        preserve: ["保留当前画面的主体意图"],
-                        expectedEffect: "问题对视觉层级和画面表达的干扰减弱。",
+                        goal: tr("降低“{0}”对画面表达的影响", candidate.title),
+                        actions: [tr("围绕{0}进行针对性调整，并先保留当前主体和画面意图。", candidate.targetDescription || tr("问题区域"))],
+                        preserve: [tr("保留当前画面的主体意图")],
+                        expectedEffect: tr("问题对视觉层级和画面表达的干扰减弱。"),
                     },
                 }) satisfies AggregateIssueDraft,
         );
     const selectedIssues = prioritizeIssues(deduplicateAggregateIssues(issueDrafts, warnings)).slice(0, MAX_ISSUES);
     const selectedOptions = prioritizeCandidates(candidates.filter((candidate) => candidate.kind === "option")).slice(0, MAX_OPTIONS);
-    const focus = scene.intendedFocus === "未确定" ? "画面" : scene.intendedFocus;
+    const focus = scene.intendedFocus === "未确定" ? tr("画面") : scene.intendedFocus;
     return {
         summary: selectedIssues.length
-            ? `已完成对${focus}的多维度检查，以下是当前最值得优先处理的问题。`
+            ? tr("已完成对{0}的多维度检查，以下是当前最值得优先处理的问题。", focus)
             : selectedOptions.length
-              ? `已完成对${focus}的多维度检查，未发现需要优先修改的可靠问题；下面是可选的风格方向。`
-              : "已完成场景检查，但没有识别到足够可靠的重点问题。",
+              ? tr("已完成对{0}的多维度检查，未发现需要优先修改的可靠问题；下面是可选的风格方向。", focus)
+              : tr("已完成场景检查，但没有识别到足够可靠的重点问题。"),
         strengths: [],
         issues: selectedIssues,
         options: selectedOptions.map((candidate) => ({
@@ -657,10 +658,10 @@ function fallbackAggregate(scene: ArtCritiqueScene, candidates: readonly ArtCrit
             confidence: candidate.confidence,
             sourceCandidateIds: [candidate.id],
             suggestion: {
-                goal: `如果希望强化“${candidate.title}”所代表的方向，可以尝试以下调整`,
-                actions: [`围绕${candidate.targetDescription || "相关区域"}进行小幅尝试，比较调整前后的表达差异。`],
-                preserve: ["保留当前画面的主体意图"],
-                expectedEffect: "画面更接近该风格方向，但这不是对原图的错误判定。",
+                goal: tr("如果希望强化“{0}”所代表的方向，可以尝试以下调整", candidate.title),
+                actions: [tr("围绕{0}进行小幅尝试，比较调整前后的表达差异。", candidate.targetDescription || tr("相关区域"))],
+                preserve: [tr("保留当前画面的主体意图")],
+                expectedEffect: tr("画面更接近该风格方向，但这不是对原图的错误判定。"),
             },
         })),
     };
@@ -691,10 +692,10 @@ export function isReviewerAllowed(reviewer: ArtCritiqueCandidate["reviewer"], ca
 }
 
 function reviewerLabel(reviewer: ArtCritiqueReviewer) {
-    if (reviewer === "composition") return "构图与叙事";
-    if (reviewer === "color") return "色彩";
-    if (reviewer === "lighting") return "光线";
-    return "结构与比例";
+    if (reviewer === "composition") return tr("构图与叙事");
+    if (reviewer === "color") return tr("色彩");
+    if (reviewer === "lighting") return tr("光线");
+    return tr("结构与比例");
 }
 
 const ALL_SUPPORTED_IMAGE_TYPES = ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"] as const;
@@ -738,11 +739,11 @@ function createEmptyScene(): ArtCritiqueScene {
         imageType: "other",
         style: [],
         subjects: [],
-        intendedFocus: "未确定",
+        intendedFocus: tr("未确定"),
         compositionType: [],
         lightingType: [],
-        mood: "未确定",
-        estimatedIntent: "未确定",
+        mood: tr("未确定"),
+        estimatedIntent: tr("未确定"),
         sceneDepth: "medium",
     };
 }

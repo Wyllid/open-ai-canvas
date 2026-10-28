@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Button } from "antd";
 import { Plus } from "lucide-react";
 import { lazy, useState } from "react";
@@ -18,7 +19,7 @@ const AgentLessonsPanel = lazy(() => import("./components/agent-lessons-panel"))
 export function AnalyticsPage() {
     const { references } = useAdminContext();
     return (
-        <AdminPageFrame title="运行总览" description="请求质量、任务队列与成本 · 趋势按自然日统计" scroll>
+        <AdminPageFrame title={tr("运行总览")} description={tr("请求质量、任务队列与成本 · 趋势按自然日统计")} scroll>
             <AnalyticsPanel users={references.users} channels={references.channels} />
         </AdminPageFrame>
     );
@@ -30,21 +31,21 @@ export function AnnouncementsPage() {
     const [publishReturnFocus, setPublishReturnFocus] = useState<HTMLElement | null>(null);
     return (
         <AdminPageFrame
-            title="系统公告"
-            description="面向全体用户的通知发布与状态管理"
+            title={tr("系统公告")}
+            description={tr("面向全体用户的通知发布与状态管理")}
             actions={
                 <Button
                     id="admin-announcement-publish-trigger"
                     type="primary"
                     disabled={publishBlocked}
-                    title={publishBlocked ? "请先核对上一次结果不确定的发布请求" : undefined}
+                    title={publishBlocked ? tr("请先核对上一次结果不确定的发布请求") : undefined}
                     icon={<Plus className="size-4" />}
                     onClick={(event) => {
                         setPublishReturnFocus(event.currentTarget);
                         setPublishOpen(true);
                     }}
                 >
-                    发布公告
+                    {tr("发布公告")}
                 </Button>
             }
         >
@@ -57,15 +58,15 @@ export function BannerAnnouncementsPage() {
     const [createOpen, setCreateOpen] = useState(false);
     return (
         <AdminPageFrame
-            title="常驻通知"
-            description="配置首页顶部常驻展示的通知，支持标题、状态与有效期"
+            title={tr("常驻通知")}
+            description={tr("配置首页顶部常驻展示的通知，支持标题、状态与有效期")}
             actions={
                 <Button
                     type="primary"
                     icon={<Plus className="size-4" />}
                     onClick={() => setCreateOpen(true)}
                 >
-                    新增常驻通知
+                    {tr("新增常驻通知")}
                 </Button>
             }
         >
@@ -76,7 +77,7 @@ export function BannerAnnouncementsPage() {
 
 export function AccessSettingsPage() {
     return (
-        <AdminPageFrame title="登录与注册" description="先控制账号创建，再配置第三方登录入口与服务协议" scroll>
+        <AdminPageFrame title={tr("登录与注册")} description={tr("先控制账号创建，再配置第三方登录入口与服务协议")} scroll>
             <AccessSettingsPanel />
         </AdminPageFrame>
     );
@@ -84,7 +85,7 @@ export function AccessSettingsPage() {
 
 export function EmailSettingsPage() {
     return (
-        <AdminPageFrame title="邮件服务" description="先决定是否发送注册验证码，再配置 SMTP" scroll>
+        <AdminPageFrame title={tr("邮件服务")} description={tr("先决定是否发送注册验证码，再配置 SMTP")} scroll>
             <EmailSettingsPanel />
         </AdminPageFrame>
     );
@@ -92,7 +93,7 @@ export function EmailSettingsPage() {
 
 export function FeatureAvailabilityPage() {
     return (
-        <AdminPageFrame title="功能开放" description="按用户使用路径控制工作台、插件与模型能力" scroll>
+        <AdminPageFrame title={tr("功能开放")} description={tr("按用户使用路径控制工作台、插件与模型能力")} scroll>
             <FeatureAvailabilityPanel />
         </AdminPageFrame>
     );
@@ -100,7 +101,7 @@ export function FeatureAvailabilityPage() {
 
 export function StorageResourcesPage() {
     return (
-        <AdminPageFrame title="存储资源" description="只读查看资源记录、容量分布与文件预览" scroll>
+        <AdminPageFrame title={tr("存储资源")} description={tr("只读查看资源记录、容量分布与文件预览")} scroll>
             <StorageResourcesPanel />
         </AdminPageFrame>
     );
@@ -108,7 +109,7 @@ export function StorageResourcesPage() {
 
 export function AgentLessonsPage() {
     return (
-        <AdminPageFrame title="Agent 记忆" description="按用户查看个人记忆；批准仍由用户自己处理" scroll>
+        <AdminPageFrame title={tr("Agent 记忆")} description={tr("按用户查看个人记忆；批准仍由用户自己处理")} scroll>
             <AgentLessonsPanel />
         </AdminPageFrame>
     );

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 /**
  * 首页常驻通知条的标题样式模型。
  *
@@ -29,16 +30,16 @@ export const BANNER_TITLE_DEFAULT_FONT_WEIGHT = 600;
 export const BANNER_TITLE_FONT_SIZES = [10, 11, 12, 13, 14, 15, 16, 18, 20];
 
 export const BANNER_TITLE_FONT_WEIGHTS = [
-    { value: 400, label: "常规" },
-    { value: 500, label: "中等" },
-    { value: 600, label: "半粗" },
-    { value: 700, label: "粗体" },
+    { value: 400, label: tr("常规") },
+    { value: 500, label: tr("中等") },
+    { value: 600, label: tr("半粗") },
+    { value: 700, label: tr("粗体") },
 ];
 
 export const BANNER_TITLE_FONT_FAMILIES: { key: BannerTitleFontFamilyKey; label: string; css: string }[] = [
-    { key: "sans", label: "默认", css: "" },
-    { key: "serif", label: "衬线", css: 'Georgia, "Songti SC", "SimSun", serif' },
-    { key: "mono", label: "等宽", css: "var(--font-mono)" },
+    { key: "sans", label: tr("默认"), css: "" },
+    { key: "serif", label: tr("衬线"), css: 'Georgia, "Songti SC", "SimSun", serif' },
+    { key: "mono", label: tr("等宽"), css: "var(--font-mono)" },
 ];
 
 export function bannerTitleFontFamilyCSS(key?: BannerTitleFontFamilyKey) {

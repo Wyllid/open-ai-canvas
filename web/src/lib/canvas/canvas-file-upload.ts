@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { fitImageNodeSize, fitNodeSize } from "@/lib/canvas/canvas-node-size";
 import { NODE_DEFAULT_SIZE } from "@/constant/canvas";
 import { CanvasNodeType, type CanvasNodeData, type Position } from "@/types/canvas";
@@ -35,7 +36,7 @@ export function uploadPreviewBlur(percent?: number) {
 
 export async function createFileUploadPlaceholder(id: string, file: File, position: Position) {
     const type = uploadNodeType(file);
-    if (!type) throw new Error("请选择图片、视频、音频或 TXT / Markdown 文件");
+    if (!type) throw new Error(tr("请选择图片、视频、音频或 TXT / Markdown 文件"));
     if (type === CanvasNodeType.Image) return createImageUploadPlaceholder(id, file, position, await readUploadImageSize(file));
     const size = type === CanvasNodeType.Video ? fitNodeSize(...await readUploadVideoSize(file)) : NODE_DEFAULT_SIZE[type];
     return {
@@ -50,13 +51,13 @@ async function readUploadVideoSize(file: File): Promise<[number, number]> {
     const video = document.createElement("video");
     try {
         return await new Promise((resolve, reject) => {
-            const timer = window.setTimeout(() => reject(new Error("视频尺寸读取超时，请确认文件可播放")), 15000);
+            const timer = window.setTimeout(() => reject(new Error(tr("视频尺寸读取超时，请确认文件可播放"))), 15000);
             video.onloadedmetadata = () => {
                 window.clearTimeout(timer);
                 if (video.videoWidth && video.videoHeight) resolve([video.videoWidth, video.videoHeight]);
-                else reject(new Error("无法读取视频尺寸"));
+                else reject(new Error(tr("无法读取视频尺寸")));
             };
-            video.onerror = () => { window.clearTimeout(timer); reject(new Error("无法读取视频，请确认格式受浏览器支持")); };
+            video.onerror = () => { window.clearTimeout(timer); reject(new Error(tr("无法读取视频，请确认格式受浏览器支持"))); };
             video.preload = "metadata";
             video.src = url;
         });
@@ -76,7 +77,7 @@ export async function readUploadImageSize(file: File): Promise<{ width: number; 
     try {
         image.src = url;
         await image.decode();
-        if (!image.naturalWidth || !image.naturalHeight) throw new Error("无法读取图片尺寸，请重新选择图片");
+        if (!image.naturalWidth || !image.naturalHeight) throw new Error(tr("无法读取图片尺寸，请重新选择图片"));
         return { width: image.naturalWidth, height: image.naturalHeight };
     } finally {
         URL.revokeObjectURL(url);
@@ -95,5 +96,5 @@ export function createImageUploadPlaceholder(id: string, file: Pick<File, "name"
 
 export function interruptFileUpload(node: CanvasNodeData): CanvasNodeData {
     if (node.metadata?.fileUpload !== "uploading") return node;
-    return { ...node, metadata: { ...node.metadata, fileUpload: "error", fileUploadProgress: undefined, errorDetails: "上传已中断，请重新选择文件上传" } };
+    return { ...node, metadata: { ...node.metadata, fileUpload: "error", fileUploadProgress: undefined, errorDetails: tr("上传已中断，请重新选择文件上传") } };
 }

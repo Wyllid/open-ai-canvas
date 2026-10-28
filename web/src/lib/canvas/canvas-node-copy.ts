@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { resetGenerationTaskMetadata } from "@/lib/canvas/canvas-project-generation";
 import { CanvasNodeType, type CanvasNodeData, type CanvasNodeMetadata, type StoryboardRow } from "@/types/canvas";
 
@@ -5,7 +6,7 @@ const COPY_TITLE_SUFFIX = /^(.*)_copy(\d+)$/i;
 
 export function nextCopiedNodeTitle(sourceTitle: string, existingTitles: Iterable<string>) {
     const sourceMatch = sourceTitle.match(COPY_TITLE_SUFFIX);
-    const baseTitle = (sourceMatch?.[1] || sourceTitle.replace(/ Copy$/i, "")).trim() || sourceTitle.trim() || "未命名节点";
+    const baseTitle = (sourceMatch?.[1] || sourceTitle.replace(/ Copy$/i, "")).trim() || sourceTitle.trim() || tr("未命名节点");
     let maxCopyIndex = 0;
     for (const title of existingTitles) {
         const match = title.match(COPY_TITLE_SUFFIX);

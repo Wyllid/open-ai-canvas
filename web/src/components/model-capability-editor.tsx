@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { ImageSizePresetsEditor } from "./image-size-presets-editor";
 import { imageSizeConfigWithPresets, imageSizePresets } from "@/lib/image-size-presets";
 import { Input, InputNumber } from "antd";
@@ -15,20 +16,20 @@ import { Select } from "@/components/ui/base/select";
 
 const ratioOptions = ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"];
 const operationOptions = [
-    { label: "文生视频", value: "text_to_video" },
-    { label: "图生视频", value: "image_to_video" },
-    { label: "全模态参考", value: "reference_to_video" },
-    { label: "视频续写", value: "extend" },
-    { label: "局部修改", value: "inpaint" },
-    { label: "元素替换", value: "replace_element" },
-    { label: "运镜调整", value: "camera_motion" },
-    { label: "风格迁移", value: "style_transfer" },
-    { label: "音频生视频", value: "audio_to_video" },
-    { label: "画质增强", value: "enhance" },
+    { label: tr("文生视频"), value: "text_to_video" },
+    { label: tr("图生视频"), value: "image_to_video" },
+    { label: tr("全模态参考"), value: "reference_to_video" },
+    { label: tr("视频续写"), value: "extend" },
+    { label: tr("局部修改"), value: "inpaint" },
+    { label: tr("元素替换"), value: "replace_element" },
+    { label: tr("运镜调整"), value: "camera_motion" },
+    { label: tr("风格迁移"), value: "style_transfer" },
+    { label: tr("音频生视频"), value: "audio_to_video" },
+    { label: tr("画质增强"), value: "enhance" },
 ];
 
 function ImageSizeHelp() {
-    return <p className="text-[var(--fs-label)] leading-relaxed text-foreground/60">按分辨率配置支持的比例，尺寸自动换算。size 发送像素，aspect_ratio 发送比例；独立分辨率由模型协议适配。实际输出尺寸以上游为准。</p>;
+    return <p className="text-[var(--fs-label)] leading-relaxed text-foreground/60">{tr("按分辨率配置支持的比例，尺寸自动换算。size 发送像素，aspect_ratio 发送比例；独立分辨率由模型协议适配。实际输出尺寸以上游为准。")}</p>;
 }
 
 type Props = {
@@ -64,24 +65,24 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
     const processing = profile.processing;
     const processingFields = processing ? (
         <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="帧率策略">
+            <Field label={tr("帧率策略")}>
                 <Select
                     className="w-full"
                     disabled={disabled}
                     value={processing.fpsPolicy}
                     options={[
-                        { label: "保持原帧率（按 ≤30fps 档预扣）", value: "keep_source" },
-                        { label: "用户选择帧率", value: "user_select" },
+                        { label: tr("保持原帧率（按 ≤30fps 档预扣）"), value: "keep_source" },
+                        { label: tr("用户选择帧率"), value: "user_select" },
                     ]}
                     onChange={(fpsPolicy) => update({ processing: fpsPolicy === "user_select" ? { ...processing, fpsPolicy, fpsOptions: processing.fpsOptions?.length ? processing.fpsOptions : [30, 60] } : { fpsPolicy, maxSourceSeconds: processing.maxSourceSeconds } })}
                 />
             </Field>
             {processing.fpsPolicy === "user_select" ? (
-                <Field label="可选帧率（15–120，逗号分隔）">
-                    <Input disabled={disabled} value={(processing.fpsOptions || []).join(",")} placeholder="例如：30,60" onChange={(event) => update({ processing: { ...processing, fpsOptions: parseIntegerList(event.target.value) } })} />
+                <Field label={tr("可选帧率（15–120，逗号分隔）")}>
+                    <Input disabled={disabled} value={(processing.fpsOptions || []).join(",")} placeholder={tr("例如：30,60")} onChange={(event) => update({ processing: { ...processing, fpsOptions: parseIntegerList(event.target.value) } })} />
                 </Field>
             ) : null}
-            <NumberField label={`源视频最长秒数（≤${DEFAULT_VIDEO_PROCESSING_MAX_SOURCE_SECONDS}）`} value={processing.maxSourceSeconds || DEFAULT_VIDEO_PROCESSING_MAX_SOURCE_SECONDS} min={1} max={DEFAULT_VIDEO_PROCESSING_MAX_SOURCE_SECONDS} disabled={disabled} onChange={(value) => update({ processing: { ...processing, maxSourceSeconds: value || DEFAULT_VIDEO_PROCESSING_MAX_SOURCE_SECONDS } })} />
+            <NumberField label={tr("源视频最长秒数（≤{0}）", DEFAULT_VIDEO_PROCESSING_MAX_SOURCE_SECONDS)} value={processing.maxSourceSeconds || DEFAULT_VIDEO_PROCESSING_MAX_SOURCE_SECONDS} min={1} max={DEFAULT_VIDEO_PROCESSING_MAX_SOURCE_SECONDS} disabled={disabled} onChange={(value) => update({ processing: { ...processing, maxSourceSeconds: value || DEFAULT_VIDEO_PROCESSING_MAX_SOURCE_SECONDS } })} />
         </div>
     ) : null;
 
@@ -89,10 +90,10 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
         return (
             <div className="admin-capability-reference-editor">
                 <div className="admin-capability-reference-grid">
-                    <ReferenceCard title="图片引用" description="首帧、参考图与多图输入限制">
-                        <NumberField label="最少图片引用" value={profile.references.minImages} min={0} max={profile.references.maxImages} disabled={disabled} onChange={(value) => updateReferences({ minImages: value || 0 })} />
+                    <ReferenceCard title={tr("图片引用")} description={tr("首帧、参考图与多图输入限制")}>
+                        <NumberField label={tr("最少图片引用")} value={profile.references.minImages} min={0} max={profile.references.maxImages} disabled={disabled} onChange={(value) => updateReferences({ minImages: value || 0 })} />
                         <NumberField
-                            label="最大图片引用"
+                            label={tr("最大图片引用")}
                             value={profile.references.maxImages}
                             min={0}
                             disabled={disabled}
@@ -101,22 +102,22 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                                 updateReferences({ maxImages, minImages: Math.min(profile.references.minImages, maxImages) });
                             }}
                         />
-                        <NumberField label="单张图片上限 MB" value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxImageBytes: mbToBytes(value) })} />
+                        <NumberField label={tr("单张图片上限 MB")} value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxImageBytes: mbToBytes(value) })} />
                     </ReferenceCard>
-                    <ReferenceCard title="音频引用" description="音频输入与同步输出限制">
-                        <NumberField label="最大音频引用" value={profile.references.maxAudios} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudios: value || 0 })} />
-                        <NumberField label="单个音频上限 MB" value={bytesToMB(profile.references.maxAudioBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudioBytes: mbToBytes(value) })} />
-                        <NumberField label="单个音频最长秒数" value={profile.references.maxAudioDurationSeconds} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudioDurationSeconds: value || 0 })} />
-                        <BooleanField label="同步音频" value={profile.generateAudio} disabled={disabled} onChange={(generateAudio) => update({ generateAudio })} />
+                    <ReferenceCard title={tr("音频引用")} description={tr("音频输入与同步输出限制")}>
+                        <NumberField label={tr("最大音频引用")} value={profile.references.maxAudios} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudios: value || 0 })} />
+                        <NumberField label={tr("单个音频上限 MB")} value={bytesToMB(profile.references.maxAudioBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudioBytes: mbToBytes(value) })} />
+                        <NumberField label={tr("单个音频最长秒数")} value={profile.references.maxAudioDurationSeconds} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudioDurationSeconds: value || 0 })} />
+                        <BooleanField label={tr("同步音频")} value={profile.generateAudio} disabled={disabled} onChange={(generateAudio) => update({ generateAudio })} />
                     </ReferenceCard>
-                    <ReferenceCard title="视频引用" description="视频数量、大小与时长限制">
-                        <NumberField label="最大视频引用" value={profile.references.maxVideos} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideos: value || 0 })} />
-                        <NumberField label="单个视频上限 MB" value={bytesToMB(profile.references.maxVideoBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideoBytes: mbToBytes(value) })} />
-                        <NumberField label="单个视频最长秒数" value={profile.references.maxVideoDurationSeconds} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideoDurationSeconds: value || 0 })} />
+                    <ReferenceCard title={tr("视频引用")} description={tr("视频数量、大小与时长限制")}>
+                        <NumberField label={tr("最大视频引用")} value={profile.references.maxVideos} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideos: value || 0 })} />
+                        <NumberField label={tr("单个视频上限 MB")} value={bytesToMB(profile.references.maxVideoBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideoBytes: mbToBytes(value) })} />
+                        <NumberField label={tr("单个视频最长秒数")} value={profile.references.maxVideoDurationSeconds} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideoDurationSeconds: value || 0 })} />
                     </ReferenceCard>
-                    <ReferenceCard title="通用限制" description="所有视频请求共用的基础约束">
-                        <NumberField label="提示词最大字符数" value={profile.references.promptMaxChars} min={1} disabled={disabled} onChange={(value) => updateReferences({ promptMaxChars: value || 1 })} />
-                        <BooleanField label="水印" value={profile.watermark} disabled={disabled} onChange={(watermark) => update({ watermark })} />
+                    <ReferenceCard title={tr("通用限制")} description={tr("所有视频请求共用的基础约束")}>
+                        <NumberField label={tr("提示词最大字符数")} value={profile.references.promptMaxChars} min={1} disabled={disabled} onChange={(value) => updateReferences({ promptMaxChars: value || 1 })} />
+                        <BooleanField label={tr("水印")} value={profile.watermark} disabled={disabled} onChange={(watermark) => update({ watermark })} />
                     </ReferenceCard>
                 </div>
             </div>
@@ -127,8 +128,8 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
         return (
             <div className="admin-capability-protocol-editor">
                 <div className="admin-capability-protocol-grid">
-                    <ProtocolParameterCard step="01" title="生成方式" description="允许的任务类型与默认任务">
-                        <Field label="支持模式">
+                    <ProtocolParameterCard step="01" title={tr("生成方式")} description={tr("允许的任务类型与默认任务")}>
+                        <Field label={tr("支持模式")}>
                             <Select
                                 mode="multiple"
                                 className="w-full"
@@ -138,7 +139,7 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                                 onChange={(operations) => update({ operations, defaultOperation: operations.includes(profile.defaultOperation) ? profile.defaultOperation : operations[0] || "text_to_video" })}
                             />
                         </Field>
-                        <Field label="默认模式">
+                        <Field label={tr("默认模式")}>
                             <Select
                                 className="w-full"
                                 disabled={disabled}
@@ -148,14 +149,14 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                             />
                         </Field>
                     </ProtocolParameterCard>
-                    <ProtocolParameterCard step="02" title="输出时长" description="定义可用秒数及默认时长">
+                    <ProtocolParameterCard step="02" title={tr("输出时长")} description={tr("定义可用秒数及默认时长")}>
                         <SegmentedControl
                             block
                             disabled={disabled}
                             value={profile.duration.selection}
                             options={[
-                                { label: "范围", value: "range" },
-                                { label: "固定值", value: "enum" },
+                                { label: tr("范围"), value: "range" },
+                                { label: tr("固定值"), value: "enum" },
                             ]}
                             onChange={(value) =>
                                 updateDuration(
@@ -166,26 +167,26 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                             }
                         />
                         {profile.duration.selection === "enum" ? (
-                            <Field label="固定时长（秒）">
+                            <Field label={tr("固定时长（秒）")}>
                                 <Input
                                     disabled={disabled}
                                     value={durationValues}
-                                    placeholder="例如：5,10"
+                                    placeholder={tr("例如：5,10")}
                                     onChange={(event) => updateDuration({ values: parseIntegerList(event.target.value), default: parseIntegerList(event.target.value)[0] || profile.duration.default })}
                                 />
                             </Field>
                         ) : (
                             <div className="admin-capability-duration-grid">
-                                <NumberField label="最短" value={profile.duration.min} min={1} disabled={disabled} onChange={(value) => updateDuration({ min: value || 1 })} />
-                                <NumberField label="最长" value={profile.duration.max} min={1} disabled={disabled} onChange={(value) => updateDuration({ max: value || 1 })} />
-                                <NumberField label="步长" value={profile.duration.step} min={1} disabled={disabled} onChange={(value) => updateDuration({ step: value || 1 })} />
-                                <NumberField label="默认" value={profile.duration.default} min={1} disabled={disabled} onChange={(value) => updateDuration({ default: value || 1 })} />
+                                <NumberField label={tr("最短")} value={profile.duration.min} min={1} disabled={disabled} onChange={(value) => updateDuration({ min: value || 1 })} />
+                                <NumberField label={tr("最长")} value={profile.duration.max} min={1} disabled={disabled} onChange={(value) => updateDuration({ max: value || 1 })} />
+                                <NumberField label={tr("步长")} value={profile.duration.step} min={1} disabled={disabled} onChange={(value) => updateDuration({ step: value || 1 })} />
+                                <NumberField label={tr("默认")} value={profile.duration.default} min={1} disabled={disabled} onChange={(value) => updateDuration({ default: value || 1 })} />
                             </div>
                         )}
                     </ProtocolParameterCard>
-                    <ProtocolParameterCard step="03" title="画面规格" description="控制比例、分辨率及默认输出">
+                    <ProtocolParameterCard step="03" title={tr("画面规格")} description={tr("控制比例、分辨率及默认输出")}>
                         {autoDL ? autoDLSpecFields : <div className="admin-capability-spec-grid">
-                            <Field label="支持比例">
+                            <Field label={tr("支持比例")}>
                                 <Select
                                     mode="multiple"
                                     className="w-full"
@@ -195,22 +196,22 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                                     onChange={(ratios) => update({ ratios, defaultRatio: ratios.includes(profile.defaultRatio) ? profile.defaultRatio : ratios[0] || "16:9" })}
                                 />
                             </Field>
-                            <Field label="默认比例">
+                            <Field label={tr("默认比例")}>
                                 <Select className="w-full" disabled={disabled} value={profile.defaultRatio} options={profile.ratios.map((item) => ({ label: item, value: item }))} onChange={(defaultRatio) => update({ defaultRatio })} />
                             </Field>
-                            <Field label="输出分辨率">
+                            <Field label={tr("输出分辨率")}>
                                 <Select
                                     mode="tags"
                                     className="admin-capability-tags w-full"
                                     disabled={disabled}
                                     value={profile.resolutions}
                                     tokenSeparators={[","]}
-                                    placeholder="选择或输入模型档位"
+                                    placeholder={tr("选择或输入模型档位")}
                                     options={resolutionOptions.map((item) => ({ label: item.toUpperCase(), value: item }))}
                                     onChange={(resolutions) => update({ resolutions, defaultResolution: resolutions.includes(profile.defaultResolution) ? profile.defaultResolution : resolutions[0] || "" })}
                                 />
                             </Field>
-                            <Field label="默认分辨率">
+                            <Field label={tr("默认分辨率")}>
                                 <Select
                                     className="w-full"
                                     disabled={disabled}
@@ -222,7 +223,7 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                         </div>}
                     </ProtocolParameterCard>
                     {processingFields ? (
-                        <ProtocolParameterCard step="04" title="视频处理" description="帧率策略与源视频时长上限；任务轮询上限 1 小时">
+                        <ProtocolParameterCard step="04" title={tr("视频处理")} description={tr("帧率策略与源视频时长上限；任务轮询上限 1 小时")}>
                             {processingFields}
                         </ProtocolParameterCard>
                     ) : null}
@@ -235,16 +236,16 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
         <div className="admin-capability-editor space-y-3 rounded-md bg-muted/10 p-3">
             <div className="admin-capability-editor-heading flex flex-wrap items-start justify-between gap-2">
                 <div>
-                    <div className="text-sm font-medium">视频能力参数</div>
-                    <div className="mt-0.5 text-[var(--fs-tiny)] text-foreground/48">这些参数会同步到创造页、画布和生成校验</div>
+                    <div className="text-sm font-medium">{tr("视频能力参数")}</div>
+                    <div className="mt-0.5 text-[var(--fs-tiny)] text-foreground/48">{tr("这些参数会同步到创造页、画布和生成校验")}</div>
                 </div>
-                <span className="text-[var(--fs-tiny)] text-foreground/40">协议模板可继续调整</span>
+                <span className="text-[var(--fs-tiny)] text-foreground/40">{tr("协议模板可继续调整")}</span>
             </div>
 
-            <CapabilityGroup title="视频" description="生成方式、输出规格与视频引用约束">
-                <CapabilityBlock title="生成方式">
+            <CapabilityGroup title={tr("视频")} description={tr("生成方式、输出规格与视频引用约束")}>
+                <CapabilityBlock title={tr("生成方式")}>
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <Field label="支持模式">
+                        <Field label={tr("支持模式")}>
                             <Select
                                 mode="multiple"
                                 className="w-full"
@@ -254,7 +255,7 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                                 onChange={(operations) => update({ operations, defaultOperation: operations.includes(profile.defaultOperation) ? profile.defaultOperation : operations[0] || "text_to_video" })}
                             />
                         </Field>
-                        <Field label="默认模式">
+                        <Field label={tr("默认模式")}>
                             <Select
                                 className="w-full"
                                 disabled={disabled}
@@ -265,14 +266,14 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                         </Field>
                     </div>
                 </CapabilityBlock>
-                <CapabilityBlock title="输出时长">
+                <CapabilityBlock title={tr("输出时长")}>
                     <SegmentedControl
                         block
                         disabled={disabled}
                         value={profile.duration.selection}
                         options={[
-                            { label: "范围", value: "range" },
-                            { label: "固定值", value: "enum" },
+                            { label: tr("范围"), value: "range" },
+                            { label: tr("固定值"), value: "enum" },
                         ]}
                         onChange={(value) =>
                             updateDuration(
@@ -283,26 +284,26 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                         }
                     />
                     {profile.duration.selection === "enum" ? (
-                        <Field label="固定时长（秒）">
+                        <Field label={tr("固定时长（秒）")}>
                             <Input
                                 disabled={disabled}
                                 value={durationValues}
-                                placeholder="例如：5,10"
+                                placeholder={tr("例如：5,10")}
                                 onChange={(event) => updateDuration({ values: parseIntegerList(event.target.value), default: parseIntegerList(event.target.value)[0] || profile.duration.default })}
                             />
                         </Field>
                     ) : (
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                            <NumberField label="最短" value={profile.duration.min} min={1} disabled={disabled} onChange={(value) => updateDuration({ min: value || 1 })} />
-                            <NumberField label="最长" value={profile.duration.max} min={1} disabled={disabled} onChange={(value) => updateDuration({ max: value || 1 })} />
-                            <NumberField label="步长" value={profile.duration.step} min={1} disabled={disabled} onChange={(value) => updateDuration({ step: value || 1 })} />
-                            <NumberField label="默认" value={profile.duration.default} min={1} disabled={disabled} onChange={(value) => updateDuration({ default: value || 1 })} />
+                            <NumberField label={tr("最短")} value={profile.duration.min} min={1} disabled={disabled} onChange={(value) => updateDuration({ min: value || 1 })} />
+                            <NumberField label={tr("最长")} value={profile.duration.max} min={1} disabled={disabled} onChange={(value) => updateDuration({ max: value || 1 })} />
+                            <NumberField label={tr("步长")} value={profile.duration.step} min={1} disabled={disabled} onChange={(value) => updateDuration({ step: value || 1 })} />
+                            <NumberField label={tr("默认")} value={profile.duration.default} min={1} disabled={disabled} onChange={(value) => updateDuration({ default: value || 1 })} />
                         </div>
                     )}
                 </CapabilityBlock>
-                <CapabilityBlock title="画面规格">
+                <CapabilityBlock title={tr("画面规格")}>
                     {autoDL ? autoDLSpecFields : <div className="grid gap-3 sm:grid-cols-2">
-                        <Field label="画面比例">
+                        <Field label={tr("画面比例")}>
                             <Select
                                 mode="multiple"
                                 className="w-full"
@@ -312,22 +313,22 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                                 onChange={(ratios) => update({ ratios, defaultRatio: ratios.includes(profile.defaultRatio) ? profile.defaultRatio : ratios[0] || "16:9" })}
                             />
                         </Field>
-                        <Field label="默认比例">
+                        <Field label={tr("默认比例")}>
                             <Select className="w-full" disabled={disabled} value={profile.defaultRatio} options={profile.ratios.map((item) => ({ label: item, value: item }))} onChange={(defaultRatio) => update({ defaultRatio })} />
                         </Field>
-                        <Field label="输出分辨率">
+                        <Field label={tr("输出分辨率")}>
                             <Select
                                 mode="tags"
                                 className="admin-capability-tags w-full"
                                 disabled={disabled}
                                 value={profile.resolutions}
                                 tokenSeparators={[","]}
-                                placeholder="选择标准档位或输入 768p 等模型专属值"
+                                placeholder={tr("选择标准档位或输入 768p 等模型专属值")}
                                 options={resolutionOptions.map((item) => ({ label: item.toUpperCase(), value: item }))}
                                 onChange={(resolutions) => update({ resolutions, defaultResolution: resolutions.includes(profile.defaultResolution) ? profile.defaultResolution : resolutions[0] || "" })}
                             />
                         </Field>
-                        <Field label="默认分辨率">
+                        <Field label={tr("默认分辨率")}>
                             <Select
                                 className="w-full"
                                 disabled={disabled}
@@ -338,13 +339,13 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                         </Field>
                     </div>}
                 </CapabilityBlock>
-                {processingFields ? <CapabilityBlock title="视频处理">{processingFields}</CapabilityBlock> : null}
+                {processingFields ? <CapabilityBlock title={tr("视频处理")}>{processingFields}</CapabilityBlock> : null}
                 {section === "all" ? (
-                    <CapabilityBlock title="视频引用">
+                    <CapabilityBlock title={tr("视频引用")}>
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            <NumberField label="最大视频引用" value={profile.references.maxVideos} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideos: value || 0 })} />
-                            <NumberField label="单个视频上限 MB" value={bytesToMB(profile.references.maxVideoBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideoBytes: mbToBytes(value) })} />
-                            <NumberField label="单个视频最长秒数" value={profile.references.maxVideoDurationSeconds} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideoDurationSeconds: value || 0 })} />
+                            <NumberField label={tr("最大视频引用")} value={profile.references.maxVideos} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideos: value || 0 })} />
+                            <NumberField label={tr("单个视频上限 MB")} value={bytesToMB(profile.references.maxVideoBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideoBytes: mbToBytes(value) })} />
+                            <NumberField label={tr("单个视频最长秒数")} value={profile.references.maxVideoDurationSeconds} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxVideoDurationSeconds: value || 0 })} />
                         </div>
                     </CapabilityBlock>
                 ) : null}
@@ -352,11 +353,11 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
 
             {section === "all" ? (
                 <>
-                    <CapabilityGroup title="图片" description="首帧、参考图与多图输入约束">
+                    <CapabilityGroup title={tr("图片")} description={tr("首帧、参考图与多图输入约束")}>
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            <NumberField label="最少图片引用" value={profile.references.minImages} min={0} max={profile.references.maxImages} disabled={disabled} onChange={(value) => updateReferences({ minImages: value || 0 })} />
+                            <NumberField label={tr("最少图片引用")} value={profile.references.minImages} min={0} max={profile.references.maxImages} disabled={disabled} onChange={(value) => updateReferences({ minImages: value || 0 })} />
                             <NumberField
-                                label="最大图片引用"
+                                label={tr("最大图片引用")}
                                 value={profile.references.maxImages}
                                 min={0}
                                 disabled={disabled}
@@ -365,23 +366,23 @@ export function ModelCapabilityEditor({ value, onChange, protocol, capability = 
                                     updateReferences({ maxImages, minImages: Math.min(profile.references.minImages, maxImages) });
                                 }}
                             />
-                            <NumberField label="单张图片上限 MB" value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxImageBytes: mbToBytes(value) })} />
+                            <NumberField label={tr("单张图片上限 MB")} value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxImageBytes: mbToBytes(value) })} />
                         </div>
                     </CapabilityGroup>
 
-                    <CapabilityGroup title="音频" description="音频引用与视频同步音频输出">
+                    <CapabilityGroup title={tr("音频")} description={tr("音频引用与视频同步音频输出")}>
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            <NumberField label="最大音频引用" value={profile.references.maxAudios} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudios: value || 0 })} />
-                            <NumberField label="单个音频上限 MB" value={bytesToMB(profile.references.maxAudioBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudioBytes: mbToBytes(value) })} />
-                            <NumberField label="单个音频最长秒数" value={profile.references.maxAudioDurationSeconds} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudioDurationSeconds: value || 0 })} />
+                            <NumberField label={tr("最大音频引用")} value={profile.references.maxAudios} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudios: value || 0 })} />
+                            <NumberField label={tr("单个音频上限 MB")} value={bytesToMB(profile.references.maxAudioBytes)} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudioBytes: mbToBytes(value) })} />
+                            <NumberField label={tr("单个音频最长秒数")} value={profile.references.maxAudioDurationSeconds} min={0} disabled={disabled} onChange={(value) => updateReferences({ maxAudioDurationSeconds: value || 0 })} />
                         </div>
-                        <BooleanField label="同步音频" value={profile.generateAudio} disabled={disabled} onChange={(generateAudio) => update({ generateAudio })} />
+                        <BooleanField label={tr("同步音频")} value={profile.generateAudio} disabled={disabled} onChange={(generateAudio) => update({ generateAudio })} />
                     </CapabilityGroup>
 
-                    <CapabilityGroup title="通用限制" description="不属于单一媒体类型的请求与输出约束">
+                    <CapabilityGroup title={tr("通用限制")} description={tr("不属于单一媒体类型的请求与输出约束")}>
                         <div className="grid gap-3 sm:grid-cols-2">
-                            <NumberField label="提示词最大字符数" value={profile.references.promptMaxChars} min={1} disabled={disabled} onChange={(value) => updateReferences({ promptMaxChars: value || 1 })} />
-                            <BooleanField label="水印" value={profile.watermark} disabled={disabled} onChange={(watermark) => update({ watermark })} />
+                            <NumberField label={tr("提示词最大字符数")} value={profile.references.promptMaxChars} min={1} disabled={disabled} onChange={(value) => updateReferences({ promptMaxChars: value || 1 })} />
+                            <BooleanField label={tr("水印")} value={profile.watermark} disabled={disabled} onChange={(watermark) => update({ watermark })} />
                         </div>
                     </CapabilityGroup>
                 </>
@@ -402,8 +403,8 @@ function TextCapabilityEditor({ value, onChange, protocol, disabled, section }: 
     if (section === "protocol") {
         return (
             <div className="admin-capability-editor space-y-3 rounded-md bg-muted/20 p-3">
-                <CapabilityGroup title="输出方式" description="控制向上游文本模型请求的响应方式。">
-                    <ParameterField label="SSE 流式输出" description="启用后发送 stream=true，并实时推送文本增量；关闭时等待完整 JSON 响应。" supported={profile.streaming !== false} disabled={Boolean(disabled)} onChange={(streaming) => update({ streaming })} />
+                <CapabilityGroup title={tr("输出方式")} description={tr("控制向上游文本模型请求的响应方式。")}>
+                    <ParameterField label={tr("SSE 流式输出")} description={tr("启用后发送 stream=true，并实时推送文本增量；关闭时等待完整 JSON 响应。")} supported={profile.streaming !== false} disabled={Boolean(disabled)} onChange={(streaming) => update({ streaming })} />
                 </CapabilityGroup>
             </div>
         );
@@ -411,10 +412,10 @@ function TextCapabilityEditor({ value, onChange, protocol, disabled, section }: 
 
     if (section === "references") {
         const contextWindowFields = (
-            <CapabilityGroup title="上下文能力" description="这是上游文本模型的能力合同，决定 Agent 本轮可保留的输入预算；不会改变运行时 checkpoint 的持久化上限。">
+            <CapabilityGroup title={tr("上下文能力")} description={tr("这是上游文本模型的能力合同，决定 Agent 本轮可保留的输入预算；不会改变运行时 checkpoint 的持久化上限。")}>
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <NumberField label="上下文窗口 Token" value={profile.contextWindowTokens} min={4_096} max={10_000_000} disabled={Boolean(disabled)} onChange={(next) => update({ contextWindowTokens: next || 4_096 })} />
-                    <NumberField label="最大输出 Token" value={profile.maxOutputTokens} min={256} max={1_000_000} disabled={Boolean(disabled)} onChange={(next) => update({ maxOutputTokens: next || 256 })} />
+                    <NumberField label={tr("上下文窗口 Token")} value={profile.contextWindowTokens} min={4_096} max={10_000_000} disabled={Boolean(disabled)} onChange={(next) => update({ contextWindowTokens: next || 4_096 })} />
+                    <NumberField label={tr("最大输出 Token")} value={profile.maxOutputTokens} min={256} max={1_000_000} disabled={Boolean(disabled)} onChange={(next) => update({ maxOutputTokens: next || 256 })} />
                 </div>
             </CapabilityGroup>
         );
@@ -422,16 +423,16 @@ function TextCapabilityEditor({ value, onChange, protocol, disabled, section }: 
             <div className="admin-capability-reference-editor">
                 {contextWindowFields}
                 <div className="admin-capability-reference-grid is-three">
-                    <ReferenceCard title="图片引用" description="文本模型可接收的图片范围">
-                        <NumberField label="最大参考图片数" value={profile.references.maxImages} min={0} max={100} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxImages: next || 0 })} />
-                        <NumberField label="单张图片上限 MB" value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxImageBytes: mbToBytes(next) })} />
+                    <ReferenceCard title={tr("图片引用")} description={tr("文本模型可接收的图片范围")}>
+                        <NumberField label={tr("最大参考图片数")} value={profile.references.maxImages} min={0} max={100} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxImages: next || 0 })} />
+                        <NumberField label={tr("单张图片上限 MB")} value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxImageBytes: mbToBytes(next) })} />
                     </ReferenceCard>
-                    <ReferenceCard title="视频引用" description="文本模型可接收的视频范围">
-                        <NumberField label="最大参考视频数" value={profile.references.maxVideos} min={0} max={100} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxVideos: next || 0 })} />
-                        <NumberField label="单个视频上限 MB" value={bytesToMB(profile.references.maxVideoBytes)} min={0} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxVideoBytes: mbToBytes(next) })} />
+                    <ReferenceCard title={tr("视频引用")} description={tr("文本模型可接收的视频范围")}>
+                        <NumberField label={tr("最大参考视频数")} value={profile.references.maxVideos} min={0} max={100} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxVideos: next || 0 })} />
+                        <NumberField label={tr("单个视频上限 MB")} value={bytesToMB(profile.references.maxVideoBytes)} min={0} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxVideoBytes: mbToBytes(next) })} />
                     </ReferenceCard>
-                    <ReferenceCard title="通用限制" description="所有文本请求共用的基础约束">
-                        <NumberField label="提示词最大字符数" value={profile.references.promptMaxChars} min={1} max={1_000_000} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ promptMaxChars: next || 1 })} />
+                    <ReferenceCard title={tr("通用限制")} description={tr("所有文本请求共用的基础约束")}>
+                        <NumberField label={tr("提示词最大字符数")} value={profile.references.promptMaxChars} min={1} max={1_000_000} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ promptMaxChars: next || 1 })} />
                     </ReferenceCard>
                 </div>
             </div>
@@ -441,29 +442,29 @@ function TextCapabilityEditor({ value, onChange, protocol, disabled, section }: 
     return (
         <div className="admin-capability-editor space-y-3 rounded-md bg-muted/20 p-3">
             <div>
-                <div className="text-sm font-medium">文本理解能力</div>
-                <div className="mt-0.5 text-[var(--fs-tiny)] text-foreground/48">默认不假设支持图片或视频，只有明确配置后相关请求才会进入该模型。</div>
+                <div className="text-sm font-medium">{tr("文本理解能力")}</div>
+                <div className="mt-0.5 text-[var(--fs-tiny)] text-foreground/48">{tr("默认不假设支持图片或视频，只有明确配置后相关请求才会进入该模型。")}</div>
             </div>
-            <CapabilityGroup title="上下文能力" description="这是上游文本模型的能力合同，决定 Agent 本轮可保留的输入预算；不会改变运行时 checkpoint 的持久化上限。">
+            <CapabilityGroup title={tr("上下文能力")} description={tr("这是上游文本模型的能力合同，决定 Agent 本轮可保留的输入预算；不会改变运行时 checkpoint 的持久化上限。")}>
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <NumberField label="上下文窗口 Token" value={profile.contextWindowTokens} min={4_096} max={10_000_000} disabled={Boolean(disabled)} onChange={(next) => update({ contextWindowTokens: next || 4_096 })} />
-                    <NumberField label="最大输出 Token" value={profile.maxOutputTokens} min={256} max={1_000_000} disabled={Boolean(disabled)} onChange={(next) => update({ maxOutputTokens: next || 256 })} />
+                    <NumberField label={tr("上下文窗口 Token")} value={profile.contextWindowTokens} min={4_096} max={10_000_000} disabled={Boolean(disabled)} onChange={(next) => update({ contextWindowTokens: next || 4_096 })} />
+                    <NumberField label={tr("最大输出 Token")} value={profile.maxOutputTokens} min={256} max={1_000_000} disabled={Boolean(disabled)} onChange={(next) => update({ maxOutputTokens: next || 256 })} />
                 </div>
             </CapabilityGroup>
-            <CapabilityGroup title="图片" description="文本模型可接收的图片参考范围">
+            <CapabilityGroup title={tr("图片")} description={tr("文本模型可接收的图片参考范围")}>
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <NumberField label="最大参考图片数" value={profile.references.maxImages} min={0} max={100} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxImages: next || 0 })} />
-                    <NumberField label="单张图片上限 MB" value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxImageBytes: mbToBytes(next) })} />
+                    <NumberField label={tr("最大参考图片数")} value={profile.references.maxImages} min={0} max={100} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxImages: next || 0 })} />
+                    <NumberField label={tr("单张图片上限 MB")} value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxImageBytes: mbToBytes(next) })} />
                 </div>
             </CapabilityGroup>
-            <CapabilityGroup title="视频" description="文本模型可接收的视频参考范围">
+            <CapabilityGroup title={tr("视频")} description={tr("文本模型可接收的视频参考范围")}>
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <NumberField label="最大参考视频数" value={profile.references.maxVideos} min={0} max={100} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxVideos: next || 0 })} />
-                    <NumberField label="单个视频上限 MB" value={bytesToMB(profile.references.maxVideoBytes)} min={0} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxVideoBytes: mbToBytes(next) })} />
+                    <NumberField label={tr("最大参考视频数")} value={profile.references.maxVideos} min={0} max={100} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxVideos: next || 0 })} />
+                    <NumberField label={tr("单个视频上限 MB")} value={bytesToMB(profile.references.maxVideoBytes)} min={0} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ maxVideoBytes: mbToBytes(next) })} />
                 </div>
             </CapabilityGroup>
-            <CapabilityGroup title="通用限制" description="所有文本请求共用的基础约束">
-                <NumberField label="提示词最大字符数" value={profile.references.promptMaxChars} min={1} max={1_000_000} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ promptMaxChars: next || 1 })} />
+            <CapabilityGroup title={tr("通用限制")} description={tr("所有文本请求共用的基础约束")}>
+                <NumberField label={tr("提示词最大字符数")} value={profile.references.promptMaxChars} min={1} max={1_000_000} disabled={Boolean(disabled)} onChange={(next) => updateReferences({ promptMaxChars: next || 1 })} />
             </CapabilityGroup>
         </div>
     );
@@ -492,13 +493,13 @@ function ImageCapabilityEditor({ value, onChange, protocol, model, imageParamete
         return (
             <div className="admin-capability-reference-editor">
                 <div className="admin-capability-reference-grid is-two">
-                    <ReferenceCard title="图片引用" description="参考图、文件大小与蒙版能力">
-                        <NumberField label="最大参考图" value={profile.references.maxImages} min={0} disabled={disabled} onChange={(maxImages) => updateReferences({ maxImages: maxImages || 0 })} />
-                        <NumberField label="单图上限 MB" value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={disabled} onChange={(maxImageBytes) => updateReferences({ maxImageBytes: mbToBytes(maxImageBytes) })} />
-                        <ParameterField label="蒙版编辑" description="允许图片编辑接口提交 mask" supported={profile.references.maskSupported} disabled={disabled} onChange={(maskSupported) => updateReferences({ maskSupported })} />
+                    <ReferenceCard title={tr("图片引用")} description={tr("参考图、文件大小与蒙版能力")}>
+                        <NumberField label={tr("最大参考图")} value={profile.references.maxImages} min={0} disabled={disabled} onChange={(maxImages) => updateReferences({ maxImages: maxImages || 0 })} />
+                        <NumberField label={tr("单图上限 MB")} value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={disabled} onChange={(maxImageBytes) => updateReferences({ maxImageBytes: mbToBytes(maxImageBytes) })} />
+                        <ParameterField label={tr("蒙版编辑")} description={tr("允许图片编辑接口提交 mask")} supported={profile.references.maskSupported} disabled={disabled} onChange={(maskSupported) => updateReferences({ maskSupported })} />
                     </ReferenceCard>
-                    <ReferenceCard title="通用限制" description="所有图片请求共用的基础约束">
-                        <NumberField label="提示词最大字符数" value={profile.references.promptMaxChars} min={1} disabled={disabled} onChange={(promptMaxChars) => updateReferences({ promptMaxChars: promptMaxChars || 1 })} />
+                    <ReferenceCard title={tr("通用限制")} description={tr("所有图片请求共用的基础约束")}>
+                        <NumberField label={tr("提示词最大字符数")} value={profile.references.promptMaxChars} min={1} disabled={disabled} onChange={(promptMaxChars) => updateReferences({ promptMaxChars: promptMaxChars || 1 })} />
                     </ReferenceCard>
                 </div>
             </div>
@@ -509,14 +510,14 @@ function ImageCapabilityEditor({ value, onChange, protocol, model, imageParamete
         return (
             <div className="admin-capability-protocol-editor admin-image-protocol-editor">
                 <div className="admin-capability-protocol-grid admin-image-protocol-grid">
-                    <ProtocolParameterCard step="01" title="尺寸参数" description="按分辨率配置可用画幅，直接点选或输入比例" className="admin-image-size-card">
+                    <ProtocolParameterCard step="01" title={tr("尺寸参数")} description={tr("按分辨率配置可用画幅，直接点选或输入比例")} className="admin-image-size-card">
                         <div className="admin-image-size-intro">
                             <SegmentedControl
                                 block
                                 disabled={disabled}
                                 value={profile.size.parameter}
                                 options={[
-                                    { label: "不发送", value: "none" },
+                                    { label: tr("不发送"), value: "none" },
                                     { label: "size", value: "size" },
                                     { label: "aspect_ratio", value: "aspect_ratio" },
                                 ]}
@@ -534,29 +535,29 @@ function ImageCapabilityEditor({ value, onChange, protocol, model, imageParamete
                         {profile.size.parameter !== "none" ? (
                             <>
                                 <ImageSizePresetsEditor profile={profile} disabled={disabled} onChange={updateSize} />
-                                <ParameterField label="允许自定义" description="允许支持值之外的尺寸" supported={profile.size.allowCustom} disabled={disabled} onChange={(allowCustom) => updateSize({ allowCustom })} />
+                                <ParameterField label={tr("允许自定义")} description={tr("允许支持值之外的尺寸")} supported={profile.size.allowCustom} disabled={disabled} onChange={(allowCustom) => updateSize({ allowCustom })} />
                             </>
                         ) : null}
                     </ProtocolParameterCard>
-                    <ProtocolParameterCard step="02" title="输出数量" description="设置单次生成图片数量">
-                        <NumberField label="单次生成张数" value={profile.maxOutputs} min={1} disabled={disabled} onChange={(maxOutputs) => update({ maxOutputs: maxOutputs || 1 })} />
+                    <ProtocolParameterCard step="02" title={tr("输出数量")} description={tr("设置单次生成图片数量")}>
+                        <NumberField label={tr("单次生成张数")} value={profile.maxOutputs} min={1} disabled={disabled} onChange={(maxOutputs) => update({ maxOutputs: maxOutputs || 1 })} />
                     </ProtocolParameterCard>
-                    <ProtocolParameterCard step="03" title="可选参数" description="控制质量、背景与响应格式">
-                        <ParameterField label="图片质量" description="发送 quality 参数" supported={profile.quality.supported} disabled={disabled} onChange={(supported) => updateQuality({ supported })} />
+                    <ProtocolParameterCard step="03" title={tr("可选参数")} description={tr("控制质量、背景与响应格式")}>
+                        <ParameterField label={tr("图片质量")} description={tr("发送 quality 参数")} supported={profile.quality.supported} disabled={disabled} onChange={(supported) => updateQuality({ supported })} />
                         {profile.quality.supported ? (
                             <div className="admin-capability-spec-grid">
-                                <Field label="质量支持值">
+                                <Field label={tr("质量支持值")}>
                                     <Select
                                         mode="tags"
                                         className="admin-capability-tags w-full"
                                         disabled={disabled}
                                         value={profile.quality.values}
                                         tokenSeparators={[","]}
-                                        placeholder="例如 auto, low, medium, high, 1k, 2k, 4k"
+                                        placeholder={tr("例如 auto, low, medium, high, 1k, 2k, 4k")}
                                         onChange={(values) => updateQuality({ values, default: values.includes(profile.quality.default) ? profile.quality.default : values[0] || "auto" })}
                                     />
                                 </Field>
-                                <Field label="默认质量">
+                                <Field label={tr("默认质量")}>
                                     <Select
                                         className="w-full"
                                         disabled={disabled}
@@ -567,9 +568,9 @@ function ImageCapabilityEditor({ value, onChange, protocol, model, imageParamete
                                 </Field>
                             </div>
                         ) : null}
-                        <BooleanField label="透明背景" value={profile.transparentBackground} disabled={disabled} onChange={(transparentBackground) => update({ transparentBackground })} />
+                        <BooleanField label={tr("透明背景")} value={profile.transparentBackground} disabled={disabled} onChange={(transparentBackground) => update({ transparentBackground })} />
                         <ImageResponseFormatEditor value={profile.responseFormat} disabled={disabled} onChange={(responseFormat) => update({ responseFormat })} />
-                        <ParameterField label="output_format" description="发送 PNG 输出格式" supported={profile.outputFormat.supported} disabled={disabled} onChange={(supported) => update({ outputFormat: { supported } })} />
+                        <ParameterField label="output_format" description={tr("发送 PNG 输出格式")} supported={profile.outputFormat.supported} disabled={disabled} onChange={(supported) => update({ outputFormat: { supported } })} />
                     </ProtocolParameterCard>
                 </div>
             </div>
@@ -580,32 +581,32 @@ function ImageCapabilityEditor({ value, onChange, protocol, model, imageParamete
         <div className="admin-capability-editor space-y-3 rounded-md bg-muted/10 p-3">
             <div className="admin-capability-editor-heading flex flex-wrap items-start justify-between gap-2">
                 <div>
-                    <div className="text-sm font-medium">图片能力参数</div>
-                    <div className="mt-0.5 text-[var(--fs-tiny)] text-foreground/48">生成界面和后端请求都会按此处裁剪参数</div>
+                    <div className="text-sm font-medium">{tr("图片能力参数")}</div>
+                    <div className="mt-0.5 text-[var(--fs-tiny)] text-foreground/48">{tr("生成界面和后端请求都会按此处裁剪参数")}</div>
                 </div>
-                <span className="text-[var(--fs-tiny)] text-foreground/40">当前模型独立生效</span>
+                <span className="text-[var(--fs-tiny)] text-foreground/40">{tr("当前模型独立生效")}</span>
             </div>
 
-            <CapabilityGroup title="图片" description="参考图、蒙版与图片输入约束">
+            <CapabilityGroup title={tr("图片")} description={tr("参考图、蒙版与图片输入约束")}>
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <NumberField label="最大参考图" value={profile.references.maxImages} min={0} disabled={disabled} onChange={(maxImages) => updateReferences({ maxImages: maxImages || 0 })} />
-                    <NumberField label="单图上限 MB" value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={disabled} onChange={(maxImageBytes) => updateReferences({ maxImageBytes: mbToBytes(maxImageBytes) })} />
+                    <NumberField label={tr("最大参考图")} value={profile.references.maxImages} min={0} disabled={disabled} onChange={(maxImages) => updateReferences({ maxImages: maxImages || 0 })} />
+                    <NumberField label={tr("单图上限 MB")} value={bytesToMB(profile.references.maxImageBytes)} min={0} disabled={disabled} onChange={(maxImageBytes) => updateReferences({ maxImageBytes: mbToBytes(maxImageBytes) })} />
                 </div>
-                <ParameterField label="蒙版编辑" description="允许调用图片编辑接口并提交 mask" supported={profile.references.maskSupported} disabled={disabled} onChange={(maskSupported) => updateReferences({ maskSupported })} />
+                <ParameterField label={tr("蒙版编辑")} description={tr("允许调用图片编辑接口并提交 mask")} supported={profile.references.maskSupported} disabled={disabled} onChange={(maskSupported) => updateReferences({ maskSupported })} />
             </CapabilityGroup>
 
-            <CapabilityGroup title="输出规格" description="单次生成数量、尺寸参数与默认值">
-                <CapabilityBlock title="生成数量">
-                    <NumberField label="单次生成张数" value={profile.maxOutputs} min={1} disabled={disabled} onChange={(maxOutputs) => update({ maxOutputs: maxOutputs || 1 })} />
+            <CapabilityGroup title={tr("输出规格")} description={tr("单次生成数量、尺寸参数与默认值")}>
+                <CapabilityBlock title={tr("生成数量")}>
+                    <NumberField label={tr("单次生成张数")} value={profile.maxOutputs} min={1} disabled={disabled} onChange={(maxOutputs) => update({ maxOutputs: maxOutputs || 1 })} />
                 </CapabilityBlock>
-                <CapabilityBlock title="尺寸参数">
+                <CapabilityBlock title={tr("尺寸参数")}>
                     <ImageSizeHelp />
                     <SegmentedControl
                         block
                         disabled={disabled}
                         value={profile.size.parameter}
                         options={[
-                            { label: "不发送", value: "none" },
+                            { label: tr("不发送"), value: "none" },
                             { label: "size", value: "size" },
                             { label: "aspect_ratio", value: "aspect_ratio" },
                         ]}
@@ -619,28 +620,28 @@ function ImageCapabilityEditor({ value, onChange, protocol, model, imageParamete
                     {profile.size.parameter !== "none" ? (
                         <>
                             <ImageSizePresetsEditor profile={profile} disabled={disabled} onChange={updateSize} />
-                            <ParameterField label="允许自定义" description="允许用户输入支持值之外的尺寸" supported={profile.size.allowCustom} disabled={disabled} onChange={(allowCustom) => updateSize({ allowCustom })} />
+                            <ParameterField label={tr("允许自定义")} description={tr("允许用户输入支持值之外的尺寸")} supported={profile.size.allowCustom} disabled={disabled} onChange={(allowCustom) => updateSize({ allowCustom })} />
                         </>
                     ) : null}
                 </CapabilityBlock>
             </CapabilityGroup>
 
-            <CapabilityGroup title="可选参数" description="质量、背景与响应格式等非必填能力">
-                <ParameterField label="图片质量" description="发送 quality 参数" supported={profile.quality.supported} disabled={disabled} onChange={(supported) => updateQuality({ supported })} />
+            <CapabilityGroup title={tr("可选参数")} description={tr("质量、背景与响应格式等非必填能力")}>
+                <ParameterField label={tr("图片质量")} description={tr("发送 quality 参数")} supported={profile.quality.supported} disabled={disabled} onChange={(supported) => updateQuality({ supported })} />
                 {profile.quality.supported ? (
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <Field label="质量支持值">
+                        <Field label={tr("质量支持值")}>
                             <Select
                                 mode="tags"
                                 className="admin-capability-tags w-full"
                                 disabled={disabled}
                                 value={profile.quality.values}
                                 tokenSeparators={[","]}
-                                placeholder="例如 auto, low, medium, high, 1k, 2k, 4k"
+                                placeholder={tr("例如 auto, low, medium, high, 1k, 2k, 4k")}
                                 onChange={(values) => updateQuality({ values, default: values.includes(profile.quality.default) ? profile.quality.default : values[0] || "auto" })}
                             />
                         </Field>
-                        <Field label="默认质量">
+                        <Field label={tr("默认质量")}>
                             <Select
                                 className="w-full"
                                 disabled={disabled}
@@ -651,15 +652,15 @@ function ImageCapabilityEditor({ value, onChange, protocol, model, imageParamete
                         </Field>
                     </div>
                 ) : null}
-                <BooleanField label="透明背景" value={profile.transparentBackground} disabled={disabled} onChange={(transparentBackground) => update({ transparentBackground })} />
+                <BooleanField label={tr("透明背景")} value={profile.transparentBackground} disabled={disabled} onChange={(transparentBackground) => update({ transparentBackground })} />
                 <div className="grid gap-3 sm:grid-cols-2">
                     <ImageResponseFormatEditor value={profile.responseFormat} disabled={disabled} onChange={(responseFormat) => update({ responseFormat })} />
-                    <ParameterField label="output_format" description="发送 PNG 输出格式" supported={profile.outputFormat.supported} disabled={disabled} onChange={(supported) => update({ outputFormat: { supported } })} />
+                    <ParameterField label="output_format" description={tr("发送 PNG 输出格式")} supported={profile.outputFormat.supported} disabled={disabled} onChange={(supported) => update({ outputFormat: { supported } })} />
                 </div>
             </CapabilityGroup>
 
-            <CapabilityGroup title="通用限制" description="所有图片请求共用的基础约束">
-                <NumberField label="提示词最大字符数" value={profile.references.promptMaxChars} min={1} disabled={disabled} onChange={(promptMaxChars) => updateReferences({ promptMaxChars: promptMaxChars || 1 })} />
+            <CapabilityGroup title={tr("通用限制")} description={tr("所有图片请求共用的基础约束")}>
+                <NumberField label={tr("提示词最大字符数")} value={profile.references.promptMaxChars} min={1} disabled={disabled} onChange={(promptMaxChars) => updateReferences({ promptMaxChars: promptMaxChars || 1 })} />
             </CapabilityGroup>
         </div>
     );
@@ -715,21 +716,21 @@ function ProtocolParameterCard({ step, title, description, children, className =
 
 function AutoDLScreenSpecFields({ profile, workflow, disabled, onChange }: { profile: VideoCapabilityConfig; workflow?: ModelProtocolWorkflow; disabled: boolean; onChange: (profile: VideoCapabilityConfig) => void }) {
     if (!profile.fixedScreenSpec?.resolutions.length) {
-        return <p className="text-[var(--fs-label)] text-foreground/60">未读取到 AutoDL 插件的分辨率预设，请刷新页面重新加载协议目录；仍出现时请更新 AutoDL 插件到 2.4.0 及以上。</p>;
+        return <p className="text-[var(--fs-label)] text-foreground/60">{tr("未读取到 AutoDL 插件的分辨率预设，请刷新页面重新加载协议目录；仍出现时请更新 AutoDL 插件到 2.4.0 及以上。")}</p>;
     }
     // 预设来自插件；管理员可输入上游工作流支持的其他分辨率标签。
     const options = cleanVideoScreenSpecValues([...profile.fixedScreenSpec.resolutions, ...profile.resolutions]);
     return (
         <div className="admin-capability-spec-grid">
-            <Field label="输出分辨率">
-                <Select ariaLabel="输出分辨率" mode="tags" className="admin-capability-tags w-full" disabled={disabled} value={profile.resolutions} placeholder="选择预设或输入分辨率后回车" tokenSeparators={[",", "，"]} options={options.map((item) => ({ label: item, value: item }))} onChange={(values: string[]) => {
+            <Field label={tr("输出分辨率")}>
+                <Select ariaLabel={tr("输出分辨率")} mode="tags" className="admin-capability-tags w-full" disabled={disabled} value={profile.resolutions} placeholder={tr("选择预设或输入分辨率后回车")} tokenSeparators={[",", "，"]} options={options.map((item) => ({ label: item, value: item }))} onChange={(values: string[]) => {
                     const resolutions = cleanVideoScreenSpecValues(values);
                     const defaultResolution = resolutions.includes(profile.defaultResolution) ? profile.defaultResolution : resolutions[0] || "";
                     onChange(updateWorkflowVideoScreenSpec(profile, workflow, { resolutions, defaultResolution }));
                 }} />
             </Field>
-            <Field label="默认分辨率">
-                <Select ariaLabel="默认分辨率" className="w-full" disabled={disabled} value={profile.defaultResolution || undefined} options={profile.resolutions.map((item) => ({ label: item, value: item }))} onChange={(defaultResolution: string) => onChange(updateWorkflowVideoScreenSpec(profile, workflow, { defaultResolution }))} />
+            <Field label={tr("默认分辨率")}>
+                <Select ariaLabel={tr("默认分辨率")} className="w-full" disabled={disabled} value={profile.defaultResolution || undefined} options={profile.resolutions.map((item) => ({ label: item, value: item }))} onChange={(defaultResolution: string) => onChange(updateWorkflowVideoScreenSpec(profile, workflow, { defaultResolution }))} />
             </Field>
         </div>
     );
@@ -758,16 +759,16 @@ function BooleanField({ label, value, disabled, onChange }: { label: string; val
         <div className="admin-capability-boolean-field flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2">
             <div className="min-w-0">
                 <div className="text-xs font-medium">{label}</div>
-                <div className="text-[var(--fs-tiny)] text-foreground/45">可发送参数与默认值</div>
+                <div className="text-[var(--fs-tiny)] text-foreground/45">{tr("可发送参数与默认值")}</div>
             </div>
             <div className="flex shrink-0 items-center gap-3">
                 <label className="grid justify-items-center gap-1 text-[var(--fs-tiny)] text-foreground/45">
-                    <span>支持</span>
-                    <Switch aria-label={`${label}支持`} size="sm" disabled={disabled} checked={value.supported} onChange={(supported) => onChange({ ...value, supported })} />
+                    <span>{tr("支持")}</span>
+                    <Switch aria-label={tr("{0}支持", label)} size="sm" disabled={disabled} checked={value.supported} onChange={(supported) => onChange({ ...value, supported })} />
                 </label>
                 <label className="grid justify-items-center gap-1 text-[var(--fs-tiny)] text-foreground/45">
-                    <span>默认</span>
-                    <Switch aria-label={`${label}默认值`} size="sm" disabled={disabled || !value.supported} checked={value.default} onChange={(defaultValue) => onChange({ ...value, default: defaultValue })} />
+                    <span>{tr("默认")}</span>
+                    <Switch aria-label={tr("{0}默认值", label)} size="sm" disabled={disabled || !value.supported} checked={value.default} onChange={(defaultValue) => onChange({ ...value, default: defaultValue })} />
                 </label>
             </div>
         </div>
@@ -782,8 +783,8 @@ function ParameterField({ label, description, supported, disabled, onChange }: {
                 <div className="mt-0.5 text-[var(--fs-tiny)] leading-5 text-foreground/45">{description}</div>
             </div>
             <label className="grid shrink-0 justify-items-center gap-1 text-[var(--fs-tiny)] text-foreground/45">
-                <span>支持</span>
-                <Switch aria-label={`${label}支持`} size="sm" disabled={disabled} checked={supported} onChange={onChange} />
+                <span>{tr("支持")}</span>
+                <Switch aria-label={tr("{0}支持", label)} size="sm" disabled={disabled} checked={supported} onChange={onChange} />
             </label>
         </div>
     );
@@ -795,19 +796,19 @@ function ImageResponseFormatEditor({ value, disabled, onChange }: { value: Image
         <div className="admin-image-response-format-editor space-y-2">
             <ParameterField
                 label="response_format"
-                description="是否向上游发送响应格式；关闭后由上游自动决定"
+                description={tr("是否向上游发送响应格式；关闭后由上游自动决定")}
                 supported={value.supported}
                 disabled={disabled}
                 onChange={(supported) => onChange({ supported, default: supported ? defaultValue : "auto" })}
             />
             {value.supported ? (
-                <Field label="默认响应格式">
+                <Field label={tr("默认响应格式")}>
                     <SegmentedControl
                         block
                         disabled={disabled}
                         value={defaultValue}
                         options={[
-                            { label: "自动", value: "auto" },
+                            { label: tr("自动"), value: "auto" },
                             { label: "Base64", value: "b64_json" },
                             { label: "URL", value: "url" },
                         ]}

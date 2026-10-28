@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useCallback, useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { App } from "antd";
 import { nanoid } from "nanoid";
@@ -85,10 +86,10 @@ export function useCanvasPrevis({
             const shotIndex = Math.max(0, ...shots.map((node) => node.metadata?.shotIndex || 0)) + 1;
             let scene = createPrevisSceneFromTemplate(templateId, `镜头 ${shotIndex}`);
             const shot = scene.shots[0];
-            scene = { ...scene, shots: [{ ...shot, name: `镜头 ${shotIndex}` }] };
+            scene = { ...scene, shots: [{ ...shot, name: tr("镜头 {0}", shotIndex) }] };
             const node = createCanvasNode(CanvasNodeType.Video, position || getCanvasCenter(), {
                 workflowKind: "shot",
-                workflowTitle: `镜头 ${shotIndex}`,
+                workflowTitle: tr("镜头 {0}", shotIndex),
                 shotIndex,
                 generationMode: "video",
                 videoEditOperation: "text_to_video",
@@ -97,7 +98,7 @@ export function useCanvasPrevis({
                 previsSceneId: scene.id,
                 previsShotId: shot.id,
             });
-            node.title = `镜头 ${shotIndex}`;
+            node.title = tr("镜头 {0}", shotIndex);
             node.width = PREVIS_NODE_SIZE.width;
             node.height = PREVIS_NODE_SIZE.height;
             const nextNodes = [...nodesRef.current, node];
@@ -106,7 +107,7 @@ export function useCanvasPrevis({
             setSelectedNodeIds(new Set([node.id]));
             setSelectedConnectionId(null);
             updateProject(projectId, { previsScenes: upsertPrevisSceneById(currentPrevisScenes(projectId, previsScenes), scene) });
-            message.success("已创建预演台节点，点击缩略图进入编辑");
+            message.success(tr("已创建预演台节点，点击缩略图进入编辑"));
         },
         [previsScenes, getCanvasCenter, message, nodesRef, projectId, setNodes, setSelectedConnectionId, setSelectedNodeIds, updateProject],
     );
@@ -148,9 +149,9 @@ export function useCanvasPrevis({
     const applyPrevisOutput = useCallback(
         async (output: PrevisSceneOutput) => {
             const outputProjectId = projectId;
-            if (projectIdRef.current !== outputProjectId) throw new Error("画布项目已切换，请重试");
+            if (projectIdRef.current !== outputProjectId) throw new Error(tr("画布项目已切换，请重试"));
             const sourceNodeAtStart = nodesRef.current.find((item) => item.id === previsNodeId);
-            if (!sourceNodeAtStart || sourceNodeAtStart.metadata?.previsSceneId !== output.scene.id) throw new Error("镜头节点不存在或场景已切换");
+            if (!sourceNodeAtStart || sourceNodeAtStart.metadata?.previsSceneId !== output.scene.id) throw new Error(tr("镜头节点不存在或场景已切换"));
             const sourceNodeId = sourceNodeAtStart.id;
             const [image, videoUpload, depthImage, depthVideoUpload] = await Promise.all([
                 uploadImage(output.beauty),
@@ -164,10 +165,10 @@ export function useCanvasPrevis({
             const sourceNode = nodesRef.current.find((item) => item.id === sourceNodeId);
             const latestScene = outputProject?.previsScenes.find((item) => item.id === output.scene.id);
             if (projectIdRef.current !== outputProjectId || !outputProject || !sourceNode || sourceNode.metadata?.previsSceneId !== output.scene.id || !latestScene || !latestScene.shots.some((shot) => shot.id === output.shot.id))
-                throw new Error("输出期间项目或镜头已切换、删除，请重试");
+                throw new Error(tr("输出期间项目或镜头已切换、删除，请重试"));
             const previewId = sourceNode.metadata?.previsPreviewNodeId || `image-previs-${Date.now()}`;
             const mergedScene = mergePrevisOutputPreview(latestScene, { sceneId: output.scene.id, shotId: output.shot.id, previewNodeId: previewId });
-            if (!mergedScene) throw new Error("输出期间镜头已切换或删除，请重试");
+            if (!mergedScene) throw new Error(tr("输出期间镜头已切换或删除，请重试"));
             const previewSize = fitImageNodeSize(image.width, image.height);
             const nextNodes = [...nodesRef.current];
             const previewIndex = nextNodes.findIndex((item) => item.id === previewId);
@@ -176,10 +177,10 @@ export function useCanvasPrevis({
                 ...existingPreview,
                 id: previewId,
                 type: CanvasNodeType.Image,
-                title: `${sourceNode.title} · 预演台构图`,
+                title: tr("{0} · 预演台构图", sourceNode.title),
                 position: existingPreview?.position || { x: sourceNode.position.x - previewSize.width - 36, y: sourceNode.position.y },
                 ...preserveImageNodeSize(existingPreview, previewSize),
-                metadata: { ...existingPreview?.metadata, ...imageMetadata(image), prompt: output.prompt, workflowKind: "reference_set", assetTags: ["预演台构图", `镜头:${sourceNode.title}`], producedModel: undefined, producedModelCandidate: undefined },
+                metadata: { ...existingPreview?.metadata, ...imageMetadata(image), prompt: output.prompt, workflowKind: "reference_set", assetTags: [tr("预演台构图"), tr("镜头:{0}", sourceNode.title)], producedModel: undefined, producedModelCandidate: undefined },
             };
             if (previewIndex >= 0) nextNodes[previewIndex] = previewNode;
             else nextNodes.push(previewNode);
@@ -193,7 +194,7 @@ export function useCanvasPrevis({
                     ...existingVideo,
                     id: clayVideoId,
                     type: CanvasNodeType.Video,
-                    title: `${sourceNode.title} · 白膜视频`,
+                    title: tr("{0} · 白膜视频", sourceNode.title),
                     position: existingVideo?.position || { x: sourceNode.position.x, y: sourceNode.position.y + sourceNode.height + 48 },
                     width: existingVideo?.width || 360,
                     height: existingVideo?.height || 220,
@@ -202,7 +203,7 @@ export function useCanvasPrevis({
                         ...videoMetadata(videoUpload),
                         prompt: output.prompt,
                         workflowKind: "reference_video",
-                        assetTags: ["预演台白膜", `镜头:${sourceNode.title}`],
+                        assetTags: [tr("预演台白膜"), tr("镜头:{0}", sourceNode.title)],
                         producedModel: undefined,
                         producedModelCandidate: undefined,
                     },
@@ -223,7 +224,7 @@ export function useCanvasPrevis({
                     ...existingDepth,
                     id: depthId,
                     type: CanvasNodeType.Image,
-                    title: `${sourceNode.title} · 深度图`,
+                    title: tr("{0} · 深度图", sourceNode.title),
                     position: existingDepth?.position || { x: sourceNode.position.x - depthSize.width - 36, y: sourceNode.position.y + previewSize.height + 36 },
                     ...preserveImageNodeSize(existingDepth, depthSize),
                     metadata: {
@@ -231,7 +232,7 @@ export function useCanvasPrevis({
                         ...imageMetadata(depthImage),
                         prompt: output.prompt,
                         workflowKind: "reference_set",
-                        assetTags: ["预演台深度", `镜头:${sourceNode.title}`],
+                        assetTags: [tr("预演台深度"), tr("镜头:{0}", sourceNode.title)],
                         producedModel: undefined,
                         producedModelCandidate: undefined,
                     },
@@ -248,7 +249,7 @@ export function useCanvasPrevis({
                     ...existingDepthVideo,
                     id: depthVideoId,
                     type: CanvasNodeType.Video,
-                    title: `${sourceNode.title} · 深度视频`,
+                    title: tr("{0} · 深度视频", sourceNode.title),
                     position: existingDepthVideo?.position || { x: sourceNode.position.x + sourceNode.width + 48, y: sourceNode.position.y + sourceNode.height + 48 },
                     width: existingDepthVideo?.width || 360,
                     height: existingDepthVideo?.height || 220,
@@ -257,7 +258,7 @@ export function useCanvasPrevis({
                         ...videoMetadata(depthVideoUpload),
                         prompt: output.prompt,
                         workflowKind: "reference_video",
-                        assetTags: ["预演台深度", `镜头:${sourceNode.title}`],
+                        assetTags: [tr("预演台深度"), tr("镜头:{0}", sourceNode.title)],
                         producedModel: undefined,
                         producedModelCandidate: undefined,
                     },

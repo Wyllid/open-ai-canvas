@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { AnimatePresence } from "motion/react";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { ArrowLeft, AtSign, Check, ChevronRight, Clipboard, CloudUpload, Copy, Download, FolderOpen, FolderPlus, History, Image as ImageIcon, Layers3, LayoutTemplate, Link2, Maximize2, PanelTop, Pencil, Plus, Redo2, Tags, Trash2, Undo2, Upload, UserRound } from "lucide-react";
@@ -159,18 +160,18 @@ export function CanvasNodeContextMenu({
     const versionCurrent = currentMediaVersion(node);
     const canOpenVersions = Boolean(onOpenVersions && hasMediaVersionHistory(node));
     const versionDetail = canOpenVersions
-        ? versionCurrent ? `当前 V${versionCurrent.number} · ${formatRelativeTime(versionCurrent.createdAt)}` : "当前内容未在历史中，可切回旧版本"
-        : "重新生成或替换后保留旧版本";
+        ? versionCurrent ? tr("当前 V{0} · {1}", versionCurrent.number, formatRelativeTime(versionCurrent.createdAt)) : tr("当前内容未在历史中，可切回旧版本")
+        : tr("重新生成或替换后保留旧版本");
     const versionMenuButton = onOpenVersions ? (
-        <MenuButton icon={<History />} label="版本历史" badge={versionCount > 1 ? String(versionCount) : undefined} detail={versionDetail} disabled={!canOpenVersions} onClick={() => runAction(onOpenVersions)} />
+        <MenuButton icon={<History />} label={tr("版本历史")} badge={versionCount > 1 ? String(versionCount) : undefined} detail={versionDetail} disabled={!canOpenVersions} onClick={() => runAction(onOpenVersions)} />
     ) : null;
     const position = getContextMenuPosition(menu, hasMultiSelection);
     const skippedDownloadCount = Math.max(0, selectedCount - downloadableSelectionCount);
     const downloadSelectionButton = hasMultiSelection ? (
         <MenuButton
             icon={<Download />}
-            label={downloadableSelectionCount ? `下载 ${downloadableSelectionCount} 个资源` : "下载资源"}
-            detail={!downloadableSelectionCount ? "选区内没有图片、视频或音频" : skippedDownloadCount ? `逐个下载，跳过 ${skippedDownloadCount} 个非媒体节点` : "逐个下载为独立文件"}
+            label={downloadableSelectionCount ? tr("下载 {0} 个资源", downloadableSelectionCount) : tr("下载资源")}
+            detail={!downloadableSelectionCount ? tr("选区内没有图片、视频或音频") : skippedDownloadCount ? tr("逐个下载，跳过 {0} 个非媒体节点", skippedDownloadCount) : tr("逐个下载为独立文件")}
             disabled={!onDownloadSelection || !downloadableSelectionCount}
             onClick={() => onDownloadSelection && runAction(onDownloadSelection)}
         />
@@ -193,8 +194,8 @@ export function CanvasNodeContextMenu({
                 <div className="thin-scrollbar min-h-0 overflow-y-auto">
                     {menu.type === "node" && isMedia && categoryOpen ? (
                         <>
-                            <MenuHeader title="设置资产分类" description={node?.title || nodeTypeLabel(node)} onBack={() => setCategoryOpen(false)} />
-                            <MenuSection label="项目用途" />
+                            <MenuHeader title={tr("设置资产分类")} description={node?.title || nodeTypeLabel(node)} onBack={() => setCategoryOpen(false)} />
+                            <MenuSection label={tr("项目用途")} />
                             {assetCategoryOptions.map((option) => (
                                 <MenuButton
                                     key={option.value}
@@ -207,90 +208,90 @@ export function CanvasNodeContextMenu({
                         </>
                     ) : menu.type === "canvas" ? (
                         <>
-                            <MenuHeader title="画布命令" />
+                            <MenuHeader title={tr("画布命令")} />
                             {hasMultiSelection ? (
                                 <>
-                                    <MenuButton icon={<LayoutTemplate className="size-4" />} label="自适应整理画布" detail="保持相对布局并加大边距" disabled={!onSpreadSelection} onClick={() => onSpreadSelection && runAction(onSpreadSelection)} />
+                                    <MenuButton icon={<LayoutTemplate className="size-4" />} label={tr("自适应整理画布")} detail={tr("保持相对布局并加大边距")} disabled={!onSpreadSelection} onClick={() => onSpreadSelection && runAction(onSpreadSelection)} />
                                     {downloadSelectionButton}
                                     <MenuDivider />
                                 </>
                             ) : null}
-                            <MenuButton icon={<Plus className="size-4" />} label="添加节点" chevron active={addOpen} onClick={() => setAddOpen((value) => !value)} />
-                            <MenuButton icon={<Upload className="size-4" />} label="上传到这里" onClick={() => runAction(onUpload)} />
-                            {!isProjectLinked ? <MenuButton icon={<FolderOpen className="size-4" />} label="从素材库插入" onClick={() => runAction(onOpenAssets)} /> : null}
+                            <MenuButton icon={<Plus className="size-4" />} label={tr("添加节点")} chevron active={addOpen} onClick={() => setAddOpen((value) => !value)} />
+                            <MenuButton icon={<Upload className="size-4" />} label={tr("上传到这里")} onClick={() => runAction(onUpload)} />
+                            {!isProjectLinked ? <MenuButton icon={<FolderOpen className="size-4" />} label={tr("从素材库插入")} onClick={() => runAction(onOpenAssets)} /> : null}
                             <MenuDivider />
-                            <MenuSection label="历史与剪贴板" />
-                            <MenuButton icon={<Undo2 className="size-4" />} label="撤销" shortcut="⌘Z" disabled={!canUndo} onClick={() => runAction(onUndo)} />
-                            <MenuButton icon={<Redo2 className="size-4" />} label="重做" shortcut="⇧⌘Z" disabled={!canRedo} onClick={() => runAction(onRedo)} />
-                            <MenuButton icon={<Clipboard className="size-4" />} label="粘贴" shortcut="⌘V" disabled={!canPaste} onClick={() => runAction(onPaste)} />
+                            <MenuSection label={tr("历史与剪贴板")} />
+                            <MenuButton icon={<Undo2 className="size-4" />} label={tr("撤销")} shortcut="⌘Z" disabled={!canUndo} onClick={() => runAction(onUndo)} />
+                            <MenuButton icon={<Redo2 className="size-4" />} label={tr("重做")} shortcut="⇧⌘Z" disabled={!canRedo} onClick={() => runAction(onRedo)} />
+                            <MenuButton icon={<Clipboard className="size-4" />} label={tr("粘贴")} shortcut="⌘V" disabled={!canPaste} onClick={() => runAction(onPaste)} />
                         </>
                     ) : menu.type === "node" && hasMultiSelection ? (
                         <>
-                            <MenuHeader title={`已选 ${selectedCount} 个节点`} />
-                            <MenuSection label="选区" />
-                            <MenuButton icon={<LayoutTemplate />} label="自适应整理画布" detail="保持相对布局并加大边距" disabled={!onSpreadSelection} onClick={() => onSpreadSelection && runAction(onSpreadSelection)} />
+                            <MenuHeader title={tr("已选 {0} 个节点", selectedCount)} />
+                            <MenuSection label={tr("选区")} />
+                            <MenuButton icon={<LayoutTemplate />} label={tr("自适应整理画布")} detail={tr("保持相对布局并加大边距")} disabled={!onSpreadSelection} onClick={() => onSpreadSelection && runAction(onSpreadSelection)} />
                             <MenuDivider />
-                            <MenuButton icon={<Copy />} label={`复制 ${selectedCount} 个节点`} shortcut="⌘C" disabled={!onCopySelection} onClick={() => onCopySelection && runAction(onCopySelection)} />
+                            <MenuButton icon={<Copy />} label={tr("复制 {0} 个节点", selectedCount)} shortcut="⌘C" disabled={!onCopySelection} onClick={() => onCopySelection && runAction(onCopySelection)} />
                             {downloadSelectionButton}
-                            <MenuButton icon={<AtSign />} label="发送到 Agent" disabled={!onSendToAgent} onClick={() => onSendToAgent && runAction(onSendToAgent)} />
-                            <MenuButton icon={<Trash2 />} label={`删除 ${selectedCount} 个节点`} danger disabled={!onDeleteSelection} onClick={() => onDeleteSelection && runAction(onDeleteSelection)} />
+                            <MenuButton icon={<AtSign />} label={tr("发送到 Agent")} disabled={!onSendToAgent} onClick={() => onSendToAgent && runAction(onSendToAgent)} />
+                            <MenuButton icon={<Trash2 />} label={tr("删除 {0} 个节点", selectedCount)} danger disabled={!onDeleteSelection} onClick={() => onDeleteSelection && runAction(onDeleteSelection)} />
                         </>
                     ) : menu.type === "node" ? (
                         <>
                             {isCharacterReference ? (
                                 <>
-                                    <MenuHeader title="角色卡" description={node?.metadata?.characterName || node?.title} />
-                                    <MenuSection label="角色引用" />
-                                    <MenuButton icon={<UserRound />} label="查看角色详情" onClick={() => runAction(onEditText)} />
+                                    <MenuHeader title={tr("角色卡")} description={node?.metadata?.characterName || node?.title} />
+                                    <MenuSection label={tr("角色引用")} />
+                                    <MenuButton icon={<UserRound />} label={tr("查看角色详情")} onClick={() => runAction(onEditText)} />
                                     <MenuDivider />
-                                    <MenuSection label="节点" />
-                                    <MenuButton icon={<AtSign />} label="发送到 Agent" disabled={!onSendToAgent} onClick={() => onSendToAgent && runAction(onSendToAgent)} />
-                                    <MenuButton icon={<Copy />} label="复制角色引用" shortcut="⌘C" onClick={() => runAction(onCopyNode)} />
-                                    <MenuButton icon={<Layers3 />} label="创建引用副本" shortcut="⌘D" onClick={() => runAction(onDuplicate)} />
-                                    <MenuButton icon={<Trash2 />} label="删除节点" danger onClick={() => runAction(onDelete)} />
+                                    <MenuSection label={tr("节点")} />
+                                    <MenuButton icon={<AtSign />} label={tr("发送到 Agent")} disabled={!onSendToAgent} onClick={() => onSendToAgent && runAction(onSendToAgent)} />
+                                    <MenuButton icon={<Copy />} label={tr("复制角色引用")} shortcut="⌘C" onClick={() => runAction(onCopyNode)} />
+                                    <MenuButton icon={<Layers3 />} label={tr("创建引用副本")} shortcut="⌘D" onClick={() => runAction(onDuplicate)} />
+                                    <MenuButton icon={<Trash2 />} label={tr("删除节点")} danger onClick={() => runAction(onDelete)} />
                                 </>
                             ) : isMedia ? (
                                 <>
-                                    <MenuHeader title={isImage ? "图片" : "视频"} description={node?.title || nodeTypeLabel(node)} />
-                                    <MenuSection label="查看与归档" />
-                                    <MenuButton icon={<Maximize2 />} label="进入全景预览" disabled={!canOpenPreview} onClick={() => runAction(onViewMedia)} />
+                                    <MenuHeader title={isImage ? tr("图片") : tr("视频")} description={node?.title || nodeTypeLabel(node)} />
+                                    <MenuSection label={tr("查看与归档")} />
+                                    <MenuButton icon={<Maximize2 />} label={tr("进入全景预览")} disabled={!canOpenPreview} onClick={() => runAction(onViewMedia)} />
                                     {versionMenuButton}
-                                    <MenuButton icon={<Tags />} label="设置资产分类" chevron onClick={() => setCategoryOpen(true)} />
-                                    {isImage ? <MenuButton icon={<CloudUpload />} label="上传到方舟素材库" onClick={() => runAction(onUploadToArkPrivateAsset)} /> : null}
+                                    <MenuButton icon={<Tags />} label={tr("设置资产分类")} chevron onClick={() => setCategoryOpen(true)} />
+                                    {isImage ? <MenuButton icon={<CloudUpload />} label={tr("上传到方舟素材库")} onClick={() => runAction(onUploadToArkPrivateAsset)} /> : null}
                                     <MenuDivider />
-                                    <MenuSection label="节点" />
-                                    <MenuButton icon={<AtSign />} label="发送到 Agent" disabled={!onSendToAgent} onClick={() => onSendToAgent && runAction(onSendToAgent)} />
-                                    <MenuButton icon={<Copy />} label="复制节点" shortcut="⌘C" onClick={() => runAction(onCopyNode)} />
-                                    {isImage ? <MenuButton icon={<Clipboard />} label="复制图片" disabled={!hasNodeContent} onClick={() => runAction(onCopyContent)} /> : null}
-                                    <MenuButton icon={<Link2 />} label={isImage ? "复制图片地址" : "复制视频地址"} disabled={!canCopyMediaUrl} onClick={() => runAction(onCopyMediaUrl)} />
-                                    <MenuButton icon={<Copy />} label="创建生成副本" onClick={() => runAction(onCreateGenerationCopy)} />
-                                    <MenuButton icon={<Layers3 />} label="创建参数变体" shortcut="⌘D" onClick={() => runAction(onDuplicate)} />
-                                    <MenuButton icon={<Trash2 />} label="删除节点" danger onClick={() => runAction(onDelete)} />
+                                    <MenuSection label={tr("节点")} />
+                                    <MenuButton icon={<AtSign />} label={tr("发送到 Agent")} disabled={!onSendToAgent} onClick={() => onSendToAgent && runAction(onSendToAgent)} />
+                                    <MenuButton icon={<Copy />} label={tr("复制节点")} shortcut="⌘C" onClick={() => runAction(onCopyNode)} />
+                                    {isImage ? <MenuButton icon={<Clipboard />} label={tr("复制图片")} disabled={!hasNodeContent} onClick={() => runAction(onCopyContent)} /> : null}
+                                    <MenuButton icon={<Link2 />} label={isImage ? tr("复制图片地址") : tr("复制视频地址")} disabled={!canCopyMediaUrl} onClick={() => runAction(onCopyMediaUrl)} />
+                                    <MenuButton icon={<Copy />} label={tr("创建生成副本")} onClick={() => runAction(onCreateGenerationCopy)} />
+                                    <MenuButton icon={<Layers3 />} label={tr("创建参数变体")} shortcut="⌘D" onClick={() => runAction(onDuplicate)} />
+                                    <MenuButton icon={<Trash2 />} label={tr("删除节点")} danger onClick={() => runAction(onDelete)} />
                                 </>
                             ) : (
                                 <>
                                     <MenuHeader title={node?.title || nodeTypeLabel(node)} />
-                                    <MenuSection label="节点操作" />
-                                    {isFrame ? <MenuButton icon={isFolder ? <FolderOpen /> : <PanelTop />} label={node?.metadata?.frame?.collapsed ? `展开${isFolder ? "文件夹" : "背板"}` : `折叠${isFolder ? "文件夹" : "背板"}`} onClick={() => runAction(onToggleFrame)} /> : <MenuButton icon={<FolderPlus />} label="保存到我的素材" disabled={!canSaveAsset} onClick={() => runAction(onSaveAsset)} />}
-                                    {isText ? <MenuButton icon={<Maximize2 />} label="放大编辑" onClick={() => runAction(onEditText)} /> : null}
-                                    {isDrawing ? <MenuButton icon={<Pencil />} label="打开绘图" onClick={() => runAction(onOpenDrawing)} /> : null}
+                                    <MenuSection label={tr("节点操作")} />
+                                    {isFrame ? <MenuButton icon={isFolder ? <FolderOpen /> : <PanelTop />} label={node?.metadata?.frame?.collapsed ? tr("展开{0}", isFolder ? tr("文件夹") : tr("背板")) : tr("折叠{0}", isFolder ? tr("文件夹") : tr("背板"))} onClick={() => runAction(onToggleFrame)} /> : <MenuButton icon={<FolderPlus />} label={tr("保存到我的素材")} disabled={!canSaveAsset} onClick={() => runAction(onSaveAsset)} />}
+                                    {isText ? <MenuButton icon={<Maximize2 />} label={tr("放大编辑")} onClick={() => runAction(onEditText)} /> : null}
+                                    {isDrawing ? <MenuButton icon={<Pencil />} label={tr("打开绘图")} onClick={() => runAction(onOpenDrawing)} /> : null}
                                     {isAudio ? versionMenuButton : null}
-                                    {isText ? <MenuButton icon={<ImageIcon />} label="用文本生图" disabled={!canGenerateFromText} onClick={() => runAction(onGenerateImage)} /> : null}
+                                    {isText ? <MenuButton icon={<ImageIcon />} label={tr("用文本生图")} disabled={!canGenerateFromText} onClick={() => runAction(onGenerateImage)} /> : null}
                                     <MenuDivider />
-                                    <MenuSection label="副本与内容" />
-                                    <MenuButton icon={<AtSign />} label="发送到 Agent" disabled={!onSendToAgent} onClick={() => onSendToAgent && runAction(onSendToAgent)} />
-                                    <MenuButton icon={<Copy />} label={isFrame ? `复制${isFolder ? "文件夹" : "背板"}及内容` : "复制节点"} shortcut="⌘C" onClick={() => runAction(onCopyNode)} />
-                                    {isText ? <MenuButton icon={<Clipboard />} label="复制文本" disabled={!hasNodeContent} onClick={() => runAction(onCopyContent)} /> : null}
-                                    <MenuButton icon={<Copy />} label={isFrame ? `创建${isFolder ? "文件夹" : "背板"}副本` : "创建参数变体"} shortcut="⌘D" onClick={() => runAction(onDuplicate)} />
-                                    <MenuButton icon={<Clipboard />} label="粘贴" shortcut="⌘V" disabled={!canPaste} onClick={() => runAction(onPaste)} />
-                                    <MenuButton icon={<Trash2 />} label={isFrame ? `删除${isFolder ? "文件夹" : "背板"}` : "删除节点"} danger onClick={() => runAction(onDelete)} />
+                                    <MenuSection label={tr("副本与内容")} />
+                                    <MenuButton icon={<AtSign />} label={tr("发送到 Agent")} disabled={!onSendToAgent} onClick={() => onSendToAgent && runAction(onSendToAgent)} />
+                                    <MenuButton icon={<Copy />} label={isFrame ? tr("复制{0}及内容", isFolder ? tr("文件夹") : tr("背板")) : tr("复制节点")} shortcut="⌘C" onClick={() => runAction(onCopyNode)} />
+                                    {isText ? <MenuButton icon={<Clipboard />} label={tr("复制文本")} disabled={!hasNodeContent} onClick={() => runAction(onCopyContent)} /> : null}
+                                    <MenuButton icon={<Copy />} label={isFrame ? tr("创建{0}副本", isFolder ? tr("文件夹") : tr("背板")) : tr("创建参数变体")} shortcut="⌘D" onClick={() => runAction(onDuplicate)} />
+                                    <MenuButton icon={<Clipboard />} label={tr("粘贴")} shortcut="⌘V" disabled={!canPaste} onClick={() => runAction(onPaste)} />
+                                    <MenuButton icon={<Trash2 />} label={isFrame ? tr("删除{0}", isFolder ? tr("文件夹") : tr("背板")) : tr("删除节点")} danger onClick={() => runAction(onDelete)} />
                                 </>
                             )}
                         </>
                     ) : (
                         <>
-                            <MenuHeader title="连接" />
-                            <MenuButton icon={<Trash2 className="size-4" />} label="删除连接" danger onClick={() => runAction(onDelete)} />
+                            <MenuHeader title={tr("连接")} />
+                            <MenuButton icon={<Trash2 className="size-4" />} label={tr("删除连接")} danger onClick={() => runAction(onDelete)} />
                         </>
                     )}
                 </div>
@@ -373,7 +374,7 @@ function MenuHeader({ title, description, onBack }: { title: string; description
     const theme = canvasThemes[useActiveTheme()];
     return (
         <div className="mb-0.5 flex items-start gap-1 px-2 py-2">
-            {onBack ? <button type="button" onClick={onBack} className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-md outline-none hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/8" aria-label="返回媒体操作"><ArrowLeft className="size-3.5" /></button> : null}
+            {onBack ? <button type="button" onClick={onBack} className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-md outline-none hover:bg-black/5 focus-visible:ring-2 dark:hover:bg-white/8" aria-label={tr("返回媒体操作")}><ArrowLeft className="size-3.5" /></button> : null}
             <span className="min-w-0"><span className="block truncate text-xs font-semibold">{title}</span>{description && description !== title ? <span className="mt-0.5 block truncate text-[var(--fs-micro)]" style={{ color: theme.node.muted }}>{description}</span> : null}</span>
         </div>
     );
@@ -427,14 +428,14 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function nodeTypeLabel(node?: CanvasNodeData | null) {
-    if (!node) return "节点";
-    if (node.type === CanvasNodeType.Image) return "图片节点";
-    if (node.type === CanvasNodeType.Text) return "文本节点";
-    if (node.type === CanvasNodeType.Script) return "分镜脚本节点";
-    if (node.type === CanvasNodeType.Skill) return "技能节点";
-    if (node.type === CanvasNodeType.Video) return "视频节点";
-    if (node.type === CanvasNodeType.Audio) return "音频节点";
-    if (node.type === CanvasNodeType.Drawing) return "绘图节点";
-    if (node.type === CanvasNodeType.Frame) return isCanvasFolderNode(node) ? "文件夹" : "背板";
-    return "生成配置节点";
+    if (!node) return tr("节点");
+    if (node.type === CanvasNodeType.Image) return tr("图片节点");
+    if (node.type === CanvasNodeType.Text) return tr("文本节点");
+    if (node.type === CanvasNodeType.Script) return tr("分镜脚本节点");
+    if (node.type === CanvasNodeType.Skill) return tr("技能节点");
+    if (node.type === CanvasNodeType.Video) return tr("视频节点");
+    if (node.type === CanvasNodeType.Audio) return tr("音频节点");
+    if (node.type === CanvasNodeType.Drawing) return tr("绘图节点");
+    if (node.type === CanvasNodeType.Frame) return isCanvasFolderNode(node) ? tr("文件夹") : tr("背板");
+    return tr("生成配置节点");
 }

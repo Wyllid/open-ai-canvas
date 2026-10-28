@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { Editor } from "@tiptap/core";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { Button, ColorPicker } from "antd";
@@ -53,10 +54,10 @@ export function BannerTitleEditor({ value, onChange }: { value: BannerTitleRun[]
 
     const editor = useEditor({
         immediatelyRender: false,
-        extensions: createBannerTitleExtensions("输入首页顶部展示的通知标题"),
+        extensions: createBannerTitleExtensions(tr("输入首页顶部展示的通知标题")),
         content: bannerTitleRunsToDoc(value),
         editorProps: {
-            attributes: { class: "outline-none", "aria-label": "通知标题编辑区" },
+            attributes: { class: "outline-none", "aria-label": tr("通知标题编辑区") },
             handleKeyDown: (_view, event) => {
                 // 通知条标题是单行语义，Enter 不产生新段落。
                 return event.key === "Enter";
@@ -88,39 +89,39 @@ export function BannerTitleEditor({ value, onChange }: { value: BannerTitleRun[]
                 <Select
                     size="small"
                     className="w-[104px]"
-                    aria-label="标题字号"
+                    aria-label={tr("标题字号")}
                     value={selectionStyle.fontSize ?? DEFAULT_OPTION}
                     onChange={(next) => applyStyle({ fontSize: next === DEFAULT_OPTION ? null : Number(next) })}
                     options={[
-                        { value: DEFAULT_OPTION, label: `默认（${BANNER_TITLE_DEFAULT_FONT_SIZE}px）` },
+                        { value: DEFAULT_OPTION, label: tr("默认（{0}px）", BANNER_TITLE_DEFAULT_FONT_SIZE) },
                         ...BANNER_TITLE_FONT_SIZES.map((size) => ({ value: size, label: `${size}px` })),
                     ]}
                 />
                 <Select
                     size="small"
                     className="w-[92px]"
-                    aria-label="标题字重"
+                    aria-label={tr("标题字重")}
                     value={selectionStyle.fontWeight ?? DEFAULT_OPTION}
                     onChange={(next) => applyStyle({ fontWeight: next === DEFAULT_OPTION ? null : Number(next) })}
                     options={[
-                        { value: DEFAULT_OPTION, label: "默认字重" },
+                        { value: DEFAULT_OPTION, label: tr("默认字重") },
                         ...BANNER_TITLE_FONT_WEIGHTS.map((item) => ({ value: item.value, label: `${item.label} ${item.value}` })),
                     ]}
                 />
                 <Select
                     size="small"
                     className="w-[92px]"
-                    aria-label="标题字体"
+                    aria-label={tr("标题字体")}
                     value={selectionStyle.fontFamily ?? DEFAULT_OPTION}
                     onChange={(next) => applyStyle({ fontFamily: next === DEFAULT_OPTION ? null : (next as BannerTitleRun["fontFamily"]) })}
-                    options={[{ value: DEFAULT_OPTION, label: "默认字体" }, ...BANNER_TITLE_FONT_FAMILIES.map((item) => ({ value: item.key, label: item.label }))]}
+                    options={[{ value: DEFAULT_OPTION, label: tr("默认字体") }, ...BANNER_TITLE_FONT_FAMILIES.map((item) => ({ value: item.key, label: item.label }))]}
                 />
                 <ColorPicker
                     size="small"
-                    aria-label="标题颜色"
+                    aria-label={tr("标题颜色")}
                     value={selectionStyle.color || "#FFFFFF"}
                     onChange={(color) => applyStyle({ color: color.toHexString().toUpperCase() })}
-                    presets={[{ label: "通知条常用", colors: ["#FFFFFF", "#FFE58F", "#FFB37B", "#FF9AA2", "#B7EB8F", "#8FD3FF", "#D3ADF7", "#1F1F1F"] }]}
+                    presets={[{ label: tr("通知条常用"), colors: ["#FFFFFF", "#FFE58F", "#FFB37B", "#FF9AA2", "#B7EB8F", "#8FD3FF", "#D3ADF7", "#1F1F1F"] }]}
                 />
                 {/* 不能用 Tooltip 包住 EmojiPopover：Tooltip 会向 Popover 要 ref，嵌套弹层行为不可靠。 */}
                 <BannerNoticeEmojiPopover
@@ -130,12 +131,12 @@ export function BannerTitleEditor({ value, onChange }: { value: BannerTitleRun[]
                         editor.chain().focus().insertContent(emoji).run();
                     }}
                 />
-                <Tooltip title="清除所选文字的样式">
+                <Tooltip title={tr("清除所选文字的样式")}>
                     <Button
                         size="small"
                         type="text"
                         icon={<Eraser className="size-3.5" />}
-                        aria-label="清除样式"
+                        aria-label={tr("清除样式")}
                         onClick={() => {
                             if (!editor) return;
                             clearBannerTitleStyle(editor);
@@ -156,7 +157,7 @@ export function BannerTitleEditor({ value, onChange }: { value: BannerTitleRun[]
             </div>
 
             <p className="text-[var(--fs-label)] text-foreground/45">
-                选中文字后调整样式；未选中时设置后续输入的文字样式。「图标」可在光标处插入 emoji 素材，位置与个数不限。默认字号 {BANNER_TITLE_DEFAULT_FONT_SIZE}px、字重 {BANNER_TITLE_DEFAULT_FONT_WEIGHT}，与通知条一致。
+                {tr("选中文字后调整样式；未选中时设置后续输入的文字样式。「图标」可在光标处插入 emoji 素材，位置与个数不限。默认字号")} {BANNER_TITLE_DEFAULT_FONT_SIZE}{tr("px、字重")} {BANNER_TITLE_DEFAULT_FONT_WEIGHT}{tr("，与通知条一致。")}
             </p>
         </div>
     );
@@ -180,8 +181,8 @@ export function BannerNoticePreview({ runs, hasLink, noticeType }: { runs: Banne
     }, [noticeType]);
 
     const themes = [
-        { key: "light", label: "浅色主题", background: backgrounds.light, ref: lightRef, className: "admin-banner-title-preview-light" },
-        { key: "dark", label: "深色主题", background: backgrounds.dark, ref: darkRef, className: "admin-banner-title-preview-dark" },
+        { key: "light", label: tr("浅色主题"), background: backgrounds.light, ref: lightRef, className: "admin-banner-title-preview-light" },
+        { key: "dark", label: tr("深色主题"), background: backgrounds.dark, ref: darkRef, className: "admin-banner-title-preview-dark" },
     ] as const;
 
     return (
@@ -197,7 +198,7 @@ export function BannerNoticePreview({ runs, hasLink, noticeType }: { runs: Banne
                         >
                             <span className="flex w-full min-w-0 items-center justify-center gap-2 px-8">
                                 <span className="min-w-0 truncate font-semibold">
-                                    <BannerAnnouncementTitle runs={runs} fallbackText="通知标题预览" />
+                                    <BannerAnnouncementTitle runs={runs} fallbackText={tr("通知标题预览")} />
                                 </span>
                                 {hasLink ? <BannerAnnouncementLinkHint /> : null}
                             </span>
@@ -205,7 +206,7 @@ export function BannerNoticePreview({ runs, hasLink, noticeType }: { runs: Banne
                         </div>
                         <p className="text-[var(--fs-label)] text-foreground/45">
                             {theme.label} · {bannerNoticeTypeLabel(noticeType)}
-                            {lowContrast.length ? ` · ${lowContrast.join("、")} 在该底色上对比度不足 4.5:1，建议调亮或调暗` : " · 对比度达标"}
+                            {lowContrast.length ? tr(" · {0} 在该底色上对比度不足 4.5:1，建议调亮或调暗", lowContrast.join("、")) : tr(" · 对比度达标")}
                         </p>
                     </div>
                 );

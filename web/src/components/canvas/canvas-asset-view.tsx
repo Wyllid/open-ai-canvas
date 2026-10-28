@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { App, Button, Input } from "antd";
 import { Crosshair, Download, Pencil, Search, Star, Upload } from "lucide-react";
@@ -91,18 +92,18 @@ export function CanvasAssetView({ nodes, onLocate, onRename, onPromoteVersion, o
             if (kind === "txt" || kind === "markdown") downloadCanvasText(node, kind);
             else await onDownloadMedia(node);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "下载失败");
+            message.error(error instanceof Error ? error.message : tr("下载失败"));
         }
     };
 
     return (
         <div className="canvas-asset-view flex size-full min-h-0 bg-background text-foreground" data-canvas-no-zoom data-canvas-wheel-scroll>
-            <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-foreground/[.02] max-md:w-52" aria-label="资产目录">
+            <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-foreground/[.02] max-md:w-52" aria-label={tr("资产目录")}>
                 <div className="flex h-12 shrink-0 items-center gap-2 px-4">
-                    <strong className="text-sm font-semibold">资产</strong>
+                    <strong className="text-sm font-semibold">{tr("资产")}</strong>
                     <span className="text-xs text-muted-foreground tabular-nums">{totalCount}</span>
-                    <Button className="!ml-auto" size="small" type="text" icon={<Upload className="size-3.5" />} onClick={onUpload} aria-label="上传文件到画布">
-                        上传
+                    <Button className="!ml-auto" size="small" type="text" icon={<Upload className="size-3.5" />} onClick={onUpload} aria-label={tr("上传文件到画布")}>
+                        {tr("上传")}
                     </Button>
                 </div>
                 <div className="shrink-0 px-3 pb-2">
@@ -112,8 +113,8 @@ export function CanvasAssetView({ nodes, onLocate, onRename, onPromoteVersion, o
                         variant="filled"
                         className="!h-8"
                         prefix={<Search className="size-3.5 text-muted-foreground" />}
-                        placeholder="搜索资产"
-                        aria-label="搜索资产名称"
+                        placeholder={tr("搜索资产")}
+                        aria-label={tr("搜索资产名称")}
                         value={queryInput}
                         onChange={(event) => setQueryInput(event.target.value)}
                     />
@@ -192,7 +193,7 @@ function KindGrid({
                                         className="block w-full rounded-[var(--r-lg)] text-left focus-visible:outline-2 focus-visible:outline-offset-2"
                                         onClick={() => onOpen(entry)}
                                         onDoubleClick={() => onLocate(entry.nodeId)}
-                                        title="单击查看详情，双击在画布中定位"
+                                        title={tr("单击查看详情，双击在画布中定位")}
                                     >
                                         <span className="block aspect-[4/3] overflow-hidden rounded-[var(--r-lg)] border border-border bg-[var(--workspace-surface)] transition-colors group-hover:border-foreground/30">
                                             <CanvasAssetThumbnail node={node} kind={entry.kind} />
@@ -208,10 +209,10 @@ function KindGrid({
                     </ul>
                 ) : (
                     <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground">
-                        <span>{totalCount ? `当前画布还没有${group.label}资产` : "当前画布还没有资产"}</span>
+                        <span>{totalCount ? tr("当前画布还没有{0}资产", group.label) : tr("当前画布还没有资产")}</span>
                         {!totalCount ? (
                             <Button icon={<Upload className="size-4" />} onClick={onUpload}>
-                                上传文件
+                                {tr("上传文件")}
                             </Button>
                         ) : null}
                     </div>
@@ -223,17 +224,17 @@ function KindGrid({
 
 function assetSubtitle(entry: CanvasAssetEntry, node: CanvasNodeData) {
     const parts: string[] = [];
-    if (entry.versions.length > 1) parts.push(`${entry.versions.length} 个版本`);
+    if (entry.versions.length > 1) parts.push(tr("{0} 个版本", entry.versions.length));
     const bytes = formatBytes(node.metadata?.bytes || 0);
     if (bytes && (entry.kind === "audio" || entry.kind === "video")) parts.push(bytes);
-    if ((entry.kind === "txt" || entry.kind === "markdown") && canvasAssetText(node)) parts.push(`${canvasAssetText(node).length} 字`);
+    if ((entry.kind === "txt" || entry.kind === "markdown") && canvasAssetText(node)) parts.push(tr("{0} 字", canvasAssetText(node).length));
     if (entry.updatedAt) parts.push(formatDate(entry.updatedAt));
     return parts.join(" · ") || CANVAS_ASSET_KIND_LABELS[entry.kind];
 }
 
 function formatDate(value: string) {
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return Number.isNaN(date.getTime()) ? "" : date.toLocaleString(currentLocale(), { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
 type AssetDetailProps = {
@@ -281,7 +282,7 @@ function AssetDetail({ entry, version, nodeById, onSelectVersion, onBack, onLoca
                         autoFocus
                         size="small"
                         className="!max-w-sm"
-                        aria-label="资产名称"
+                        aria-label={tr("资产名称")}
                         value={draft}
                         onChange={(event) => setDraft(event.target.value)}
                         onBlur={commitRename}
@@ -295,23 +296,23 @@ function AssetDetail({ entry, version, nodeById, onSelectVersion, onBack, onLoca
                     />
                 ) : (
                     <>
-                        <button type="button" className="min-w-0 truncate text-sm font-semibold" title="点击重命名" onClick={() => setEditing(true)}>
+                        <button type="button" className="min-w-0 truncate text-sm font-semibold" title={tr("点击重命名")} onClick={() => setEditing(true)}>
                             {entry.title}
                         </button>
-                        <Button type="text" size="small" aria-label="重命名资产" icon={<Pencil className="size-3.5" />} onClick={() => setEditing(true)} />
+                        <Button type="text" size="small" aria-label={tr("重命名资产")} icon={<Pencil className="size-3.5" />} onClick={() => setEditing(true)} />
                     </>
                 )}
                 <div className="ml-auto flex shrink-0 items-center gap-2">
                     {activeVersion && activeVersion.promotable && !activeVersion.primary && entry.versions.length > 1 ? (
                         <Button size="small" icon={<Star className="size-3.5" />} onClick={() => onPromoteVersion(activeVersion)}>
-                            设为主版本
+                            {tr("设为主版本")}
                         </Button>
                     ) : null}
                     <Button size="small" icon={<Download className="size-3.5" />} onClick={() => void onDownload(previewNode, entry.kind)}>
-                        下载
+                        {tr("下载")}
                     </Button>
                     <Button size="small" type="primary" icon={<Crosshair className="size-3.5" />} onClick={() => onLocate(baseNode.id)}>
-                        在画布中定位
+                        {tr("在画布中定位")}
                     </Button>
                 </div>
             </header>
@@ -319,31 +320,31 @@ function AssetDetail({ entry, version, nodeById, onSelectVersion, onBack, onLoca
                 <div className="grid min-h-0 min-w-0 flex-1 place-items-center overflow-hidden bg-[var(--workspace-surface)] p-4">
                     <CanvasAssetPreview node={previewNode} kind={entry.kind} />
                 </div>
-                <aside className="thin-scrollbar w-72 shrink-0 overflow-y-auto border-l border-border p-4 text-sm max-lg:w-full max-lg:border-l-0 max-lg:border-t" aria-label="资产信息">
+                <aside className="thin-scrollbar w-72 shrink-0 overflow-y-auto border-l border-border p-4 text-sm max-lg:w-full max-lg:border-l-0 max-lg:border-t" aria-label={tr("资产信息")}>
                     <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2">
-                        <InfoRow label="类型">{CANVAS_ASSET_KIND_LABELS[entry.kind]}</InfoRow>
+                        <InfoRow label={tr("类型")}>{CANVAS_ASSET_KIND_LABELS[entry.kind]}</InfoRow>
                         {activeVersion ? (
-                            <InfoRow label="版本">
+                            <InfoRow label={tr("版本")}>
                                 {activeVersion.label}
-                                {activeVersion.primary ? "（主版本）" : ""}
+                                {activeVersion.primary ? tr("（主版本）") : ""}
                             </InfoRow>
                         ) : null}
-                        {previewNode.metadata?.naturalWidth && previewNode.metadata.naturalHeight ? <InfoRow label="尺寸">{`${previewNode.metadata.naturalWidth} × ${previewNode.metadata.naturalHeight}`}</InfoRow> : null}
-                        {previewNode.metadata?.durationMs ? <InfoRow label="时长">{`${(previewNode.metadata.durationMs / 1000).toFixed(1)} 秒`}</InfoRow> : null}
-                        {formatBytes(previewNode.metadata?.bytes || 0) ? <InfoRow label="大小">{formatBytes(previewNode.metadata?.bytes || 0)}</InfoRow> : null}
-                        {previewNode.metadata?.producedModel || previewNode.metadata?.model ? <InfoRow label="模型">{previewNode.metadata.producedModel || previewNode.metadata.model}</InfoRow> : null}
-                        {activeVersion?.origin ? <InfoRow label="来源">{activeVersion.origin === "generate" ? "生成" : "上传"}</InfoRow> : null}
-                        {entry.updatedAt ? <InfoRow label="更新">{formatDate(entry.updatedAt)}</InfoRow> : null}
+                        {previewNode.metadata?.naturalWidth && previewNode.metadata.naturalHeight ? <InfoRow label={tr("尺寸")}>{`${previewNode.metadata.naturalWidth} × ${previewNode.metadata.naturalHeight}`}</InfoRow> : null}
+                        {previewNode.metadata?.durationMs ? <InfoRow label={tr("时长")}>{tr("{0} 秒", (previewNode.metadata.durationMs / 1000).toFixed(1))}</InfoRow> : null}
+                        {formatBytes(previewNode.metadata?.bytes || 0) ? <InfoRow label={tr("大小")}>{formatBytes(previewNode.metadata?.bytes || 0)}</InfoRow> : null}
+                        {previewNode.metadata?.producedModel || previewNode.metadata?.model ? <InfoRow label={tr("模型")}>{previewNode.metadata.producedModel || previewNode.metadata.model}</InfoRow> : null}
+                        {activeVersion?.origin ? <InfoRow label={tr("来源")}>{activeVersion.origin === "generate" ? tr("生成") : tr("上传")}</InfoRow> : null}
+                        {entry.updatedAt ? <InfoRow label={tr("更新")}>{formatDate(entry.updatedAt)}</InfoRow> : null}
                     </dl>
                     {(entry.kind === "image" || entry.kind === "video" || entry.kind === "audio") && previewNode.metadata?.prompt ? (
                         <section className="mt-4">
-                            <h3 className="m-0 mb-1 text-xs font-medium text-muted-foreground">提示词</h3>
+                            <h3 className="m-0 mb-1 text-xs font-medium text-muted-foreground">{tr("提示词")}</h3>
                             <p className="m-0 line-clamp-[12] whitespace-pre-wrap break-words text-xs leading-5">{previewNode.metadata.prompt}</p>
                         </section>
                     ) : null}
                     {entry.versions.length > 1 ? (
                         <section className="mt-4">
-                            <h3 className="m-0 mb-2 text-xs font-medium text-muted-foreground">全部版本（{entry.versions.length}）</h3>
+                            <h3 className="m-0 mb-2 text-xs font-medium text-muted-foreground">{tr("全部版本（")}{entry.versions.length}）</h3>
                             <ul className="m-0 flex list-none flex-col gap-1 p-0">
                                 {entry.versions.map((item) => (
                                     <li key={item.key}>
@@ -354,7 +355,7 @@ function AssetDetail({ entry, version, nodeById, onSelectVersion, onBack, onLoca
                                             onClick={() => onSelectVersion(item)}
                                         >
                                             <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                                            {item.primary ? <Star className="size-3.5 shrink-0 fill-current" aria-label="主版本" /> : null}
+                                            {item.primary ? <Star className="size-3.5 shrink-0 fill-current" aria-label={tr("主版本")} /> : null}
                                         </button>
                                     </li>
                                 ))}

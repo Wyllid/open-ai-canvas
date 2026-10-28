@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { Tldraw, createTLStore, getSnapshot, loadSnapshot } from "tldraw";
 import type { Editor } from "tldraw";
@@ -23,11 +24,11 @@ export const CanvasDrawingTldrawEditor = forwardRef<CanvasDrawingEditorHandle, C
     useImperativeHandle(ref, () => ({
         createSave: async () => {
             const editor = editorRef.current;
-            if (!editor) throw new Error("tldraw 编辑器尚未准备完成");
+            if (!editor) throw new Error(tr("tldraw 编辑器尚未准备完成"));
             const shapeIds = [...editor.getCurrentPageShapeIds()];
             if (!shapeIds.length) return { snapshot: getSnapshot(store), preview: null, render: null };
             const bounds = editor.getShapesPageBounds(shapeIds);
-            if (!bounds) throw new Error("无法读取 tldraw 绘图边界");
+            if (!bounds) throw new Error(tr("无法读取 tldraw 绘图边界"));
             const sourceDimension = Math.max(bounds.width, bounds.height) + DRAWING_RENDER_PADDING * 2;
             const scale = Math.min(4, DRAWING_RENDER_MAX_DIMENSION / Math.max(1, sourceDimension));
             const image = await editor.toImage(shapeIds, { format: "png", background: true, padding: DRAWING_RENDER_PADDING, scale, pixelRatio: 1, darkMode: false });
@@ -46,7 +47,7 @@ export const CanvasDrawingTldrawEditor = forwardRef<CanvasDrawingEditorHandle, C
     return (
         <Tldraw
             store={store}
-            locale="zh-cn"
+            locale={currentLocale().toLowerCase()}
             colorScheme={colorScheme}
             options={SINGLE_PAGE_OPTIONS}
             licenseKey={resolveTldrawLicenseKey(tldrawLicenseKey)}

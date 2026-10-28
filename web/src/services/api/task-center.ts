@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { generationErrorMessage } from "@/lib/generation-error";
 import { http, apiBaseURL, type BackendEnvelope } from "@/services/api/request";
 import { consumeTaskTextStream, createTaskTextStreamParser, type TaskTextStreamEvent } from "@/services/api/task-text-stream";
@@ -123,7 +124,7 @@ export type CreateTaskInput = {
 };
 export function createGenerationTask(input: CreateTaskInput) {
     return http.post<GenerationTask>("/tasks", input).then((task) => {
-        recordDiagnosticEvent({ level: "info", category: "task", message: "任务已创建", taskId: task.id, projectId: task.projectId });
+        recordDiagnosticEvent({ level: "info", category: "task", message: tr("任务已创建"), taskId: task.id, projectId: task.projectId });
         notifyCanvasTaskCreated(task);
         return task;
     });
@@ -427,7 +428,7 @@ export async function waitForGenerationTask(id: string, options?: WaitForGenerat
             }
             if (task.status === "succeeded") return task;
             if (task.status === "failed" || task.status === "cancelled") {
-                throw new Error(task.error ? generationErrorMessage(task.error) : `任务${task.status === "cancelled" ? "已取消" : "失败"}`);
+                throw new Error(task.error ? generationErrorMessage(task.error) : tr("任务{0}", task.status === "cancelled" ? tr("已取消") : tr("失败")));
             }
             await delay(intervalMs, options?.signal);
         }
@@ -438,7 +439,7 @@ export async function waitForGenerationTask(id: string, options?: WaitForGenerat
         }
         throw error;
     }
-    throw new Error(lastQueryError instanceof Error ? `任务状态同步失败：${lastQueryError.message}` : "任务执行超时，请稍后重试");
+    throw new Error(lastQueryError instanceof Error ? tr("任务状态同步失败：{0}", lastQueryError.message) : tr("任务执行超时，请稍后重试"));
 }
 
 async function waitForGenerationTaskTextEvents(id: string, options: WaitForGenerationTaskOptions) {
@@ -469,9 +470,9 @@ async function waitForGenerationTaskTextEvents(id: string, options: WaitForGener
             });
             if (!response.ok) throw new TaskTextStreamFatalError(await taskTextStreamHTTPError(response));
             if (!(response.headers.get("content-type") || "").toLowerCase().includes("text/event-stream")) {
-                throw new TaskTextStreamFatalError("任务文本流接口未返回事件流，请检查后端地址和反向代理配置");
+                throw new TaskTextStreamFatalError(tr("任务文本流接口未返回事件流，请检查后端地址和反向代理配置"));
             }
-            if (!response.body) throw new Error("任务文本流不可用");
+            if (!response.body) throw new Error(tr("任务文本流不可用"));
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             const parser = createTaskTextStreamParser();
@@ -510,7 +511,7 @@ async function waitForGenerationTaskTextEvents(id: string, options: WaitForGener
                     }
                     return;
                 }
-                if (event.event === "error") throw new Error(typeof payload.message === "string" ? payload.message : "任务文本流不可用");
+                if (event.event === "error") throw new Error(typeof payload.message === "string" ? payload.message : tr("任务文本流不可用"));
             };
             for (;;) {
                 const { done, value } = await reader.read();
@@ -523,10 +524,10 @@ async function waitForGenerationTaskTextEvents(id: string, options: WaitForGener
                 options.onTaskUpdate?.(completed);
                 if (completed.status === "succeeded") return completed;
                 if (completed.status === "failed" || completed.status === "cancelled") {
-                    throw new TaskTextStreamFatalError(completed.error ? generationErrorMessage(completed.error) : `任务${completed.status === "cancelled" ? "已取消" : "失败"}`);
+                    throw new TaskTextStreamFatalError(completed.error ? generationErrorMessage(completed.error) : tr("任务{0}", completed.status === "cancelled" ? tr("已取消") : tr("失败")));
                 }
             }
-            lastStreamError = new Error("任务文本流连接提前结束");
+            lastStreamError = new Error(tr("任务文本流连接提前结束"));
         } catch (error) {
             if (options.signal?.aborted) throw new DOMException("Aborted", "AbortError");
             if (error instanceof TaskTextStreamFatalError) throw error;
@@ -534,7 +535,7 @@ async function waitForGenerationTaskTextEvents(id: string, options: WaitForGener
         }
         await delay(intervalMs, options.signal);
     }
-    throw new Error(lastStreamError instanceof Error ? `任务文本流同步失败：${lastStreamError.message}` : "任务执行超时，请稍后重试");
+    throw new Error(lastStreamError instanceof Error ? tr("任务文本流同步失败：{0}", lastStreamError.message) : tr("任务执行超时，请稍后重试"));
 }
 
 function asTaskTextStreamRecord(value: unknown): Record<string, unknown> {
@@ -563,7 +564,7 @@ async function taskTextStreamHTTPError(response: Response) {
     } catch {
         // SSE 错误响应可能是空正文或网关 HTML，只返回状态码，避免泄露正文。
     }
-    return `任务文本流请求失败（HTTP ${response.status}）`;
+    return tr("任务文本流请求失败（HTTP {0}）", response.status);
 }
 
 function taskWaitTimeoutMs(task?: GenerationTask) {

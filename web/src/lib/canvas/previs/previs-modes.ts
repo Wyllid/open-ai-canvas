@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { PrevisRenderMode } from "@/types/previs";
 
 /**
@@ -33,8 +34,8 @@ const CAPABILITIES: Record<PrevisMode, PrevisModeCapabilities> = {
 };
 
 export const PREVIS_MODES: Array<{ mode: PrevisMode; label: string; hint: string }> = [
-    { mode: "layout", label: "摆场", hint: "摆放演员、道具、灯光和机位，调整姿势与取景" },
-    { mode: "animate", label: "动画", hint: "打开时间轴，让演员走位、做动作，让摄影机运镜" },
+    { mode: "layout", label: tr("摆场"), hint: tr("摆放演员、道具、灯光和机位，调整姿势与取景") },
+    { mode: "animate", label: tr("动画"), hint: tr("打开时间轴，让演员走位、做动作，让摄影机运镜") },
 ];
 
 export const PREVIS_DEFAULT_MODE: PrevisMode = "layout";

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ClipboardEvent, DragEvent, KeyboardEvent, TextareaHTMLAttributes } from "react";
 import { createPortal } from "react-dom";
@@ -304,9 +305,9 @@ export const CanvasResourceMentionTextarea = forwardRef<HTMLTextAreaElement, Pro
             onPointerDown={(event) => event.stopPropagation()}
             onMouseDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
             onClick={(event) => { event.stopPropagation(); insertAutoLink(autoLinkMatch); }}
-            aria-label={`引用${autoLinkMatch.reference.label}`}
+            aria-label={tr("引用{0}", autoLinkMatch.reference.label)}
         >
-            <span className="truncate">引用「{autoLinkMatch.query}」→ @{autoLinkMatch.reference.label}</span>
+            <span className="truncate">{tr("引用「")}{autoLinkMatch.query}」→ @{autoLinkMatch.reference.label}</span>
             <kbd className="shrink-0 rounded border border-current/20 px-1 font-mono text-[var(--fs-micro)]">Tab</kbd>
         </button>,
         document.body,

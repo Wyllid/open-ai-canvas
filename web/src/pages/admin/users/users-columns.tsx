@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import type { ColumnsType } from "antd/es/table";
 import { Eye, Pencil, Power } from "lucide-react";
 
@@ -8,13 +9,13 @@ import type { AdminUser } from "@/services/api/auth";
 export type UserColumnKey = "user" | "email" | "credits" | "role" | "status" | "createdAt" | "actions";
 
 export const userColumnOptions: Array<{ key: UserColumnKey; label: string; locked?: boolean }> = [
-    { key: "user", label: "用户", locked: true },
-    { key: "email", label: "邮箱" },
-    { key: "credits", label: "当前积分" },
-    { key: "role", label: "角色" },
-    { key: "status", label: "状态" },
-    { key: "createdAt", label: "注册时间" },
-    { key: "actions", label: "操作", locked: true },
+    { key: "user", label: tr("用户"), locked: true },
+    { key: "email", label: tr("邮箱") },
+    { key: "credits", label: tr("当前积分") },
+    { key: "role", label: tr("角色") },
+    { key: "status", label: tr("状态") },
+    { key: "createdAt", label: tr("注册时间") },
+    { key: "actions", label: tr("操作"), locked: true },
 ];
 
 export function createUserColumns({
@@ -33,7 +34,7 @@ export function createUserColumns({
     const columns: Array<ColumnsType<AdminUser>[number] & { key: UserColumnKey }> = [
         {
             key: "user",
-            title: "用户",
+            title: tr("用户"),
             dataIndex: "username",
             render: (_, user) => (
                 <div>
@@ -42,45 +43,45 @@ export function createUserColumns({
                 </div>
             ),
         },
-        { key: "email", title: "邮箱", dataIndex: "email", align: "center", render: (email) => email || <span className="text-foreground/40">未填写</span> },
+        { key: "email", title: tr("邮箱"), dataIndex: "email", align: "center", render: (email) => email || <span className="text-foreground/40">{tr("未填写")}</span> },
         {
             key: "role",
-            title: "角色",
+            title: tr("角色"),
             dataIndex: "role",
             width: 150,
             align: "center",
             render: (role, user) => (
                 <span className="inline-flex flex-wrap items-center justify-center gap-1">
-                    <AdminStatusBadge label={role === "admin" ? "管理员" : "普通用户"} tone={role === "admin" ? "info" : "neutral"} />
+                    <AdminStatusBadge label={role === "admin" ? tr("管理员") : tr("普通用户")} tone={role === "admin" ? "info" : "neutral"} />
                 </span>
             ),
         },
-        { key: "status", title: "状态", dataIndex: "status", width: 110, align: "center", render: (status) => <AdminStatusBadge label={status === "active" ? "已启用" : "已停用"} tone={status === "active" ? "success" : "neutral"} /> },
-        { key: "createdAt", title: "注册时间", dataIndex: "createdAt", width: 112, align: "center", render: (value) => <span className="tabular-nums" title={formatTime(value)}>{formatCompactTime(value)}</span> },
+        { key: "status", title: tr("状态"), dataIndex: "status", width: 110, align: "center", render: (status) => <AdminStatusBadge label={status === "active" ? tr("已启用") : tr("已停用")} tone={status === "active" ? "success" : "neutral"} /> },
+        { key: "createdAt", title: tr("注册时间"), dataIndex: "createdAt", width: 112, align: "center", render: (value) => <span className="tabular-nums" title={formatTime(value)}>{formatCompactTime(value)}</span> },
         {
             key: "actions",
-            title: "操作",
+            title: tr("操作"),
             width: 184,
             align: "center",
             render: (_, user) => (
                 <AdminRowActions
-                    primary={{ label: "详情", icon: <Eye className="size-3.5" />, onClick: () => onView(user) }}
+                    primary={{ label: tr("详情"), icon: <Eye className="size-3.5" />, onClick: () => onView(user) }}
                     visibleActionCount={1}
                     actions={[
                         {
                             key: "toggle-status",
-                            label: user.status === "active" ? "停用用户" : "重新启用",
+                            label: user.status === "active" ? tr("停用用户") : tr("重新启用"),
                             icon: <Power className="size-3.5" />,
                             danger: user.status === "active",
                             disabled: user.id === actorId,
                             confirm: {
-                                title: user.status === "active" ? "停用这个用户？" : "重新启用这个用户？",
-                                description: user.status === "active" ? "停用后会清除该用户登录态，但保留身份、任务和积分流水。" : "启用后，该用户可以重新登录并继续使用原有数据。",
-                                okText: user.status === "active" ? "确认停用" : "确认启用",
+                                title: user.status === "active" ? tr("停用这个用户？") : tr("重新启用这个用户？"),
+                                description: user.status === "active" ? tr("停用后会清除该用户登录态，但保留身份、任务和积分流水。") : tr("启用后，该用户可以重新登录并继续使用原有数据。"),
+                                okText: user.status === "active" ? tr("确认停用") : tr("确认启用"),
                             },
                             onClick: () => onToggleStatus(user),
                         },
-                        { key: "edit", label: "编辑用户", icon: <Pencil className="size-3.5" />, onClick: () => onEdit(user) },
+                        { key: "edit", label: tr("编辑用户"), icon: <Pencil className="size-3.5" />, onClick: () => onEdit(user) },
                     ]}
                 />
             ),
@@ -90,12 +91,12 @@ export function createUserColumns({
 }
 
 function formatTime(value?: string) {
-    return value ? new Date(value).toLocaleString("zh-CN", { hour12: false }) : "--";
+    return value ? new Date(value).toLocaleString(currentLocale(), { hour12: false }) : "--";
 }
 
 function formatCompactTime(value?: string) {
     if (!value) return "--";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "--";
-    return date.toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
+    return date.toLocaleString(currentLocale(), { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
 }

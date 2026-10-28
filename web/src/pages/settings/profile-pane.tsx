@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Avatar, Button, Form, Input, Skeleton } from "antd";
 import { BadgeCheck, Crop, ImagePlus, KeyRound, Mail, RefreshCw, ShieldCheck } from "lucide-react";
@@ -153,7 +154,7 @@ export function ProfilePane() {
             setCropSource(null);
         } catch (error) {
             if (cropGeneration.current !== generation) return;
-            const msg = errorMessage(error, "裁剪头像失败，请重试");
+            const msg = errorMessage(error, tr("裁剪头像失败，请重试"));
             setError("avatar", msg);
             message.error(msg);
         } finally {
@@ -170,9 +171,9 @@ export function ProfilePane() {
             const { user } = await uploadProfileAvatar(draftAvatar.file);
             await queryClient.cancelQueries({ queryKey });
             updateAvatarUser(user);
-            message.success("头像已保存");
+            message.success(tr("头像已保存"));
         } catch (error) {
-            setError("avatar", errorMessage(error, "保存头像失败，请重试"));
+            setError("avatar", errorMessage(error, tr("保存头像失败，请重试")));
         } finally {
             end();
         }
@@ -186,9 +187,9 @@ export function ProfilePane() {
             const { user } = await selectDefaultProfileAvatar(defaultAvatarDraft);
             await queryClient.cancelQueries({ queryKey });
             updateAvatarUser(user);
-            message.success("已使用选择的系统头像");
+            message.success(tr("已使用选择的系统头像"));
         } catch (error) {
-            setError("avatar", errorMessage(error, "保存头像失败，请重试"));
+            setError("avatar", errorMessage(error, tr("保存头像失败，请重试")));
         } finally {
             end();
         }
@@ -207,7 +208,7 @@ export function ProfilePane() {
         } catch (error) {
             useUserStore.getState().clearSession();
             useUserStore.getState().setHydrated(true);
-            message.error({ content: `${notice} 清理本地会话失败：${errorMessage(error, "请重新登录")}`, duration: 8 });
+            message.error({ content: tr("{0} 清理本地会话失败：{1}", notice, errorMessage(error, tr("请重新登录"))), duration: 8 });
         } finally {
             navigate("/login", { replace: true });
         }
@@ -218,9 +219,9 @@ export function ProfilePane() {
         setError("password", "");
         try {
             await changeProfilePassword({ currentPassword: profile?.hasPassword ? values.currentPassword : "", newPassword: values.newPassword });
-            await finishSecurityChange("密码已更新，所有登录会话已退出，请重新登录");
+            await finishSecurityChange(tr("密码已更新，所有登录会话已退出，请重新登录"));
         } catch (error) {
-            setError("password", errorMessage(error, "修改密码失败，请重试"));
+            setError("password", errorMessage(error, tr("修改密码失败，请重试")));
         } finally {
             end();
         }
@@ -244,10 +245,10 @@ export function ProfilePane() {
             setEmailTicket({ value: result.ticket, expiresAt: receivedAt + result.expiresIn * 1000 });
             setRetryAt(receivedAt + result.retryAfter * 1000);
             setNow(receivedAt);
-            message.success("验证码已发送到新邮箱");
+            message.success(tr("验证码已发送到新邮箱"));
         } catch (error) {
             if (error instanceof ApiError && error.retryAfterMs) setRetryAt(Date.now() + error.retryAfterMs);
-            setError("email", errorMessage(error, "发送验证码失败，请重试"));
+            setError("email", errorMessage(error, tr("发送验证码失败，请重试")));
         } finally {
             end();
         }
@@ -258,9 +259,9 @@ export function ProfilePane() {
         setError("email", "");
         try {
             const result = await changeProfileEmail({ ticket: emailTicket.value, emailCode: values.emailCode, currentPassword: profile.hasPassword ? values.currentPassword : "" });
-            await finishSecurityChange(result.notificationStatus === "failed" ? "邮箱已更新，但旧邮箱通知发送失败。所有登录会话已退出，请重新登录" : "邮箱已更新，所有登录会话已退出，请重新登录", result.notificationStatus === "failed");
+            await finishSecurityChange(result.notificationStatus === "failed" ? tr("邮箱已更新，但旧邮箱通知发送失败。所有登录会话已退出，请重新登录") : tr("邮箱已更新，所有登录会话已退出，请重新登录"), result.notificationStatus === "failed");
         } catch (error) {
-            setError("email", errorMessage(error, "修改邮箱失败，请重试"));
+            setError("email", errorMessage(error, tr("修改邮箱失败，请重试")));
         } finally {
             end();
         }
@@ -278,11 +279,11 @@ export function ProfilePane() {
         <div className="profile-pane">
             <div className="settings-pane-header">
                 <div className="min-w-0">
-                    <h2>个人信息</h2>
-                    <p>管理你的头像、登录密码与邮箱。</p>
+                    <h2>{tr("个人信息")}</h2>
+                    <p>{tr("管理你的头像、登录密码与邮箱。")}</p>
                 </div>
                 <Button icon={<RefreshCw className="size-4" />} loading={profileQuery.isFetching} disabled={!!pending} onClick={() => void profileQuery.refetch()}>
-                    刷新资料
+                    {tr("刷新资料")}
                 </Button>
             </div>
             {profileQuery.isPending ? (
@@ -290,31 +291,31 @@ export function ProfilePane() {
             ) : profileQuery.isError ? (
                 <Callout
                     tone="error"
-                    title="个人信息加载失败"
+                    title={tr("个人信息加载失败")}
                     role="alert"
                     action={
                         <Button size="small" onClick={() => void profileQuery.refetch()}>
-                            重试
+                            {tr("重试")}
                         </Button>
                     }
                 >
-                    {errorMessage(profileQuery.error, "请稍后重试")}
+                    {errorMessage(profileQuery.error, tr("请稍后重试"))}
                 </Callout>
             ) : profile ? (
                 <div className="profile-sections">
                     <section className="profile-overview" aria-labelledby="profile-avatar-title">
                         <div className="profile-overview-heading">
-                            <h3 id="profile-avatar-title">头像与账号</h3>
-                            <p>头像会同步显示在工作区和创作消息中。</p>
+                            <h3 id="profile-avatar-title">{tr("头像与账号")}</h3>
+                            <p>{tr("头像会同步显示在工作区和创作消息中。")}</p>
                         </div>
                         <div className="profile-overview-main">
                             <UserAvatar user={profile.user} className="profile-avatar-preview" />
                             <div className="profile-overview-identity">
                                 <strong>{profile.user.displayName || profile.user.username}</strong>
-                                <span>账号 · {profile.user.username}</span>
+                                <span>{tr("账号 ·")} {profile.user.username}</span>
                             </div>
                             <Button type="primary" icon={<ImagePlus className="size-4" />} disabled={!!pending} onClick={openAvatarDialog}>
-                                更换头像
+                                {tr("更换头像")}
                             </Button>
                         </div>
                     </section>
@@ -322,32 +323,32 @@ export function ProfilePane() {
                     {!profile.hasPassword ? (
                         <Callout
                             tone={reauthReady ? "success" : "info"}
-                            title="验证当前身份"
+                            title={tr("验证当前身份")}
                             icon={ShieldCheck}
                             action={
                                 profile.linuxdoEnabled ? (
                                     <Button disabled={!!pending} onClick={() => window.location.assign(profileLinuxDOReauthURL())}>
-                                        {reauthReady ? "重新验证" : "使用 Linux.do 验证"}
+                                        {reauthReady ? tr("重新验证") : tr("使用 Linux.do 验证")}
                                     </Button>
                                 ) : undefined
                             }
                         >
                             {reauthReady
-                                ? `身份验证已通过，有效期剩余 ${profileSecondsRemaining(Date.parse(profile.reauthenticatedUntil!), now)} 秒。`
+                                ? tr("身份验证已通过，有效期剩余 {0} 秒。", profileSecondsRemaining(Date.parse(profile.reauthenticatedUntil!), now))
                                 : profile.linuxdoEnabled
-                                  ? "设置密码或更换邮箱前，请使用已绑定的 Linux.do 账号重新验证。验证有效期为 5 分钟。"
-                                  : "当前账号未设置密码，且 Linux.do 验证未启用，请联系管理员。"}
+                                  ? tr("设置密码或更换邮箱前，请使用已绑定的 Linux.do 账号重新验证。验证有效期为 5 分钟。")
+                                  : tr("当前账号未设置密码，且 Linux.do 验证未启用，请联系管理员。")}
                             {reauthResult === "error" && !reauthReady ? (
                                 <p className="profile-reauth-error" role="alert">
-                                    Linux.do 身份验证失败，请重新验证。
+                                    {tr("Linux.do 身份验证失败，请重新验证。")}
                                 </p>
                             ) : null}
                         </Callout>
                     ) : null}
 
                     <div className="profile-security-heading">
-                        <h3>账户安全</h3>
-                        <p>密码与邮箱分别验证，修改成功后需要重新登录。</p>
+                        <h3>{tr("账户安全")}</h3>
+                        <p>{tr("密码与邮箱分别验证，修改成功后需要重新登录。")}</p>
                     </div>
                     <div className="profile-security-grid">
                         <section className="profile-security-card" aria-labelledby="profile-password-title">
@@ -356,8 +357,8 @@ export function ProfilePane() {
                                     <KeyRound className="size-5" />
                                 </span>
                                 <div>
-                                    <h4 id="profile-password-title">{profile.hasPassword ? "修改密码" : "设置登录密码"}</h4>
-                                    <p>更新后，所有设备上的登录会话都会退出。</p>
+                                    <h4 id="profile-password-title">{profile.hasPassword ? tr("修改密码") : tr("设置登录密码")}</h4>
+                                    <p>{tr("更新后，所有设备上的登录会话都会退出。")}</p>
                                 </div>
                             </div>
                             <Form
@@ -371,13 +372,13 @@ export function ProfilePane() {
                                 onValuesChange={() => setError("password", "")}
                             >
                                 {profile.hasPassword ? (
-                                    <Form.Item name="currentPassword" label="当前密码" rules={[{ required: true, message: "请输入当前密码" }]}>
+                                    <Form.Item name="currentPassword" label={tr("当前密码")} rules={[{ required: true, message: tr("请输入当前密码") }]}>
                                         <Input.Password autoComplete="current-password" />
                                     </Form.Item>
                                 ) : null}
                                 <Form.Item
                                     name="newPassword"
-                                    label="新密码"
+                                    label={tr("新密码")}
                                     rules={[
                                         {
                                             validator: async (_, value: string = "") => {
@@ -387,17 +388,17 @@ export function ProfilePane() {
                                         },
                                     ]}
                                 >
-                                    <Input.Password autoComplete="new-password" placeholder="至少 8 个字符" />
+                                    <Input.Password autoComplete="new-password" placeholder={tr("至少 8 个字符")} />
                                 </Form.Item>
                                 <Form.Item
                                     name="confirmPassword"
-                                    label="确认新密码"
+                                    label={tr("确认新密码")}
                                     dependencies={["newPassword"]}
                                     rules={[
-                                        { required: true, message: "请再次输入新密码" },
+                                        { required: true, message: tr("请再次输入新密码") },
                                         {
                                             validator: async (_, value) => {
-                                                if (value && value !== passwordForm.getFieldValue("newPassword")) throw new Error("两次输入的密码不一致");
+                                                if (value && value !== passwordForm.getFieldValue("newPassword")) throw new Error(tr("两次输入的密码不一致"));
                                             },
                                         },
                                     ]}
@@ -410,7 +411,7 @@ export function ProfilePane() {
                                     </Callout>
                                 ) : null}
                                 <Button type="primary" htmlType="submit" loading={pending === "password"} disabled={!!pending || !identityReady}>
-                                    {profile.hasPassword ? "更新密码" : "设置密码"}
+                                    {profile.hasPassword ? tr("更新密码") : tr("设置密码")}
                                 </Button>
                             </Form>
                         </section>
@@ -421,23 +422,23 @@ export function ProfilePane() {
                                     <Mail className="size-5" />
                                 </span>
                                 <div>
-                                    <h4 id="profile-email-title">更换邮箱</h4>
-                                    <p>验证新邮箱后生效，并退出所有登录会话。</p>
+                                    <h4 id="profile-email-title">{tr("更换邮箱")}</h4>
+                                    <p>{tr("验证新邮箱后生效，并退出所有登录会话。")}</p>
                                 </div>
                             </div>
                             <div className="profile-current-email">
-                                <span>当前邮箱</span>
-                                <strong>{profile.user.email || "尚未绑定"}</strong>
+                                <span>{tr("当前邮箱")}</span>
+                                <strong>{profile.user.email || tr("尚未绑定")}</strong>
                                 {profile.user.email ? (
                                     <span className={`profile-email-status${profile.user.emailVerifiedAt ? " is-verified" : ""}`}>
                                         {profile.user.emailVerifiedAt ? <BadgeCheck className="size-3.5" /> : null}
-                                        {profile.user.emailVerifiedAt ? "已验证" : "未验证"}
+                                        {profile.user.emailVerifiedAt ? tr("已验证") : tr("未验证")}
                                     </span>
                                 ) : null}
                             </div>
                             {!profile.emailEnabled ? (
-                                <Callout tone="warning" title="邮件服务未启用">
-                                    管理员尚未配置可用的邮件服务，暂时无法更换邮箱。
+                                <Callout tone="warning" title={tr("邮件服务未启用")}>
+                                    {tr("管理员尚未配置可用的邮件服务，暂时无法更换邮箱。")}
                                 </Callout>
                             ) : (
                                 <Form
@@ -451,19 +452,19 @@ export function ProfilePane() {
                                     onFinish={(values) => void saveEmail(values)}
                                 >
                                     {profile.hasPassword ? (
-                                        <Form.Item name="currentPassword" label="当前密码" rules={[{ required: true, message: "请输入当前密码以验证身份" }]}>
+                                        <Form.Item name="currentPassword" label={tr("当前密码")} rules={[{ required: true, message: tr("请输入当前密码以验证身份") }]}>
                                             <Input.Password autoComplete="current-password" />
                                         </Form.Item>
                                     ) : null}
                                     <Form.Item
                                         name="email"
-                                        label="新邮箱"
+                                        label={tr("新邮箱")}
                                         rules={[
-                                            { required: true, whitespace: true, message: "请输入新邮箱" },
-                                            { type: "email", transform: (value: string) => value?.trim(), message: "请输入有效的邮箱地址" },
+                                            { required: true, whitespace: true, message: tr("请输入新邮箱") },
+                                            { type: "email", transform: (value: string) => value?.trim(), message: tr("请输入有效的邮箱地址") },
                                             {
                                                 validator: async (_, value: string = "") => {
-                                                    if (value.trim().toLowerCase() === profile.user.email?.toLowerCase()) throw new Error("新邮箱不能与当前邮箱相同");
+                                                    if (value.trim().toLowerCase() === profile.user.email?.toLowerCase()) throw new Error(tr("新邮箱不能与当前邮箱相同"));
                                                 },
                                             },
                                         ]}
@@ -473,21 +474,21 @@ export function ProfilePane() {
                                     <div className="profile-code-row">
                                         <Form.Item
                                             name="emailCode"
-                                            label="邮箱验证码"
+                                            label={tr("邮箱验证码")}
                                             rules={[
-                                                { required: true, message: "请输入邮箱验证码" },
-                                                { pattern: /^\d{6}$/, message: "请输入 6 位数字验证码" },
+                                                { required: true, message: tr("请输入邮箱验证码") },
+                                                { pattern: /^\d{6}$/, message: tr("请输入 6 位数字验证码") },
                                             ]}
                                         >
                                             <Input inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
                                         </Form.Item>
                                         <Button loading={pending === "email-code"} disabled={!!pending || !identityReady || retrySeconds > 0} onClick={() => void sendEmailCode()}>
-                                            {retrySeconds ? `${retrySeconds} 秒后重发` : emailTicket ? "重新发送" : "发送验证码"}
+                                            {retrySeconds ? tr("{0} 秒后重发", retrySeconds) : emailTicket ? tr("重新发送") : tr("发送验证码")}
                                         </Button>
                                     </div>
                                     {emailTicket ? (
                                         <p className="profile-hint" role="status">
-                                            {ticketSeconds ? `验证码已发送，${Math.ceil(ticketSeconds / 60)} 分钟内有效。` : "验证码已过期，请重新发送。"}
+                                            {ticketSeconds ? tr("验证码已发送，{0} 分钟内有效。", Math.ceil(ticketSeconds / 60)) : tr("验证码已过期，请重新发送。")}
                                         </p>
                                     ) : null}
                                     {errors.email ? (
@@ -496,7 +497,7 @@ export function ProfilePane() {
                                         </Callout>
                                     ) : null}
                                     <Button type="primary" htmlType="submit" loading={pending === "email"} disabled={!!pending || !identityReady || !ticketSeconds}>
-                                        更换邮箱
+                                        {tr("更换邮箱")}
                                     </Button>
                                 </Form>
                             )}
@@ -509,8 +510,8 @@ export function ProfilePane() {
                     open={avatarDialogOpen}
                     centered
                     width={560}
-                    title="更换头像"
-                    okText="保存头像"
+                    title={tr("更换头像")}
+                    okText={tr("保存头像")}
                     confirmLoading={pending === "avatar" || pending === "reset-avatar"}
                     okButtonProps={{ disabled: !!pending || (avatarTab === "upload" ? !draftAvatar : profile.user.avatarMode === "default" && (profile.user.avatarPreset || "person") === defaultAvatarDraft) }}
                     cancelButtonProps={{ disabled: !!pending }}
@@ -523,12 +524,12 @@ export function ProfilePane() {
                     <div className="profile-avatar-dialog-body">
                         <SegmentedControl<AvatarTab>
                             block
-                            ariaLabel="头像来源"
+                            ariaLabel={tr("头像来源")}
                             value={avatarTab}
                             disabled={!!pending}
                             options={[
-                                { value: "upload", label: "上传图片" },
-                                { value: "preset", label: "系统头像" },
+                                { value: "upload", label: tr("上传图片") },
+                                { value: "preset", label: tr("系统头像") },
                             ]}
                             onChange={(tab) => {
                                 setAvatarTab(tab);
@@ -541,26 +542,26 @@ export function ProfilePane() {
                                     <img
                                         className="profile-avatar-dialog-preview"
                                         src={draftAvatar.url}
-                                        alt="待保存的头像预览"
+                                        alt={tr("待保存的头像预览")}
                                         onError={() => {
                                             setDraftAvatar(null);
-                                            setError("avatar", "无法读取图片，请选择有效的 PNG 或 JPEG 图片");
+                                            setError("avatar", tr("无法读取图片，请选择有效的 PNG 或 JPEG 图片"));
                                         }}
                                     />
                                 ) : (
                                     <UserAvatar user={profile.user} className="profile-avatar-dialog-preview" />
                                 )}
                                 <div className="profile-avatar-upload-controls">
-                                    <p className="profile-avatar-upload-title">{draftAvatar ? "裁剪后的头像" : "当前头像"}</p>
-                                    <p className="profile-hint">选择 PNG 或 JPEG 图片，可裁剪为正方形；文件最大 5 MiB。</p>
-                                    <input ref={fileInput} type="file" accept="image/png,image/jpeg" hidden aria-label="选择头像图片" onChange={selectAvatar} disabled={!!pending} />
+                                    <p className="profile-avatar-upload-title">{draftAvatar ? tr("裁剪后的头像") : tr("当前头像")}</p>
+                                    <p className="profile-hint">{tr("选择 PNG 或 JPEG 图片，可裁剪为正方形；文件最大 5 MiB。")}</p>
+                                    <input ref={fileInput} type="file" accept="image/png,image/jpeg" hidden aria-label={tr("选择头像图片")} onChange={selectAvatar} disabled={!!pending} />
                                     <div className="profile-actions">
                                         <Button icon={<ImagePlus className="size-4" />} disabled={!!pending} onClick={() => fileInput.current?.click()}>
-                                            {draftAvatar ? "重新选择" : "选择图片"}
+                                            {draftAvatar ? tr("重新选择") : tr("选择图片")}
                                         </Button>
                                         {draftAvatar ? (
                                             <Button icon={<Crop className="size-4" />} disabled={!!pending} onClick={() => setCropSource({ file: draftAvatar.sourceFile, url: URL.createObjectURL(draftAvatar.sourceFile) })}>
-                                                调整裁剪
+                                                {tr("调整裁剪")}
                                             </Button>
                                         ) : null}
                                     </div>
@@ -568,8 +569,8 @@ export function ProfilePane() {
                             </div>
                         ) : (
                             <>
-                                <p className="profile-hint">选择一款系统头像，保存后会同步到工作区。</p>
-                                <div className="profile-default-avatar-grid" role="group" aria-label="系统头像">
+                                <p className="profile-hint">{tr("选择一款系统头像，保存后会同步到工作区。")}</p>
+                                <div className="profile-default-avatar-grid" role="group" aria-label={tr("系统头像")}>
                                     {DEFAULT_USER_AVATARS.map((preset) => (
                                         <button key={preset.id} type="button" className="profile-default-avatar-choice" aria-pressed={defaultAvatarDraft === preset.id} disabled={!!pending} onClick={() => setDefaultAvatarDraft(preset.id)}>
                                             <Avatar size={56} className="profile-default-avatar-icon" icon={<UserAvatar user={{ ...profile.user, avatarUrl: undefined, avatarMode: "default", avatarPreset: preset.id }} className="size-8" />} />
@@ -591,7 +592,7 @@ export function ProfilePane() {
                 <ImageCropDialog
                     dataUrl={cropSource.url}
                     open
-                    title="裁剪头像"
+                    title={tr("裁剪头像")}
                     fixedAspect={1}
                     confirmLoading={pending === "crop-avatar"}
                     onClose={() => {

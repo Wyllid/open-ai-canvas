@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { DEFAULT_VIDEO_PROCESSING_MAX_SOURCE_SECONDS, modelCapabilityConfigFor, type VideoProcessingConfig } from "@/lib/model-capabilities";
 import { decodeChannelModel, modelOptionName, modelOptionsFromChannels, resolveModelRequestConfig, type AiConfig } from "@/stores/use-config-store";
 import type { CanvasNodeData } from "@/types/canvas";
@@ -51,15 +52,15 @@ export function videoEnhanceResolutionShortEdge(resolution: string) {
 /** 火山画质增强（大模型版）输入规格：短边 [360,1080]、长边 [360,1920]、时长不超过后台上限。 */
 export function videoEnhanceSourceError(node: CanvasNodeData, maxSourceSeconds: number) {
     const metadata = node.metadata;
-    if (!metadata?.storageKey && !metadata?.content) return "视频节点为空，无法画质增强";
+    if (!metadata?.storageKey && !metadata?.content) return tr("视频节点为空，无法画质增强");
     const durationMs = metadata.durationMs || 0;
-    if (durationMs > maxSourceSeconds * 1000) return `源视频时长超过 ${maxSourceSeconds} 秒上限，请先截取片段后再增强`;
+    if (durationMs > maxSourceSeconds * 1000) return tr("源视频时长超过 {0} 秒上限，请先截取片段后再增强", maxSourceSeconds);
     const width = metadata.naturalWidth || 0;
     const height = metadata.naturalHeight || 0;
     if (width > 0 && height > 0) {
         const short = Math.min(width, height);
         const long = Math.max(width, height);
-        if (short < 360 || short > 1080 || long > 1920) return `源视频分辨率 ${width}×${height} 不受支持：短边需在 360–1080、长边不超过 1920`;
+        if (short < 360 || short > 1080 || long > 1920) return tr("源视频分辨率 {0}×{1} 不受支持：短边需在 360–1080、长边不超过 1920", width, height);
     }
     return "";
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 import { creationRuns, type CreationRun, type CreationSubmission } from "./api/creation-runs";
 import { prepareBackendToolGenerationTask, parseBackendGenerationResult, runBackendToolGenerationTask } from "./api/generation-task";
@@ -33,7 +34,7 @@ export class ApprovedToolExecution {
     }
 
     private assertLive() {
-        if (this.disposed || this.options.signal.aborted || this.scope !== getActiveUserScope() || this.controller.signal.aborted) throw new DOMException(this.stopReason || "分析已停止，请重新打开后继续", "AbortError");
+        if (this.disposed || this.options.signal.aborted || this.scope !== getActiveUserScope() || this.controller.signal.aborted) throw new DOMException(this.stopReason || tr("分析已停止，请重新打开后继续"), "AbortError");
     }
     private guard() { return { owner: this.owner, executionEpoch: this.run!.executionEpoch }; }
     private initialize() {
@@ -41,13 +42,13 @@ export class ApprovedToolExecution {
             this.assertLive();
             const detail = this.options.runId ? await this.api.get(this.options.runId, this.controller.signal) : await this.api.create({ clientKey: this.options.clientKey, state: this.options.identity }, this.controller.signal);
             this.assertLive();
-            if (Object.entries(this.options.identity).some(([key, value]) => detail.run.state[key] !== value)) throw new Error("原分析的图片、节点或模型已变化，请开始新的分析");
+            if (Object.entries(this.options.identity).some(([key, value]) => detail.run.state[key] !== value)) throw new Error(tr("原分析的图片、节点或模型已变化，请开始新的分析"));
             this.run = await this.api.claim(detail.run.id, { expectedEpoch: detail.run.executionEpoch, owner: this.owner }, this.controller.signal);
             this.assertLive();
             this.options.onRun(this.run.id);
             this.heartbeat = setInterval(() => {
                 if (this.disposed) return;
-                void (async () => { this.assertLive(); await this.api.heartbeat(this.run!.id, this.guard(), this.controller.signal); })().catch(() => this.abort(new Error("分析连接已中断，请重新打开后继续")));
+                void (async () => { this.assertLive(); await this.api.heartbeat(this.run!.id, this.guard(), this.controller.signal); })().catch(() => this.abort(new Error(tr("分析连接已中断，请重新打开后继续"))));
             }, 15_000);
         })();
     }
@@ -57,7 +58,7 @@ export class ApprovedToolExecution {
         // Model task failures below keep the pipeline's existing partial-result handling.
         const task = await this.submit(request).catch((error: unknown) => {
             this.abort(error);
-            throw new DOMException(error instanceof Error ? error.message : "分析提交失败，请重新打开后继续", "AbortError");
+            throw new DOMException(error instanceof Error ? error.message : tr("分析提交失败，请重新打开后继续"), "AbortError");
         });
         if (this.scope === getActiveUserScope()) request.onTaskCreated?.(task);
         this.assertLive();
@@ -71,13 +72,13 @@ export class ApprovedToolExecution {
         await this.initialize();
         this.assertLive();
         const stage = request.metadata?.stage;
-        if (!stage) throw new Error("分析阶段缺少稳定标识");
+        if (!stage) throw new Error(tr("分析阶段缺少稳定标识"));
         let submission = await this.api.prepare(this.run!.id, { ...this.guard(), itemKey: `stage:${stage}`, request: prepareBackendToolGenerationTask(request) }, this.controller.signal);
         this.assertLive();
         if (submission.revokedAt) {
             const detail = await this.api.get(this.run!.id, this.controller.signal);
             submission = detail.submissions.find((item) => item.requestHash === submission.requestHash && !item.revokedAt) || submission;
-            if (submission.revokedAt) throw new Error("原报价已失效，无法恢复此阶段");
+            if (submission.revokedAt) throw new Error(tr("原报价已失效，无法恢复此阶段"));
         }
         if (!submission.taskId && Date.parse(submission.quote.expiresAt) <= Date.now()) submission = await this.api.refreshQuote(this.run!.id, { ...this.guard(), submissionId: submission.id }, this.controller.signal);
         this.assertLive();
@@ -99,7 +100,7 @@ export class ApprovedToolExecution {
         if (this.busy || this.disposed || this.controller.signal.aborted) return;
         const ids = new Set(submissionIds);
         const batch = [...this.pending.values()].filter((item) => ids.has(item.submission.id) && !item.submission.approvedAt);
-        if (batch.length !== ids.size) { this.error = "生成内容已变化，请核对当前确认卡后再确认"; this.emit(); return; }
+        if (batch.length !== ids.size) { this.error = tr("生成内容已变化，请核对当前确认卡后再确认"); this.emit(); return; }
         if (!batch.length) return;
         this.busy = true; this.error = undefined; this.emit();
         try {
@@ -107,17 +108,17 @@ export class ApprovedToolExecution {
             const result = await this.api.approve(this.run!.id, { ...this.guard(), submissionIds: batch.map((item) => item.submission.id) }, this.controller.signal);
             this.assertLive();
             if (batch.some((item) => !result.submissions.some((candidate) => candidate.id === item.submission.id && candidate.approvedAt))) {
-                const error = new Error("确认回执不完整，请继续上次分析以读取实际状态");
+                const error = new Error(tr("确认回执不完整，请继续上次分析以读取实际状态"));
                 this.abort(error);
                 throw error;
             }
             for (const item of batch) {
                 const approved = result.submissions.find((candidate) => candidate.id === item.submission.id && candidate.approvedAt);
-                if (!approved) throw new Error("确认结果不完整，请重新核对");
+                if (!approved) throw new Error(tr("确认结果不完整，请重新核对"));
                 item.submission = approved;
             }
             batch.forEach((item) => item.resolve());
-        } catch (error) { this.error = error instanceof Error ? error.message : "生成确认失败"; }
+        } catch (error) { this.error = error instanceof Error ? error.message : tr("生成确认失败"); }
         finally { this.busy = false; this.emit(); }
     }
 
@@ -131,7 +132,7 @@ export class ApprovedToolExecution {
                 item.submission = await this.api.refreshQuote(this.run!.id, { ...this.guard(), submissionId: item.submission.id }, this.controller.signal);
                 this.assertLive();
             }
-        } catch (error) { this.error = error instanceof Error ? error.message : "报价刷新失败"; }
+        } catch (error) { this.error = error instanceof Error ? error.message : tr("报价刷新失败"); }
         finally { this.busy = false; this.emit(); }
     }
 
@@ -140,11 +141,11 @@ export class ApprovedToolExecution {
         const items = [...this.pending.entries()].filter(([, item]) => !item.submission.approvedAt).map(([stage, item]) => ({ ...item.submission, stage }));
         const externalChannel = [...this.pending.values()].some((item) => !item.submission.approvedAt && item.externalChannel);
         this.options.onState({ busy: this.busy, error: this.error, quote: items.length ? {
-            id: items.map((item) => item.id).join(":"), title: "确认本批分析调用",
+            id: items.map((item) => item.id).join(":"), title: tr("确认本批分析调用"),
             items: items.map((item) => ({ id: item.id, label: stageLabel(item.stage), model: item.quote.model, quantity: 1, specification: "" })),
-            amountLabel: `${items.length} 项模型调用${externalChannel ? "（含外部渠道）" : ""}`,
+            amountLabel: tr("{0} 项模型调用{1}", items.length, externalChannel ? tr("（含外部渠道）") : ""),
             externalChannel,
-            basis: "仅批准本批列出的模型调用；后续阶段根据分析结果另行确认。",
+            basis: tr("仅批准本批列出的模型调用；后续阶段根据分析结果另行确认。"),
             expiresAt: items.map((item) => item.quote.expiresAt).sort()[0],
         } : undefined });
     }
@@ -153,7 +154,7 @@ export class ApprovedToolExecution {
         if (!this.controller.signal.aborted && reason instanceof Error) this.stopReason = reason.message;
         this.controller.abort();
         if (this.heartbeat) clearInterval(this.heartbeat);
-        for (const item of this.pending.values()) item.reject(new DOMException(this.stopReason || "分析已停止", "AbortError"));
+        for (const item of this.pending.values()) item.reject(new DOMException(this.stopReason || tr("分析已停止"), "AbortError"));
     };
     dispose() {
         this.disposed = true; this.abort();
@@ -164,5 +165,5 @@ export class ApprovedToolExecution {
 }
 
 function stageLabel(key: string) {
-    return ({ analyze_art_scene: "理解画面", review_art_composition: "分析构图", review_art_color: "分析色彩", review_art_lighting: "分析光线", review_art_structure: "分析结构", aggregate_art_critique: "整理问题", ground_art_critique_issues: "定位问题", verify_art_critique: "复核结论", generate_art_edit_prompts: "编写修改建议" } as Record<string, string>)[key.replace(/^stage:/, "")] || "分析阶段";
+    return ({ analyze_art_scene: tr("理解画面"), review_art_composition: tr("分析构图"), review_art_color: tr("分析色彩"), review_art_lighting: tr("分析光线"), review_art_structure: tr("分析结构"), aggregate_art_critique: tr("整理问题"), ground_art_critique_issues: tr("定位问题"), verify_art_critique: tr("复核结论"), generate_art_edit_prompts: "编写修改建议" } as Record<string, string>)[key.replace(/^stage:/, "")] || tr("分析阶段");
 }

@@ -11,12 +11,12 @@ test("Agent 对话和设置复用创作页模型选择器，并且只展示文�
     expect(panel).toContain('variant="creation"');
     expect(panel).toContain('popoverClassName="agent-model-picker-popover"');
     expect(panel).toContain('selectableModelsByCapability(config, "text")');
-    expect(panel).toContain('placeholder="选择文本模型"');
+    expect(panel).toContain('placeholder={tr("选择文本模型")}');
 
     expect(settings).toContain('capability="text"');
     expect(settings).toContain('variant="creation"');
     expect(settings).toContain('popoverClassName="agent-model-picker-popover"');
-    expect(settings).toContain('placeholder="选择文本模型"');
+    expect(settings).toContain('placeholder={tr("选择文本模型")}');
 
     expect(css).toContain(".agent-model-picker-popover");
     expect(css).toContain("z-index: calc(var(--z-modal-overlay) + 1000)");

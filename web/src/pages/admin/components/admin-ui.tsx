@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Dropdown, Table } from "antd";
 import type { ButtonProps, MenuProps, TableProps } from "antd";
 import { saveAs } from "file-saver";
@@ -7,7 +8,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Select } from "@/components/ui/base/select";
 
-export const configuredSecretText = "已配置 · 留空不改";
+export const configuredSecretText = tr("已配置 · 留空不改");
 
 export type AdminStatusTone = "neutral" | "success" | "warning" | "error" | "info";
 
@@ -68,7 +69,7 @@ export function ListToolbar({
                     <>
                         {!filtersAlwaysVisible ? (
                             <Button type="default" className="admin-filter-toggle" aria-expanded={filtersOpen} icon={<ListFilter className="size-3.5" />} onClick={() => setFiltersOpen((open) => !open)}>
-                                筛选{active ? <span className="admin-filter-active-dot" aria-label="有已应用筛选" /> : null}
+                                {tr("筛选")}{active ? <span className="admin-filter-active-dot" aria-label={tr("有已应用筛选")} /> : null}
                             </Button>
                         ) : null}
                         <div className={cn("admin-list-toolbar-filters", (filtersAlwaysVisible || filtersOpen) && "is-open")}>{filters}</div>
@@ -79,7 +80,7 @@ export function ListToolbar({
             <div className="admin-list-toolbar-actions">
                 {active && onReset ? (
                     <Button type="text" icon={<RotateCcw className="size-3.5" />} onClick={onReset}>
-                        重置
+                        {tr("重置")}
                     </Button>
                 ) : null}
                 {trailing}
@@ -102,7 +103,7 @@ export function PaginationBar({
     onChange,
     pageSizeOptions = [20, 50, 100],
     alwaysShow = false,
-    itemLabel = "条",
+    itemLabel = tr("条"),
 }: {
     current: number;
     pageSize: number;
@@ -119,10 +120,10 @@ export function PaginationBar({
     const items = pageItems(current, pages);
     return (
         <div className="admin-pagination-bar">
-            <span className="admin-pagination-total">{total === 0 ? `共 0 ${itemLabel}` : `${start}-${end} / 共 ${total} ${itemLabel}`}</span>
-            <Select size="small" value={pageSize} className="admin-pagination-size" options={pageSizeOptions.map((size) => ({ value: size, label: `${size} ${itemLabel}/页` }))} onChange={(value) => onChange(1, Number(value))} aria-label="每页条数" />
-            <div className="admin-pagination-pages" role="navigation" aria-label="分页">
-                <button type="button" className="admin-pagination-btn" disabled={current <= 1} aria-label="上一页" onClick={() => onChange(current - 1, pageSize)}>
+            <span className="admin-pagination-total">{total === 0 ? tr("共 0 {0}", itemLabel) : tr("{0}-{1} / 共 {2} {3}", start, end, total, itemLabel)}</span>
+            <Select size="small" value={pageSize} className="admin-pagination-size" options={pageSizeOptions.map((size) => ({ value: size, label: tr("{0} {1}/页", size, itemLabel) }))} onChange={(value) => onChange(1, Number(value))} aria-label={tr("每页条数")} />
+            <div className="admin-pagination-pages" role="navigation" aria-label={tr("分页")}>
+                <button type="button" className="admin-pagination-btn" disabled={current <= 1} aria-label={tr("上一页")} onClick={() => onChange(current - 1, pageSize)}>
                     <ChevronLeft className="size-4" />
                 </button>
                 {items.map((item, index) =>
@@ -136,7 +137,7 @@ export function PaginationBar({
                         </button>
                     ),
                 )}
-                <button type="button" className="admin-pagination-btn" disabled={current >= pages} aria-label="下一页" onClick={() => onChange(current + 1, pageSize)}>
+                <button type="button" className="admin-pagination-btn" disabled={current >= pages} aria-label={tr("下一页")} onClick={() => onChange(current + 1, pageSize)}>
                     <ChevronRight className="size-4" />
                 </button>
             </div>
@@ -204,9 +205,9 @@ function isStatusConfig(value: ReactNode | { label: string; color?: string }): v
 export function AdminExportButton({
     exportFile,
     fileName,
-    label = "导出",
+    label = tr("导出"),
     successMessage,
-    errorMessage = "导出失败",
+    errorMessage = tr("导出失败"),
     size,
     ...buttonProps
 }: Omit<ButtonProps, "children" | "icon" | "loading" | "onClick"> & {
@@ -243,7 +244,7 @@ export function AdminTableEmpty({ filtered = false, title, description, action }
     return (
         <div className="admin-empty">
             <SearchX className="size-5" aria-hidden="true" />
-            <h3>{title || (filtered ? "没有符合筛选条件的数据" : "暂无数据")}</h3>
+            <h3>{title || (filtered ? tr("没有符合筛选条件的数据") : tr("暂无数据"))}</h3>
             {description ? <p>{description}</p> : null}
             {action}
         </div>
@@ -259,14 +260,14 @@ export function AdminFilterChip({ label, onRemove }: { label: ReactNode; onRemov
         <button type="button" className="admin-filter-chip" onClick={onRemove}>
             <span>{label}</span>
             <X className="size-3" aria-hidden="true" />
-            <span className="sr-only">移除筛选</span>
+            <span className="sr-only">{tr("移除筛选")}</span>
         </button>
     );
 }
 
 export function AdminTableSkeleton({ rows = 8, columns = 6 }: { rows?: number; columns?: number }) {
     return (
-        <div aria-label="正在加载表格" role="status">
+        <div aria-label={tr("正在加载表格")} role="status">
             <div className="grid h-9 items-center gap-4 border-b px-3" style={{ borderColor: "var(--admin-border)", gridTemplateColumns: `repeat(${columns}, minmax(72px, 1fr))` }}>
                 {Array.from({ length: columns }).map((_, index) => (
                     <span key={index} className="h-2.5 w-16 max-w-full rounded" style={{ background: "color-mix(in srgb, var(--admin-text) 10%, transparent)" }} />
@@ -289,12 +290,12 @@ export function AdminBatchBar({ count, onClear, children }: { count: number; onC
         <div className="admin-batch-bar sticky top-0 z-20 flex min-h-11 flex-wrap items-center justify-between gap-3 px-3 py-2">
             <div className="flex items-center gap-2 text-sm font-medium">
                 <CheckSquare2 className="size-4" />
-                已选择 {count} 项
+                {tr("已选择")} {count} {tr("项")}
             </div>
             <div className="flex flex-wrap items-center gap-2">
                 {children}
                 <Button type="text" size="small" icon={<X className="size-3.5" />} onClick={onClear}>
-                    取消选择
+                    {tr("取消选择")}
                 </Button>
             </div>
         </div>
@@ -337,7 +338,7 @@ export function AdminRowActions({ primary, actions, visibleActionCount }: { prim
             title: action.confirm.title,
             content: action.confirm.description,
             okText: action.confirm.okText,
-            cancelText: "取消",
+            cancelText: tr("取消"),
             okButtonProps: { danger: action.danger },
             onOk: action.onClick,
         });
@@ -368,8 +369,8 @@ export function AdminRowActions({ primary, actions, visibleActionCount }: { prim
                         },
                     }}
                 >
-                    <Button type="text" size="small" className="admin-row-action admin-row-action-more" aria-label="更多操作">
-                        <span>更多</span>
+                    <Button type="text" size="small" className="admin-row-action admin-row-action-more" aria-label={tr("更多操作")}>
+                        <span>{tr("更多")}</span>
                         <ChevronDown className="admin-row-action-chevron" aria-hidden="true" />
                     </Button>
                 </Dropdown>

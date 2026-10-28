@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { buildSkillMentionReferences } from "@/services/skill-runtime";
 import { canvasResourceMentionToken, type CanvasResourceReference } from "@/lib/canvas/canvas-resource-references";
 import type { Skill } from "@/services/api/skills";
@@ -65,12 +66,12 @@ export function removeCreationReferenceTokens(value: string, references: Creatio
 
 export function replaceCreationAttachmentReference(prompt: string, attachments: CreationAttachment[], targetAttachmentId: string, replacement: CreationAttachment) {
     const targetIndex = attachments.findIndex((attachment) => attachment.id === targetAttachmentId);
-    if (targetIndex < 0) throw new Error("要替换的参考内容不存在");
+    if (targetIndex < 0) throw new Error(tr("要替换的参考内容不存在"));
     if (replacement.id === targetAttachmentId) return { prompt, attachments };
 
     const currentReferences = buildCreationMentionReferences([], attachments);
     const targetReference = currentReferences.find((reference) => reference.attachmentId === targetAttachmentId);
-    if (!targetReference) throw new Error("要替换的提示词引用不存在");
+    if (!targetReference) throw new Error(tr("要替换的提示词引用不存在"));
 
     const remainingAttachments = attachments.filter((attachment) => attachment.id !== targetAttachmentId && attachment.id !== replacement.id);
     const insertionIndex = Math.min(targetIndex, remainingAttachments.length);
@@ -80,7 +81,7 @@ export function replaceCreationAttachmentReference(prompt: string, attachments: 
         ...remainingAttachments.slice(insertionIndex),
     ];
     const replacementReference = buildCreationMentionReferences([], nextAttachments).find((reference) => reference.attachmentId === replacement.id);
-    if (!replacementReference) throw new Error("替换后的提示词引用无效");
+    if (!replacementReference) throw new Error(tr("替换后的提示词引用无效"));
 
     const targetToken = canvasResourceMentionToken(targetReference);
     const replacementToken = canvasResourceMentionToken(replacementReference);
@@ -105,8 +106,8 @@ export function expandCreationPrompt(prompt: string, references: CreationReferen
     references.forEach((reference) => {
         if (reference.attachmentId) {
             const position = attachmentPositions.get(reference.attachmentId);
-            const kindLabel = reference.kind === "video" ? "视频" : reference.kind === "audio" ? "音频" : reference.kind === "text" ? "文件" : "图片";
-            mediaMappings.push(`- @${reference.label}：参考${kindLabel} ${position || 1}`);
+            const kindLabel = reference.kind === "video" ? tr("视频") : reference.kind === "audio" ? tr("音频") : reference.kind === "text" ? tr("文件") : tr("图片");
+            mediaMappings.push(tr("- @{0}：参考{1} {2}", reference.label, kindLabel, position || 1));
             return;
         }
     });
@@ -117,13 +118,13 @@ export function expandCreationPrompt(prompt: string, references: CreationReferen
 
 function attachmentReference(attachment: CreationAttachment, index: number): CreationReference {
     const kind = creationAttachmentKind(attachment);
-    const label = kind === "video" ? "视频" : kind === "audio" ? "音频" : kind === "file" ? "文件" : "图片";
+    const label = kind === "video" ? tr("视频") : kind === "audio" ? tr("音频") : kind === "file" ? tr("文件") : tr("图片");
     return {
         id: `upload:${attachment.id}`,
         nodeId: `upload:${attachment.id}`,
         kind: kind === "file" ? "text" : kind,
         label: `${label}${index + 1}`,
-        title: "当前参考内容",
+        title: tr("当前参考内容"),
         previewUrl: attachment.previewUrl || ("dataUrl" in attachment ? attachment.dataUrl : attachment.url),
         storageKey: attachment.storageKey,
         active: true,

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { App, Button, Input, Modal, Tag } from "antd";
 import { AntTooltip as Tooltip } from "@/components/ui/base/tooltip/ant-tooltip";
@@ -345,7 +346,7 @@ export function CanvasNodeToolbar({
     const workspaceTools = narrow ? [] : inGroup("workspace");
     const utilityTools = narrow ? [] : inGroup("utility");
     const moreTools = [...(narrow ? [...primary.filter(tool => !primaryTools.includes(tool)), ...inGroup("workspace"), ...inGroup("utility")] : []), ...inGroup("more")];
-    const processMenuLabel = compact ? "工具" : isVideo ? "视频工具" : isImage ? "图片工具" : isAudio ? "音频处理" : "文本调整";
+    const processMenuLabel = compact ? tr("工具") : isVideo ? tr("视频工具") : isImage ? tr("图片工具") : isAudio ? tr("音频处理") : tr("文本调整");
     const handleMenuOpenChange = (menuId: string, open: boolean) => {
         setOpenMenuId((current) => open ? menuId : current === menuId ? null : current);
         if (open) onKeep(node.id);
@@ -370,23 +371,23 @@ export function CanvasNodeToolbar({
         >
             <div
                 role="toolbar"
-                aria-label="节点快捷工具"
+                aria-label={tr("节点快捷工具")}
                 className="canvas-node-toolbar-dock flex h-11 max-w-full items-center gap-0.5 overflow-visible rounded-[var(--dock-radius-tight)] border px-2 backdrop-blur-2xl"
                 style={{ ...dockStyle, borderColor: "color-mix(in srgb, currentColor 8%, transparent)" }}
             >
                 {primaryTools.map((tool) => <NodeDockToolButton key={tool.id} tool={tool} iconOnly={narrow} />)}
                 {/* 直接编辑类（primary）与生成/调整菜单分组，长工具条更易扫读。 */}
                 {primaryTools.length > 0 && (adjustTools.length || cameraTools.length || sheetTools.length || processTools.length) ? <span aria-hidden className="aceternity-dock-separator mx-1 h-5 w-px shrink-0" /> : null}
-                {adjustTools.length ? <NodeDockMenuButton menuId="adjust" label="画面调整" icon={<Palette className="size-3.5" />} tools={adjustTools} openMenuId={openMenuId} onOpenChange={handleMenuOpenChange} /> : null}
-                {cameraTools.length ? <NodeDockMenuButton menuId="camera" label="镜头" icon={<Camera className="size-3.5" />} tools={cameraTools} openMenuId={openMenuId} onOpenChange={handleMenuOpenChange} /> : null}
-                {sheetTools.length ? <NodeDockMenuButton menuId="sheet" label="宫格与设定" icon={<Grid3x3 className="size-3.5" />} tools={sheetTools} openMenuId={openMenuId} onOpenChange={handleMenuOpenChange} /> : null}
+                {adjustTools.length ? <NodeDockMenuButton menuId="adjust" label={tr("画面调整")} icon={<Palette className="size-3.5" />} tools={adjustTools} openMenuId={openMenuId} onOpenChange={handleMenuOpenChange} /> : null}
+                {cameraTools.length ? <NodeDockMenuButton menuId="camera" label={tr("镜头")} icon={<Camera className="size-3.5" />} tools={cameraTools} openMenuId={openMenuId} onOpenChange={handleMenuOpenChange} /> : null}
+                {sheetTools.length ? <NodeDockMenuButton menuId="sheet" label={tr("宫格与设定")} icon={<Grid3x3 className="size-3.5" />} tools={sheetTools} openMenuId={openMenuId} onOpenChange={handleMenuOpenChange} /> : null}
                 {processTools.length ? <NodeDockMenuButton menuId="process" label={processMenuLabel} icon={isVideo ? <Wrench className="size-3.5" /> : <SlidersHorizontal className="size-3.5" />} tools={processTools} openMenuId={openMenuId} onOpenChange={handleMenuOpenChange} split={hasImage && !simpleMode ? { node, onSplit } : undefined} /> : null}
                 {workspaceTools.length ? <span aria-hidden className="aceternity-dock-separator mx-1 h-5 w-px shrink-0" /> : null}
                 {workspaceTools.map((tool) => <NodeDockToolButton key={tool.id} tool={tool} />)}
                 {utilityTools.length || moreTools.length ? <span aria-hidden className="aceternity-dock-separator mx-1 h-5 w-px shrink-0" /> : null}
                 {utilityTools.map((tool) => <NodeDockToolButton key={tool.id} tool={tool} iconOnly />)}
                 {moreTools.length ? (
-                    <NodeDockMenuButton menuId="more" label="更多" icon={<Ellipsis className="size-3.5" />} tools={moreTools} openMenuId={openMenuId} onOpenChange={handleMenuOpenChange} placement="topRight" iconOnly />
+                    <NodeDockMenuButton menuId="more" label={tr("更多")} icon={<Ellipsis className="size-3.5" />} tools={moreTools} openMenuId={openMenuId} onOpenChange={handleMenuOpenChange} placement="topRight" iconOnly />
                 ) : null}
             </div>
         </div>
@@ -472,7 +473,7 @@ function NodeDockMenuButton({ menuId, label, icon, tools, openMenuId, onOpenChan
     const splitEntry = split ? tools.find((tool) => tool.id === "split") : undefined;
     const sections = new Map<string, ToolbarTool[]>();
     for (const tool of tools) {
-        const section = tool.danger ? "危险操作" : tool.section || "常用操作";
+        const section = tool.danger ? tr("危险操作") : tool.section || tr("常用操作");
         sections.set(section, [...(sections.get(section) || []), tool]);
     }
     const items: MenuProps["items"] = [...sections].sort(([left], [right]) => Number(left === "危险操作") - Number(right === "危险操作")).map(([section, entries]) => ({
@@ -606,7 +607,7 @@ export function CanvasNodeInfoModal({ node, open, onClose, onMetadataChange, rea
     const [assetCategory, setAssetCategory] = useState<CanvasAssetCategory>("other");
     const imageBytes = node?.type === CanvasNodeType.Image && node.metadata?.content ? getDataUrlByteSize(node.metadata.content) : 0;
     const batchCount = node?.type === CanvasNodeType.Image ? node.metadata?.batchChildIds?.length || 0 : 0;
-    const nodeTypeLabel = node?.type === CanvasNodeType.Text ? "文本" : node?.type === CanvasNodeType.Script ? "分镜脚本" : node?.type === CanvasNodeType.Skill ? "技能" : node?.type === CanvasNodeType.Image ? "图片" : node?.type === CanvasNodeType.Video ? "视频" : node?.type === CanvasNodeType.Audio ? "音频" : node?.type === CanvasNodeType.Drawing ? "绘图" : node?.type === CanvasNodeType.Frame ? "背板" : "生成配置";
+    const nodeTypeLabel = node?.type === CanvasNodeType.Text ? tr("文本") : node?.type === CanvasNodeType.Script ? tr("分镜脚本") : node?.type === CanvasNodeType.Skill ? tr("技能") : node?.type === CanvasNodeType.Image ? tr("图片") : node?.type === CanvasNodeType.Video ? tr("视频") : node?.type === CanvasNodeType.Audio ? tr("音频") : node?.type === CanvasNodeType.Drawing ? tr("绘图") : node?.type === CanvasNodeType.Frame ? tr("背板") : tr("生成配置");
     useEffect(() => {
         setAssetTags(node?.metadata?.assetTags || []);
         setAssetTagInput("");
@@ -643,7 +644,7 @@ export function CanvasNodeInfoModal({ node, open, onClose, onMetadataChange, rea
     const title = (
         <div className="canvas-node-inspector-title">
             <div className="min-w-0">
-                <div className="text-[var(--fs-heading-lg)] font-semibold">节点信息</div>
+                <div className="text-[var(--fs-heading-lg)] font-semibold">{tr("节点信息")}</div>
                 {node ? <div className="canvas-node-inspector-id">{node.id}</div> : null}
             </div>
         </div>
@@ -664,39 +665,39 @@ export function CanvasNodeInfoModal({ node, open, onClose, onMetadataChange, rea
                 <div className="canvas-node-inspector" style={{ color: theme.node.text }}>
                         <div className="thin-scrollbar canvas-node-inspector-scroll">
                             <section className="canvas-node-inspector-section">
-                                <div className="canvas-node-inspector-section-heading"><span>基础信息</span><em>{node.metadata?.status || "idle"}</em></div>
+                                <div className="canvas-node-inspector-section-heading"><span>{tr("基础信息")}</span><em>{node.metadata?.status || "idle"}</em></div>
                                 <div className="canvas-node-inspector-facts">
-                                    <InfoRow label="类型" value={nodeTypeLabel} />
-                                    <InfoRow label="尺寸" value={`${Math.round(node.width)} x ${Math.round(node.height)}`} />
-                                    <InfoRow label="位置" value={`${Math.round(node.position.x)}, ${Math.round(node.position.y)}`} />
-                                    {batchCount > 1 ? <InfoRow label="图片组" value={`${batchCount} 张`} /> : null}
-                                    {imageBytes ? <InfoRow label="图片大小" value={formatBytes(imageBytes)} /> : null}
+                                    <InfoRow label={tr("类型")} value={nodeTypeLabel} />
+                                    <InfoRow label={tr("尺寸")} value={`${Math.round(node.width)} x ${Math.round(node.height)}`} />
+                                    <InfoRow label={tr("位置")} value={`${Math.round(node.position.x)}, ${Math.round(node.position.y)}`} />
+                                    {batchCount > 1 ? <InfoRow label={tr("图片组")} value={tr("{0} 张", batchCount)} /> : null}
+                                    {imageBytes ? <InfoRow label={tr("图片大小")} value={formatBytes(imageBytes)} /> : null}
                                 </div>
                             </section>
 
                             {node.type === CanvasNodeType.Image ? (
                                 <section className="canvas-node-inspector-section">
-                                    <div className="canvas-node-inspector-section-heading"><span>项目资产分类</span></div>
+                                    <div className="canvas-node-inspector-section-heading"><span>{tr("项目资产分类")}</span></div>
                                     <div className="canvas-node-inspector-options">
                                         {assetCategoryOptions.map((option) => {
                                             const active = assetCategory === option.value;
                                             return <button key={option.value} type="button" disabled={readOnly} aria-pressed={active} onClick={() => saveAssetCategory(option.value)} className={active ? "is-active" : ""}>{option.label}</button>;
                                         })}
                                     </div>
-                                    <p className="canvas-node-inspector-help">生成后会按此分类进入项目资产；角色、场景和画风工作流会自动预填。</p>
+                                    <p className="canvas-node-inspector-help">{tr("生成后会按此分类进入项目资产；角色、场景和画风工作流会自动预填。")}</p>
                                 </section>
                             ) : null}
 
                             {nodeGenerationPrompt(node) ? (
                                 <section className="canvas-node-inspector-section">
-                                    <div className="canvas-node-inspector-section-heading"><span>提示词</span></div>
+                                    <div className="canvas-node-inspector-section-heading"><span>{tr("提示词")}</span></div>
                                     <div className="canvas-node-inspector-copy canvas-node-inspector-prompt">{nodeGenerationPrompt(node)}</div>
                                 </section>
                             ) : null}
 
                             {nodeGenerationRows(node, producedModelLabel(config, node.metadata?.producedModel)).length ? (
                                 <section className="canvas-node-inspector-section">
-                                    <div className="canvas-node-inspector-section-heading"><span>生成信息</span></div>
+                                    <div className="canvas-node-inspector-section-heading"><span>{tr("生成信息")}</span></div>
                                     <div className="canvas-node-inspector-facts">
                                         {nodeGenerationRows(node, producedModelLabel(config, node.metadata?.producedModel)).map((item) => <InfoRow key={item.label} label={item.label} value={item.value} />)}
                                     </div>
@@ -705,9 +706,9 @@ export function CanvasNodeInfoModal({ node, open, onClose, onMetadataChange, rea
 
                             {node.type === CanvasNodeType.Skill && node.metadata?.skillSnapshot ? (
                                 <section className="canvas-node-inspector-section">
-                                    <div className="canvas-node-inspector-section-heading"><span>技能模板</span></div>
+                                    <div className="canvas-node-inspector-section-heading"><span>{tr("技能模板")}</span></div>
                                     <div className="canvas-node-inspector-copy">{node.metadata.skillSnapshot.template}</div>
-                                    {node.metadata.skillSnapshot.outputContract ? <><div className="canvas-node-inspector-subheading">输出约束</div><div className="canvas-node-inspector-copy">{node.metadata.skillSnapshot.outputContract}</div></> : null}
+                                    {node.metadata.skillSnapshot.outputContract ? <><div className="canvas-node-inspector-subheading">{tr("输出约束")}</div><div className="canvas-node-inspector-copy">{node.metadata.skillSnapshot.outputContract}</div></> : null}
                                 </section>
                             ) : null}
 
@@ -715,23 +716,23 @@ export function CanvasNodeInfoModal({ node, open, onClose, onMetadataChange, rea
                                 <section className="canvas-node-inspector-section">
                                     <div className="canvas-node-inspector-section-heading">
                                         <div>
-                                            <span>资产标签</span>
-                                            <p>一条标签描述一个角色、环境、道具或镜头用途。</p>
+                                            <span>{tr("资产标签")}</span>
+                                            <p>{tr("一条标签描述一个角色、环境、道具或镜头用途。")}</p>
                                         </div>
-                                        <em>{assetTags.length} 条</em>
+                                        <em>{assetTags.length} {tr("条")}</em>
                                     </div>
                                     {readOnly ? (
-                                        <div className="canvas-node-inspector-notice">分享画布为只读，标签无法编辑。</div>
+                                        <div className="canvas-node-inspector-notice">{tr("分享画布为只读，标签无法编辑。")}</div>
                                     ) : (
                                         <div className="canvas-node-inspector-tag-editor">
                                             <Input
                                                 value={assetTagInput}
-                                                placeholder="例如：角色: 张三"
+                                                placeholder={tr("例如：角色: 张三")}
                                                 onChange={(event) => setAssetTagInput(event.target.value)}
                                                 onPressEnter={addAssetTag}
                                             />
                                             <Button type="primary" icon={<Plus className="size-4" />} disabled={!assetTagInput.trim()} onClick={addAssetTag}>
-                                                加入
+                                                {tr("加入")}
                                             </Button>
                                         </div>
                                     )}
@@ -743,7 +744,7 @@ export function CanvasNodeInfoModal({ node, open, onClose, onMetadataChange, rea
                                                 </Tag>
                                             ))
                                         ) : (
-                                            <span className="canvas-node-inspector-empty-label">{readOnly ? "暂无标签" : "还没有标签，输入后点击“加入”或按 Enter。"}</span>
+                                            <span className="canvas-node-inspector-empty-label">{readOnly ? tr("暂无标签") : tr("还没有标签，输入后点击“加入”或按 Enter。")}</span>
                                         )}
                                     </div>
                                 </section>
@@ -788,22 +789,22 @@ function nodeGenerationRows(node: CanvasNodeData, producedModelText: string) {
         const totalSeconds = Math.max(0, Math.round(value / 1000));
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
-        add("耗时", minutes ? `${minutes}分 ${seconds}秒` : `${seconds}秒`);
+        add(tr("耗时"), minutes ? tr("{0}分 {1}秒", minutes, seconds) : tr("{0}秒", seconds));
     };
 
-    add("产出模型", producedModelText);
-    add("生成尺寸", metadata.size);
-    add("分辨率", metadata.vquality || metadata.quality);
-    add("秒数", metadata.seconds ? `${metadata.seconds} 秒` : undefined);
-    add("生成声音", metadata.generateAudio === undefined ? undefined : metadata.generateAudio === "true" ? "开启" : "关闭");
-    add("水印", metadata.watermark === undefined ? undefined : metadata.watermark === "true" ? "开启" : "关闭");
+    add(tr("产出模型"), producedModelText);
+    add(tr("生成尺寸"), metadata.size);
+    add(tr("分辨率"), metadata.vquality || metadata.quality);
+    add(tr("秒数"), metadata.seconds ? tr("{0} 秒", metadata.seconds) : undefined);
+    add(tr("生成声音"), metadata.generateAudio === undefined ? undefined : metadata.generateAudio === "true" ? tr("开启") : tr("关闭"));
+    add(tr("水印"), metadata.watermark === undefined ? undefined : metadata.watermark === "true" ? tr("开启") : tr("关闭"));
     if (metadata.references?.length) {
         const referenceNames = metadata.references.slice(0, 3).map((reference) => reference.split("/").pop() || reference).join("、");
-        add("引用素材", `${metadata.references.length} 个${referenceNames ? `（${referenceNames}${metadata.references.length > 3 ? "…" : ""}）` : ""}`);
+        add(tr("引用素材"), tr("{0} 个{1}", metadata.references.length, referenceNames ? `（${referenceNames}${metadata.references.length > 3 ? "…" : ""}）` : ""));
     }
-    addTime("创建时间", metadata.taskCreatedAt);
-    addTime("开始时间", metadata.taskStartedAt);
-    addTime("完成时间", metadata.taskCompletedAt);
+    addTime(tr("创建时间"), metadata.taskCreatedAt);
+    addTime(tr("开始时间"), metadata.taskStartedAt);
+    addTime(tr("完成时间"), metadata.taskCompletedAt);
     addDuration(metadata.taskDurationMs);
     return rows;
 }

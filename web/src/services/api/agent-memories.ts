@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { http, compactApiParams } from "./request";
 
 export type AgentMemoryStep = { tool: string; action: string; note?: string };
@@ -89,19 +90,19 @@ export type AgentMemorySettingRequest = AgentMemoryCompactRequest & {
 };
 
 export const AGENT_MEMORY_CATEGORIES = [
-    { key: "storyboard", label: "分镜" },
-    { key: "video", label: "视频生成" },
-    { key: "image", label: "图像生成" },
-    { key: "canvas", label: "画布操作" },
-    { key: "asset", label: "资产" },
-    { key: "model", label: "模型选择" },
-    { key: "workflow", label: "流程顺序" },
-    { key: "billing", label: "计费" },
-    { key: "other", label: "其他" },
+    { key: "storyboard", label: tr("分镜") },
+    { key: "video", label: tr("视频生成") },
+    { key: "image", label: tr("图像生成") },
+    { key: "canvas", label: tr("画布操作") },
+    { key: "asset", label: tr("资产") },
+    { key: "model", label: tr("模型选择") },
+    { key: "workflow", label: tr("流程顺序") },
+    { key: "billing", label: tr("计费") },
+    { key: "other", label: tr("其他") },
 ] as const;
 
 export function agentMemoryCategoryLabel(key?: string) {
-    return AGENT_MEMORY_CATEGORIES.find((entry) => entry.key === key)?.label || "其他";
+    return AGENT_MEMORY_CATEGORIES.find((entry) => entry.key === key)?.label || tr("其他");
 }
 
 export function listAgentMemories(status?: string, limit = 200) {

@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { Check, Clapperboard, CloudUpload, Download, FileText, Frame, Image as ImageIcon, MoreHorizontal, Music2, Pencil, Play, Plus, Settings2, Sparkles, SquareDashed, Trash2, Video, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router";
@@ -26,8 +27,8 @@ export function CanvasCreateCard({ disabled, onClick }: { disabled?: boolean; on
             <span className="app-canvas-create-preview">
                 <Plus className="app-canvas-create-icon" />
             </span>
-            <span className="app-canvas-create-title">新建画布</span>
-            <span className="app-canvas-create-meta">从空白开始</span>
+            <span className="app-canvas-create-title">{tr("新建画布")}</span>
+            <span className="app-canvas-create-meta">{tr("从空白开始")}</span>
         </button>
     );
 }
@@ -59,7 +60,7 @@ export function CanvasProjectCard({ project, projectName, variant = "library", r
             renameProject(project.id, editingTitle);
             await saveRemoteUserDataNow(project.id);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "重命名失败");
+            message.error(error instanceof Error ? error.message : tr("重命名失败"));
         }
     };
 
@@ -79,11 +80,11 @@ export function CanvasProjectCard({ project, projectName, variant = "library", r
                 </button>
                 {!compact && !readOnly ? (
                     <span className={`canvas-project-select ${selected ? "is-visible" : ""}`} onClick={(event) => event.stopPropagation()}>
-                        <input type="checkbox" checked={selected} onChange={(event) => toggleSelected(project.id, event.target.checked)} className="app-canvas-project-checkbox" aria-label={`选择 ${project.title}`} />
+                        <input type="checkbox" checked={selected} onChange={(event) => toggleSelected(project.id, event.target.checked)} className="app-canvas-project-checkbox" aria-label={tr("选择 {0}", project.title)} />
                     </span>
                 ) : null}
                 <div className="canvas-project-cover-meta" aria-hidden="true">
-                    <span className="canvas-project-node-count">{project.nodes.length} 节点</span>
+                    <span className="canvas-project-node-count">{project.nodes.length} {tr("节点")}</span>
                 </div>
             </div>
 
@@ -112,16 +113,16 @@ export function CanvasProjectCard({ project, projectName, variant = "library", r
                     )}
                     {editing && !readOnly ? (
                         <div className="canvas-project-actions" onClick={(event) => event.stopPropagation()}>
-                            <button type="button" onClick={saveTitle} aria-label="保存名称">
+                            <button type="button" onClick={saveTitle} aria-label={tr("保存名称")}>
                                 <Check className="size-3.5" />
                             </button>
-                            <button type="button" onClick={stopEditing} aria-label="取消重命名">
+                            <button type="button" onClick={stopEditing} aria-label={tr("取消重命名")}>
                                 <X className="size-3.5" />
                             </button>
                         </div>
                     ) : !readOnly ? (
                         <div className="canvas-project-actions" onClick={(event) => event.stopPropagation()}>
-                            <button type="button" onClick={() => startEditing(project.id, project.title)} aria-label={`重命名 ${project.title}`} title="重命名">
+                            <button type="button" onClick={() => startEditing(project.id, project.title)} aria-label={tr("重命名 {0}", project.title)} title={tr("重命名")}>
                                 <Pencil className="size-3.5" />
                             </button>
                             <Dropdown
@@ -129,13 +130,13 @@ export function CanvasProjectCard({ project, projectName, variant = "library", r
                                 menu={{
                                     onClick: ({ domEvent }) => domEvent.stopPropagation(),
                                     items: [
-                                        { key: "export", icon: <Download className="size-3.5" />, label: "导出画布", onClick: () => void exportCanvasProjects([project], project.title || "画布") },
+                                        { key: "export", icon: <Download className="size-3.5" />, label: tr("导出画布"), onClick: () => void exportCanvasProjects([project], project.title || tr("画布")) },
                                         { type: "divider" },
-                                        { key: "delete", danger: true, icon: <Trash2 className="size-3.5" />, label: "删除", onClick: () => setDeleteIds([project.id]) },
+                                        { key: "delete", danger: true, icon: <Trash2 className="size-3.5" />, label: tr("删除"), onClick: () => setDeleteIds([project.id]) },
                                     ],
                                 }}
                             >
-                                <button type="button" aria-label={`${project.title} 画布操作`} title="更多操作">
+                                <button type="button" aria-label={tr("{0} 画布操作", project.title)} title={tr("更多操作")}>
                                     <MoreHorizontal className="size-4" />
                                 </button>
                             </Dropdown>
@@ -143,9 +144,9 @@ export function CanvasProjectCard({ project, projectName, variant = "library", r
                     ) : null}
                 </div>
                 <div className="canvas-project-stats">
-                    <span>{projectName || "自由画布"}</span>
+                    <span>{projectName || tr("自由画布")}</span>
                     <span aria-hidden="true">·</span>
-                    <RelativeTime value={project.updatedAt} suffix="修改" />
+                    <RelativeTime value={project.updatedAt} suffix={tr("修改")} />
                 </div>
                 {footer ? (
                     <div className="canvas-project-card-footer" onClick={(event) => event.stopPropagation()}>
@@ -188,17 +189,17 @@ export function ProjectPreview({ project, preferLatestImage = false, quiet = fal
         <div className="canvas-project-media size-full">
             {media.node.type === CanvasNodeType.Video ? (
                 <div className="canvas-project-video size-full">
-                    <Video className="size-8" aria-label={media.node.title || "项目视频"} />
+                    <Video className="size-8" aria-label={media.node.title || tr("项目视频")} />
                 </div>
             ) : (
-                <CachedResourceImage storageKey={media.storageKey} src={media.url} alt={media.node.title || "项目图片"} loading="lazy" decoding="async" className="size-full min-h-0 object-cover" fallback={<MediaPlaceholder failed />} loadingFallback={<MediaPlaceholder label="正在读取封面" />} />
+                <CachedResourceImage storageKey={media.storageKey} src={media.url} alt={media.node.title || tr("项目图片")} loading="lazy" decoding="async" className="size-full min-h-0 object-cover" fallback={<MediaPlaceholder failed />} loadingFallback={<MediaPlaceholder label={tr("正在读取封面")} />} />
             )}
         </div>
     ) : !project.nodes.length ? (
         <div className="canvas-project-empty size-full">
             <Plus className="canvas-project-empty-icon" />
-            <span>空白画布</span>
-            <small>等待第一幕</small>
+            <span>{tr("空白画布")}</span>
+            <small>{tr("等待第一幕")}</small>
         </div>
     ) : (
         <div className="canvas-project-preview-canvas relative size-full overflow-hidden">
@@ -221,13 +222,13 @@ export function ProjectPreview({ project, preferLatestImage = false, quiet = fal
                 <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-stone-950/75 p-3 text-center backdrop-blur-sm transition-opacity duration-200 pointer-events-none select-none" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2 text-amber-400">
                         <CloudUpload className="size-4 animate-bounce" />
-                        <span className="text-xs font-medium tracking-wide">云端同步中</span>
+                        <span className="text-xs font-medium tracking-wide">{tr("云端同步中")}</span>
                     </div>
                     <div className="w-full max-w-[150px] space-y-1">
                         {syncProgress.total > 0 ? (
                             <>
                                 <div className="flex items-center justify-between text-[var(--fs-label)] text-white/80">
-                                    <span>媒体上传</span>
+                                    <span>{tr("媒体上传")}</span>
                                     <span className="font-mono text-amber-300">
                                         {syncProgress.completed}/{syncProgress.total}
                                     </span>
@@ -242,9 +243,9 @@ export function ProjectPreview({ project, preferLatestImage = false, quiet = fal
                                 </div>
                             </>
                         ) : (
-                            <div className="text-[var(--fs-label)] text-white/80">正在写入云端结构...</div>
+                            <div className="text-[var(--fs-label)] text-white/80">{tr("正在写入云端结构...")}</div>
                         )}
-                        <div className="text-[var(--fs-label)] text-white/60">请勿关闭或刷新浏览器</div>
+                        <div className="text-[var(--fs-label)] text-white/60">{tr("请勿关闭或刷新浏览器")}</div>
                     </div>
                 </div>
             ) : null}
@@ -366,23 +367,23 @@ function buildNodePreviewLayout(nodes: CanvasNodeData[]) {
 function getNodePresentation(node: CanvasNodeData) {
     switch (node.type) {
         case CanvasNodeType.Text:
-            return { label: "文本", icon: <FileText className="size-3.5" /> };
+            return { label: tr("文本"), icon: <FileText className="size-3.5" /> };
         case CanvasNodeType.Script:
-            return { label: "分镜脚本", icon: <Clapperboard className="size-3.5" /> };
+            return { label: tr("分镜脚本"), icon: <Clapperboard className="size-3.5" /> };
         case CanvasNodeType.Image:
-            return { label: "图片", icon: <ImageIcon className="size-3.5" /> };
+            return { label: tr("图片"), icon: <ImageIcon className="size-3.5" /> };
         case CanvasNodeType.Video:
-            return { label: "视频", icon: <Video className="size-3.5" /> };
+            return { label: tr("视频"), icon: <Video className="size-3.5" /> };
         case CanvasNodeType.Audio:
-            return { label: "音频", icon: <Music2 className="size-3.5" /> };
+            return { label: tr("音频"), icon: <Music2 className="size-3.5" /> };
         case CanvasNodeType.Drawing:
-            return { label: "绘图", icon: <Pencil className="size-3.5" /> };
+            return { label: tr("绘图"), icon: <Pencil className="size-3.5" /> };
         case CanvasNodeType.Frame:
-            return { label: "背板", icon: <Frame className="size-3.5" /> };
+            return { label: tr("背板"), icon: <Frame className="size-3.5" /> };
         case CanvasNodeType.Config:
-            return { label: "生成配置", icon: <Settings2 className="size-3.5" /> };
+            return { label: tr("生成配置"), icon: <Settings2 className="size-3.5" /> };
         default:
-            return { label: "技能", icon: <Sparkles className="size-3.5" /> };
+            return { label: tr("技能"), icon: <Sparkles className="size-3.5" /> };
     }
 }
 
@@ -392,14 +393,14 @@ function isPreviewUrl(value?: string) {
 
 export function formatProjectTime(value: string) {
     const timestamp = new Date(value).getTime();
-    if (!Number.isFinite(timestamp)) return "刚刚修改";
+    if (!Number.isFinite(timestamp)) return tr("刚刚修改");
     const elapsed = Math.max(0, Date.now() - timestamp);
     const minutes = Math.floor(elapsed / 60000);
-    if (minutes < 1) return "刚刚修改";
-    if (minutes < 60) return `${minutes} 分钟前修改`;
+    if (minutes < 1) return tr("刚刚修改");
+    if (minutes < 60) return tr("{0} 分钟前修改", minutes);
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} 小时前修改`;
+    if (hours < 24) return tr("{0} 小时前修改", hours);
     const days = Math.floor(hours / 24);
-    if (days < 7) return `${days} 天前修改`;
-    return new Date(value).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" }) + " 修改";
+    if (days < 7) return tr("{0} 天前修改", days);
+    return new Date(value).toLocaleDateString(currentLocale(), { month: "numeric", day: "numeric" }) + tr(" 修改");
 }

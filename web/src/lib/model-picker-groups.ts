@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { groupModelsByDisplayName, isDirectSystemModel, type DisplayModelGroup } from "@/lib/model-selection";
 import { modelIcon, modelOptionName, PUBLIC_MODEL_CATALOG_ID, resolveModelChannel, type AiConfig } from "@/stores/use-config-store";
 
@@ -16,7 +17,7 @@ export function modelChannelLabel(config: AiConfig, value: string) {
     const channel = resolveModelChannel(config, value);
     const cost = channel.modelCosts?.find((item) => item.model === modelOptionName(value));
     if (channel.scope === "system") return cost?.channelLabel?.trim() || modelOptionName(value);
-    return cost?.channelLabel?.trim() || channel.name || "未命名渠道";
+    return cost?.channelLabel?.trim() || channel.name || tr("未命名渠道");
 }
 
 // 一级按已设置的模型展示名跨渠道聚合，空值归入未分类；二级保留独立调用与售价。
@@ -27,11 +28,11 @@ export function groupModelsForPicker(config: AiConfig, options: string[]): Model
         const directModels = models.filter((value) => isDirectSystemModel(config, value));
         for (const value of directModels) {
             const cost = channel.modelCosts?.find((item) => item.model === modelOptionName(value));
-            const label = cost?.displayName?.trim() || "未分类";
+            const label = cost?.displayName?.trim() || tr("未分类");
             const key = JSON.stringify(["product", label]);
             let group = groups.get(key);
             if (!group) {
-                group = { key, label, icon: modelIcon(config, value), scope: "平台服务", kind: "product", models: [] };
+                group = { key, label, icon: modelIcon(config, value), scope: tr("平台服务"), kind: "product", models: [] };
                 groups.set(key, group);
             }
             group.models.push({ key: value, label: modelChannelLabel(config, value), models: [value] });

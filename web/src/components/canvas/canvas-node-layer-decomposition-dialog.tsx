@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Button, Input, Tag } from "antd";
 import { Layers3, Plus, RotateCcw, X } from "lucide-react";
@@ -70,7 +71,7 @@ export function CanvasNodeLayerDecompositionDialog({
     const supported = supportsLayerDecomposition(config, selectedModel) || supportsExperimentalLayerExtraction(config, selectedModel);
     const plannerError = imageLayerPlannerError(config, plannerModel);
     const outputSize = imageLayerOutputSize(config, selectedModel, sourceSize || measuredSize);
-    const outputSizeError = supported && !outputSize ? "所选模型没有支持原图比例的尺寸，或源图尺寸尚未读取；请更换模型或重新打开图片" : "";
+    const outputSizeError = supported && !outputSize ? tr("所选模型没有支持原图比例的尺寸，或源图尺寸尚未读取；请更换模型或重新打开图片") : "";
 
     const point = (event: ReactPointerEvent<HTMLDivElement>) => {
         const rect = imageFrameRef.current?.getBoundingClientRect();
@@ -91,12 +92,12 @@ export function CanvasNodeLayerDecompositionDialog({
     };
 
     return (
-        <AppModal flush open={open && Boolean(dataUrl)} onCancel={onClose} footer={null} centered width={1120} title="AI 图层拆分">
+        <AppModal flush open={open && Boolean(dataUrl)} onCancel={onClose} footer={null} centered width={1120} title={tr("AI 图层拆分")}>
             <div className="grid max-h-[82vh] gap-6 overflow-y-auto p-5 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]" data-canvas-no-zoom>
                 <div className="grid min-h-[260px] place-items-center overflow-hidden rounded-xl bg-black/5 p-3 dark:bg-white/[0.04] md:min-h-[480px]">
                     <div
                         ref={imageFrameRef}
-                        aria-label="框选重点区域"
+                        aria-label={tr("框选重点区域")}
                         className="relative inline-block max-h-[60vh] max-w-full touch-none select-none"
                         onPointerDown={(event) => {
                             if (event.button !== 0) return;
@@ -120,7 +121,7 @@ export function CanvasNodeLayerDecompositionDialog({
                     >
                         <img
                             src={dataUrl}
-                            alt="待拆分图片"
+                            alt={tr("待拆分图片")}
                             className="block max-h-[60vh] max-w-full object-contain"
                             draggable={false}
                             onLoad={(event) => setMeasuredSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
@@ -135,31 +136,31 @@ export function CanvasNodeLayerDecompositionDialog({
                 </div>
                 <div className="flex min-w-0 flex-col gap-4">
                     <div>
-                        <h3 className="text-lg font-semibold">拆分图片图层</h3>
-                        <p className="mt-2 text-sm opacity-60">可在图片上拖拽框选重点区域，AI 将规划并拆出完整背景与独立图层，在画布中收纳为一组。</p>
+                        <h3 className="text-lg font-semibold">{tr("拆分图片图层")}</h3>
+                        <p className="mt-2 text-sm opacity-60">{tr("可在图片上拖拽框选重点区域，AI 将规划并拆出完整背景与独立图层，在画布中收纳为一组。")}</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                        {regions.length ? <Tag color="blue">已框选 {regions.length} 个区域</Tag> : <span className="rounded-md bg-black/5 px-2 py-1 text-xs dark:bg-white/5">未框选，按描述拆分</span>}
+                        {regions.length ? <Tag color="blue">{tr("已框选")} {regions.length} {tr("个区域")}</Tag> : <span className="rounded-md bg-black/5 px-2 py-1 text-xs dark:bg-white/5">{tr("未框选，按描述拆分")}</span>}
                         {regions.length ? (
                             <Button size="small" icon={<RotateCcw className="size-3.5" />} onClick={() => setRegions([])}>
-                                清除选区
+                                {tr("清除选区")}
                             </Button>
                         ) : (
                             <span className="text-xs opacity-55">
                                 <Plus className="mr-1 inline size-3" />
-                                在图片上拖动添加选区
+                                {tr("在图片上拖动添加选区")}
                             </span>
                         )}
                     </div>
-                    <Input.TextArea aria-label="拆层要求" rows={5} value={prompt} placeholder="描述需要拆分的内容" onChange={(event) => setPrompt(event.target.value)} />
+                    <Input.TextArea aria-label={tr("拆层要求")} rows={5} value={prompt} placeholder={tr("描述需要拆分的内容")} onChange={(event) => setPrompt(event.target.value)} />
                     <div className="space-y-2">
-                        <div className="text-sm font-medium opacity-75">视觉规划模型</div>
+                        <div className="text-sm font-medium opacity-75">{tr("视觉规划模型")}</div>
                         <ModelPicker
                             config={config}
                             value={plannerModel}
                             capability="text"
                             fullWidth
-                            placeholder="选择视觉规划模型"
+                            placeholder={tr("选择视觉规划模型")}
                             modelFilter={(model) => !imageLayerPlannerError(config, model)}
                             onMissingConfig={() => navigateToSettings({ continueCreation: true })}
                             onChange={setPlannerModel}
@@ -171,20 +172,20 @@ export function CanvasNodeLayerDecompositionDialog({
                         ) : null}
                     </div>
                     <div className="space-y-2">
-                        <div className="text-sm font-medium opacity-75">图层拆分模型</div>
+                        <div className="text-sm font-medium opacity-75">{tr("图层拆分模型")}</div>
                         <ModelPicker
                             config={{ ...config, model: selectedModel, imageModel: selectedModel }}
                             value={selectedModel}
                             capability="image"
                             fullWidth
-                            placeholder="选择图层拆分模型"
+                            placeholder={tr("选择图层拆分模型")}
                             modelFilter={(model) => supportsLayerDecomposition(config, model) || supportsExperimentalLayerExtraction(config, model)}
                             onMissingConfig={() => navigateToSettings({ continueCreation: true })}
                             onChange={(model) => setGenerationConfig((current) => ({ ...current, model, imageModel: model, ...defaultImageParamsForModel(current, model) }))}
                         />
                         {!supported ? (
                             <p role="alert" className="text-xs text-red-500">
-                                请选择可编辑参考图的图片模型或专用拆层模型
+                                {tr("请选择可编辑参考图的图片模型或专用拆层模型")}
                             </p>
                         ) : null}
                         {outputSizeError ? (
@@ -195,7 +196,7 @@ export function CanvasNodeLayerDecompositionDialog({
                     </div>
                     <div className="mt-auto flex justify-end gap-2 pt-2">
                         <Button icon={<X className="size-4" />} onClick={onClose}>
-                            取消
+                            {tr("取消")}
                         </Button>
                         <Button
                             type="primary"
@@ -204,7 +205,7 @@ export function CanvasNodeLayerDecompositionDialog({
                             onClick={() => {
                                 const scopePrompt = `${prompt.trim()}\n自动拆分：根据实际图像结构选择必要图层，不固定题材或层数；保留完整底图，避免过度拆碎。`;
                                 const selectedPrompt = regions.length
-                                    ? `${scopePrompt}\n\n重点处理用户框选的区域。选区坐标（图像 0-1000 坐标系）：${regions.map((region, index) => `区域${index + 1} <bbox>${region.join(" ")}</bbox>`).join("；")}`
+                                    ? `${scopePrompt}\n\n重点处理用户框选的区域。选区坐标（图像 0-1000 坐标系）：${regions.map((region, index) => tr("区域{0} <bbox>{1}</bbox>", index + 1, region.join(" "))).join("；")}`
                                     : scopePrompt;
                                 const models = [config.imageModel, config.model, ...selectableModelsByCapability(config, "image")];
                                 onConfirm({
@@ -217,7 +218,7 @@ export function CanvasNodeLayerDecompositionDialog({
                                 });
                             }}
                         >
-                            开始拆分
+                            {tr("开始拆分")}
                         </Button>
                     </div>
                 </div>

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Check } from "lucide-react";
 
 import { BANNER_NOTICE_TYPES, normalizeBannerNoticeType, type BannerNoticeType } from "@/lib/announcements/banner-notice";
@@ -10,7 +11,7 @@ export function BannerNoticeTypeSelector({ value, onChange }: { value: string; o
     const active = normalizeBannerNoticeType(value);
 
     return (
-        <div className="admin-banner-type-grid" role="radiogroup" aria-label="通知类型">
+        <div className="admin-banner-type-grid" role="radiogroup" aria-label={tr("通知类型")}>
             {BANNER_NOTICE_TYPES.map((type) => {
                 const selected = active === type.key;
                 return (
@@ -30,7 +31,7 @@ export function BannerNoticeTypeSelector({ value, onChange }: { value: string; o
                         <span className="admin-banner-type-card-hint">{type.hint}</span>
                         {/* 真实底色条：颜色来自该类型 token，随当前主题解析 */}
                         <span className="admin-banner-type-card-preview" aria-hidden="true">
-                            <span className="truncate">{type.label}通知效果预览</span>
+                            <span className="truncate">{type.label}{tr("通知效果预览")}</span>
                         </span>
                     </button>
                 );

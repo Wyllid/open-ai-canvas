@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { memo, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from "react";
 import { Link2 } from "lucide-react";
 import { CANVAS_CONNECTION_STROKE_WIDTH, canvasThemes } from "@/lib/canvas-theme";
@@ -282,7 +283,7 @@ function BatchConnectionTail({ item, top, scroll, fromScrollTop, fromBatchScroll
         <path d={path.pathD} fill="none" stroke={theme.connection.stroke} strokeWidth={CANVAS_CONNECTION_STROKE_WIDTH} strokeOpacity={0.8} vectorEffect="non-scaling-stroke" />
         {active ? <CanvasConnectionBeam pathD={path.pathD} color={theme.connection.beam} /> : null}
         <circle cx={cell.x} cy={cell.y} r={3} fill={theme.connection.beam} fillOpacity={active ? 1 : 0.65} />
-        {active && cell.clipped ? <text x={cell.x + 8} y={cell.y <= top + 8 ? cell.y + 15 : cell.y - 8} fill="var(--foreground)" fontSize={12}>{cell.label} · 滚动查看</text> : null}
+        {active && cell.clipped ? <text x={cell.x + 8} y={cell.y <= top + 8 ? cell.y + 15 : cell.y - 8} fill="var(--foreground)" fontSize={12}>{cell.label} {tr("· 滚动查看")}</text> : null}
     </g>;
 }
 
@@ -304,12 +305,12 @@ function BatchConnectionHandle({ scale, count, active, onPointerDown }: { scale:
             data-icon-only
             className="pointer-events-auto absolute grid -translate-y-1/2 translate-x-1/2 place-items-center rounded-full border shadow-md transition-opacity duration-150 hover:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={buttonStyle}
-            title={`批量连接 ${count} 个节点`}
-            aria-label={`批量连接 ${count} 个节点`}
+            title={tr("批量连接 {0} 个节点", count)}
+            aria-label={tr("批量连接 {0} 个节点", count)}
             onPointerDown={onPointerDown}
         >
             <Link2 style={{ width: 14 * inverseScale, height: 14 * inverseScale }} strokeWidth={2} />
-            <span className="sr-only">连接 {count} 个节点</span>
+            <span className="sr-only">{tr("连接")} {count} {tr("个节点")}</span>
         </button>
     );
 }

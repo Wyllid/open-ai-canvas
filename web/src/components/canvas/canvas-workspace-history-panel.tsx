@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { History, RefreshCw } from "lucide-react";
 
 import { WorkspaceState } from "@/components/layout/workspace-state";
@@ -10,10 +11,10 @@ export function CanvasWorkspaceHistoryPanel({ tasks, refreshing, onRefresh, onCa
         <>
             <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-2">
                 <History className="size-3.5 shrink-0" />
-                <span className="truncate text-xs font-semibold">历史 · 最近 30 条（含 Agent）</span>
-                <span className="tabular-nums text-foreground/32">{tasks.length.toLocaleString("zh-CN")}</span>
+                <span className="truncate text-xs font-semibold">{tr("历史 · 最近 30 条（含 Agent）")}</span>
+                <span className="tabular-nums text-foreground/32">{tasks.length.toLocaleString(currentLocale())}</span>
                 <span className="ml-auto">
-                    <button type="button" className="icon-btn tip-down" data-tip="刷新" aria-label="刷新" onClick={onRefresh}>
+                    <button type="button" className="icon-btn tip-down" data-tip="刷新" aria-label={tr("刷新")} onClick={onRefresh}>
                         <RefreshCw className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} />
                     </button>
                 </span>
@@ -27,7 +28,7 @@ export function CanvasWorkspaceHistoryPanel({ tasks, refreshing, onRefresh, onCa
                         ))}
                     </div>
                 ) : (
-                    <WorkspaceState icon="canvas" compact title="暂无历史" description="发起生成后，记录会展示在这里。" />
+                    <WorkspaceState icon="canvas" compact title={tr("暂无历史")} description={tr("发起生成后，记录会展示在这里。")} />
                 )}
             </div>
         </>

@@ -1,7 +1,8 @@
+import { tr } from "@/i18n";
 import copy from "copy-to-clipboard";
 import { App } from "antd";
 
-const COPIED_HINT = "已复制";
+const COPIED_HINT = tr("已复制");
 
 export function useCopyText() {
     const feedback = App.useApp().message;

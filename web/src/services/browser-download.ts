@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { suppressBeforeUnloadGuard } from "@/stores/use-sync-progress-store";
 
 import {
@@ -33,7 +34,7 @@ export async function resolveBrowserMediaDownloadHref({ fileName, storageKey, ur
     const href = normalizedStorageKey && resourceIdFromStorageKey(normalizedStorageKey)
         ? resolveResourceAccessURL((await getResourceAccess(normalizedStorageKey, "download", variant, fileName)).url)
         : normalizedUrl;
-    if (!href) throw new Error("媒体资源不存在");
+    if (!href) throw new Error(tr("媒体资源不存在"));
     return href;
 }
 

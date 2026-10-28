@@ -145,7 +145,7 @@ describe("site appearance and editable skin library", () => {
         expect(storeSource).toContain('setMeta(targetDocument, "property", "og:title"');
         expect(footerSource).toContain("https://beian.miit.gov.cn/");
         expect(footerSource).toContain('rel="noopener noreferrer"');
-        expect(pageSource).toContain('title="皮肤主题"');
+        expect(pageSource).toContain('title={tr("皮肤主题")}');
         expect(editorSource).toContain("从默认新建");
         expect(editorSource).toContain("复制当前");
         expect(editorSource).toContain("删除这套主题");

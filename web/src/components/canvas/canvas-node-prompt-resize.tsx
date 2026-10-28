@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 节点提示词编辑器的高度拖拽与展开弹窗尺寸控制。
 
 import { type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, useRef } from "react";
@@ -44,7 +45,7 @@ export function PromptResizeHandle({ height, min, max, onResize }: { height: num
             type="button"
             className="canvas-node-composer-resize-handle"
             role="separator"
-            aria-label="调整提示词输入高度"
+            aria-label={tr("调整提示词输入高度")}
             aria-orientation="horizontal"
             aria-valuemin={min}
             aria-valuemax={max}
@@ -119,8 +120,8 @@ export function PromptModalResizeHandle({
         <button
             type="button"
             className="absolute bottom-1.5 right-1.5 z-10 grid size-5 cursor-nwse-resize touch-none place-items-center opacity-60 transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-2"
-            aria-label="拖动调整窗口大小"
-            title="拖动调整窗口宽高，也可用方向键调整"
+            aria-label={tr("拖动调整窗口大小")}
+            title={tr("拖动调整窗口宽高，也可用方向键调整")}
             onKeyDown={handleKeyDown}
             onPointerDown={(event) => {
                 if (event.button !== 0 || !event.isPrimary) return;

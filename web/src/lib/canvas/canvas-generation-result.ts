@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { recordCommittedMediaVersion } from "@/lib/canvas/canvas-media-versions";
 import type { CanvasNodeData, CanvasNodeMetadata } from "@/types/canvas";
 
@@ -26,7 +27,7 @@ export function completedGenerationObservationBase(baseNodes: CanvasNodeData[], 
         const result = results.get(base.id);
         const saved = durable.get(base.id);
         if (!saved || base.metadata?.taskId !== taskId || result?.metadata?.taskId !== taskId || result.metadata.taskStatus !== "succeeded" || result.metadata.status !== "success" || !result.metadata.generationEffectKeys?.includes(effectKey)) return base;
-        if (saved.metadata?.taskId !== taskId) throw new Error("节点已绑定其他生成任务，旧任务结果不能覆盖当前节点");
+        if (saved.metadata?.taskId !== taskId) throw new Error(tr("节点已绑定其他生成任务，旧任务结果不能覆盖当前节点"));
         // UI recovery/polling can lead durable state. Only observations of this completed task
         // use the latest saved baseline; prompt, media, geometry and task identity remain fenced.
         const metadata = { ...base.metadata };
@@ -41,9 +42,9 @@ export function completedGenerationObservationBase(baseNodes: CanvasNodeData[], 
 /** 异步阶段只准备结果；提交时按节点身份合并，绝不能用旧文档覆盖当前文档。 */
 export function commitCanvasGenerationResult(current: CanvasNodeData[], before: CanvasNodeData, result: CanvasNodeData, taskId: string, additionalNodes: CanvasNodeData[] = []): CanvasNodeData[] {
     const live = current.find((node) => node.id === before.id);
-    if (!live) throw new Error("生成结果对应节点已删除，结果仍保留在任务中心");
+    if (!live) throw new Error(tr("生成结果对应节点已删除，结果仍保留在任务中心"));
     if (result.id !== before.id || (live.metadata?.taskId && live.metadata.taskId !== taskId) || (before.metadata?.taskId && !live.metadata?.taskId)) {
-        throw new Error("节点已绑定其他生成任务，旧任务结果不能覆盖当前节点");
+        throw new Error(tr("节点已绑定其他生成任务，旧任务结果不能覆盖当前节点"));
     }
     const metadata: CanvasNodeMetadata = { ...live.metadata };
     for (const key of new Set([...Object.keys(before.metadata || {}), ...Object.keys(result.metadata || {})]) as Set<keyof CanvasNodeMetadata>) {

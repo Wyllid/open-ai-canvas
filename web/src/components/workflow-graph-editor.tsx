@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Button } from "antd";
 import { IconButton } from "@/components/ui/base/buttons";
 import { EmptyState } from "@/components/ui/product/empty-state";
@@ -36,7 +37,7 @@ const rowGap = 20;
 const graphPadding = 24;
 const allEnabledFieldsNodeId = "__all_enabled_fields__";
 
-export function WorkflowGraphEditor({ workflowJson, workflowGraph, fields, onChange, disabled = false, emptyDescription = "尚未读取到工作流拓扑" }: WorkflowGraphEditorProps) {
+export function WorkflowGraphEditor({ workflowJson, workflowGraph, fields, onChange, disabled = false, emptyDescription = tr("尚未读取到工作流拓扑") }: WorkflowGraphEditorProps) {
     const graph = useMemo(() => buildWorkflowGraph(workflowJson, workflowGraph), [workflowGraph, workflowJson]);
     const [selectedNodeId, setSelectedNodeId] = useState("");
     const [scale, setScale] = useState(1);
@@ -139,52 +140,52 @@ export function WorkflowGraphEditor({ workflowJson, workflowGraph, fields, onCha
             <aside className="workflow-graph-sidebar">
                 <div className="workflow-graph-summary">
                     <span>
-                        <small>节点</small>
+                        <small>{tr("节点")}</small>
                         <strong>{graph.nodes.length}</strong>
                     </span>
                     <span>
-                        <small>字段</small>
+                        <small>{tr("字段")}</small>
                         <strong>
                             {enabledFields.length} / {fields.length}
                         </strong>
                     </span>
                     <span>
-                        <small>素材</small>
+                        <small>{tr("素材")}</small>
                         <strong>{mediaFieldCount(enabledFields)}</strong>
                     </span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                     <Button size="small" type="text" icon={<PowerOff className="size-3.5" />} danger disabled={disabled || enabledControllableCount === 0} onClick={() => updateAllFields(false)}>
-                        关闭全部开关
+                        {tr("关闭全部开关")}
                     </Button>
                     <Button size="small" type="text" icon={<Power className="size-3.5" />} disabled={disabled || enabledControllableCount === controllableFields.length} onClick={() => updateAllFields(true)}>
-                        开启全部开关
+                        {tr("开启全部开关")}
                     </Button>
                 </div>
                 <label className="workflow-graph-node-select">
-                    <span>正在设置的节点</span>
+                    <span>{tr("正在设置的节点")}</span>
                     <Select
                         showSearch
                         value={selectedNodeId || undefined}
-                        placeholder="选择节点"
+                        placeholder={tr("选择节点")}
                         optionFilterProp="label"
-                        options={[{ label: `全部已开启字段 · ${enabledFields.length}`, value: allEnabledFieldsNodeId }, ...graph.nodes.map((node) => ({ label: `${node.title} · #${node.id}`, value: node.id }))]}
+                        options={[{ label: tr("全部已开启字段 · {0}", enabledFields.length), value: allEnabledFieldsNodeId }, ...graph.nodes.map((node) => ({ label: `${node.title} · #${node.id}`, value: node.id }))]}
                         onChange={setSelectedNodeId}
                     />
                 </label>
                 <div className="workflow-graph-selected-heading">
-                    <strong>{selectedNodeId === allEnabledFieldsNodeId ? "全部已开启字段" : selectedNode?.title || "工作流字段"}</strong>
-                    <span>{selectedNodeId === allEnabledFieldsNodeId ? `${enabledFields.length} 个字段` : selectedNode ? `${selectedNode.classType} · #${selectedNode.id}` : "选择右侧节点进行设置"}</span>
+                    <strong>{selectedNodeId === allEnabledFieldsNodeId ? tr("全部已开启字段") : selectedNode?.title || tr("工作流字段")}</strong>
+                    <span>{selectedNodeId === allEnabledFieldsNodeId ? tr("{0} 个字段", enabledFields.length) : selectedNode ? `${selectedNode.classType} · #${selectedNode.id}` : tr("选择右侧节点进行设置")}</span>
                 </div>
                 <WorkflowFieldMappingEditor fields={selectedFields} disabled={disabled} onChange={updateSelectedFields} />
             </aside>
 
             <section className="workflow-graph-stage">
                 <div className="workflow-graph-controls">
-                    <IconButton size="sm" variant="ghost" icon={ZoomOut} aria-label="缩小工作流" onClick={() => zoom(-1)} />
+                    <IconButton size="sm" variant="ghost" icon={ZoomOut} aria-label={tr("缩小工作流")} onClick={() => zoom(-1)} />
                     <span>{Math.round(scale * 100)}%</span>
-                    <IconButton size="sm" variant="ghost" icon={ZoomIn} aria-label="放大工作流" onClick={() => zoom(1)} />
-                    <IconButton size="sm" variant="ghost" icon={Maximize} aria-label="适应窗口" onClick={fitGraph} />
+                    <IconButton size="sm" variant="ghost" icon={ZoomIn} aria-label={tr("放大工作流")} onClick={() => zoom(1)} />
+                    <IconButton size="sm" variant="ghost" icon={Maximize} aria-label={tr("适应窗口")} onClick={fitGraph} />
                 </div>
                 <div
                     ref={viewportRef}

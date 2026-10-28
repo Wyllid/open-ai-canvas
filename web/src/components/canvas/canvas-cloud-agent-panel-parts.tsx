@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 // 画布 Agent 面板的展示组件：悬浮入口、标题栏、上下文用量环、历史会话、对话区、
 // 输入区控件与审批卡片。
 //
@@ -72,9 +73,9 @@ export function AgentLauncher({
         void (async () => {
             try {
                 const response = await fetch(bundleManifestURL, { credentials: "include", signal: controller.signal });
-                if (!response.ok) throw new Error(`无法读取 Agent 动画包（HTTP ${response.status}）`);
+                if (!response.ok) throw new Error(tr("无法读取 Agent 动画包（HTTP {0}）", response.status));
                 const manifest: unknown = await response.json();
-                if (!isAgentAvatarBundleManifest(manifest)) throw new Error("avatar.json 格式无效");
+                if (!isAgentAvatarBundleManifest(manifest)) throw new Error(tr("avatar.json 格式无效"));
                 setBundleManifestState({ url: bundleManifestURL, manifest });
             } catch {
                 if (!controller.signal.aborted) setBundleManifestState({ url: bundleManifestURL, manifest: null });
@@ -121,8 +122,8 @@ export function AgentLauncher({
         <>
             <motion.button
                 type="button"
-                aria-label={`打开${appearance.agentName}`}
-                title={live && live2DError ? live2DError : `${approvalPending ? "Agent 等待你的审批" : "打开 Agent 助手"} · 拖动可调整位置，聚焦后可用方向键移动`}
+                aria-label={tr("打开{0}", appearance.agentName)}
+                title={live && live2DError ? live2DError : tr("{0} · 拖动可调整位置，聚焦后可用方向键移动", approvalPending ? tr("Agent 等待你的审批") : tr("打开 Agent 助手"))}
                 className={cn(
                     "canvas-agent-launcher fixed z-[calc(var(--z-toast)+1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/35",
                     dragging && "is-dragging",
@@ -157,7 +158,7 @@ export function AgentLauncher({
                 ) : bundleManifestLoading || !appearanceResolved ? (
                     <span role="status" aria-busy="true">
                         <LoaderCircle className={reducedMotion ? "size-6" : "size-6 motion-safe:animate-spin"} aria-hidden="true" />
-                        <span className="sr-only">正在加载助手形象</span>
+                        <span className="sr-only">{tr("正在加载助手形象")}</span>
                     </span>
                 ) : (
                     <FluidOrb size={60} color="#7164f6" />
@@ -169,16 +170,16 @@ export function AgentLauncher({
                     </span>
                 ) : null}
                 <span className={cn("canvas-agent-launcher-status", approvalPending && "is-pending")} style={{ "--canvas-agent-status-color": statusColor } as CSSProperties} />
-                {approvalPending ? <span className="canvas-agent-launcher-badge">待审批</span> : null}
+                {approvalPending ? <span className="canvas-agent-launcher-badge">{tr("待审批")}</span> : null}
             </motion.button>
             {showToggle ? (
                 <button
                     type="button"
                     className="canvas-agent-launcher-toggle fixed z-[calc(var(--z-toast)+2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/35"
                     style={{ right: position.right + width - 14, bottom: position.bottom + height - 14, color: theme.node.text } as CSSProperties}
-                    aria-label={collapsed ? `展开${appearance.agentName}形象` : `收起${appearance.agentName}形象`}
+                    aria-label={collapsed ? tr("展开{0}形象", appearance.agentName) : tr("收起{0}形象", appearance.agentName)}
                     aria-pressed={collapsed}
-                    title={collapsed ? "展开形象" : "收起形象，只保留小入口"}
+                    title={collapsed ? tr("展开形象") : tr("收起形象，只保留小入口")}
                     data-canvas-no-zoom
                     onPointerDown={(event) => event.stopPropagation()}
                     onClick={(event) => {
@@ -238,7 +239,7 @@ export function AgentHeader({
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <span className="agent-panel-title">
                         {agentCopy(appearance.panelTitle, appearance.agentName)}
-                        {hasMessages ? "" : " · 新对话"}
+                        {hasMessages ? "" : tr(" · 新对话")}
                     </span>
                     <span className="agent-panel-status flex items-center gap-1" style={{ color: statusColor }}>
                         <CircleDot className="size-3" />
@@ -246,43 +247,43 @@ export function AgentHeader({
                     </span>
                 </div>
                 <div className="agent-panel-context">
-                    {appearance.agentName} · {nodeCount === null ? "未在画布中，可对话；进入画布后自动关联" : `当前画布 ${nodeCount} 个节点`}
+                    {appearance.agentName} · {nodeCount === null ? tr("未在画布中，可对话；进入画布后自动关联") : tr("当前画布 {0} 个节点", nodeCount)}
                 </div>
             </div>
             <div className="agent-header-actions flex items-center gap-0.5" style={{ color: theme.node.muted }}>
-                <Button type="text" shape="circle" icon={<RotateCcw className="size-4" />} onClick={onResetLayout} aria-label="恢复 Agent 紧凑窗口" title="恢复默认窗口大小和位置" className="hidden sm:inline-flex" />
-                <Button type="text" shape="circle" icon={<Download className="size-4" />} loading={exporting} onClick={onExport} aria-label="导出 Agent 调试记录" title="导出对话、工具参数、审批和错误（分享前请检查隐私）" />
-                <Button type="text" shape="circle" icon={<MessageSquarePlus className="size-4" />} onClick={onNew} aria-label="新建对话" title="新建对话" />
-                <Button type="text" shape="circle" icon={<History className="size-4" />} onClick={onHistory} aria-label="历史对话" title="历史对话" />
-                <Button type="text" shape="circle" icon={<Settings2 className="size-4" />} onClick={onSettings} aria-label="Agent 设置" title="Agent 设置" />
-                <Button type="text" shape="circle" icon={<X className="size-4" />} onClick={onCollapse} aria-label="收起 Agent" title="收起" />
+                <Button type="text" shape="circle" icon={<RotateCcw className="size-4" />} onClick={onResetLayout} aria-label={tr("恢复 Agent 紧凑窗口")} title={tr("恢复默认窗口大小和位置")} className="hidden sm:inline-flex" />
+                <Button type="text" shape="circle" icon={<Download className="size-4" />} loading={exporting} onClick={onExport} aria-label={tr("导出 Agent 调试记录")} title={tr("导出对话、工具参数、审批和错误（分享前请检查隐私）")} />
+                <Button type="text" shape="circle" icon={<MessageSquarePlus className="size-4" />} onClick={onNew} aria-label={tr("新建对话")} title={tr("新建对话")} />
+                <Button type="text" shape="circle" icon={<History className="size-4" />} onClick={onHistory} aria-label={tr("历史对话")} title={tr("历史对话")} />
+                <Button type="text" shape="circle" icon={<Settings2 className="size-4" />} onClick={onSettings} aria-label={tr("Agent 设置")} title={tr("Agent 设置")} />
+                <Button type="text" shape="circle" icon={<X className="size-4" />} onClick={onCollapse} aria-label={tr("收起 Agent")} title={tr("收起")} />
             </div>
         </header>
     );
 }
 
 export const CONTEXT_PHASE_LABEL: Record<AgentContextPhase, string> = {
-    idle: "尚未测量",
-    unknown: "窗口未知",
-    ok: "上下文充足",
-    watch: "接近压缩",
-    compress: "即将压缩",
-    compacting: "正在压缩",
-    stale: "压缩后待刷新",
+    idle: tr("尚未测量"),
+    unknown: tr("窗口未知"),
+    ok: tr("上下文充足"),
+    watch: tr("接近压缩"),
+    compress: tr("即将压缩"),
+    compacting: tr("正在压缩"),
+    stale: tr("压缩后待刷新"),
 };
 
 export function formatContextCount(tokens: number | undefined) {
     if (tokens === undefined) return "—";
     if (tokens >= 1_000_000) return `${Math.round(tokens / 100_000) / 10}M`;
     if (tokens >= 1_000) return `${Math.round(tokens / 100) / 10}K`;
-    return Math.round(tokens).toLocaleString("zh-CN");
+    return Math.round(tokens).toLocaleString(currentLocale());
 }
 
 export function formatContextBytes(bytes: number | undefined) {
     if (bytes === undefined) return "—";
     if (bytes >= 1_000_000) return `${Math.round(bytes / 100_000) / 10} MB`;
     if (bytes >= 1_000) return `${Math.round(bytes / 100) / 10} KB`;
-    return `${Math.round(bytes).toLocaleString("zh-CN")} 字节`;
+    return tr("{0} 字节", Math.round(bytes).toLocaleString(currentLocale()));
 }
 
 export function AgentContextRing({ view, theme }: { view: AgentContextUsageView; theme: CanvasTheme }) {
@@ -297,8 +298,8 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
     const protocolBytes = formatContextBytes(view.protocolBytes);
     const usedRatio = view.ratio === undefined ? 0 : Math.max(0, Math.min(1, view.ratio));
     const phaseLabel = CONTEXT_PHASE_LABEL[view.phase];
-    const sourceLabel = view.tokenSource === "pi" ? "Pi 会话估算" : "未测量";
-    const usageHeading = view.ratio !== undefined ? `上下文已用 ${percent}` : view.phase === "idle" ? "上下文用量" : view.phase === "unknown" ? "上下文窗口未知" : `上下文${view.label}`;
+    const sourceLabel = view.tokenSource === "pi" ? tr("Pi 会话估算") : tr("未测量");
+    const usageHeading = view.ratio !== undefined ? tr("上下文已用 {0}", percent) : view.phase === "idle" ? tr("上下文用量") : view.phase === "unknown" ? tr("上下文窗口未知") : tr("上下文{0}", view.label);
 
     return (
         <Popover
@@ -315,7 +316,7 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
             styles={{ root: { "--agent-surface-base": theme.node.panel, "--agent-ink": theme.node.text, "--agent-accent": theme.accent.primary } as CSSProperties }}
             content={
                 <div className="agent-context-panel" data-phase={view.phase}>
-                    <span className="agent-context-eyebrow">下一次请求 · 上下文窗口占用</span>
+                    <span className="agent-context-eyebrow">{tr("下一次请求 · 上下文窗口占用")}</span>
                     <div className="agent-context-panel-head">
                         <strong>{usageHeading}</strong>
                         {view.phase !== "ok" ? <span className={`agent-context-phase is-${view.phase}`}>{phaseLabel}</span> : null}
@@ -325,7 +326,7 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
                             <>
                                 <strong>{used}</strong>
                                 <span>/ {budget} Token</span>
-                                <em>剩余 {remaining}</em>
+                                <em>{tr("剩余")} {remaining}</em>
                             </>
                         ) : (
                             <>
@@ -335,10 +336,10 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
                         )}
                     </div>
                     <div className="agent-context-progress-head">
-                        <span>上下文窗口占用</span>
+                        <span>{tr("上下文窗口占用")}</span>
                         <strong>{percent}</strong>
                     </div>
-                    <div className="agent-context-progress" role="progressbar" aria-label={`上下文已用 ${percent}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={view.ratio === undefined ? undefined : Math.round(view.ratio * 100)}>
+                    <div className="agent-context-progress" role="progressbar" aria-label={tr("上下文已用 {0}", percent)} aria-valuemin={0} aria-valuemax={100} aria-valuenow={view.ratio === undefined ? undefined : Math.round(view.ratio * 100)}>
                         <span style={{ width: `${usedRatio * 100}%` }} />
                         {marker ? <i style={{ left: `${marker * 100}%` }} aria-hidden="true" /> : null}
                     </div>
@@ -355,14 +356,14 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
                             {view.protocolBytes !== undefined ? (
                                 <li className="is-secondary">
                                     <span className="agent-context-breakdown-dot" aria-hidden="true" />
-                                    <span className="agent-context-breakdown-label">协议外壳</span>
+                                    <span className="agent-context-breakdown-label">{tr("协议外壳")}</span>
                                     <span className="agent-context-breakdown-value">{protocolBytes}</span>
                                 </li>
                             ) : null}
                             {view.remainingTokens !== undefined ? (
                                 <li className="is-muted">
                                     <span className="agent-context-breakdown-dot" aria-hidden="true" />
-                                    <span className="agent-context-breakdown-label">未使用</span>
+                                    <span className="agent-context-breakdown-label">{tr("未使用")}</span>
                                     <span className="agent-context-breakdown-value">{remaining}</span>
                                 </li>
                             ) : null}
@@ -371,21 +372,21 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
                     <div className="agent-context-panel-foot">
                         <span>
                             {sourceLabel}
-                            {view.tokenSource === "pi" ? " · 本地估算 Token" : ""}
+                            {view.tokenSource === "pi" ? tr(" · 本地估算 Token") : ""}
                         </span>
-                        {view.compactAtTokens ? <span>压缩线 {formatContextCount(view.compactAtTokens)}</span> : null}
+                        {view.compactAtTokens ? <span>{tr("压缩线")} {formatContextCount(view.compactAtTokens)}</span> : null}
                     </div>
                     {view.compactionError ? (
                         <p className="agent-context-note" role="status">
                             {view.compactionError}
                         </p>
                     ) : view.lastCompaction ? (
-                        <p className="agent-context-note">本轮已完成一次上下文压缩，下一次读数会刷新。</p>
+                        <p className="agent-context-note">{tr("本轮已完成一次上下文压缩，下一次读数会刷新。")}</p>
                     ) : null}
                 </div>
             }
         >
-            <button type="button" className={`agent-context-ring is-${view.phase}`} aria-label={`${usageHeading}，${phaseLabel}。点击查看明细`} aria-expanded={open} title="查看上下文用量" onPointerDown={(event) => event.stopPropagation()}>
+            <button type="button" className={`agent-context-ring is-${view.phase}`} aria-label={tr("{0}，{1}。点击查看明细", usageHeading, phaseLabel)} aria-expanded={open} title={tr("查看上下文用量")} onPointerDown={(event) => event.stopPropagation()}>
                 <span
                     className="agent-context-ring-visual"
                     aria-hidden="true"
@@ -400,7 +401,7 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
                 </span>
                 <span className="agent-context-meter-copy">
                     <strong>{meterLabel}</strong>
-                    <small>上下文</small>
+                    <small>{tr("上下文")}</small>
                 </span>
             </button>
         </Popover>
@@ -435,24 +436,24 @@ export function AgentHistory({
     return (
         <div className="canvas-agent-history-root flex min-h-0 min-w-0 flex-1 flex-col">
             <header data-agent-drag-handle className="agent-panel-header flex shrink-0 items-center gap-2">
-                <Button type="text" shape="circle" icon={<ArrowLeft className="size-4" />} onClick={onBack} aria-label="返回对话" />
+                <Button type="text" shape="circle" icon={<ArrowLeft className="size-4" />} onClick={onBack} aria-label={tr("返回对话")} />
                 <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold">历史对话</div>
-                    <div className="mt-0.5 text-[var(--fs-label)] opacity-40">当前画布云端对话与本机历史</div>
+                    <div className="text-sm font-semibold">{tr("历史对话")}</div>
+                    <div className="mt-0.5 text-[var(--fs-label)] opacity-40">{tr("当前画布云端对话与本机历史")}</div>
                 </div>
-                {onRefresh ? <Button type="text" shape="circle" loading={loading} icon={<RotateCcw className="size-4" />} onClick={onRefresh} aria-label="刷新云端对话" /> : null}
-                <Button type="text" shape="circle" icon={<MessageSquarePlus className="size-4" />} onClick={onNew} aria-label="新建对话" title="新建对话" />
+                {onRefresh ? <Button type="text" shape="circle" loading={loading} icon={<RotateCcw className="size-4" />} onClick={onRefresh} aria-label={tr("刷新云端对话")} /> : null}
+                <Button type="text" shape="circle" icon={<MessageSquarePlus className="size-4" />} onClick={onNew} aria-label={tr("新建对话")} title={tr("新建对话")} />
             </header>
             <div className="canvas-agent-history-scroll thin-scrollbar min-h-0 min-w-0 flex-1 overflow-y-auto px-3 py-3">
                 {error ? (
                     <div role="status" className="px-3 py-2 text-xs opacity-60">
-                        云端对话暂时未同步，本机历史已保留；可点击刷新重试。
+                        {tr("云端对话暂时未同步，本机历史已保留；可点击刷新重试。")}
                     </div>
                 ) : null}
                 {conversations.length ? (
                     <div className="space-y-1">
                         {conversations.map((conversation) => {
-                            const preview = truncateConversationPreview(conversation.messages.at(-1)?.text || "尚未发送消息");
+                            const preview = truncateConversationPreview(conversation.messages.at(-1)?.text || tr("尚未发送消息"));
                             const active = conversation.id === activeConversationId;
                             return (
                                 <div
@@ -467,7 +468,7 @@ export function AgentHistory({
                                         <span className="canvas-agent-history-text min-w-0 flex-1">
                                             <span className="canvas-agent-history-title block truncate text-[var(--fs-ui)] font-medium">{conversation.title}</span>
                                             <span className="canvas-agent-history-preview mt-0.5 block text-[var(--fs-label)] opacity-40" title={preview}>
-                                                {cloudAgentConversationServerId(conversation) ? "云端 · " : "本机 · "}
+                                                {cloudAgentConversationServerId(conversation) ? tr("云端 · ") : tr("本机 · ")}
                                                 {preview}
                                             </span>
                                         </span>
@@ -481,10 +482,10 @@ export function AgentHistory({
                                             className="canvas-agent-history-delete !h-7 !px-2 !text-xs !opacity-80"
                                             icon={<Trash2 className="size-3.5" />}
                                             onClick={() => onDelete(conversation.id)}
-                                            aria-label={`删除对话 ${conversation.title}`}
-                                            title="删除对话"
+                                            aria-label={tr("删除对话 {0}", conversation.title)}
+                                            title={tr("删除对话")}
                                         >
-                                            删除
+                                            {tr("删除")}
                                         </Button>
                                     ) : null}
                                 </div>
@@ -494,8 +495,8 @@ export function AgentHistory({
                 ) : (
                     <div className="flex h-full min-h-72 flex-col items-center justify-center text-center">
                         <History className="size-5 opacity-30" />
-                        <div className="mt-3 text-sm font-medium">还没有历史对话</div>
-                        <div className="mt-1 text-xs opacity-40">发送第一条消息后会自动保存</div>
+                        <div className="mt-3 text-sm font-medium">{tr("还没有历史对话")}</div>
+                        <div className="mt-1 text-xs opacity-40">{tr("发送第一条消息后会自动保存")}</div>
                     </div>
                 )}
             </div>
@@ -617,7 +618,7 @@ export function AgentConversation({
                         onReject={onReject}
                     />
                 ) : null}
-                {busy && !approval ? <AgentWorkingMessage theme={theme} label="正在思考" /> : null}
+                {busy && !approval ? <AgentWorkingMessage theme={theme} label={tr("正在思考")} /> : null}
             </div>
         </div>
     );
@@ -657,15 +658,15 @@ export function ComposerControls({
                 fullWidth
                 className="agent-composer-model-trigger !h-8 !min-w-0 !w-full !max-w-full !border-0 !bg-transparent !px-2 !shadow-none"
                 popoverClassName="agent-model-picker-popover"
-                placeholder="选择文本模型"
+                placeholder={tr("选择文本模型")}
             />
             <Dropdown trigger={["click"]} placement="topLeft" menu={{ items: agentPermissionMenuItems(permissionMode, onPermissionChange) }}>
                 <button
                     type="button"
                     className="grid size-8 shrink-0 place-items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/25"
                     style={{ color: theme.node.muted, background: "transparent" }}
-                    aria-label={`执行权限：${agentPermissionLabel(permissionMode)}，点击切换`}
-                    title={`执行权限：${agentPermissionLabel(permissionMode)}，点击切换`}
+                    aria-label={tr("执行权限：{0}，点击切换", agentPermissionLabel(permissionMode))}
+                    title={tr("执行权限：{0}，点击切换", agentPermissionLabel(permissionMode))}
                 >
                     <PermissionIcon className="size-3.5" style={{ color: permissionVisual.color }} aria-hidden="true" />
                 </button>
@@ -674,10 +675,10 @@ export function ComposerControls({
                 type="button"
                 className="flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[var(--fs-label)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/25"
                 style={{ color: selectedSkillCount ? theme.accent.primary : theme.node.muted, background: skillsOpen ? theme.node.fill : "transparent" }}
-                aria-label={`打开 Skills 技能库${selectedSkillCount ? `，已启用 ${selectedSkillCount} 个` : ""}`}
+                aria-label={tr("打开 Skills 技能库{0}", selectedSkillCount ? tr("，已启用 {0} 个", selectedSkillCount) : "")}
                 aria-expanded={skillsOpen}
                 aria-haspopup="dialog"
-                title="打开 Skills 技能库"
+                title={tr("打开 Skills 技能库")}
                 onClick={() => onSkillsOpenChange(true)}
             >
                 <Sparkles className="size-3.5" />
@@ -719,13 +720,13 @@ export function ApprovalCard({
                     <ShieldCheck className="size-4" />
                 </span>
                 <h3>{action.title}</h3>
-                <span className="canvas-agent-approval-badge">{targetGenerating ? "已在节点中生成" : "等待你的确认"}</span>
+                <span className="canvas-agent-approval-badge">{targetGenerating ? tr("已在节点中生成") : tr("等待你的确认")}</span>
             </div>
             <p className="canvas-agent-approval-description" style={{ color: theme.node.muted }}>
                 {action.description}
             </p>
             {action.items.length ? (
-                <div className="canvas-agent-approval-items" aria-label="涉及节点">
+                <div className="canvas-agent-approval-items" aria-label={tr("涉及节点")}>
                     {action.items.map((item, index) => (
                         <ApprovalPreviewItemView
                             key={`${item.operation}-${item.nodeId || item.nodeTitle || index}-${index}`}
@@ -737,7 +738,7 @@ export function ApprovalCard({
                 </div>
             ) : (
                 <div className="canvas-agent-approval-empty" style={{ color: theme.node.muted }}>
-                    无法确认具体目标，继续前请重新读取画布。
+                    {tr("无法确认具体目标，继续前请重新读取画布。")}
                 </div>
             )}
             {imageApproval ? (
@@ -746,14 +747,14 @@ export function ApprovalCard({
                 <CanvasAgentVideoApprovalSettings initial={videoApproval} value={mediaSettings} onChange={setMediaSettings} theme={theme} disabled={submitting} />
             ) : null}
             <button type="button" className="canvas-agent-approval-reason-toggle" aria-expanded={showReason} onClick={() => setShowReason((value) => !value)} disabled={submitting}>
-                {showReason ? "收起拒绝理由" : "填写拒绝理由（可选）"}
+                {showReason ? tr("收起拒绝理由") : tr("填写拒绝理由（可选）")}
             </button>
             {showReason ? (
                 <Input.TextArea
                     className="canvas-agent-approval-reason"
                     value={approval.reason}
                     onChange={(event) => onReasonChange(event.target.value)}
-                    placeholder="告诉 Agent 为什么暂不执行"
+                    placeholder={tr("告诉 Agent 为什么暂不执行")}
                     autoSize={{ minRows: 2, maxRows: 3 }}
                     maxLength={2000}
                     disabled={submitting}
@@ -761,16 +762,16 @@ export function ApprovalCard({
             ) : null}
             {targetGenerating ? (
                 <p className="canvas-agent-approval-description" role="status" style={{ color: theme.node.muted }}>
-                    你已在节点《{targetGenerating.title || "未命名节点"}》上直接提交了生成，Agent 不会重复提交；本次审批会自动关闭。
+                    {tr("你已在节点《")}{targetGenerating.title || tr("未命名节点")}{tr("》上直接提交了生成，Agent 不会重复提交；本次审批会自动关闭。")}
                 </p>
             ) : null}
             <div className="canvas-agent-approval-actions">
                 <button type="button" className="canvas-agent-approval-reject" disabled={submitting} onClick={onReject}>
-                    暂不执行
+                    {tr("暂不执行")}
                 </button>
                 <button type="button" className="canvas-agent-approval-approve" disabled={submitting || Boolean(targetGenerating)} onClick={() => onApprove(mediaSettings)}>
                     {submitting ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Check className="size-4" aria-hidden="true" />}
-                    {submitting ? "正在提交" : targetGenerating ? "已在节点中生成" : "同意执行"}
+                    {submitting ? tr("正在提交") : targetGenerating ? tr("已在节点中生成") : tr("同意执行")}
                 </button>
             </div>
         </section>
@@ -780,22 +781,22 @@ export function ApprovalCard({
 export function ApprovalPreviewItemView({ item, theme, onFocusNode }: { item: ReturnType<typeof agentApprovalPresentation>["items"][number]; theme: CanvasTheme; onFocusNode?: (nodeId: string) => void }) {
     const operationLabel =
         item.operation === "add_node"
-            ? "新增"
+            ? tr("新增")
             : item.operation === "update_node"
-              ? "修改"
+              ? tr("修改")
               : item.operation === "connect_nodes"
-                ? "连线"
+                ? tr("连线")
                 : item.operation === "arrange_nodes"
-                  ? "整理"
+                  ? tr("整理")
                   : item.operation === "create_storyboard"
-                    ? "创建分镜"
+                    ? tr("创建分镜")
                     : item.operation === "edit_storyboard"
-                      ? "修改分镜"
+                      ? tr("修改分镜")
                       : item.operation === "create_character"
-                        ? "创建角色卡"
+                        ? tr("创建角色卡")
                         : item.operation === "plan_step"
-                          ? "计划"
-                          : "生成";
+                          ? tr("计划")
+                          : tr("生成");
     const renderNode = (title: string | undefined, id: string | undefined, typeLabel: string | undefined, role: "source" | "target" | "node") => {
         if (!title) return null;
         const content = (
@@ -805,7 +806,7 @@ export function ApprovalPreviewItemView({ item, theme, onFocusNode }: { item: Re
             </>
         );
         return id && onFocusNode ? (
-            <button type="button" className="canvas-agent-approval-node canvas-agent-approval-node-button" onClick={() => onFocusNode(id)} title="定位到画布节点">
+            <button type="button" className="canvas-agent-approval-node canvas-agent-approval-node-button" onClick={() => onFocusNode(id)} title={tr("定位到画布节点")}>
                 {content}
             </button>
         ) : (
@@ -830,7 +831,7 @@ export function ApprovalPreviewItemView({ item, theme, onFocusNode }: { item: Re
                         {item.resultTitle ? (
                             <>
                                 <span className="canvas-agent-approval-change-arrow" aria-hidden="true">
-                                    改为
+                                    {tr("改为")}
                                 </span>
                                 <span className="canvas-agent-approval-result-title">《{item.resultTitle}》</span>
                             </>
@@ -840,7 +841,7 @@ export function ApprovalPreviewItemView({ item, theme, onFocusNode }: { item: Re
             </div>
             {item.fields?.length ? (
                 <div className="canvas-agent-approval-field-list">
-                    {item.operation === "add_node" ? "包含：" : "修改："}
+                    {item.operation === "add_node" ? tr("包含：") : tr("修改：")}
                     {item.fields.map((field) => (
                         <span key={field}>{field}</span>
                     ))}
@@ -860,13 +861,13 @@ export function ApprovalPreviewItemView({ item, theme, onFocusNode }: { item: Re
 
 export function truncateConversationPreview(value: string, max = 96) {
     const compact = markdownPlainText(value);
-    return compact.length > max ? `${compact.slice(0, max)}…` : compact || "尚未发送消息";
+    return compact.length > max ? `${compact.slice(0, max)}…` : compact || tr("尚未发送消息");
 }
 
 export function formatConversationTime(value: string) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "";
     const today = new Date();
-    if (date.toDateString() === today.toDateString()) return date.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false });
-    return date.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" });
+    if (date.toDateString() === today.toDateString()) return date.toLocaleTimeString(currentLocale(), { hour: "2-digit", minute: "2-digit", hour12: false });
+    return date.toLocaleDateString(currentLocale(), { month: "numeric", day: "numeric" });
 }

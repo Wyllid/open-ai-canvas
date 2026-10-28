@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { ChevronDown, ChevronRight, Video } from "lucide-react";
@@ -74,7 +75,7 @@ export const CanvasFrameNode = React.memo(function CanvasFrameNode({
     useEffect(() => setTitle(data.title), [data.title]);
 
     const commitTitle = () => {
-        const next = title.trim() || (folder ? "未命名文件夹" : "未命名背板");
+        const next = title.trim() || (folder ? tr("未命名文件夹") : tr("未命名背板"));
         setTitle(next);
         setEditing(false);
         onTitleChange(data.id, next);
@@ -160,7 +161,7 @@ export const CanvasFrameNode = React.memo(function CanvasFrameNode({
             data-node-lod={fullDetail ? "full" : renderLOD}
             role={folder && collapsed ? "group" : undefined}
             tabIndex={folder && collapsed ? 0 : undefined}
-            aria-label={folder && collapsed ? `${data.title}，文件夹，${childNodes.length} 项内容。按回车打开` : undefined}
+            aria-label={folder && collapsed ? tr("{0}，文件夹，{1} 项内容。按回车打开", data.title, childNodes.length) : undefined}
             className={`absolute z-0 select-none${folder && collapsed ? " canvas-folder-node" : ""} ${dragOffset ? "cursor-grabbing" : "cursor-default"}`}
             style={{ transform: `translate(${data.position.x + (dragOffset?.x || 0)}px, ${data.position.y + (dragOffset?.y || 0)}px)`, width: data.width, height: data.height, contain: "layout style" }}
             onMouseDown={(event) => onMouseDown(event, data.id)}
@@ -216,7 +217,7 @@ export const CanvasFrameNode = React.memo(function CanvasFrameNode({
                         type="button"
                         className="grid size-8 shrink-0 place-items-center rounded-md transition-colors hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 dark:hover:bg-white/10"
                         style={{ outlineColor: theme.frame.activeStroke }}
-                        aria-label={collapsed ? "展开背板" : "折叠背板"}
+                        aria-label={collapsed ? tr("展开背板") : tr("折叠背板")}
                         onMouseDown={(event) => event.stopPropagation()}
                         onClick={(event) => {
                             event.stopPropagation();
@@ -309,11 +310,11 @@ function FramePreview({ nodes, frame, theme }: { nodes: CanvasNodeData[]; frame:
                         {node.type === CanvasNodeType.Image && node.metadata?.content ? <img src={node.metadata.content} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" draggable={false} /> : null}
                         {node.type === CanvasNodeType.Video ? <CanvasVideoPreviewImage node={node} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" draggable={false} fallback={<Video className="m-auto size-4 h-full opacity-40" />} /> : null}
                         {node.type === CanvasNodeType.Text ? <div className="line-clamp-3 p-1 text-[var(--fs-nano)] leading-[9px]" style={{ color: theme.node.text }}>{node.metadata?.content || node.title}</div> : null}
-                        {node.type === CanvasNodeType.Script ? <div className="p-1 text-[var(--fs-nano)] leading-[9px]" style={{ color: theme.node.text }}>分镜脚本 · {node.metadata?.storyboard?.rows.length || 0} 镜</div> : null}
+                        {node.type === CanvasNodeType.Script ? <div className="p-1 text-[var(--fs-nano)] leading-[9px]" style={{ color: theme.node.text }}>{tr("分镜脚本 ·")} {node.metadata?.storyboard?.rows.length || 0} {tr("镜")}</div> : null}
                     </div>;
                 })
             ) : (
-                <div className="grid h-full place-items-center text-[var(--fs-label)]" style={{ color: theme.node.faint }}>空背板</div>
+                <div className="grid h-full place-items-center text-[var(--fs-label)]" style={{ color: theme.node.faint }}>{tr("空背板")}</div>
             )}
         </div>
     );
@@ -330,7 +331,7 @@ function ResizeHandle({ corner, scale, theme, onMouseDown }: { corner: ResizeCor
     return (
         <button
             type="button"
-            aria-label="调整背板尺寸"
+            aria-label={tr("调整背板尺寸")}
             className="pointer-events-auto absolute z-20 rounded-sm shadow-sm"
             style={{
                 top: fromTop ? offset : undefined,

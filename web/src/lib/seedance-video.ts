@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { modelOptionName, resolveModelRequestConfig, type AiConfig } from "@/stores/use-config-store";
 import { normalizeVideoDuration, VIDEO_DURATION_OPTIONS } from "@/lib/video-generation-options";
 import type { ReferenceImage } from "@/types/image";
@@ -11,13 +12,13 @@ export const seedanceResolutionOptions = [
     { label: "1080P", value: "1080p" },
 ] as const;
 export const seedanceRatioOptions = [
-    { label: "横屏", value: "16:9" },
-    { label: "竖屏", value: "9:16" },
-    { label: "方形", value: "1:1" },
-    { label: "标准横屏", value: "4:3" },
-    { label: "标准竖屏", value: "3:4" },
-    { label: "宽银幕", value: "21:9" },
-    { label: "自适应", value: "adaptive" },
+    { label: tr("横屏"), value: "16:9" },
+    { label: tr("竖屏"), value: "9:16" },
+    { label: tr("方形"), value: "1:1" },
+    { label: tr("标准横屏"), value: "4:3" },
+    { label: tr("标准竖屏"), value: "3:4" },
+    { label: tr("宽银幕"), value: "21:9" },
+    { label: tr("自适应"), value: "adaptive" },
 ] as const;
 export const seedanceDurationOptions = VIDEO_DURATION_OPTIONS;
 
@@ -83,7 +84,7 @@ export function normalizeSeedanceRatio(value: string): string {
 
 export function seedancePixelLabel(resolution: string, ratio: string): string {
     const aspect = normalizeSeedanceRatio(ratio);
-    if (aspect === "adaptive") return "自动匹配";
+    if (aspect === "adaptive") return tr("自动匹配");
     const column = ["480p", "720p", "1080p"].indexOf(normalizeSeedanceResolution(resolution));
     return column < 0 ? "" : rasterRows[aspect]?.[column] || "";
 }
@@ -91,7 +92,7 @@ export function boolConfig(value: string | undefined, fallback: boolean): boolea
     return value === "true" || (value !== "false" && fallback);
 }
 export function seedanceReferenceLabel(kind: "image" | "video" | "audio", index: number): string {
-    return `${{ image: "图片", video: "视频", audio: "音频" }[kind]}${index + 1}`;
+    return `${{ image: tr("图片"), video: tr("视频"), audio: tr("音频") }[kind]}${index + 1}`;
 }
 export function buildSeedancePromptText(prompt: string, _images: ReferenceImage[], _videos: ReferenceVideo[], _audios: ReferenceAudio[]): string {
     return prompt.trim();
@@ -99,11 +100,11 @@ export function buildSeedancePromptText(prompt: string, _images: ReferenceImage[
 
 type VideoRule = { valid: (video: ReferenceVideo) => boolean; message: string };
 const videoRules: VideoRule[] = [
-    { valid: (v) => !v.bytes || v.bytes <= SEEDANCE_REFERENCE_LIMITS.videoMaxBytes, message: "超过 50MB，请压缩后再上传" },
-    { valid: (v) => !v.durationMs || (v.durationMs >= 2000 && v.durationMs <= 15000), message: "时长需要在 2-15 秒之间" },
-    { valid: (v) => !v.width || !v.height || [v.width, v.height].every((edge) => edge >= 300 && edge <= 6000), message: "宽高需要在 300-6000px 之间" },
-    { valid: (v) => !v.width || !v.height || (v.width / v.height >= 0.4 && v.width / v.height <= 2.5), message: "宽高比需要在 0.4-2.5 之间" },
-    { valid: (v) => !v.width || !v.height || (v.width * v.height >= 409600 && v.width * v.height <= 2086876), message: "像素总量不符合 Seedance 要求，请转成 480p/720p/1080p 后再上传" },
+    { valid: (v) => !v.bytes || v.bytes <= SEEDANCE_REFERENCE_LIMITS.videoMaxBytes, message: tr("超过 50MB，请压缩后再上传") },
+    { valid: (v) => !v.durationMs || (v.durationMs >= 2000 && v.durationMs <= 15000), message: tr("时长需要在 2-15 秒之间") },
+    { valid: (v) => !v.width || !v.height || [v.width, v.height].every((edge) => edge >= 300 && edge <= 6000), message: tr("宽高需要在 300-6000px 之间") },
+    { valid: (v) => !v.width || !v.height || (v.width / v.height >= 0.4 && v.width / v.height <= 2.5), message: tr("宽高比需要在 0.4-2.5 之间") },
+    { valid: (v) => !v.width || !v.height || (v.width * v.height >= 409600 && v.width * v.height <= 2086876), message: tr("像素总量不符合 Seedance 要求，请转成 480p/720p/1080p 后再上传") },
 ];
 export function seedanceVideoReferenceError(videos: ReferenceVideo[]): string {
     for (const [index, video] of videos.entries()) {
@@ -111,6 +112,6 @@ export function seedanceVideoReferenceError(videos: ReferenceVideo[]): string {
         if (failed) return `${seedanceReferenceLabel("video", index)} ${failed.message}`;
     }
     const duration = videos.reduce((total, video) => total + (video.durationMs || 0), 0);
-    return duration > 15000 ? "Seedance 参考视频总时长不能超过 15 秒" : "";
+    return duration > 15000 ? tr("Seedance 参考视频总时长不能超过 15 秒") : "";
 }
-export const seedanceVideoReferenceHint = "参考视频需为 mp4/mov，H.264/H.265，FPS 24-60；含真人人脸素材请使用火山授权 asset:// 素材。";
+export const seedanceVideoReferenceHint = tr("参考视频需为 mp4/mov，H.264/H.265，FPS 24-60；含真人人脸素材请使用火山授权 asset:// 素材。");

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 
 import { normalizeStoryboardAssetBindings, storyboardAssetRoleForNode } from "@/lib/canvas/canvas-storyboard-assets";
@@ -38,7 +39,7 @@ export function storyboardComposerContent(prompt: string, referenceNodeIds: stri
         return node ? [node] : [];
     });
     const mentions = buildOrderedCanvasResourceReferences(referenceNodes).map(canvasResourceMentionToken);
-    return mentions.length ? [`参考资产：${mentions.join(" ")}`, prompt.trim()].filter(Boolean).join("\n") : prompt.trim();
+    return mentions.length ? [tr("参考资产：{0}", mentions.join(" ")), prompt.trim()].filter(Boolean).join("\n") : prompt.trim();
 }
 
 export function reconcileStoryboardTargetConnections(connections: CanvasConnection[], scriptNode: CanvasNodeData, row: StoryboardRow, targetNodeId: string, referenceNodeIds: string[]) {
@@ -68,11 +69,11 @@ export function bindingForConnectedNode(node: CanvasNodeData): StoryboardAssetBi
 export function replaceStoryboardRowAssets(nodes: CanvasNodeData[], connections: CanvasConnection[], scriptNodeId: string, rowId: string, bindings: StoryboardAssetBinding[]) {
     const script = nodes.find((node) => node.id === scriptNodeId && node.type === CanvasNodeType.Script);
     const row = script?.metadata?.storyboard?.rows.find((item) => item.id === rowId);
-    if (!script || !row) throw new Error("分镜或镜头已不存在，请重新选择");
-    if (script.metadata?.locked) throw new Error("请先解锁分镜节点");
+    if (!script || !row) throw new Error(tr("分镜或镜头已不存在，请重新选择"));
+    if (script.metadata?.locked) throw new Error(tr("请先解锁分镜节点"));
     const normalized = normalizeStoryboardAssetBindings(bindings, nodes);
     if (normalized.length !== bindings.length || normalized.some((binding) => binding.nodeId === scriptNodeId || !isStoryboardPreviewAsset(nodes.find((node) => node.id === binding.nodeId)!))) {
-        throw new Error("所选资产已失效，请重新选择");
+        throw new Error(tr("所选资产已失效，请重新选择"));
     }
     const selectedIds = new Set(normalized.map((binding) => binding.nodeId));
     const selectedCharacterIds = new Set(

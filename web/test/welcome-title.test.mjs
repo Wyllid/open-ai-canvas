@@ -12,14 +12,18 @@ test("welcome entry loads configured appearance", async () => {
         .replace(/^import .*;\n/gm, "")
         .replace(/import\.meta\.env\.DEV/g, "false")
         .replace(/import\(/g, "loadModule(");
+    // The entry loads the language catalog first, then its bootstrap modules, then the app.
+    const entryModules = {
+        "@/services/appearance-bootstrap": { bootstrapAppearance: async () => { calls++; } },
+        "@/lib/dev-repro": { isIsolatedPrevisRepro: () => false },
+    };
     vm.runInNewContext(main, {
         window: { location: { pathname: "/welcome" } },
         installChunkRecovery() {},
-        isIsolatedDirectorRepro: () => false,
-        bootstrapAppearance: async () => { calls++; },
-        loadModule: async (name) => { imports.push(name); },
+        initI18n: async () => "en",
+        loadModule: async (name) => entryModules[name] ?? (imports.push(name), {}),
     });
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(calls, 1, "welcome entry must bootstrap appearance");
     assert.deepEqual(imports, ["./welcome-application"]);
 });

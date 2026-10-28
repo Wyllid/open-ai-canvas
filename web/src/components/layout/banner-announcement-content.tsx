@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { ChevronRight } from "lucide-react";
 
 import { bannerNoticeSurfaceCSS } from "@/lib/announcements/banner-notice";
@@ -20,7 +21,7 @@ export function bannerAnnouncementBarStyle(noticeType?: string | null) {
 export function BannerAnnouncementLinkHint({ chevronClassName }: { chevronClassName?: string }) {
     return (
         <span className="flex shrink-0 items-center gap-1 text-[var(--fs-label)] font-semibold text-white">
-            <span>详情</span>
+            <span>{tr("详情")}</span>
             <ChevronRight className={chevronClassName || "size-3.5"} aria-hidden="true" />
         </span>
     );

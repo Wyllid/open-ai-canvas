@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 type IdentityUser = { identityProvider?: string; identityUsername?: string };
@@ -15,7 +16,7 @@ export function IdentityProviderBadge({ user, compact = false, className }: { us
                 compact ? "size-3.5 rounded-full text-[var(--fs-micro)] leading-none" : "h-4 rounded px-1 text-[var(--fs-micro)] leading-none",
                 className,
             )}
-            title={user.identityUsername ? `Linux.do · @${user.identityUsername}` : "Linux.do 用户"}
+            title={user.identityUsername ? `Linux.do · @${user.identityUsername}` : tr("Linux.do 用户")}
         >
             {compact ? "L" : "Linux.do"}
         </span>

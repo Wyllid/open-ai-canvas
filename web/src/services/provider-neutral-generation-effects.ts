@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { createClientUUID } from "@/lib/client-id";
 import { localForageStorageForScope } from "@/lib/localforage-storage";
 import { getActiveUserScope } from "@/lib/user-scope";
@@ -100,9 +101,9 @@ function parseRecord(value: string | null, taskId: string, effectKey: string): E
     try {
         parsed = JSON.parse(value);
     } catch {
-        throw new Error("生成副作用持久状态无效");
+        throw new Error(tr("生成副作用持久状态无效"));
     }
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("生成副作用持久状态无效");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(tr("生成副作用持久状态无效"));
     const record = parsed as EffectRecord;
     const allowed = new Set(["version", "taskId", "effectKey", "state", "fence", "leaseToken", "leaseExpiresAt", "completedAt", "releasedAt", "result"]);
     if (
@@ -114,18 +115,18 @@ function parseRecord(value: string | null, taskId: string, effectKey: string): E
         record.fence < 1 ||
         !["pending", "completed", "released"].includes(record.state)
     ) {
-        throw new Error("生成副作用持久状态无效");
+        throw new Error(tr("生成副作用持久状态无效"));
     }
     if (record.state === "pending") {
         if (typeof record.leaseToken !== "string" || typeof record.leaseExpiresAt !== "string" || !Number.isFinite(Date.parse(record.leaseExpiresAt)) || record.completedAt !== undefined || record.releasedAt !== undefined || record.result !== undefined) {
-            throw new Error("生成副作用持久状态无效");
+            throw new Error(tr("生成副作用持久状态无效"));
         }
     } else if (record.state === "completed") {
         if (typeof record.completedAt !== "string" || !Number.isFinite(Date.parse(record.completedAt)) || record.leaseToken !== undefined || record.leaseExpiresAt !== undefined || record.releasedAt !== undefined || !validResult(record.result ?? {})) {
-            throw new Error("生成副作用持久状态无效");
+            throw new Error(tr("生成副作用持久状态无效"));
         }
     } else if (typeof record.releasedAt !== "string" || !Number.isFinite(Date.parse(record.releasedAt)) || record.leaseToken !== undefined || record.leaseExpiresAt !== undefined || record.completedAt !== undefined || record.result !== undefined) {
-        throw new Error("生成副作用持久状态无效");
+        throw new Error(tr("生成副作用持久状态无效"));
     }
     return record;
 }
@@ -139,7 +140,7 @@ export function createProviderNeutralGenerationTaskEffectStore(
     const now = dependencies.now ?? (() => new Date());
     const leaseMs = dependencies.leaseMs ?? DEFAULT_LEASE_MS;
     if (!Number.isSafeInteger(leaseMs) || leaseMs < 100 || leaseMs > 3_600_000) {
-        throw new Error("生成副作用租约时长无效");
+        throw new Error(tr("生成副作用租约时长无效"));
     }
     const leases = new Map<string, EffectLease>();
     const leasesByBinding = new Map<string, EffectLease>();
@@ -205,11 +206,11 @@ export function createProviderNeutralGenerationTaskEffectStore(
         },
         async renew(effectKey, taskId, binding) {
             const owned = ownedLease(effectKey, taskId, binding);
-            if (!owned) throw new Error("生成副作用租约缺失");
+            if (!owned) throw new Error(tr("生成副作用租约缺失"));
             return withRecord(owned.scope, taskId, effectKey, async (record, storage, key) => {
                 const current = now();
                 if (record?.state !== "pending" || record.leaseToken !== owned.leaseToken || record.fence !== owned.fence || Date.parse(record.leaseExpiresAt!) <= current.getTime()) {
-                    throw new Error("生成副作用租约已失效");
+                    throw new Error(tr("生成副作用租约已失效"));
                 }
                 owned.expiresAt = new Date(current.getTime() + leaseMs).toISOString();
                 await storage.setItem(key, JSON.stringify({ ...record, leaseExpiresAt: owned.expiresAt } satisfies EffectRecord));
@@ -217,13 +218,13 @@ export function createProviderNeutralGenerationTaskEffectStore(
             });
         },
         async complete(effectKey, taskId, result, binding) {
-            if (!validResult(result)) throw new Error("生成副作用结果无效");
+            if (!validResult(result)) throw new Error(tr("生成副作用结果无效"));
             const owned = ownedLease(effectKey, taskId, binding);
-            if (!owned) throw new Error("生成副作用租约缺失");
+            if (!owned) throw new Error(tr("生成副作用租约缺失"));
             await withRecord(owned.scope, taskId, effectKey, async (record, storage, key) => {
                 const current = now();
                 if (record?.state !== "pending" || record.leaseToken !== owned.leaseToken || record.fence !== owned.fence || Date.parse(record.leaseExpiresAt!) <= current.getTime()) {
-                    throw new Error("生成副作用租约已失效");
+                    throw new Error(tr("生成副作用租约已失效"));
                 }
                 await storage.setItem(
                     key,
@@ -242,11 +243,11 @@ export function createProviderNeutralGenerationTaskEffectStore(
         },
         async release(effectKey, taskId, binding) {
             const owned = ownedLease(effectKey, taskId, binding);
-            if (!owned) throw new Error("生成副作用租约缺失");
+            if (!owned) throw new Error(tr("生成副作用租约缺失"));
             await withRecord(owned.scope, taskId, effectKey, async (record, storage, key) => {
                 const current = now();
                 if (record?.state !== "pending" || record.leaseToken !== owned.leaseToken || record.fence !== owned.fence || Date.parse(record.leaseExpiresAt!) <= current.getTime()) {
-                    throw new Error("生成副作用租约已失效");
+                    throw new Error(tr("生成副作用租约已失效"));
                 }
                 await storage.setItem(
                     key,

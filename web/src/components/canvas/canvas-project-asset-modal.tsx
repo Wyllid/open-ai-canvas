@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useMemo } from "react";
 
 import { AssetLibraryPickerModal, type AssetLibraryPickerItem, type AssetPickerMediaKind } from "@/components/assets/asset-library-picker-modal";
@@ -10,7 +11,7 @@ import type { ProjectAsset, ProjectDetail } from "@/services/api/projects";
 import { getRemoteAsset } from "@/services/api/user-data";
 import { useAssetStore, type Asset } from "@/stores/use-asset-store";
 
-const categoryLabels: Record<string, string> = { all: "全部资产", ...ASSET_CATEGORY_LABELS };
+const categoryLabels: Record<string, string> = { all: tr("全部资产"), ...ASSET_CATEGORY_LABELS };
 type ProjectPickerItem = { id: string; category: string; folderId?: string; project?: ProjectAsset; character?: ProjectAsset; media?: Asset };
 
 export function CanvasProjectAssetModal({
@@ -59,16 +60,16 @@ export function CanvasProjectAssetModal({
                 const mediaKind = character ? undefined : pickerMediaKind(media?.kind || project?.mediaType);
                 return {
                     id: item.id,
-                    title: character?.title || project?.title || media?.title || "未命名资产",
+                    title: character?.title || project?.title || media?.title || tr("未命名资产"),
                     category: item.category,
                     folderId: item.folderId,
-                    kindLabel: character ? "角色卡" : mediaKind === "video" ? "视频" : mediaKind === "audio" ? "音频" : mediaKind === "text" ? "文本" : "图片",
+                    kindLabel: character ? tr("角色卡") : mediaKind === "video" ? tr("视频") : mediaKind === "audio" ? tr("音频") : mediaKind === "text" ? tr("文本") : tr("图片"),
                     mediaKind,
                     asset: media,
                     imageUrl: coverRepresentation ? resourceFileUrl(coverRepresentation.resourceId) : project?.mediaType === "image" && remoteResourceId ? resourceFileUrl(remoteResourceId) : undefined,
                     imageStorageKey: coverRepresentation ? `resource:${coverRepresentation.resourceId}` : remoteResourceId ? `resource:${remoteResourceId}` : undefined,
                     imageFit: character ? "contain" : "cover",
-                    description: character ? `${character.character?.visualStatus === "ready" ? "形象就绪" : "形象待完善"} · ${character.character?.voiceStatus === "ready" ? "声音已绑定" : "声音未绑定"}` : project?.previewText,
+                    description: character ? `${character.character?.visualStatus === "ready" ? tr("形象就绪") : tr("形象待完善")} · ${character.character?.voiceStatus === "ready" ? tr("声音已绑定") : tr("声音未绑定")}` : project?.previewText,
                     searchText: [media?.tags?.join(" ") || "", project?.previewText || ""].join(" "),
                 };
             }),
@@ -87,11 +88,11 @@ export function CanvasProjectAssetModal({
             initialFolderId={initialFolderId}
             folders={externalAssetSources.folders}
             folderActionSource="local"
-            title="项目资产"
-            confirmLabel={(count) => `引入已选资产${count ? `（${count}）` : ""}`}
-            emptyTitle="此分类没有可引用资产"
-            emptyDescription={detail ? "先在项目角色与资产中完成角色确认或素材关联。" : "当前为自由画布，可先在素材库添加内容。"}
-            footerNote={externalAssetSources.error || "角色引用会在生成时解析当前角色版本"}
+            title={tr("项目资产")}
+            confirmLabel={(count) => tr("引入已选资产{0}", count ? `（${count}）` : "")}
+            emptyTitle={tr("此分类没有可引用资产")}
+            emptyDescription={detail ? tr("先在项目角色与资产中完成角色确认或素材关联。") : tr("当前为自由画布，可先在素材库添加内容。")}
+            footerNote={externalAssetSources.error || tr("角色引用会在生成时解析当前角色版本")}
             onFolderAction={
                 onInsertFolder
                     ? async (folderId) => {
@@ -107,7 +108,7 @@ export function CanvasProjectAssetModal({
                         const external = externalAssetSources.items.find((item) => item.id === id)?.external;
                         if (external) return externalAssetToInsertPayload(external);
                         const item = items.find((candidate) => candidate.id === id);
-                        if (!item) throw new Error("所选资产已不存在，请重新选择");
+                        if (!item) throw new Error(tr("所选资产已不存在，请重新选择"));
                         if (!item.project?.visual && (item.media || item.character || !item.project)) return toInsertPayload(item);
                         const { asset } = await getRemoteAsset(item.project.id);
                         return toInsertPayload({ ...item, media: asset });
@@ -155,9 +156,9 @@ export function toInsertPayload(item: ProjectPickerItem): InsertAssetPayload {
             };
         if (project.mediaType === "image" && remoteUrl)
             return { ...(asset?.kind === "image" && asset.data.storageKey === project.storageKey ? asset.data : {}), kind: "image", dataUrl: remoteUrl, storageKey: project.storageKey, title: project.title, assetId: project.id };
-        throw new Error(`“${project.title}”缺少可读取的内容`);
+        throw new Error(tr("“{0}”缺少可读取的内容", project.title));
     }
-    if (!asset) throw new Error("项目资产不可用");
+    if (!asset) throw new Error(tr("项目资产不可用"));
     if (asset.kind === "text") return { kind: "text", content: asset.data.content, title: asset.title, assetId: asset.id };
     if (asset.kind === "video")
         return {
@@ -184,7 +185,7 @@ export function toInsertPayload(item: ProjectPickerItem): InsertAssetPayload {
             assetId: asset.id,
         };
     if (asset.kind === "image") return { kind: "image", dataUrl: projectAssetMediaUrl(asset.data.storageKey, asset.data.dataUrl), storageKey: asset.data.storageKey, title: asset.title, assetId: asset.id };
-    throw new Error("当前项目资产不能直接插入画布");
+    throw new Error(tr("当前项目资产不能直接插入画布"));
 }
 
 function projectAssetMediaUrl(storageKey?: string, fallback = "") {
@@ -193,7 +194,7 @@ function projectAssetMediaUrl(storageKey?: string, fallback = "") {
 }
 
 export function projectCharacterToInsertPayload(asset: ProjectAsset): InsertAssetPayload {
-    if (!asset.character) throw new Error("项目角色信息不完整");
+    if (!asset.character) throw new Error(tr("项目角色信息不完整"));
     const card = asset.character;
     const definition = card.definition;
     const cover =

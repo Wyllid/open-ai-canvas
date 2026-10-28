@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // AI 美术评审报告视图：进度、摘要、问题卡片与详情、修改方案、筛选与画面标注叠层。
 
 import { artCritiqueCategoryLabel, type ArtCritiqueIssue, type ArtCritiqueNodeState, type ArtCritiqueOption, type ArtCritiquePipelineStage, artCritiqueSeverityLabel, artCritiqueStageLabel } from "@/lib/art-critique/contracts";
@@ -22,9 +23,9 @@ export const ART_CRITIQUE_STAGE_PROGRESS: Record<ArtCritiquePipelineStage, numbe
 
 export function ArtCritiqueProgress({ stage, theme }: { stage: ArtCritiquePipelineStage; theme: CanvasTheme }) {
     const percent = ART_CRITIQUE_STAGE_PROGRESS[stage];
-    const detail = stage === "reviewing" ? "场景路由与多个 Reviewer 正在并行检查画面" : stage === "verifying" ? "正在并行复核问题并生成 AI 修改提示词" : "正在按阶段生成批改报告";
+    const detail = stage === "reviewing" ? tr("场景路由与多个 Reviewer 正在并行检查画面") : stage === "verifying" ? tr("正在并行复核问题并生成 AI 修改提示词") : tr("正在按阶段生成批改报告");
     return (
-        <section className="flex flex-col gap-2 rounded-[var(--r-lg)] border px-3 py-3" style={{ borderColor: theme.node.edge, background: theme.node.panel }} aria-label="AI 审美批改进度">
+        <section className="flex flex-col gap-2 rounded-[var(--r-lg)] border px-3 py-3" style={{ borderColor: theme.node.edge, background: theme.node.panel }} aria-label={tr("AI 审美批改进度")}>
             <div className="flex items-center justify-between gap-3 text-xs">
                 <span className="flex min-w-0 items-center gap-2 font-semibold">
                     <LoaderCircle className="size-3.5 shrink-0 animate-spin" aria-hidden="true" />
@@ -38,11 +39,11 @@ export function ArtCritiqueProgress({ stage, theme }: { stage: ArtCritiquePipeli
                 <div
                     className="h-full rounded-full transition-transform duration-[250ms] ease-out motion-reduce:transition-none"
                     role="progressbar"
-                    aria-label="AI 审美批改阶段进度"
+                    aria-label={tr("AI 审美批改阶段进度")}
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={percent}
-                    aria-valuetext={`${artCritiqueStageLabel(stage)}，约 ${percent}%`}
+                    aria-valuetext={tr("{0}，约 {1}%", artCritiqueStageLabel(stage), percent)}
                     style={progressFillStyle(percent, { background: theme.accent.primary })}
                 />
             </div>
@@ -54,7 +55,7 @@ export function ArtCritiqueProgress({ stage, theme }: { stage: ArtCritiquePipeli
 }
 
 export function ReportSummary({ report, theme, isDraft }: { report: NonNullable<ArtCritiqueNodeState["report"]>; theme: CanvasTheme; isDraft?: boolean }) {
-    const summary = report.summary || "这张图暂时没有整体总结。";
+    const summary = report.summary || tr("这张图暂时没有整体总结。");
     const hasLongSummary = summary.length > 120;
     return (
         <section className="flex flex-col gap-2 border-b pb-4" style={{ borderColor: theme.node.edge }}>
@@ -64,10 +65,10 @@ export function ReportSummary({ report, theme, isDraft }: { report: NonNullable<
                 ) : (
                     <CheckCircle2 className="size-4" style={{ color: "var(--status-success)" }} aria-hidden="true" />
                 )}
-                <span>{isDraft ? "整体判断（初稿）" : "整体判断"}</span>
+                <span>{isDraft ? tr("整体判断（初稿）") : tr("整体判断")}</span>
                 {report.rubricVersion ? (
                     <span className="ml-auto text-[var(--fs-label)] font-normal" style={{ color: theme.node.muted }}>
-                        标准 {report.rubricVersion}
+                        {tr("标准")} {report.rubricVersion}
                     </span>
                 ) : null}
             </div>
@@ -75,7 +76,7 @@ export function ReportSummary({ report, theme, isDraft }: { report: NonNullable<
             {hasLongSummary ? (
                 <details className="group">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-medium outline-none focus-visible:underline [&::-webkit-details-marker]:hidden" style={{ color: "var(--workspace-accent)" }}>
-                        查看完整判断
+                        {tr("查看完整判断")}
                         <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" aria-hidden="true" />
                     </summary>
                     <p className="mt-2 mb-0 text-xs leading-5" style={{ color: theme.node.muted }}>
@@ -86,7 +87,7 @@ export function ReportSummary({ report, theme, isDraft }: { report: NonNullable<
             {report.pipelineWarnings?.length ? (
                 <details className="group rounded-[var(--r-md)] px-2 py-2 text-xs" style={{ background: "color-mix(in oklch, var(--status-warning) 8%, transparent)", color: "var(--status-warning)" }}>
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-medium outline-none focus-visible:underline [&::-webkit-details-marker]:hidden">
-                        本次分析有部分步骤降级
+                        {tr("本次分析有部分步骤降级")}
                         <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" aria-hidden="true" />
                     </summary>
                     <ul className="mt-2 mb-0 list-disc space-y-1 pl-5 leading-5">
@@ -99,9 +100,9 @@ export function ReportSummary({ report, theme, isDraft }: { report: NonNullable<
             {report.strengths.length ? (
                 <details className="group">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-semibold outline-none focus-visible:underline [&::-webkit-details-marker]:hidden" style={{ color: theme.node.muted }}>
-                        画面已有的优点
+                        {tr("画面已有的优点")}
                         <span className="inline-flex items-center gap-1 font-medium">
-                            {report.strengths.length} 项
+                            {report.strengths.length} {tr("项")}
                             <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" aria-hidden="true" />
                         </span>
                     </summary>
@@ -112,7 +113,7 @@ export function ReportSummary({ report, theme, isDraft }: { report: NonNullable<
                     </ul>
                     {report.strengths.length > 3 ? (
                         <div className="mt-1 text-xs" style={{ color: theme.node.muted }}>
-                            还有 {report.strengths.length - 3} 项优点
+                            {tr("还有")} {report.strengths.length - 3} {tr("项优点")}
                         </div>
                     ) : null}
                 </details>
@@ -146,7 +147,7 @@ export function IssueCard({ issue, index, selected, theme, onClick, onHover }: {
                     {issue.verification && issue.verification.verdict !== "confirmed" ? (
                         <>
                             <span className="size-1 shrink-0 rounded-full bg-current opacity-40" aria-hidden="true" />
-                            <span>待复核</span>
+                            <span>{tr("待复核")}</span>
                         </>
                     ) : null}
                     <span className="ml-auto shrink-0 tabular-nums">{Math.round(issue.confidence * 100)}%</span>
@@ -178,24 +179,24 @@ export function IssueDetailView({
     onPrevious: () => void;
     onNext: () => void;
 }) {
-    const targetSourceLabel = isDraft ? "定位中" : issue.targetSource === "reference" ? "参考区域" : issue.targetSource === "model" ? "模型定位" : issue.target.type === "global" ? "全局范围" : "局部区域";
+    const targetSourceLabel = isDraft ? tr("定位中") : issue.targetSource === "reference" ? tr("参考区域") : issue.targetSource === "model" ? tr("模型定位") : issue.target.type === "global" ? tr("全局范围") : tr("局部区域");
     const severityColor = ART_CRITIQUE_SEVERITY_COLORS[issue.severity];
     const copyText = useCopyText();
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-3">
                 <Button type="text" size="small" icon={<ArrowLeft className="size-4" />} onClick={onBack}>
-                    问题列表
+                    {tr("问题列表")}
                 </Button>
                 <span className="text-xs tabular-nums" style={{ color: theme.node.muted }}>
-                    问题 {issueIndex + 1} / {total}
+                    {tr("问题")} {issueIndex + 1} / {total}
                 </span>
             </div>
 
             <section className="flex flex-col gap-3 border-b pb-5" style={{ borderColor: theme.node.edge }}>
                 <div className="flex items-center gap-2 text-sm font-semibold">
                     <span className="size-2 rounded-full" style={{ background: severityColor }} aria-hidden="true" />
-                    <span>具体问题</span>
+                    <span>{tr("具体问题")}</span>
                     <Tag bordered={false} className="ml-auto text-[var(--fs-label)]" style={{ color: severityColor }}>
                         {artCritiqueSeverityLabel(issue.severity)}
                     </Tag>
@@ -204,22 +205,22 @@ export function IssueDetailView({
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: theme.node.muted }}>
                     <span style={{ color: ART_CRITIQUE_CATEGORY_COLORS[issue.category] }}>{artCritiqueCategoryLabel(issue.category)}</span>
                     <span className="size-1 rounded-full bg-current opacity-40" aria-hidden="true" />
-                    <span>{Math.round(issue.confidence * 100)}% 把握</span>
+                    <span>{Math.round(issue.confidence * 100)}{tr("% 把握")}</span>
                     {issue.verification && issue.verification.verdict !== "confirmed" ? (
                         <span className="rounded-full px-2 py-0.5" style={{ background: "color-mix(in oklch, var(--status-warning) 12%, transparent)", color: "var(--status-warning)" }}>
-                            待复核
+                            {tr("待复核")}
                         </span>
                     ) : null}
                 </div>
                 <div className="rounded-[var(--r-md)] px-3 py-3" style={{ background: theme.node.panel }}>
                     <div className="mb-1 text-xs font-semibold" style={{ color: theme.node.muted }}>
-                        AI 判断
+                        {tr("AI 判断")}
                     </div>
                     <p className="m-0 text-sm leading-6">{issue.explanation}</p>
                 </div>
                 {issue.targetDescription ? (
                     <div className="text-xs leading-5" style={{ color: theme.node.muted }}>
-                        <span className="font-semibold">定位参考：</span>
+                        <span className="font-semibold">{tr("定位参考：")}</span>
                         {issue.targetDescription}
                         <span className="ml-1 rounded-full px-2 py-0.5" style={{ background: "color-mix(in oklch, var(--workspace-accent) 8%, transparent)" }}>
                             {targetSourceLabel}
@@ -232,36 +233,36 @@ export function IssueDetailView({
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 text-sm font-semibold">
                         <Target className="size-4" style={{ color: ART_CRITIQUE_CATEGORY_COLORS[issue.category] }} aria-hidden="true" />
-                        <span>改进</span>
+                        <span>{tr("改进")}</span>
                     </div>
                     {promptStatus === "ready" ? (
-                        <Button type="default" size="small" className="shrink-0" icon={<Copy className="size-3.5" />} aria-label="复制 AI 生成的修改提示词" onClick={() => copyText(issue.editPrompt || "", "AI 修改提示词已复制")}>
-                            复制提示词
+                        <Button type="default" size="small" className="shrink-0" icon={<Copy className="size-3.5" />} aria-label={tr("复制 AI 生成的修改提示词")} onClick={() => copyText(issue.editPrompt || "", tr("AI 修改提示词已复制"))}>
+                            {tr("复制提示词")}
                         </Button>
                     ) : (
                         <Button type="default" size="small" className="shrink-0" disabled icon={promptStatus === "pending" ? <LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" /> : <Copy className="size-3.5" />}>
-                            {promptStatus === "pending" ? "AI 生成中" : "提示词未生成"}
+                            {promptStatus === "pending" ? tr("AI 生成中") : tr("提示词未生成")}
                         </Button>
                     )}
                 </div>
                 {promptStatus === "pending" ? (
                     <div className="text-xs leading-5" style={{ color: theme.node.muted }}>
-                        定位完成后，AI 会结合问题区域生成可直接用于局部编辑的提示词。
+                        {tr("定位完成后，AI 会结合问题区域生成可直接用于局部编辑的提示词。")}
                     </div>
                 ) : null}
                 {promptStatus === "unavailable" ? (
                     <div className="text-xs leading-5" style={{ color: "var(--status-warning)" }}>
-                        AI 修改提示词未生成，请重新批改后重试。
+                        {tr("AI 修改提示词未生成，请重新批改后重试。")}
                     </div>
                 ) : null}
                 <div className="text-sm leading-6">
-                    <span className="font-semibold">目标：</span>
+                    <span className="font-semibold">{tr("目标：")}</span>
                     {issue.suggestion.goal}
                 </div>
                 {issue.suggestion.actions.length ? (
                     <div>
                         <div className="mb-2 text-xs font-semibold" style={{ color: theme.node.muted }}>
-                            建议动作
+                            {tr("建议动作")}
                         </div>
                         <ol className="m-0 flex list-none flex-col gap-2 p-0 text-sm leading-6">
                             {issue.suggestion.actions.map((item, index) => (
@@ -281,7 +282,7 @@ export function IssueDetailView({
                 {issue.suggestion.preserve.length ? (
                     <div className="rounded-[var(--r-md)] px-3 py-2" style={{ background: "color-mix(in oklch, var(--status-success) 6%, transparent)" }}>
                         <div className="mb-1 text-xs font-semibold" style={{ color: "var(--status-success)" }}>
-                            需要保留
+                            {tr("需要保留")}
                         </div>
                         <ul className="m-0 list-disc space-y-1 pl-4 text-xs leading-5">
                             {issue.suggestion.preserve.map((item) => (
@@ -291,17 +292,17 @@ export function IssueDetailView({
                     </div>
                 ) : null}
                 <div className="rounded-[var(--r-md)] border px-3 py-2 text-xs leading-5" style={{ borderColor: theme.node.edge, background: theme.node.panel }}>
-                    <span className="font-semibold">预期效果：</span>
+                    <span className="font-semibold">{tr("预期效果：")}</span>
                     {issue.suggestion.expectedEffect}
                 </div>
             </section>
 
             <div className="flex items-center justify-between border-t pt-3" style={{ borderColor: theme.node.edge }}>
                 <Button type="text" size="small" icon={<ArrowLeft className="size-4" />} disabled={issueIndex <= 0} onClick={onPrevious}>
-                    上一项
+                    {tr("上一项")}
                 </Button>
                 <Button type="text" size="small" icon={<ArrowRight className="size-4" />} disabled={issueIndex < 0 || issueIndex >= total - 1} onClick={onNext}>
-                    下一项
+                    {tr("下一项")}
                 </Button>
             </div>
         </div>
@@ -315,7 +316,7 @@ export function OptionCard({ option, theme }: { option: ArtCritiqueOption; theme
                 <Sparkles className="size-4" style={{ color: ART_CRITIQUE_CATEGORY_COLORS[option.category] }} aria-hidden="true" />
                 <span className="min-w-0 flex-1">{option.title}</span>
                 <span className="shrink-0 text-[var(--fs-label)] font-normal" style={{ color: theme.node.muted }}>
-                    {Math.round(option.confidence * 100)}% 参考把握
+                    {Math.round(option.confidence * 100)}{tr("% 参考把握")}
                 </span>
             </div>
             <p className="mt-2 mb-0 text-xs leading-5" style={{ color: theme.node.muted }}>
@@ -365,8 +366,8 @@ export function CritiqueOverlay({
     onSelect: (id: string) => void;
 }) {
     return (
-        <svg className="pointer-events-none absolute inset-3 size-[calc(100%-1.5rem)]" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" role="img" aria-label="AI 批改标注">
-            <title>AI 批改标注</title>
+        <svg className="pointer-events-none absolute inset-3 size-[calc(100%-1.5rem)]" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" role="img" aria-label={tr("AI 批改标注")}>
+            <title>{tr("AI 批改标注")}</title>
             {issues.map((issue, index) => {
                 const renderIssue = repairIssueTarget(issue);
                 const issueNumber = issueNumberById.get(renderIssue.id) || index + 1;

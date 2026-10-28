@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 画布 Agent 输入区：场景胶囊、输入框（附件、@ 引用、/ 技能）、发送/插话/停止按钮与图片预览。
 //
 // 运行中输入框保持可用（产品约定，勿收紧）：发送走插话，停止由 running 驱动，两者互不排斥。
@@ -40,12 +41,12 @@ export type AgentSceneBucket = {
 
 /** 场景分类：与 presets.json 的 scene 字段、技能的 tag 字段共用同一套 key。 */
 export const AGENT_SCENE_DEFS: Array<{ key: string; label: string; icon: typeof Sparkles }> = [
-    { key: "frequent", label: "我的常用", icon: Bookmark },
-    { key: "drama", label: "短剧故事", icon: Clapperboard },
-    { key: "ecommerce", label: "广告电商", icon: ShoppingBag },
-    { key: "creative", label: "视觉创意", icon: Palette },
-    { key: "social", label: "传播社媒", icon: Share2 },
-    { key: "others", label: "其他", icon: Shapes },
+    { key: "frequent", label: tr("我的常用"), icon: Bookmark },
+    { key: "drama", label: tr("短剧故事"), icon: Clapperboard },
+    { key: "ecommerce", label: tr("广告电商"), icon: ShoppingBag },
+    { key: "creative", label: tr("视觉创意"), icon: Palette },
+    { key: "social", label: tr("传播社媒"), icon: Share2 },
+    { key: "others", label: tr("其他"), icon: Shapes },
 ];
 
 export function AgentSceneCapsules({
@@ -77,7 +78,7 @@ export function AgentSceneCapsules({
         <div className="agent-scene-capsules mx-3 mb-2 min-w-0" style={{ color: theme.node.text }}>
             <div className="agent-scene-capsules-heading">
                 <Sparkles aria-hidden="true" />
-                <span>{active ? active.label : "技能组合推荐"}</span>
+                <span>{active ? active.label : tr("技能组合推荐")}</span>
             </div>
             <div className="agent-scene-capsules-scroll thin-scrollbar flex gap-2 overflow-x-auto px-1 py-2">
                 {active ? (
@@ -85,7 +86,7 @@ export function AgentSceneCapsules({
                         <button
                             type="button"
                             disabled={disabled}
-                            title="返回全部场景"
+                            title={tr("返回全部场景")}
                             className={capsuleClass}
                             data-scene="back"
                             {...stop}
@@ -95,7 +96,7 @@ export function AgentSceneCapsules({
                             }}
                         >
                             <ArrowLeft aria-hidden="true" />
-                            <span>全部场景</span>
+                            <span>{tr("全部场景")}</span>
                         </button>
                         {active.presets.map((preset) => {
                             const missing = preset.skillIds.filter((id) => !installedIds.has(id)).length;
@@ -115,12 +116,12 @@ export function AgentSceneCapsules({
                                 >
                                     <Layers3 aria-hidden="true" />
                                     <span className="agent-scene-capsule-label">{preset.name}</span>
-                                    <span className="agent-scene-capsule-meta">{missing > 0 ? `${preset.skillIds.length} 技能 · ${missing} 待装` : `${preset.skillIds.length} 技能`}</span>
+                                    <span className="agent-scene-capsule-meta">{missing > 0 ? tr("{0} 技能 · {1} 待装", preset.skillIds.length, missing) : tr("{0} 技能", preset.skillIds.length)}</span>
                                 </button>
                             );
                         })}
                         {active.skills.map((skill) => {
-                            const owned = skill.isOwner ? "自建" : skill.isLike ? "已收藏" : installedIds.has(skill.skillId) ? "已装" : "待装";
+                            const owned = skill.isOwner ? tr("自建") : skill.isLike ? tr("已收藏") : installedIds.has(skill.skillId) ? tr("已装") : tr("待装");
                             return (
                                 <button
                                     key={skill.skillId}
@@ -151,7 +152,7 @@ export function AgentSceneCapsules({
                                 key={bucket.key}
                                 type="button"
                                 disabled={disabled}
-                                title={`查看「${bucket.label}」下的技能组合`}
+                                title={tr("查看「{0}」下的技能组合", bucket.label)}
                                 className={capsuleClass}
                                 data-scene={bucket.key}
                                 {...stop}
@@ -162,13 +163,13 @@ export function AgentSceneCapsules({
                             >
                                 <Icon aria-hidden="true" />
                                 <span className="agent-scene-capsule-label">{bucket.label}</span>
-                                <span className="agent-scene-capsule-meta">{count} 项</span>
+                                <span className="agent-scene-capsule-meta">{count} {tr("项")}</span>
                             </button>
                         );
                     })
                 )}
             </div>
-            <p className="agent-scene-capsules-note">仅本会话生效 · 缺失技能将加入技能库 · Agent 按任务调用</p>
+            <p className="agent-scene-capsules-note">{tr("仅本会话生效 · 缺失技能将加入技能库 · Agent 按任务调用")}</p>
         </div>
     );
 }
@@ -362,17 +363,17 @@ export function AgentChatComposer({
                                     <button
                                         type="button"
                                         className="relative block size-20 overflow-hidden rounded-lg"
-                                        title="点击放大预览"
-                                        aria-label={`预览 ${item.name || `图片${index + 1}`}`}
+                                        title={tr("点击放大预览")}
+                                        aria-label={tr("预览 {0}", item.name || tr("图片{0}", index + 1))}
                                         onClick={() => setPreviewAttachment(item)}
                                         onDoubleClick={() => setPreviewAttachment(item)}
                                     >
                                         <img src={item.url} alt={item.name} className="size-full object-cover" />
                                     </button>
                                     <div className="mt-1 flex min-w-0 items-center justify-between gap-1">
-                                        <button type="button" className="flex min-w-0 items-center gap-0.5 truncate text-[var(--fs-tiny)] opacity-80 hover:opacity-100" title={`插入 @图片${index + 1}`} onClick={() => insertAttachmentMention(item)}>
+                                        <button type="button" className="flex min-w-0 items-center gap-0.5 truncate text-[var(--fs-tiny)] opacity-80 hover:opacity-100" title={tr("插入 @图片{0}", index + 1)} onClick={() => insertAttachmentMention(item)}>
                                             <AtSign className="size-2.5 shrink-0" />
-                                            <span className="truncate">图片{index + 1}</span>
+                                            <span className="truncate">{tr("图片")}{index + 1}</span>
                                         </button>
                                         {onRemoveAttachment ? (
                                             <button
@@ -380,7 +381,7 @@ export function AgentChatComposer({
                                                 className="grid size-4 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"
                                                 style={{ background: theme.toolbar.panel, color: theme.node.text }}
                                                 onClick={() => onRemoveAttachment(item.id)}
-                                                aria-label="移除图片"
+                                                aria-label={tr("移除图片")}
                                             >
                                                 <X className="size-3" />
                                             </button>
@@ -395,7 +396,7 @@ export function AgentChatComposer({
                             type="button"
                             role="separator"
                             aria-orientation="horizontal"
-                            aria-label="调整提示词面板高度"
+                            aria-label={tr("调整提示词面板高度")}
                             aria-valuemin={MIN_AGENT_PROMPT_HEIGHT}
                             aria-valuemax={MAX_AGENT_PROMPT_HEIGHT}
                             aria-valuenow={promptHeight}
@@ -425,7 +426,7 @@ export function AgentChatComposer({
                                 containerClassName="min-h-[60px] h-full"
                                 style={{ color: theme.node.text }}
                                 placeholder={placeholder}
-                                aria-label="Agent 输入"
+                                aria-label={tr("Agent 输入")}
                             />
                         </div>
                         {slash && slashCandidates.length ? (
@@ -467,7 +468,7 @@ export function AgentChatComposer({
                                             event.target.value = "";
                                         }}
                                     />
-                                    <Tooltip title="上传图片">
+                                    <Tooltip title={tr("上传图片")}>
                                         <Button
                                             type="text"
                                             shape="circle"
@@ -488,8 +489,8 @@ export function AgentChatComposer({
                                 <motion.button
                                     type="button"
                                     disabled={stopping}
-                                    aria-label="停止本轮"
-                                    title="停止本轮：Agent 不再继续操作；已提交的生成任务会继续完成。只想撤回插话请点消息上的“撤回”"
+                                    aria-label={tr("停止本轮")}
+                                    title={tr("停止本轮：Agent 不再继续操作；已提交的生成任务会继续完成。只想撤回插话请点消息上的“撤回”")}
                                     onClick={() => void onStop?.()}
                                     whileHover={!reducedMotion && !stopping ? { scale: 1.06, y: -1 } : undefined}
                                     whileTap={!reducedMotion && !stopping ? { scale: 0.9, y: 1 } : undefined}
@@ -504,8 +505,8 @@ export function AgentChatComposer({
                             <motion.button
                                 type="button"
                                 disabled={!canSubmit}
-                                aria-label={sending ? "发送中" : canStop ? "插话" : "发送"}
-                                title={canStop ? "插话：Agent 下一次开口时看到它" : "点击发送；Enter 或 ⌘/Ctrl+Enter 发送"}
+                                aria-label={sending ? tr("发送中") : canStop ? tr("插话") : tr("发送")}
+                                title={canStop ? tr("插话：Agent 下一次开口时看到它") : tr("点击发送；Enter 或 ⌘/Ctrl+Enter 发送")}
                                 onClick={() => onSubmit()}
                                 whileHover={canSubmit && !reducedMotion ? { scale: 1.06, y: -1 } : undefined}
                                 whileTap={canSubmit && !reducedMotion ? { scale: 0.9, y: 1 } : undefined}
@@ -542,7 +543,7 @@ export function AgentImagePreview({ attachment, onClose }: { attachment: CloudAg
     return (
         <div className="fixed inset-0 z-[var(--z-dialog-popover)] grid place-items-center bg-black/80 p-6" role="dialog" aria-label={attachment.name} onClick={onClose}>
             <img src={attachment.url} alt={attachment.name} className="max-h-[90vh] max-w-[92vw] rounded-xl object-contain shadow-2xl" onClick={(event) => event.stopPropagation()} />
-            <button type="button" className="absolute right-5 top-5 rounded-full bg-black/60 p-2 text-white" onClick={onClose} aria-label="关闭图片预览">
+            <button type="button" className="absolute right-5 top-5 rounded-full bg-black/60 p-2 text-white" onClick={onClose} aria-label={tr("关闭图片预览")}>
                 <X className="size-5" />
             </button>
         </div>

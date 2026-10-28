@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Form, Input, InputNumber, Switch } from "antd";
 import { Bot, Save } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -23,7 +24,7 @@ export function AgentModelSetupCard({ onSaved }: { onSaved?: () => void | Promis
                 setSetup(setup);
                 form.setFieldsValue({ protocol: setup.protocol, baseUrl: setup.baseUrl, model: setup.model, vision: setup.vision, contextWindowTokens: setup.contextWindowTokens, maxOutputTokens: setup.maxOutputTokens, apiKey: "" });
             })
-            .catch((error: unknown) => active && setLoadError(error instanceof Error ? error.message : "Could not read the agent model setup"));
+            .catch((error: unknown) => active && setLoadError(error instanceof Error ? error.message : tr("Could not read the agent model setup")));
         return () => {
             active = false;
         };
@@ -35,22 +36,22 @@ export function AgentModelSetupCard({ onSaved }: { onSaved?: () => void | Promis
             const { setup } = await saveAgentModelSetup(agentModelSetupPayload(values));
             setSetup(setup);
             form.setFieldValue("apiKey", "");
-            message.success("Agent model saved. New agent runs use it.");
+            message.success(tr("Agent model saved. New agent runs use it."));
             await onSaved?.();
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "Could not save the agent model");
+            message.error(error instanceof Error ? error.message : tr("Could not save the agent model"));
         } finally {
             setSaving(false);
         }
     };
 
-    const status = setup?.configured ? <AdminStatusBadge tone={setup.enabled ? "success" : "warning"} label={setup.enabled ? "Configured" : "Disabled"} /> : <AdminStatusBadge label="Not set" />;
+    const status = setup?.configured ? <AdminStatusBadge tone={setup.enabled ? "success" : "warning"} label={setup.enabled ? tr("Configured") : tr("Disabled")} /> : <AdminStatusBadge label={tr("Not set")} />;
 
     return (
         <SettingsSectionCard
             icon={<Bot className="size-4" />}
-            title="Agent model"
-            description="Point the canvas agent at any OpenAI-compatible or Anthropic endpoint. This creates the channel and text model for you; you can still edit them below."
+            title={tr("Agent model")}
+            description={tr("Point the canvas agent at any OpenAI-compatible or Anthropic endpoint. This creates the channel and text model for you; you can still edit them below.")}
             status={status}
             layout="stacked"
             className="admin-agent-model-setup"
@@ -58,7 +59,7 @@ export function AgentModelSetupCard({ onSaved }: { onSaved?: () => void | Promis
             {loadError ? <p className="text-sm text-destructive">{loadError}</p> : null}
             <Form form={form} layout="vertical" requiredMark={false} disabled={!setup} onFinish={(values) => void submit(values)} initialValues={{ protocol: "chat-completion", vision: false }}>
                 <div className="grid gap-x-4 md:grid-cols-2">
-                    <Form.Item name="protocol" label="API format" rules={[{ required: true, message: "Choose an API format" }]}>
+                    <Form.Item name="protocol" label={tr("API format")} rules={[{ required: true, message: tr("Choose an API format") }]}>
                         <Select
                             options={agentModelProtocolOptions.map(({ label, value }) => ({ label, value }))}
                             onChange={(value: AgentModelProtocol) => {
@@ -68,28 +69,28 @@ export function AgentModelSetupCard({ onSaved }: { onSaved?: () => void | Promis
                             }}
                         />
                     </Form.Item>
-                    <Form.Item name="baseUrl" label="Base URL" rules={[{ required: true, whitespace: true, message: "Enter the base URL" }]}>
+                    <Form.Item name="baseUrl" label={tr("Base URL")} rules={[{ required: true, whitespace: true, message: tr("Enter the base URL") }]}>
                         <Input autoComplete="off" placeholder="https://api.openai.com/v1" />
                     </Form.Item>
-                    <Form.Item name="model" label="Model name" rules={[{ required: true, whitespace: true, message: "Enter the model name" }]}>
-                        <Input autoComplete="off" placeholder="gpt-5.1, claude-sonnet-4-5, deepseek-chat…" />
+                    <Form.Item name="model" label={tr("Model name")} rules={[{ required: true, whitespace: true, message: tr("Enter the model name") }]}>
+                        <Input autoComplete="off" placeholder={tr("gpt-5.1, claude-sonnet-4-5, deepseek-chat…")} />
                     </Form.Item>
-                    <Form.Item name="apiKey" label="API key" rules={[{ required: !setup?.hasApiKey, whitespace: true, message: "Enter the API key" }]}>
-                        <Input.Password autoComplete="new-password" placeholder={setup?.hasApiKey ? "Leave empty to keep the saved key" : "sk-…"} />
+                    <Form.Item name="apiKey" label={tr("API key")} rules={[{ required: !setup?.hasApiKey, whitespace: true, message: tr("Enter the API key") }]}>
+                        <Input.Password autoComplete="new-password" placeholder={setup?.hasApiKey ? tr("Leave empty to keep the saved key") : "sk-…"} />
                     </Form.Item>
-                    <Form.Item name="contextWindowTokens" label="Context window (tokens)">
+                    <Form.Item name="contextWindowTokens" label={tr("Context window (tokens)")}>
                         <InputNumber min={4096} max={10000000} precision={0} controls={false} className="w-full" placeholder="128000" />
                     </Form.Item>
-                    <Form.Item name="maxOutputTokens" label="Max output (tokens)">
+                    <Form.Item name="maxOutputTokens" label={tr("Max output (tokens)")}>
                         <InputNumber min={256} max={1000000} precision={0} controls={false} className="w-full" placeholder="16384" />
                     </Form.Item>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <Form.Item name="vision" valuePropName="checked" noStyle>
-                        <Switch checkedChildren="Can see images" unCheckedChildren="Text only" />
+                        <Switch checkedChildren={tr("Can see images")} unCheckedChildren={tr("Text only")} />
                     </Form.Item>
                     <Button type="primary" htmlType="submit" loading={saving} icon={<Save className="size-4" />}>
-                        Save agent model
+                        {tr("Save agent model")}
                     </Button>
                 </div>
             </Form>

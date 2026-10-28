@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useState } from "react";
 import { loadRasterImage } from "@/lib/image-raster";
 import type { PixelSize } from "@/lib/canvas/image-operation-plan";
@@ -12,7 +13,7 @@ export function useImageToolSource(source: string) {
                 if (!request.signal.aborted) setResult({ source, size: { width: image.naturalWidth, height: image.naturalHeight }, error: "" });
             },
             (error: unknown) => {
-                if (!request.signal.aborted) setResult({ source, size: null, error: error instanceof Error ? error.message : "图片读取失败" });
+                if (!request.signal.aborted) setResult({ source, size: null, error: error instanceof Error ? error.message : tr("图片读取失败") });
             },
         );
         return () => request.abort();

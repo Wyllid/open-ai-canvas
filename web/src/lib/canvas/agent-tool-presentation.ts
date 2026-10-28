@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { agentToolRetry, type AgentToolRetry } from "./agent-tool-retry";
 
 /**
@@ -45,32 +46,32 @@ export type AgentToolMetadataEntry = {
 };
 
 export const AGENT_TOOL_METADATA: Record<string, AgentToolMetadataEntry> = {
-    canvas_list_node_types: { summary: "已读取可用节点类型", failureMessage: "获取可用节点类型失败" },
+    canvas_list_node_types: { summary: tr("已读取可用节点类型"), failureMessage: tr("获取可用节点类型失败") },
     // 清单 ≠ 画面：这个工具只读到节点存在/类型/标题/规模。说成"已读取当前画布"会被读成看过图。
-    canvas_get_state: { summary: "已读取画布清单（未查看画面）", failureMessage: "获取画布清单失败" },
-    task_get: { summary: "已查询任务状态", failureMessage: "查询任务状态失败" },
-    canvas_apply_ops: { summary: ({ pending }) => (pending ? "准备更新画布内容" : "画布内容已保存至服务端"), failureMessage: "更新画布内容失败" },
-    model_list: { summary: "已获取可用模型", failureMessage: "获取可用模型失败" },
-    canvas_create_character: { summary: ({ pending }) => (pending ? "准备创建角色卡" : "角色卡已创建并放到画布"), failureMessage: "创建角色卡失败" },
-    generate_media: { summary: ({ pending, detail }) => (pending ? "准备创建媒体节点并生成" : field(detail, "eventType") === "tool_completed" ? "生成结果已回写画布节点" : "媒体节点已创建，生成任务已提交"), failureMessage: "媒体生成未完成" },
+    canvas_get_state: { summary: tr("已读取画布清单（未查看画面）"), failureMessage: tr("获取画布清单失败") },
+    task_get: { summary: tr("已查询任务状态"), failureMessage: tr("查询任务状态失败") },
+    canvas_apply_ops: { summary: ({ pending }) => (pending ? tr("准备更新画布内容") : tr("画布内容已保存至服务端")), failureMessage: tr("更新画布内容失败") },
+    model_list: { summary: tr("已获取可用模型"), failureMessage: tr("获取可用模型失败") },
+    canvas_create_character: { summary: ({ pending }) => (pending ? tr("准备创建角色卡") : tr("角色卡已创建并放到画布")), failureMessage: tr("创建角色卡失败") },
+    generate_media: { summary: ({ pending, detail }) => (pending ? tr("准备创建媒体节点并生成") : field(detail, "eventType") === "tool_completed" ? tr("生成结果已回写画布节点") : tr("媒体节点已创建，生成任务已提交")), failureMessage: tr("媒体生成未完成") },
     // 看图：只有这个工具会把图片字节真的交给模型，所以只有它可以说"画面/看图"。
     // 回执字段来源：`backend/internal/app/cloud_agent_runtime.go`（payload["result"] = 回执）。
     canvas_inspect_image: {
         summary: ({ pending, detail }) => {
             const result = record(field(detail, "result"));
-            const title = typeof result.title === "string" && result.title ? `《${result.title}》` : "该图片";
-            if (result.reuseObservation === true) return "复用已记录的观察，未重复看图";
+            const title = typeof result.title === "string" && result.title ? `《${result.title}》` : tr("该图片");
+            if (result.reuseObservation === true) return tr("复用已记录的观察，未重复看图");
             const batch = Array.isArray(result.batchImages) ? result.batchImages : [];
-            if (result.repeat === true && batch.length === 0) return "本轮重复查看，只回执文字、未附图";
-            if (batch.length > 1) return `已附上 ${batch.length} 张画面`;
-            return pending ? `准备查看画面${title}` : `已附上${title}的画面`;
+            if (result.repeat === true && batch.length === 0) return tr("本轮重复查看，只回执文字、未附图");
+            if (batch.length > 1) return tr("已附上 {0} 张画面", batch.length);
+            return pending ? tr("准备查看画面{0}", title) : tr("已附上{0}的画面", title);
         },
         failureMessage: ({ text, detail }) => agentVisionFailureSummary(text, detail),
     },
     // 收尾闸门（工作项 A）：被拦下时卡片要说清"这次没结束"，而不是千篇一律的"操作已完成"。
     finish_run: {
-        summary: ({ pending, detail }) => (pending ? "准备收尾并给出最终答复" : field(field(detail, "result"), "completionBlocked") === true ? "收尾被拦下，继续处理未完成项" : "已收尾并给出最终答复"),
-        failureMessage: "收尾未完成",
+        summary: ({ pending, detail }) => (pending ? tr("准备收尾并给出最终答复") : field(field(detail, "result"), "completionBlocked") === true ? tr("收尾被拦下，继续处理未完成项") : tr("已收尾并给出最终答复")),
+        failureMessage: tr("收尾未完成"),
     },
 };
 
@@ -122,11 +123,11 @@ export function agentToolCategory(toolName: string, detail?: unknown): AgentTool
 }
 
 export function agentToolCategoryLabel(toolName: string, category: AgentToolCategory): string {
-    if (category === "vision") return "查看画面";
-    if (category === "read") return AGENT_CANVAS_READ_TOOLS.has(toolName) ? "读取清单" : "读取信息";
-    if (category === "create") return "创建节点";
-    if (category === "operate") return "修改画布";
-    return "其他操作";
+    if (category === "vision") return tr("查看画面");
+    if (category === "read") return AGENT_CANVAS_READ_TOOLS.has(toolName) ? tr("读取清单") : tr("读取信息");
+    if (category === "create") return tr("创建节点");
+    if (category === "operate") return tr("修改画布");
+    return tr("其他操作");
 }
 
 type ToolStatus = "completed" | "failed" | "noop" | "rejected" | "pending" | "retrying";
@@ -156,14 +157,14 @@ export function friendlyAgentToolSummary(toolName: string, text: string, detail?
     const mediaTool = toolName === "generate_media" || toolName === "image_layer_split";
     const result = record(field(detail, "result"));
     const phase = result.phase;
-    if (mediaTool && failed && phase === "admission") return "参数未通过校验，未提交生成任务";
+    if (mediaTool && failed && phase === "admission") return tr("参数未通过校验，未提交生成任务");
     if (mediaTool && failed && phase === "completion" && result.taskSubmitted === true) {
-        if (result.writebackReason || result.status === "succeeded") return "生成成功，画布回写未完成";
-        return "任务已提交，但生成结果未完成";
+        if (result.writebackReason || result.status === "succeeded") return tr("生成成功，画布回写未完成");
+        return tr("任务已提交，但生成结果未完成");
     }
     if (toolName === "skills_load") {
         const count = /(?:加载|启用)\s*(\d+)\s*个/u.exec(text)?.[1];
-        return failed ? "Skills 技能加载失败" : count ? `已加载 ${count} 个 Skills 技能` : "已加载 Skills 技能";
+        return failed ? tr("Skills 技能加载失败") : count ? tr("已加载 {0} 个 Skills 技能", count) : tr("已加载 Skills 技能");
     }
     if (toolName === "skill_read_file") {
         const name = String(field(detail, "skillName") || field(detail, "skillId") || "Skills");
@@ -171,19 +172,19 @@ export function friendlyAgentToolSummary(toolName: string, text: string, detail?
         const files = field(field(detail, "result"), "files");
         const listing = path === "" || (path === undefined && Array.isArray(files));
         const target = typeof path === "string" && path ? `${name} · ${path}` : name;
-        if (failed) return `${listing ? "列出参考文件失败" : "读取参考资料失败"} · ${target}`;
-        if (listing && Array.isArray(files)) return files.length ? `${name} · 可读参考文件 ${files.length} 个` : `${name} · 无可读参考文件，使用已加载正文`;
-        return `${pending ? "准备读取参考资料" : "已读取参考资料"} · ${target}`;
+        if (failed) return `${listing ? tr("列出参考文件失败") : tr("读取参考资料失败")} · ${target}`;
+        if (listing && Array.isArray(files)) return files.length ? tr("{0} · 可读参考文件 {1} 个", name, files.length) : tr("{0} · 无可读参考文件，使用已加载正文", name);
+        return `${pending ? tr("准备读取参考资料") : tr("已读取参考资料")} · ${target}`;
     }
     const metadata = AGENT_TOOL_METADATA[toolName];
     const context: AgentToolSummaryContext = { pending, detail, text };
     const summary = typeof metadata?.summary === "function" ? metadata.summary(context) : metadata?.summary;
     const failure = typeof metadata?.failureMessage === "function" ? metadata.failureMessage(context) : metadata?.failureMessage;
-    if (failed) return failure || "操作未完成";
+    if (failed) return failure || tr("操作未完成");
     if (summary) return summary;
     // 未登记工具的中性兜底：点名工具，别让任何工具都读成"操作画布/已完成"（不变量 ③）。
-    const name = toolName || "工具";
-    return pending ? `准备执行 ${name}` : `已完成：${name}`;
+    const name = toolName || tr("工具");
+    return pending ? tr("准备执行 {0}", name) : tr("已完成：{0}", name);
 }
 
 const VISION_QUOTA_PATTERN = /已用\s*(\d+)\s*次、本轮额度\s*(\d+)\s*次/u;
@@ -202,15 +203,15 @@ export function agentVisionFailureSummary(text: string, detail?: unknown): strin
     const nested = record(payload.result);
     const raw = [text, payload.error, nested.error, payload.message, nested.note].filter((value): value is string => typeof value === "string").join(" ");
     const quota = VISION_QUOTA_PATTERN.exec(raw);
-    if (quota) return `本轮识图额度已用完（已用 ${quota[1]} / 额度 ${quota[2]}）`;
+    if (quota) return tr("本轮识图额度已用完（已用 {0} / 额度 {1}）", quota[1], quota[2]);
     const batch = VISION_BATCH_PATTERN.exec(raw);
-    if (batch) return `本批图片数已达模型上限（已附 ${batch[1]} / 上限 ${batch[2]}），下一步继续`;
-    if (/重复读取|护栏/.test(raw)) return "同一张图同版本重复读取，已拦下";
-    if (/未声明图片输入能力|支持图片输入的渠道模型/.test(raw)) return "当前渠道模型未声明图片输入能力";
+    if (batch) return tr("本批图片数已达模型上限（已附 {0} / 上限 {1}），下一步继续", batch[1], batch[2]);
+    if (/重复读取|护栏/.test(raw)) return tr("同一张图同版本重复读取，已拦下");
+    if (/未声明图片输入能力|支持图片输入的渠道模型/.test(raw)) return tr("当前渠道模型未声明图片输入能力");
     // 兜底也认后端的哨兵文案（"cloud agent image inspection budget exhausted"）：包一层时才有数字，
     // 单独出现时只给到"额度已用完"，不能让用户看到一句英文原样。
-    if (/(识图|看图|image inspection budget)/i.test(raw) && /(额度|预算|budget)/i.test(raw)) return "本轮识图额度已用完";
-    return "查看画面未完成";
+    if (/(识图|看图|image inspection budget)/i.test(raw) && /(额度|预算|budget)/i.test(raw)) return tr("本轮识图额度已用完");
+    return tr("查看画面未完成");
 }
 
 /** 工具事件的调用名：detail.toolName/name/tool 优先，退化到消息标题。 */
@@ -220,9 +221,9 @@ export function agentToolName(title: string, detail?: unknown): string {
 
 /** 自动纠正分组的固定文案（卡片与折叠行共用，避免两处各写一套）。 */
 export function agentToolRetryLabel(retry: AgentToolRetry): string {
-    if (retry.status === "recovered") return "自动纠正后已恢复";
-    if (retry.status === "exhausted") return "自动纠正未完成";
-    return "自动纠正记录";
+    if (retry.status === "recovered") return tr("自动纠正后已恢复");
+    if (retry.status === "exhausted") return tr("自动纠正未完成");
+    return tr("自动纠正记录");
 }
 
 /**
@@ -230,13 +231,13 @@ export function agentToolRetryLabel(retry: AgentToolRetry): string {
  * 界面上把"模型自己出的错"和"真实的权限/状态/上游问题"分开显示，用户与排查都不用猜。
  */
 export const AGENT_TOOL_ERROR_CLASS_LABELS: Record<string, string> = {
-    invalid_model_output: "模型输出问题",
-    schema_error: "参数不符合契约",
-    state_conflict: "画布状态已变化",
-    permission_violation: "超出本轮权限",
-    upstream_failure: "上游故障",
-    admission_failure: "媒体生成准入失败",
-    tool_error: "工具执行失败",
+    invalid_model_output: tr("模型输出问题"),
+    schema_error: tr("参数不符合契约"),
+    state_conflict: tr("画布状态已变化"),
+    permission_violation: tr("超出本轮权限"),
+    upstream_failure: tr("上游故障"),
+    admission_failure: tr("媒体生成准入失败"),
+    tool_error: tr("工具执行失败"),
 };
 
 /** 从工具事件载荷里取归类标签：优先用后端给的 label，其次查本地映射。 */
@@ -247,5 +248,5 @@ export function agentToolErrorClassLabel(detail?: unknown): string | undefined {
     if (typeof label === "string" && label) return label;
     const errorClass = payload.errorClass ?? nested.errorClass;
     if (typeof errorClass !== "string" || !errorClass) return undefined;
-    return AGENT_TOOL_ERROR_CLASS_LABELS[errorClass] ?? "工具执行失败";
+    return AGENT_TOOL_ERROR_CLASS_LABELS[errorClass] ?? tr("工具执行失败");
 }

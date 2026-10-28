@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 第三期：时间线导出运行时。把 buildTimelineRenderPlan 产出的步骤逐步在 ffmpeg.wasm 中执行，
 // 复用 canvas-video-merge.ts 的 loadFFmpeg（本地同源加载 core/wasm），媒体读写与清理逻辑保持一致。
 import { fetchFile } from "@ffmpeg/util";
@@ -25,23 +26,23 @@ async function fetchSourceBlob(source: TimelineRenderSource): Promise<Blob> {
     }
     if (source.url) {
         const response = await fetch(source.url);
-        if (!response.ok) throw new Error("视频资源请求失败（" + response.status + "）");
+        if (!response.ok) throw new Error(tr("视频资源请求失败（") + response.status + "）");
         return response.blob();
     }
-    throw new Error("找不到素材 " + source.nodeId + " 的媒体文件");
+    throw new Error(tr("找不到素材 ") + source.nodeId + tr(" 的媒体文件"));
 }
 
 /** 导出时间线为 MP4：写媒体 → 按计划逐步执行 → 返回 Blob（下载由调用方处理） */
 export async function exportTimelineToMp4(timeline: TimelineProject, sources: TimelineRenderSource[], options: TimelineExportOptions = {}): Promise<Blob> {
     const { onProgress, context } = options;
-    onProgress?.({ phase: "loading", percent: 0, detail: "加载 FFmpeg" });
-    const ffmpeg = await loadFFmpeg(({ phase, progress }) => onProgress?.({ phase: phase === "loading" ? "loading" : "reading", percent: progress, detail: phase === "loading" ? "加载 FFmpeg" : "读取素材" }));
+    onProgress?.({ phase: "loading", percent: 0, detail: tr("加载 FFmpeg") });
+    const ffmpeg = await loadFFmpeg(({ phase, progress }) => onProgress?.({ phase: phase === "loading" ? "loading" : "reading", percent: progress, detail: phase === "loading" ? tr("加载 FFmpeg") : tr("读取素材") }));
     const plan = buildTimelineRenderPlan(timeline, sources, context);
     const writtenFiles = new Set<string>();
 
     try {
         for (const source of sources) {
-            onProgress?.({ phase: "reading", percent: 5, detail: "读取素材 " + source.fileName });
+            onProgress?.({ phase: "reading", percent: 5, detail: tr("读取素材 ") + source.fileName });
             const blob = await fetchSourceBlob(source);
             await ffmpeg.writeFile(source.fileName, await fetchFile(blob));
             writtenFiles.add(source.fileName);
@@ -72,20 +73,20 @@ export async function exportTimelineToMp4(timeline: TimelineProject, sources: Ti
                     if (exitCode !== 0) throw new Error("burn exit " + exitCode);
                 } catch {
                     // 当前 @ffmpeg/core 可能不含 libass（subtitles 滤镜），回退为直接封装已拼接视频。
-                    onProgress?.({ phase: "encoding", percent: 92, detail: "字幕烧录不可用，回退为无字幕导出" });
+                    onProgress?.({ phase: "encoding", percent: 92, detail: tr("字幕烧录不可用，回退为无字幕导出") });
                     const exitCode = await ffmpeg.exec(["-y", "-i", concatOutput, "-c", "copy", plan.finalOutput]);
-                    if (exitCode !== 0) throw new Error("导出失败：字幕烧录与回退均失败");
+                    if (exitCode !== 0) throw new Error(tr("导出失败：字幕烧录与回退均失败"));
                 }
             } else {
                 const exitCode = await ffmpeg.exec(["-y", ...step.args]);
-                if (exitCode !== 0) throw new Error("导出失败：" + step.description);
+                if (exitCode !== 0) throw new Error(tr("导出失败：") + step.description);
             }
             writtenFiles.add(step.output);
             stepIndex += 1;
         }
 
         const output = await ffmpeg.readFile(plan.finalOutput);
-        onProgress?.({ phase: "encoding", percent: 100, detail: "导出完成" });
+        onProgress?.({ phase: "encoding", percent: 100, detail: tr("导出完成") });
         return new Blob([output as BlobPart], { type: "video/mp4" });
     } finally {
         await Promise.all([...writtenFiles, "concat.txt", plan.finalOutput].map((file) => ffmpeg.deleteFile(file).catch(() => undefined)));

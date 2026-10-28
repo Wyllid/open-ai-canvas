@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { CanvasNodeType, type CanvasNodeData, type StoryboardAssetBinding, type StoryboardAssetRole } from "@/types/canvas";
 
 export type StoryboardAssetCatalogItem = {
@@ -22,7 +23,7 @@ export function buildStoryboardAssetCatalog(nodes: CanvasNodeData[]): Storyboard
         const prompt = compactStoryboardAssetText(node.metadata?.prompt || node.metadata?.workflowDescription || node.metadata?.characterPrompt || "");
         return [{
             id: node.id,
-            title: compactStoryboardAssetText(node.title, 120) || "未命名资产",
+            title: compactStoryboardAssetText(node.title, 120) || tr("未命名资产"),
             type,
             category: node.metadata?.assetCategory,
             tags: Array.from(new Set((node.metadata?.assetTags || []).map((tag) => compactStoryboardAssetText(tag, 64)).filter(Boolean))).slice(0, 12),

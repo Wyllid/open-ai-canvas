@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Alert, Button, Form, Input, Segmented, Switch, type FormInstance } from "antd";
 import { Trash2 } from "lucide-react";
 import type { ModelCapabilityConfig } from "@/lib/model-capabilities";
@@ -52,15 +53,15 @@ export function PriceTierFields({
                 <div className="admin-price-tier-card-heading">
                     <span className="admin-price-tier-card-index">{String(ordinal).padStart(2, "0")}</span>
                     <div className="admin-price-tier-card-heading-copy">
-                        <div className="admin-price-tier-card-title">{matchMode === "default" ? "默认规格" : `规格 ${ordinal}`}</div>
-                        <div className="admin-price-tier-card-summary">{matchMode === "default" ? "所有请求使用同一上游模型" : isVideo ? "按生成方式与分辨率匹配" : "按生成方式、画质、分辨率或尺寸匹配"}</div>
+                        <div className="admin-price-tier-card-title">{matchMode === "default" ? tr("默认规格") : tr("规格 {0}", ordinal)}</div>
+                        <div className="admin-price-tier-card-summary">{matchMode === "default" ? tr("所有请求使用同一上游模型") : isVideo ? tr("按生成方式与分辨率匹配") : tr("按生成方式、画质、分辨率或尺寸匹配")}</div>
                     </div>
                 </div>
                 <div className="admin-price-tier-card-actions">
                     <div className="admin-price-tier-toggle">
-                        <span title="关闭后保留配置，但不参与用户请求匹配">可供用户使用</span>
+                        <span title={tr("关闭后保留配置，但不参与用户请求匹配")}>{tr("可供用户使用")}</span>
                         <Switch
-                            aria-label="可供用户使用"
+                            aria-label={tr("可供用户使用")}
                             checked={tierEnabled}
                             onChange={(checked) => {
                                 onDirty();
@@ -68,8 +69,8 @@ export function PriceTierFields({
                             }}
                         />
                     </div>
-                    <Button type="text" danger aria-label={`删除规格档 ${ordinal}`} icon={<Trash2 className="size-3.5" />} onClick={onRemove}>
-                        删除
+                    <Button type="text" danger aria-label={tr("删除规格档 {0}", ordinal)} icon={<Trash2 className="size-3.5" />} onClick={onRemove}>
+                        {tr("删除")}
                     </Button>
                 </div>
             </header>
@@ -77,17 +78,17 @@ export function PriceTierFields({
                 <section className="admin-price-tier-mode-row">
                     <div className="admin-price-tier-panel-heading">
                         <div>
-                            <h3>适用范围</h3>
-                            <p>选择全部请求，或按生成规格精确匹配。</p>
+                            <h3>{tr("适用范围")}</h3>
+                            <p>{tr("选择全部请求，或按生成规格精确匹配。")}</p>
                         </div>
                     </div>
                     <Form.Item className="admin-price-tier-mode-control mb-0" name={[index, "matchMode"]} rules={[{ required: true }]}>
                         <Segmented
                             block
-                            aria-label="规格适用范围"
+                            aria-label={tr("规格适用范围")}
                             options={[
-                                { label: "统一规格", value: "default" },
-                                { label: "按规格匹配", value: "advanced" },
+                                { label: tr("统一规格"), value: "default" },
+                                { label: tr("按规格匹配"), value: "advanced" },
                             ]}
                         />
                     </Form.Item>
@@ -97,21 +98,21 @@ export function PriceTierFields({
                         <section className="admin-price-tier-panel admin-price-tier-conditions-panel">
                             <div className="admin-price-tier-panel-heading">
                                 <div>
-                                    <h3>匹配条件</h3>
-                                    <p>符合以下条件时使用这条价格，精确规则优先。</p>
+                                    <h3>{tr("匹配条件")}</h3>
+                                    <p>{tr("符合以下条件时使用这条价格，精确规则优先。")}</p>
                                 </div>
                             </div>
                             <div className="admin-price-tier-match-grid">
-                                <Form.Item className="mb-0" name={[index, "operation"]} label="生成方式" rules={[{ required: true, message: "请选择生成方式" }]}>
+                                <Form.Item className="mb-0" name={[index, "operation"]} label={tr("生成方式")} rules={[{ required: true, message: tr("请选择生成方式") }]}>
                                     <Select options={operationOptions(capability)} />
                                 </Form.Item>
                                 {isVideo ? (
-                                    <Form.Item className="mb-0" name={[index, "resolution"]} label="分辨率" rules={[{ required: true, message: "请选择分辨率" }]}>
-                                        <Select options={[{ label: "任意分辨率", value: "*" }, ...resolutionOptions.map((value) => ({ label: value.toUpperCase(), value: normalizeTierResolution(value) }))]} />
+                                    <Form.Item className="mb-0" name={[index, "resolution"]} label={tr("分辨率")} rules={[{ required: true, message: tr("请选择分辨率") }]}>
+                                        <Select options={[{ label: tr("任意分辨率"), value: "*" }, ...resolutionOptions.map((value) => ({ label: value.toUpperCase(), value: normalizeTierResolution(value) }))]} />
                                     </Form.Item>
                                 ) : null}
                                 {isVideo && video?.processing ? (
-                                    <Form.Item className="mb-0" name={[index, "fpsBand"]} label="输出帧率档" tooltip="视频处理按输出帧率分档计价；保持原帧率时按 ≤30fps 档预扣">
+                                    <Form.Item className="mb-0" name={[index, "fpsBand"]} label={tr("输出帧率档")} tooltip={tr("视频处理按输出帧率分档计价；保持原帧率时按 ≤30fps 档预扣")}>
                                         <Select options={fpsBandOptions} />
                                     </Form.Item>
                                 ) : null}
@@ -125,27 +126,27 @@ export function PriceTierFields({
                                           ))
                                     : null}
                                 {isImage && !image?.parameters && (image?.resolution?.supported || (image && imageResolutionTiers(image).length > 0)) ? (
-                                    <Form.Item className="mb-0" name={[index, "imageResolution"]} label="上游分辨率" rules={[{ required: true, message: "请选择上游分辨率" }]}>
+                                    <Form.Item className="mb-0" name={[index, "imageResolution"]} label={tr("上游分辨率")} rules={[{ required: true, message: tr("请选择上游分辨率") }]}>
                                         <Select
                                             options={[
-                                                { label: "任意分辨率", value: "*" },
+                                                { label: tr("任意分辨率"), value: "*" },
                                                 ...[...new Set([...(image?.resolution?.supported ? image.resolution.values : imageResolutionTiers(image!)), "1.5k"])].map((value) => ({ label: value.toUpperCase(), value })),
                                             ]}
                                         />
                                     </Form.Item>
                                 ) : null}
                                 {isImage && !image?.parameters && image?.quality.supported ? (
-                                    <Form.Item className="mb-0" name={[index, "quality"]} label="画质" rules={[{ required: true, message: "请选择画质" }]}>
-                                        <Select options={[{ label: "任意画质", value: "*" }, ...image.quality.values.map((value) => ({ label: value.toUpperCase(), value }))]} />
+                                    <Form.Item className="mb-0" name={[index, "quality"]} label={tr("画质")} rules={[{ required: true, message: tr("请选择画质") }]}>
+                                        <Select options={[{ label: tr("任意画质"), value: "*" }, ...image.quality.values.map((value) => ({ label: value.toUpperCase(), value }))]} />
                                     </Form.Item>
                                 ) : null}
                                 {isImage && !image?.parameters && image?.size.parameter !== "none" ? (
-                                    <Form.Item className="mb-0" name={[index, "size"]} label="画幅/尺寸">
-                                        <Input placeholder="任意，或 1:1、16:9、1024x1024" />
+                                    <Form.Item className="mb-0" name={[index, "size"]} label={tr("画幅/尺寸")}>
+                                        <Input placeholder={tr("任意，或 1:1、16:9、1024x1024")} />
                                     </Form.Item>
                                 ) : null}
-                                <Form.Item className="admin-price-tier-upstream mb-0" name={[index, "providerModelKey"]} label="命中后使用的上游模型 ID">
-                                    <Input placeholder="留空则使用模型默认上游 ID" />
+                                <Form.Item className="admin-price-tier-upstream mb-0" name={[index, "providerModelKey"]} label={tr("命中后使用的上游模型 ID")}>
+                                    <Input placeholder={tr("留空则使用模型默认上游 ID")} />
                                 </Form.Item>
                             </div>
                         </section>
@@ -156,8 +157,8 @@ export function PriceTierFields({
                         className="admin-price-tier-alert"
                         type="warning"
                         showIcon
-                        title="该统一规格档仍指向独立上游模型 ID"
-                        description={`命中此档的请求会优先使用「${staleTierUpstream}」，而不是模型默认上游「${modelUpstream}」。`}
+                        title={tr("该统一规格档仍指向独立上游模型 ID")}
+                        description={tr("命中此档的请求会优先使用「{0}」，而不是模型默认上游「{1}」。", staleTierUpstream, modelUpstream)}
                         action={
                             <Button
                                 size="small"
@@ -166,7 +167,7 @@ export function PriceTierFields({
                                     form.setFieldValue(["priceTiers", index, "providerModelKey"], "");
                                 }}
                             >
-                                清除并跟随模型
+                                {tr("清除并跟随模型")}
                             </Button>
                         }
                     />
@@ -181,18 +182,18 @@ function ImagePriceParameterInput({ field, value, onChange }: { field: import("@
     if (field.name === "imageResolution") {
         const standardChoices = ["1k", "1.5k", "2k", "4k"];
         const values = field.values?.length ? [...new Set([...field.values.map(String), "1.5k"])] : standardChoices;
-        return <Select allowClear placeholder="任意" value={value} options={[{ label: "任意分辨率", value: "*" }, ...values.map((v) => ({ label: v.toUpperCase(), value: v }))]} onChange={onChange} />;
+        return <Select allowClear placeholder={tr("任意")} value={value} options={[{ label: tr("任意分辨率"), value: "*" }, ...values.map((v) => ({ label: v.toUpperCase(), value: v }))]} onChange={onChange} />;
     }
     const typed = value === undefined || value === "" || value === "*" ? undefined : field.type === "boolean" ? value === "true" : field.type === "number" || field.type === "integer" ? Number(value) : value;
     if (field.type === "boolean")
         return (
             <Select
                 allowClear
-                placeholder="任意"
+                placeholder={tr("任意")}
                 value={value}
                 options={[
-                    { label: "开启", value: "true" },
-                    { label: "关闭", value: "false" },
+                    { label: tr("开启"), value: "true" },
+                    { label: tr("关闭"), value: "false" },
                 ]}
                 onChange={onChange}
             />
@@ -201,16 +202,16 @@ function ImagePriceParameterInput({ field, value, onChange }: { field: import("@
 }
 
 const fpsBandOptions = [
-    { label: "任意帧率", value: "*" },
+    { label: tr("任意帧率"), value: "*" },
     { label: "≤30fps", value: "le30" },
     { label: "30–60fps", value: "le60" },
     { label: "60–120fps", value: "le120" },
 ];
 
 function operationOptions(capability: EditableCapability | undefined) {
-    const options = [{ label: "任意生成方式", value: "*" }];
-    if (capability === "image") return [...options, { label: "文生图", value: "text_to_image" }, { label: "图生图", value: "image_to_image" }];
-    if (capability === "video") return [...options, { label: "文生视频", value: "text_to_video" }, { label: "图生视频", value: "image_to_video" }, { label: "视频生视频", value: "video_to_video" }, { label: "画质增强", value: "enhance" }];
-    if (capability === "text") return [...options, { label: "文本生成", value: "text_generation" }];
+    const options = [{ label: tr("任意生成方式"), value: "*" }];
+    if (capability === "image") return [...options, { label: tr("文生图"), value: "text_to_image" }, { label: tr("图生图"), value: "image_to_image" }];
+    if (capability === "video") return [...options, { label: tr("文生视频"), value: "text_to_video" }, { label: tr("图生视频"), value: "image_to_video" }, { label: tr("视频生视频"), value: "video_to_video" }, { label: tr("画质增强"), value: "enhance" }];
+    if (capability === "text") return [...options, { label: tr("文本生成"), value: "text_generation" }];
     return options;
 }

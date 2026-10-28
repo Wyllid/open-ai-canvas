@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CanvasNodeData, CanvasNodeTypeId } from "@/types/canvas";
 import type { PluginCanvasNodeContribution } from "@/lib/plugins/plugin-types";
 
@@ -16,7 +17,7 @@ export function registerNodeDefinitions(defs: CanvasNodeDefinition[], ownerId = 
     const ids = new Set<string>();
     for (const def of defs) {
         const owner = ownerByType.get(def.type);
-        if (ids.has(def.type) || (owner && owner !== ownerId)) throw new Error(`节点类型重复或归属冲突：${def.type}`);
+        if (ids.has(def.type) || (owner && owner !== ownerId)) throw new Error(tr("节点类型重复或归属冲突：{0}", def.type));
         ids.add(def.type);
     }
     for (const def of defs) {
@@ -61,14 +62,14 @@ export function listCreatableNodeDefinitions() {
 
 /** UI 短标签 */
 export function getNodeLabel(type: CanvasNodeTypeId) {
-    return definitions.get(type)?.label || "未知节点";
+    return definitions.get(type)?.label || tr("未知节点");
 }
 
 /** 列表/搜索标签，缺省派生自 label */
 export function getNodeListLabel(type: CanvasNodeTypeId) {
     const def = definitions.get(type);
-    if (!def) return "未知节点";
-    return def.listLabel || `${def.label}节点`;
+    if (!def) return tr("未知节点");
+    return def.listLabel || tr("{0}节点", def.label);
 }
 
 export function getNodeIcon(type: CanvasNodeTypeId) {

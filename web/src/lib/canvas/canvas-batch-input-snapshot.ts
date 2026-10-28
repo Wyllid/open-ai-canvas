@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { buildNodeGenerationContext, type NodeGenerationContext } from "@/components/canvas/canvas-node-generation";
 import { canvasGenerationInputPrompt } from "@/lib/canvas/canvas-generation-input-prompt";
 import { nodeGenerationPrompt } from "@/lib/canvas/generation-contract";
@@ -10,7 +11,7 @@ export function createCanvasBatchInputSnapshot(node: CanvasNodeData, nodes: Canv
     const context = buildNodeGenerationContext(node.id, nodes, connections, canvasGenerationInputPrompt(node, "image", prompt), assets);
     const referenceImages = context.referenceImages.map((image) => {
         if (!image.storageKey && /^(data:|blob:)/i.test(image.dataUrl || image.url || "")) {
-            throw new Error(`参考图「${image.name}」尚未保存为资源，请完成保存后重新提交批量任务`);
+            throw new Error(tr("参考图「{0}」尚未保存为资源，请完成保存后重新提交批量任务", image.name));
         }
         const source = nodes.find((candidate) => candidate.id === image.id);
         const dimensions = { width: image.width || source?.metadata?.naturalWidth, height: image.height || source?.metadata?.naturalHeight };

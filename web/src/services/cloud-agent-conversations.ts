@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { localForageStorageForScope } from "@/lib/localforage-storage";
 import { markdownPlainText } from "@/lib/markdown-plain-text";
 import { getActiveUserScope } from "@/lib/user-scope";
@@ -68,9 +69,9 @@ export async function loadCloudAgentConversations(scope = getActiveUserScope()):
     try {
         parsed = JSON.parse(value);
     } catch {
-        throw new Error("Agent 对话历史已损坏");
+        throw new Error(tr("Agent 对话历史已损坏"));
     }
-    if (!isConversationDocument(parsed)) throw new Error("Agent 对话历史格式无效");
+    if (!isConversationDocument(parsed)) throw new Error(tr("Agent 对话历史格式无效"));
     return parsed;
 }
 
@@ -105,12 +106,12 @@ export async function loadCloudAgentPendingSubmission(conversationId: string, sc
         if (parsed.messageId !== undefined && typeof parsed.messageId !== "string") throw new Error("invalid message");
         return { fingerprint: parsed.fingerprint, key: parsed.key, request: parsed.request, parentRunId: parsed.parentRunId, messageId: parsed.messageId, displayText: parsed.displayText, canvasReferenceNodeId: parsed.canvasReferenceNodeId } satisfies CloudAgentPendingSubmission;
     } catch {
-        throw new Error("待确认请求记录损坏，已暂停本对话发送；请先在任务中心核对原运行，不要直接重复生成");
+        throw new Error(tr("待确认请求记录损坏，已暂停本对话发送；请先在任务中心核对原运行，不要直接重复生成"));
     }
 }
 
 export async function saveCloudAgentPendingSubmission(conversationId: string, pending: CloudAgentPendingSubmission, scope = getActiveUserScope()) {
-    if (!conversationId) throw new Error("缺少 Agent 对话范围，无法保存幂等提交");
+    if (!conversationId) throw new Error(tr("缺少 Agent 对话范围，无法保存幂等提交"));
     await localForageStorageForScope(scope).setItem(pendingStorageKey(conversationId), JSON.stringify(pending));
 }
 
@@ -133,7 +134,7 @@ export function cloudAgentConversationTitle(messages: CloudAgentConversationMess
 }
 
 function displayConversationTitle(value: string) {
-    return markdownPlainText(value.replace(/@\[skill:[^\]]+\]/gu, "技能包")) || "新对话";
+    return markdownPlainText(value.replace(/@\[skill:[^\]]+\]/gu, "技能包")) || tr("新对话");
 }
 
 function storageKey() {

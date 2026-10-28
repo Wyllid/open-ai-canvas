@@ -1,9 +1,10 @@
+import { tr } from "@/i18n";
 import { Button, ConfigProvider } from "antd";
 import { RotateCcw } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 /** 内容库的浏览控件，不复用后台表格的筛选外框。 */
-export function CollectionToolbar({ children, trailing, active, onReset, label = "搜索与筛选" }: {
+export function CollectionToolbar({ children, trailing, active, onReset, label = tr("搜索与筛选") }: {
     children: ReactNode;
     trailing?: ReactNode;
     active?: boolean;
@@ -28,7 +29,7 @@ export function CollectionToolbar({ children, trailing, active, onReset, label =
             <div className="collection-toolbar-controls">{children}</div>
         </ConfigProvider>
         <div className="collection-toolbar-actions">
-            {active && onReset ? <Button type="text" icon={<RotateCcw />} onClick={onReset}>重置</Button> : null}
+            {active && onReset ? <Button type="text" icon={<RotateCcw />} onClick={onReset}>{tr("重置")}</Button> : null}
             {trailing}
         </div>
     </section>;

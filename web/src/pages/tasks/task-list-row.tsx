@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Button } from "antd";
 import { IconButton } from "@/components/ui/base/buttons";
 import { Tooltip } from "@/components/ui/base/tooltip";
@@ -48,7 +49,7 @@ export function TaskListRow({
                         {generationTaskStatusLabel(task)}
                     </span>
                     <button type="button" className="task-record-title" title={task.prompt} onClick={onOpen}>
-                        {task.prompt || "未命名任务"}
+                        {task.prompt || tr("未命名任务")}
                     </button>
                 </div>
                 <div className="task-record-meta">
@@ -80,16 +81,16 @@ export function TaskListRow({
                 <TaskDate value={task.createdAt} />
             </div>
             <div className="task-record-actions">
-                <Tooltip title="查看详情">
-                    <IconButton size="sm" variant="ghost" icon={Eye} aria-label="查看详情" onClick={onOpen} />
+                <Tooltip title={tr("查看详情")}>
+                    <IconButton size="sm" variant="ghost" icon={Eye} aria-label={tr("查看详情")} onClick={onOpen} />
                 </Tooltip>
                 {isFailed ? (
-                    <Tooltip title={retryDisabled ? "内容审核失败，无法自动重试" : task.canRecoverMedia ? "重试保存，不重新生成" : "重试任务"}>
+                    <Tooltip title={retryDisabled ? tr("内容审核失败，无法自动重试") : task.canRecoverMedia ? tr("重试保存，不重新生成") : tr("重试任务")}>
                         <Button
                             type="text"
                             size="small"
                             icon={<RotateCcw className="size-3.5" />}
-                            aria-label={task.canRecoverMedia ? "重试保存" : "重试任务"}
+                            aria-label={task.canRecoverMedia ? tr("重试保存") : tr("重试任务")}
                             loading={actingId === task.id}
                             disabled={retryDisabled}
                             onClick={onRetry}
@@ -121,10 +122,10 @@ function TaskPreviewThumbnail({ task, onOpen }: { task: GenerationTask; onOpen: 
             onClick={onOpen}
             disabled={previewUnavailable}
             className="task-record-thumb group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={previewUnavailable ? "预览不可用，素材可能已删除" : isVideo ? "放大预览生成视频" : "放大预览生成图片"}
-            title={previewUnavailable ? "预览不可用，素材可能已删除" : undefined}
+            aria-label={previewUnavailable ? tr("预览不可用，素材可能已删除") : isVideo ? tr("放大预览生成视频") : tr("放大预览生成图片")}
+            title={previewUnavailable ? tr("预览不可用，素材可能已删除") : undefined}
         >
-            {thumbnailUrl ? <MediaPreview src={thumbnailUrl} kind="image" width={68} height={48} loading="lazy" className="h-full w-full object-cover" fallbackLabel="预览不可用" onUnavailable={() => setUnavailableUrl(thumbnailUrl)} /> : isVideo ? <TaskVideoThumbnail src={task.previewUrl} /> : <ImageIcon className="size-4" />}
+            {thumbnailUrl ? <MediaPreview src={thumbnailUrl} kind="image" width={68} height={48} loading="lazy" className="h-full w-full object-cover" fallbackLabel={tr("预览不可用")} onUnavailable={() => setUnavailableUrl(thumbnailUrl)} /> : isVideo ? <TaskVideoThumbnail src={task.previewUrl} /> : <ImageIcon className="size-4" />}
             {!previewUnavailable ? (
                 <span className="absolute inset-0 grid place-items-center bg-black/0 text-white opacity-0 transition-[background-color,opacity] duration-150 group-hover:bg-black/30 group-hover:opacity-100 group-focus-visible:bg-black/30 group-focus-visible:opacity-100">
                     {isVideo ? <Play className="size-4 fill-current" /> : <Eye className="size-4" />}

@@ -1,6 +1,7 @@
+import { tr } from "@/i18n";
 export class CanvasSyncPendingError extends Error {
     readonly retryable = true;
-    constructor(message = "云端仍在处理，当前编辑可继续") {
+    constructor(message = tr("云端仍在处理，当前编辑可继续")) {
         super(message);
         this.name = "CanvasSyncPendingError";
     }

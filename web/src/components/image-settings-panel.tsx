@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { ImageSizePicker } from "./image-size-picker";
 import { ImageParameterFields } from "./image-parameter-fields";
 import { imageResolutionUsesQuality, imageSizePresets } from "@/lib/image-size-presets";
@@ -62,7 +63,7 @@ export function ImageSettingsPanel({ config, onConfigChange, theme, showTitle = 
     const activeSize = normalized.size;
     const activeQualityOptions = profile.quality.values.map((value) => ({ value, label: imageQualityLabel(value) }));
     const priceTiers = imageModelPriceTiers(config);
-    if (profile.parameters) return <ImageSettingsTheme theme={theme}><div className={className}>{showTitle ? <div className="mb-3 text-base font-semibold">图像设置</div> : null}<ImageParameterFields profile={profile} config={config} onChange={onConfigChange} showSize={showSize} showCount={showCount} showQuality={showQuality} showTransparent={showTransparent} /></div></ImageSettingsTheme>;
+    if (profile.parameters) return <ImageSettingsTheme theme={theme}><div className={className}>{showTitle ? <div className="mb-3 text-base font-semibold">{tr("图像设置")}</div> : null}<ImageParameterFields profile={profile} config={config} onChange={onConfigChange} showSize={showSize} showCount={showCount} showQuality={showQuality} showTransparent={showTransparent} /></div></ImageSettingsTheme>;
 
     return (
         <ImageSettingsTheme theme={theme}>
@@ -75,9 +76,9 @@ export function ImageSettingsPanel({ config, onConfigChange, theme, showTitle = 
                     if (document.activeElement instanceof HTMLInputElement && event.currentTarget.contains(document.activeElement)) document.activeElement.blur();
                 }}
             >
-                {showTitle ? <div className="text-base font-semibold">图像设置</div> : null}
+                {showTitle ? <div className="text-base font-semibold">{tr("图像设置")}</div> : null}
                 {showQuality && profile.quality.supported && !imageResolutionUsesQuality(profile) ? <div className="space-y-2">
-                    <SettingTitle color={theme.node.muted}>{isGrokResolutionQuality(profile) ? "分辨率" : "质量"}</SettingTitle>
+                    <SettingTitle color={theme.node.muted}>{isGrokResolutionQuality(profile) ? tr("分辨率") : tr("质量")}</SettingTitle>
                     <div className={`grid gap-2 ${activeQualityOptions.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
 						{activeQualityOptions.map((item) => (
                             <OptionPill key={item.value} selected={quality === item.value} disabled={!bypassPriceGuard && !hasPriceTierForImageSelection(priceTiers, item.value, activeSize)} theme={theme} onClick={() => onConfigChange("quality", item.value)}>
@@ -88,12 +89,12 @@ export function ImageSettingsPanel({ config, onConfigChange, theme, showTitle = 
                 </div> : null}
                 {showTransparent && profile.transparentBackground.supported ? <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                        <SettingTitle color={theme.node.muted}>透明背景</SettingTitle>
+                        <SettingTitle color={theme.node.muted}>{tr("透明背景")}</SettingTitle>
                         <div className="mt-1 text-[var(--fs-label)]" style={{ color: theme.node.muted }}>
-                            请求模型输出保留 Alpha 通道的 PNG
+                            {tr("请求模型输出保留 Alpha 通道的 PNG")}
                         </div>
                     </div>
-                    <span title="是否支持透明背景由当前模型接口决定" onMouseDown={(event) => event.stopPropagation()}>
+                    <span title={tr("是否支持透明背景由当前模型接口决定")} onMouseDown={(event) => event.stopPropagation()}>
                         <Switch
                             size="sm"
                             checked={transparentBackground}
@@ -104,7 +105,7 @@ export function ImageSettingsPanel({ config, onConfigChange, theme, showTitle = 
                 {showSize ? <ImageSizePicker profile={profile} size={activeSize} quality={quality} imageResolution={normalized.imageResolution} onChange={(size, nextQuality, nextResolution) => applyImageSizeSelection(onConfigChange, size, nextQuality, nextResolution)} /> : null}
                 {showCount && effectiveMaxCount > 1 ? (
                     <div className="space-y-2">
-                        <SettingTitle color={theme.node.muted}>生成张数</SettingTitle>
+                        <SettingTitle color={theme.node.muted}>{tr("生成张数")}</SettingTitle>
                         <div className="grid grid-cols-4 gap-2">
                             {Array.from({ length: Math.min(3, effectiveMaxCount) }, (_, index) => index + 1).map((value) => (
                                 <OptionPill key={value} selected={count === value} theme={theme} onClick={() => onConfigChange("count", String(value))}>
@@ -264,7 +265,7 @@ function CountStepperInput({
             <input
                 type="text"
                 inputMode="numeric"
-                aria-label="自定义生成张数"
+                aria-label={tr("自定义生成张数")}
                 value={draftValue}
                 onChange={handleInputChange}
                 onBlur={handleInputBlur}
@@ -288,8 +289,8 @@ function CountStepperInput({
                     onClick={handleStepUp}
                     disabled={value >= max && isSelected}
                     className="flex flex-1 w-full items-center justify-center hover:bg-black/15 dark:hover:bg-white/15 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    title="增加 1 张"
-                    aria-label="增加 1 张"
+                    title={tr("增加 1 张")}
+                    aria-label={tr("增加 1 张")}
                 >
                     <ChevronUp className="size-2.5 opacity-70" />
                 </button>
@@ -299,8 +300,8 @@ function CountStepperInput({
                     onClick={handleStepDown}
                     disabled={value <= 1 && isSelected}
                     className="flex flex-1 w-full items-center justify-center hover:bg-black/15 dark:hover:bg-white/15 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                    title="减少 1 张"
-                    aria-label="减少 1 张"
+                    title={tr("减少 1 张")}
+                    aria-label={tr("减少 1 张")}
                 >
                     <ChevronDown className="size-2.5 opacity-70" />
                 </button>

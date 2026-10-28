@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { dataUrlToFile } from "@/lib/image-utils";
 import { modelCapabilityConfigFor, videoResolutionRequest } from "@/lib/model-capabilities";
 import { imageToDataUrl } from "@/services/image-storage";
@@ -15,7 +16,7 @@ export async function createOpenAIVideoTask(deps: VideoProviderDeps, config: Res
         const seconds = normalizeVideoSeconds(config.videoSeconds);
         const referenceMode = options?.videoEditOperation === "reference_to_video";
         const explicitFrameMode = !referenceMode && Boolean(options?.videoStartFrameNodeId || options?.videoEndFrameNodeId);
-        if (config.interfaceType === "xai-video" && explicitFrameMode && (images.length > 1 || options?.videoEndFrameNodeId)) throw new Error("xAI 视频协议最多支持 1 张起始图，不支持尾帧或混合角色参考图");
+        if (config.interfaceType === "xai-video" && explicitFrameMode && (images.length > 1 || options?.videoEndFrameNodeId)) throw new Error(tr("xAI 视频协议最多支持 1 张起始图，不支持尾帧或混合角色参考图"));
         const imagePayload = config.interfaceType === "xai-video"
             ? referenceMode && images.length
                 ? { reference_images: images.map((url) => ({ url })) }
@@ -33,10 +34,10 @@ export async function createOpenAIVideoTask(deps: VideoProviderDeps, config: Res
             const createPath = config.interfaceType === "xai-video" ? "/videos/generations" : "/videos";
             const created = deps.response.unwrapVideoResponse(await deps.transport.post<ApiVideoResponse>(deps.transport.apiUrl(createPath), payload, options));
             const id = deps.response.videoTaskId(created);
-            if (!id) throw new Error("视频接口没有返回任务 ID");
+            if (!id) throw new Error(tr("视频接口没有返回任务 ID"));
             return { id, provider: "openai", model };
         } catch (error) {
-            throw new Error(deps.response.readAxiosError(error, "视频任务创建失败"));
+            throw new Error(deps.response.readAxiosError(error, tr("视频任务创建失败")));
         }
     }
     const body = new FormData();
@@ -51,10 +52,10 @@ export async function createOpenAIVideoTask(deps: VideoProviderDeps, config: Res
     files.forEach((file) => body.append("input_reference[]", file));
     try {
         const created = deps.response.unwrapVideoResponse(await deps.transport.postForm<ApiVideoResponse>(deps.transport.apiUrl("/videos"), body, options));
-        if (!created.id) throw new Error("视频接口没有返回任务 ID");
+        if (!created.id) throw new Error(tr("视频接口没有返回任务 ID"));
         return { id: created.id, provider: "openai", model };
     } catch (error) {
-        throw new Error(deps.response.readAxiosError(error, "视频任务创建失败"));
+        throw new Error(deps.response.readAxiosError(error, tr("视频任务创建失败")));
     }
 }
 
@@ -68,9 +69,9 @@ export async function pollOpenAIVideoTask(deps: VideoProviderDeps, task: VideoGe
             await deps.response.assertVideoBlob(content);
             return { status: "completed", result: { blob: content } };
         }
-        if (video.status === "failed" || video.status === "cancelled") return { status: "failed", error: video.error?.message || "视频生成失败" };
+        if (video.status === "failed" || video.status === "cancelled") return { status: "failed", error: video.error?.message || tr("视频生成失败") };
         return { status: "pending" };
     } catch (error) {
-        throw new Error(deps.response.readAxiosError(error, "视频任务查询失败"));
+        throw new Error(deps.response.readAxiosError(error, tr("视频任务查询失败")));
     }
 }

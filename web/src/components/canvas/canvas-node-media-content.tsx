@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 画布节点的媒体内容：图片、视频、音频的预览、懒加载与失活占位。
 //
 // 视频只有在进入视口且被激活时才加载真实播放地址（useNearViewport / useVideoPlaybackUrl），
@@ -80,10 +81,10 @@ export function EmptyImageContent({ node, theme, isBatchRoot, batchCount, batchP
                     <div className="truncate text-xs font-medium" title={node.metadata?.characterName || node.title} style={{ color: theme.node.muted }}>
                         {node.metadata?.characterName || node.title}
                     </div>
-                    <div className="mt-1 text-[var(--fs-tiny)] tracking-[0.12em] opacity-50">多视角参考 · 待生成</div>
+                    <div className="mt-1 text-[var(--fs-tiny)] tracking-[0.12em] opacity-50">{tr("多视角参考 · 待生成")}</div>
                 </div>
             ) : (
-                <span className="text-[var(--fs-tiny)] tracking-[0.18em] opacity-50">空图片节点</span>
+                <span className="text-[var(--fs-tiny)] tracking-[0.18em] opacity-50">{tr("空图片节点")}</span>
             )}
         </div>
     );
@@ -156,7 +157,7 @@ export function VideoNodeContent({ node, theme, mediaActive = false, onMediaPlay
         };
     }, [node.id, node.metadata?.naturalHeight, node.metadata?.naturalWidth, subtitleEntries.length, updateMediaNode, url]);
 
-    if (!node.metadata?.content && !node.metadata?.storageKey) return <EmptyMediaContent icon={<Video className="size-7 opacity-35" />} label="空视频节点" color={theme.node.placeholder} />;
+    if (!node.metadata?.content && !node.metadata?.storageKey) return <EmptyMediaContent icon={<Video className="size-7 opacity-35" />} label={tr("空视频节点")} color={theme.node.placeholder} />;
     if (!mediaActive) return <InactiveVideoPreview node={node} theme={theme} onPlay={() => onMediaPlayRequest?.(node.id)} />;
 
     const sourceRatio = (videoSize?.width || node.metadata?.naturalWidth || node.width) / Math.max(1, videoSize?.height || node.metadata?.naturalHeight || node.height);
@@ -170,7 +171,7 @@ export function VideoNodeContent({ node, theme, mediaActive = false, onMediaPlay
             {preview ? (
                 <CanvasVideoPreviewImage
                     node={node}
-                    alt={`${node.title || "视频"} 静态预览`}
+                    alt={tr("{0} 静态预览", node.title || tr("视频"))}
                     loading="eager"
                     decoding="sync"
                     draggable={false}
@@ -179,7 +180,7 @@ export function VideoNodeContent({ node, theme, mediaActive = false, onMediaPlay
                     fallback={<Video className="size-7 text-white/40" />}
                 />
             ) : !url || loading ? (
-                <MediaLoadingState icon={<LoaderCircle className="size-5 animate-spin" />} label={loading ? "正在加载视频" : "视频资源不可用"} />
+                <MediaLoadingState icon={<LoaderCircle className="size-5 animate-spin" />} label={loading ? tr("正在加载视频") : tr("视频资源不可用")} />
             ) : null}
             {url ? (
                 <div className={`relative z-[1] transition-opacity duration-150 ${videoReady ? "opacity-100" : "opacity-0"}`} style={{ width: fitWidth, height: Math.round(fitHeight) }}>
@@ -187,7 +188,7 @@ export function VideoNodeContent({ node, theme, mediaActive = false, onMediaPlay
                         key={playerKey}
                         src={url}
                         mimeType={node.metadata?.mimeType}
-                        title={node.title || "视频"}
+                        title={node.title || tr("视频")}
                         hasAudio={inferVideoHasAudio(node.metadata)}
                         autoPlay
                         preload="metadata"
@@ -217,7 +218,7 @@ export function inferVideoHasAudio(metadata: CanvasNodeData["metadata"]): boolea
 }
 
 export function AudioNodeContent({ node, theme }: CanvasNodeContentProps) {
-    if (!node.metadata?.content && !node.metadata?.storageKey) return <EmptyMediaContent icon={<Music2 className="size-7 opacity-35" />} label="空音频节点" color={theme.node.placeholder} />;
+    if (!node.metadata?.content && !node.metadata?.storageKey) return <EmptyMediaContent icon={<Music2 className="size-7 opacity-35" />} label={tr("空音频节点")} color={theme.node.placeholder} />;
     return <CanvasAudioPlayer node={node} theme={theme} />;
 }
 
@@ -298,7 +299,7 @@ export function InactiveVideoPreview({ node, theme, onPlay }: Pick<CanvasNodeCon
                 {hasPersistedPreview ? (
                     <CanvasVideoPreviewImage
                         node={node}
-                        alt={`${node.title || "视频"} 静态预览`}
+                        alt={tr("{0} 静态预览", node.title || tr("视频"))}
                         loading="lazy"
                         decoding="sync"
                         draggable={false}
@@ -307,16 +308,16 @@ export function InactiveVideoPreview({ node, theme, onPlay }: Pick<CanvasNodeCon
                         fallback={<Video className="size-7 text-white/40" />}
                     />
                 ) : (
-                    <img src={localPreviewUrl} alt={`${node.title || "视频"} 静态预览`} loading="lazy" decoding="sync" draggable={false} className="pointer-events-none size-full select-none object-contain" />
+                    <img src={localPreviewUrl} alt={tr("{0} 静态预览", node.title || tr("视频"))} loading="lazy" decoding="sync" draggable={false} className="pointer-events-none size-full select-none object-contain" />
                 )}
-                <VideoPreviewPlayButton title={node.title || "视频"} onPlay={onPlay} />
+                <VideoPreviewPlayButton title={node.title || tr("视频")} onPlay={onPlay} />
             </div>
         );
     }
     return (
         <div ref={previewRef} className="group/video-preview relative size-full">
-            <InactiveMediaCard icon={<Video className="size-7" />} title={node.title || "视频"} hint={hydrating ? "正在生成首帧" : nearViewport ? "点击播放视频" : "进入视口后加载首帧"} theme={theme} />
-            <VideoPreviewPlayButton title={node.title || "视频"} onPlay={onPlay} />
+            <InactiveMediaCard icon={<Video className="size-7" />} title={node.title || tr("视频")} hint={hydrating ? tr("正在生成首帧") : nearViewport ? tr("点击播放视频") : tr("进入视口后加载首帧")} theme={theme} />
+            <VideoPreviewPlayButton title={node.title || tr("视频")} onPlay={onPlay} />
         </div>
     );
 }
@@ -326,8 +327,8 @@ export function VideoPreviewPlayButton({ title, onPlay }: { title: string; onPla
         <button
             type="button"
             className="absolute left-1/2 top-1/2 z-[var(--node-z-overlay)] grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-black/62 text-white shadow-lg backdrop-blur transition-[background-color,opacity] duration-150 hover:bg-black/78 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            aria-label={`播放 ${title}`}
-            title="播放视频"
+            aria-label={tr("播放 {0}", title)}
+            title={tr("播放视频")}
             onPointerDown={(event) => event.stopPropagation()}
             onMouseDown={(event) => event.stopPropagation()}
             onClick={(event) => {
@@ -569,12 +570,12 @@ export function ImageContent({
                 />
                 {node.metadata?.imageLayerGroup?.incomplete ? (
                     <div role="status" className="absolute bottom-2 left-2 right-2 rounded bg-black/75 px-2 py-1 text-xs text-amber-300">
-                        部分合成：{node.metadata.imageLayerGroup.incomplete.completed}/{node.metadata.imageLayerGroup.incomplete.total} 层已通过{node.metadata.imageLayerGroup.incomplete.missingBackground ? "，缺少完整背景" : ""}，展开可查看并重试失败层
+                        {tr("部分合成：")}{node.metadata.imageLayerGroup.incomplete.completed}/{node.metadata.imageLayerGroup.incomplete.total} {tr("层已通过")}{node.metadata.imageLayerGroup.incomplete.missingBackground ? tr("，缺少完整背景") : ""}{tr("，展开可查看并重试失败层")}
                     </div>
                 ) : null}
                 {node.metadata?.imageLayerGroup?.compositeStatus === "updating" || node.metadata?.imageLayerGroup?.compositeStatus === "error" ? (
                     <div role="status" className="absolute inset-0 grid place-items-center bg-black/60 p-4 text-center text-xs text-white">
-                        {node.metadata.imageLayerGroup.compositeStatus === "updating" ? "正在更新合成图…" : node.metadata.imageLayerGroup.compositeError || "合成图更新失败，请在图层管理中重试"}
+                        {node.metadata.imageLayerGroup.compositeStatus === "updating" ? tr("正在更新合成图…") : node.metadata.imageLayerGroup.compositeError || tr("合成图更新失败，请在图层管理中重试")}
                     </div>
                 ) : null}
             </div>
@@ -766,7 +767,7 @@ export function BatchPreviewImage({ node }: { node: CanvasNodeData }) {
     const { url } = useNodeResourceUrl(node, nearViewport);
     return (
         <div ref={ref} className="h-full w-full overflow-hidden rounded-[inherit]">
-            {url ? <img src={url} alt={`子图预览：${node.title}`} className="h-full w-full object-contain" draggable={false} /> : null}
+            {url ? <img src={url} alt={tr("子图预览：{0}", node.title)} className="h-full w-full object-contain" draggable={false} /> : null}
         </div>
     );
 }

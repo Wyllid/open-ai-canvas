@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 
 import { NODE_DEFAULT_SIZE } from "@/constant/canvas";
@@ -57,24 +58,24 @@ const DEFAULT_GAP = 120;
 const WORKFLOW_PREFIX = "agent-workflow";
 
 export function buildCanvasWorkflowOps(input: CanvasWorkflowInput, snapshot: CanvasSnapshot, config: AiConfig, identityPrefix?: string): CanvasOperation[] {
-    if (!Array.isArray(input.nodes) || input.nodes.length === 0) throw new Error("工作流至少需要一个节点");
+    if (!Array.isArray(input.nodes) || input.nodes.length === 0) throw new Error(tr("工作流至少需要一个节点"));
     const refs = new Set<string>();
     input.nodes.forEach((node) => {
-        if (!node.ref.trim()) throw new Error("工作流节点 ref 不能为空");
-        if (refs.has(node.ref)) throw new Error(`工作流节点 ref「${node.ref}」重复`);
+        if (!node.ref.trim()) throw new Error(tr("工作流节点 ref 不能为空"));
+        if (refs.has(node.ref)) throw new Error(tr("工作流节点 ref「{0}」重复", node.ref));
         refs.add(node.ref);
-        if (!node.title.trim()) throw new Error(`工作流节点「${node.ref}」缺少标题`);
+        if (!node.title.trim()) throw new Error(tr("工作流节点「{0}」缺少标题", node.ref));
         const type = nodeTypeForWorkflowKind(node.kind);
         if (![CanvasNodeType.Text, CanvasNodeType.Script].includes(type) && !(node.prompt || node.content || workflowPrompt(node.kind, node.title, input)).trim()) {
-            throw new Error(`媒体工作流节点「${node.title}」缺少 prompt/content，不能创建空资源节点`);
+            throw new Error(tr("媒体工作流节点「{0}」缺少 prompt/content，不能创建空资源节点", node.title));
         }
         for (const referenceRef of node.referenceRefs || []) {
             if (!refs.has(referenceRef) && !input.nodes.some((candidate) => candidate.ref === referenceRef)) {
-                throw new Error(`节点「${node.ref}」引用了不存在的节点「${referenceRef}」`);
+                throw new Error(tr("节点「{0}」引用了不存在的节点「{1}」", node.ref, referenceRef));
             }
         }
         for (const referenceNodeId of node.referenceNodeIds || []) {
-            if (!snapshot.nodes.some((candidate) => candidate.id === referenceNodeId)) throw new Error(`节点「${node.title}」引用的现有节点「${referenceNodeId}」不存在`);
+            if (!snapshot.nodes.some((candidate) => candidate.id === referenceNodeId)) throw new Error(tr("节点「{0}」引用的现有节点「{1}」不存在", node.title, referenceNodeId));
         }
     });
 
@@ -113,10 +114,10 @@ export function buildCanvasWorkflowOps(input: CanvasWorkflowInput, snapshot: Can
             const source = template.nodes[node.kind === "styleboard" ? 0 : node.kind === "story_input" ? 1 : 2];
             Object.assign(metadata, source.metadata, { content: node.kind === "styleboard" ? "" : node.content || "", composerContent: prompt });
             if (node.kind === "script") {
-                if (!node.shots?.length) throw new Error("创建分镜工作流必须提供非空 shots，请把镜头逐行填写 durationSeconds、videoMotionPrompt、dialogue，不能仅写正文");
-                if (node.shots && (!Array.isArray(node.shots) || node.shots.length > 100)) throw new Error("分镜最多 100 行");
+                if (!node.shots?.length) throw new Error(tr("创建分镜工作流必须提供非空 shots，请把镜头逐行填写 durationSeconds、videoMotionPrompt、dialogue，不能仅写正文"));
+                if (node.shots && (!Array.isArray(node.shots) || node.shots.length > 100)) throw new Error(tr("分镜最多 100 行"));
                 metadata.storyboard = { ...source.metadata!.storyboard!, rows: (node.shots || []).map((shot, rowIndex) => {
-                    if (!Number.isFinite(shot.durationSeconds) || shot.durationSeconds <= 0 || typeof shot.videoMotionPrompt !== "string" || !shot.videoMotionPrompt.trim()) throw new Error("每条分镜需要有效时长和视频提示词");
+                    if (!Number.isFinite(shot.durationSeconds) || shot.durationSeconds <= 0 || typeof shot.videoMotionPrompt !== "string" || !shot.videoMotionPrompt.trim()) throw new Error(tr("每条分镜需要有效时长和视频提示词"));
                     return createStoryboardRow(rowIndex + 1, { id: `${id}:shot:${rowIndex + 1}`, durationSeconds: shot.durationSeconds, videoMotionPrompt: shot.videoMotionPrompt, dialogue: typeof shot.dialogue === "string" ? shot.dialogue : "" });
                 }) };
             }
@@ -127,8 +128,8 @@ export function buildCanvasWorkflowOps(input: CanvasWorkflowInput, snapshot: Can
     const edges = input.edges !== undefined ? input.edges : input.nodes.slice(0, -1).map((node, index) => ({ from: node.ref, to: input.nodes[index + 1].ref }));
     const edgeKeys = new Set<string>();
     for (const edge of edges) {
-        if (!ids.has(edge.from) || !ids.has(edge.to)) throw new Error(`工作流连线引用不存在的节点：${edge.from} → ${edge.to}`);
-        if (edge.from === edge.to) throw new Error(`工作流不能连接节点自身：${edge.from}`);
+        if (!ids.has(edge.from) || !ids.has(edge.to)) throw new Error(tr("工作流连线引用不存在的节点：{0} → {1}", edge.from, edge.to));
+        if (edge.from === edge.to) throw new Error(tr("工作流不能连接节点自身：{0}", edge.from));
         const key = `${edge.from}\0${edge.to}`;
         if (edgeKeys.has(key)) continue;
         edgeKeys.add(key);
@@ -197,7 +198,7 @@ function nodeTypeForWorkflowKind(kind: CanvasWorkflowNodeKind) {
     if (kind === "video" || kind === "storyboard_video") return CanvasNodeType.Video;
     if (kind === "audio") return CanvasNodeType.Audio;
     if (["text", "styleboard", "story_input"].includes(kind)) return CanvasNodeType.Text;
-    throw new Error(`未知工作流节点类型：${kind}`);
+    throw new Error(tr("未知工作流节点类型：{0}", kind));
 }
 
 function nodeSize(type: CanvasNodeType, kind: CanvasWorkflowNodeKind, width?: number, height?: number) {

@@ -1,7 +1,10 @@
+import { currentLocale, tr } from "@/i18n";
 import type { ReactNode } from "react";
 import { lazy, Suspense, useEffect, useLayoutEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ConfigProvider } from "antd";
+import enUS from "antd/locale/en_US";
+import ptBR from "antd/locale/pt_BR";
 import zhCN from "antd/locale/zh_CN";
 
 import { AuthSessionHydrator } from "@/components/auth/auth-session-hydrator";
@@ -22,7 +25,7 @@ function ClientRootBoundary({ children }: { children: ReactNode }) {
     const authenticated = useUserStore((state) => Boolean(state.user));
     if (!authenticated) return children;
     return (
-        <Suspense fallback={<FullScreenLoader label="正在准备创作环境" detail="连接本地能力与模型配置" />}>
+        <Suspense fallback={<FullScreenLoader label={tr("正在准备创作环境")} detail={tr("连接本地能力与模型配置")} />}>
             <ClientRootInit>{children}</ClientRootInit>
         </Suspense>
     );
@@ -59,7 +62,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     }, [isolateDevRepro]);
 
     return (
-        <ConfigProvider locale={zhCN} theme={getAntThemeConfig(dark, appearance.activeSkin)} wave={{ disabled: true }}>
+        <ConfigProvider locale={antdLocale()} theme={getAntThemeConfig(dark, appearance.activeSkin)} wave={{ disabled: true }}>
             <AppFeedbackProvider>
                 <QueryClientProvider client={appQueryClient}>
                     {isolateDevRepro ? (
@@ -73,4 +76,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
             </AppFeedbackProvider>
         </ConfigProvider>
     );
+}
+
+function antdLocale() {
+    const locale = currentLocale();
+    return locale === "en" ? enUS : locale === "pt-BR" ? ptBR : zhCN;
 }

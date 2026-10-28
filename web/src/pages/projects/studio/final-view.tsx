@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useRef } from "react";
 import { App, Button } from "antd";
 import { Download, Film } from "lucide-react";
@@ -20,7 +21,7 @@ export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title
     }, 0);
     const download = () => {
         if (!episode.finalResourceId) return;
-        void downloadResource(episode.finalResourceId, `${title}-第${episode.number}集.mp4`).catch((error) => message.error(error instanceof Error ? error.message : "下载失败"));
+        void downloadResource(episode.finalResourceId, tr("{0}-第{1}集.mp4", title, episode.number)).catch((error) => message.error(error instanceof Error ? error.message : tr("下载失败")));
     };
     return (
         <div className="drama-finalv">
@@ -31,7 +32,7 @@ export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title
                     ) : (
                         <div className="drama-finalv-empty">
                             <Film className="size-6" aria-hidden />
-                            <span>{STAGE_LABEL[episode.stage]} · 全部段视频生成后自动合成</span>
+                            <span>{STAGE_LABEL[episode.stage]} {tr("· 全部段视频生成后自动合成")}</span>
                         </div>
                     )}
                 </div>
@@ -49,7 +50,7 @@ export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title
                         >
                             <MediaThumb resourceId={segment.tailFrameResourceId} alt={segment.title} fallback={<span className="drama-filmstrip-empty" />} />
                             <span>
-                                第 {segment.index + 1} 段 · {secondsLabel(segment.durationMs)}
+                                {tr("第")} {segment.index + 1} {tr("段 ·")} {secondsLabel(segment.durationMs)}
                             </span>
                         </button>
                     ))}
@@ -57,18 +58,18 @@ export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title
             </div>
             <aside className="drama-finalv-side">
                 <h2>
-                    第 {episode.number} 集 · {episode.title}
+                    {tr("第")} {episode.number} {tr("集 ·")} {episode.title}
                 </h2>
                 <p>
-                    {formatDuration(episode.durationMs)} · {segments.length} 个剧情段 · 对白与音效来自视频模型
+                    {formatDuration(episode.durationMs)} · {segments.length} {tr("个剧情段 · 对白与音效来自视频模型")}
                 </p>
                 {episode.finalStale ? (
                     <p className="drama-finalv-stale" role="status">
-                        内容已修改，当前成片是修改前的版本，相关段重新生成后会自动重新合成。
+                        {tr("内容已修改，当前成片是修改前的版本，相关段重新生成后会自动重新合成。")}
                     </p>
                 ) : null}
                 <Button icon={<Download className="size-4" />} disabled={!episode.finalResourceId} onClick={download}>
-                    下载成片
+                    {tr("下载成片")}
                 </Button>
             </aside>
         </div>

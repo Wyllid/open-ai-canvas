@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 第三期：时间线 → FFmpeg 命令序列的纯函数规划层。
 // 不直接调用 FFmpeg，只产出可执行的参数计划，方便单测与运行时逐步执行；
 // 运行时负责把媒体源写入 ffmpeg 工作区、写 SRT、执行 args 并清理文件。
@@ -136,7 +137,7 @@ export function buildTimelineRenderPlan(timeline: TimelineProject, sources: Time
                     "-shortest",
                     output,
                 ],
-                description: `补黑场 ${(gapMs / 1000).toFixed(2)}s`,
+                description: tr("补黑场 {0}s", (gapMs / 1000).toFixed(2)),
             });
             concatEntries.push(output);
         }
@@ -152,7 +153,7 @@ export function buildTimelineRenderPlan(timeline: TimelineProject, sources: Time
             kind: "trim",
             output,
             args: ["-i", source.fileName, "-ss", String((clip.sourceStartMs || 0) / 1000), "-t", String(durationSec), "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-c:a", "aac", "-b:a", "128k", output],
-            description: `裁切片段 ${index + 1}（${clip.title || clip.nodeId}）`,
+            description: tr("裁切片段 {0}（{1}）", index + 1, clip.title || clip.nodeId),
         });
         concatEntries.push(output);
         cursorMs = clip.startMs + clip.durationMs;
@@ -165,7 +166,7 @@ export function buildTimelineRenderPlan(timeline: TimelineProject, sources: Time
             kind: "concat",
             output: concatOutput,
             args: ["-f", "concat", "-safe", "0", "-i", "concat.txt", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-c:a", "aac", concatOutput],
-            description: "拼接视频轨",
+            description: tr("拼接视频轨"),
         });
     }
 
@@ -176,7 +177,7 @@ export function buildTimelineRenderPlan(timeline: TimelineProject, sources: Time
             kind: "subtitle",
             output: SUBTITLE_FILE,
             args: [],
-            description: "生成字幕 SRT",
+            description: tr("生成字幕 SRT"),
         });
     }
 
@@ -187,7 +188,7 @@ export function buildTimelineRenderPlan(timeline: TimelineProject, sources: Time
             kind: "burn",
             output: finalOutput,
             args: ["-i", concatOutput, "-vf", `subtitles=${SUBTITLE_FILE}`, "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-c:a", "copy", finalOutput],
-            description: "烧录字幕并输出",
+            description: tr("烧录字幕并输出"),
             requiresLibass: true,
         });
     } else if (concatEntries.length) {
@@ -195,7 +196,7 @@ export function buildTimelineRenderPlan(timeline: TimelineProject, sources: Time
             kind: "concat",
             output: finalOutput,
             args: ["-i", concatOutput, "-c", "copy", finalOutput],
-            description: "输出成片（无字幕）",
+            description: tr("输出成片（无字幕）"),
         });
     }
 

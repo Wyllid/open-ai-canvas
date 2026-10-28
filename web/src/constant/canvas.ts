@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { CanvasNodeType } from "@/types/canvas";
 import type { CanvasNodeMetadata } from "@/types/canvas";
 
@@ -9,25 +10,25 @@ type CanvasNodeSpec = {
 };
 
 export const NODE_DEFAULT_SIZE = {
-    [CanvasNodeType.Image]: { width: 720, height: 405, title: "图片" },
+    [CanvasNodeType.Image]: { width: 720, height: 405, title: tr("图片") },
     [CanvasNodeType.Text]: { width: 340, height: 240, title: "Note" },
-    [CanvasNodeType.Drawing]: { width: 440, height: 300, title: "绘图" },
-    [CanvasNodeType.Script]: { width: 920, height: 360, title: "分镜脚本" },
-    [CanvasNodeType.Skill]: { width: 360, height: 220, title: "技能" },
+    [CanvasNodeType.Drawing]: { width: 440, height: 300, title: tr("绘图") },
+    [CanvasNodeType.Script]: { width: 920, height: 360, title: tr("分镜脚本") },
+    [CanvasNodeType.Skill]: { width: 360, height: 220, title: tr("技能") },
     // 配置节点同时承载模式、渠道、工作流和参数；预留稳定空间，避免控件和错误状态互相挤压。
-    [CanvasNodeType.Config]: { width: 480, height: 390, title: "生成配置" },
-    [CanvasNodeType.Video]: { width: 720, height: 405, title: "视频" },
+    [CanvasNodeType.Config]: { width: 480, height: 390, title: tr("生成配置") },
+    [CanvasNodeType.Video]: { width: 720, height: 405, title: tr("视频") },
     [CanvasNodeType.Audio]: { width: 340, height: 120, title: "Audio" },
-    [CanvasNodeType.Frame]: { width: 760, height: 520, title: "未命名背板" },
+    [CanvasNodeType.Frame]: { width: 760, height: 520, title: tr("未命名背板") },
     [CanvasNodeType.Markdown]: { width: 420, height: 320, title: "Markdown" },
     [CanvasNodeType.Svg]: { width: 420, height: 320, title: "SVG" },
     [CanvasNodeType.Html]: { width: 520, height: 380, title: "HTML" },
-    [CanvasNodeType.Panorama]: { width: 520, height: 300, title: "全景" },
-    [CanvasNodeType.Compare]: { width: 520, height: 320, title: "对比" },
-    [CanvasNodeType.Chart]: { width: 480, height: 320, title: "图表" },
-    [CanvasNodeType.ColorGrade]: { width: 420, height: 360, title: "调色" },
-    [CanvasNodeType.MediaConversion]: { width: 480, height: 460, title: "转换" },
-    [CanvasNodeType.BatchTable]: { width: 1280, height: 560, title: "批量创作表" },
+    [CanvasNodeType.Panorama]: { width: 520, height: 300, title: tr("全景") },
+    [CanvasNodeType.Compare]: { width: 520, height: 320, title: tr("对比") },
+    [CanvasNodeType.Chart]: { width: 480, height: 320, title: tr("图表") },
+    [CanvasNodeType.ColorGrade]: { width: 420, height: 360, title: tr("调色") },
+    [CanvasNodeType.MediaConversion]: { width: 480, height: 460, title: tr("转换") },
+    [CanvasNodeType.BatchTable]: { width: 1280, height: 560, title: tr("批量创作表") },
 } satisfies Record<CanvasNodeType, { width: number; height: number; title: string }>;
 
 export const NODE_SPECS = {
@@ -113,9 +114,9 @@ export const NODE_SPECS = {
                 operation: "try_on",
                 concurrency: 10,
                 referenceColumns: [
-                    { id: "reference-1", label: "参考图 1" },
-                    { id: "reference-2", label: "参考图 2" },
-                    { id: "reference-3", label: "参考图 3" },
+                    { id: "reference-1", label: tr("参考图 1") },
+                    { id: "reference-2", label: tr("参考图 2") },
+                    { id: "reference-3", label: tr("参考图 3") },
                 ],
                 rows: [],
             },

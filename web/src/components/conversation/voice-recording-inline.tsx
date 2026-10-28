@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Button, Spin } from "antd";
 import { Tooltip } from "@/components/ui/base/tooltip";
 import { useEffect, useRef, useState } from "react";
@@ -51,7 +52,7 @@ export function VoiceRecordingInline({ onTranscribed, onCancel }: VoiceRecording
     // 挂载后自动开始录音与语音识别，卸载时清理
     useEffect(() => {
         if (!speechSupported) {
-            setTranscribeError("当前浏览器不支持语音识别，请使用 Chrome 或 Edge 浏览器");
+            setTranscribeError(tr("当前浏览器不支持语音识别，请使用 Chrome 或 Edge 浏览器"));
             setTranscribeState("error");
             return;
         }
@@ -72,7 +73,7 @@ export function VoiceRecordingInline({ onTranscribed, onCancel }: VoiceRecording
         void stopRecording();
         const trimmed = text.trim();
         if (!trimmed) {
-            setTranscribeError("未识别到语音内容，请重试");
+            setTranscribeError(tr("未识别到语音内容，请重试"));
             setTranscribeState("error");
             stopRequestedRef.current = false;
             return;
@@ -119,7 +120,7 @@ export function VoiceRecordingInline({ onTranscribed, onCancel }: VoiceRecording
                         {displayError}
                     </span>
                     {speechSupported ? (
-                        <Tooltip title="重试">
+                        <Tooltip title={tr("重试")}>
                             <Button
                                 type="text"
                                 size="small"
@@ -129,7 +130,7 @@ export function VoiceRecordingInline({ onTranscribed, onCancel }: VoiceRecording
                             />
                         </Tooltip>
                     ) : null}
-                    <Tooltip title="取消">
+                    <Tooltip title={tr("取消")}>
                         <Button
                             type="text"
                             size="small"
@@ -142,12 +143,12 @@ export function VoiceRecordingInline({ onTranscribed, onCancel }: VoiceRecording
             ) : transcribeState === "transcribing" ? (
                 <div className="flex items-center gap-2 px-2" style={{ color: theme.node.muted }}>
                     <Spin size="small" />
-                    <span className="text-xs">正在转写...</span>
+                    <span className="text-xs">{tr("正在转写...")}</span>
                 </div>
             ) : transcribeState === "done" ? (
                 <div className="flex items-center gap-2 px-2" style={{ color: "#16a34a" }}>
                     <Check className="size-4" />
-                    <span className="text-xs">转写完成</span>
+                    <span className="text-xs">{tr("转写完成")}</span>
                 </div>
             ) : (
                 <>
@@ -163,7 +164,7 @@ export function VoiceRecordingInline({ onTranscribed, onCancel }: VoiceRecording
                             {formatDuration(duration)}
                         </span>
                     ) : null}
-                    <Tooltip title="取消">
+                    <Tooltip title={tr("取消")}>
                         <Button
                             type="text"
                             size="small"
@@ -176,7 +177,7 @@ export function VoiceRecordingInline({ onTranscribed, onCancel }: VoiceRecording
                             style={{ color: theme.node.muted }}
                         />
                     </Tooltip>
-                    <Tooltip title="停止并转写">
+                    <Tooltip title={tr("停止并转写")}>
                         <Button
                             type="text"
                             size="small"

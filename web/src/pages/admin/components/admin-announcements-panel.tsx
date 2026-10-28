@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { resourceFileUrl } from "@/services/api/resources";
 import { type ColumnsType } from "antd/es/table";
 import { AnnouncementContent } from "@/components/ui/announcement-content";
@@ -98,7 +99,7 @@ export default function AdminAnnouncementsPanel({
             return true;
         } catch (error) {
             if (requestId === listRequestRef.current) {
-                const detail = error instanceof Error ? error.message : "读取公告列表失败";
+                const detail = error instanceof Error ? error.message : tr("读取公告列表失败");
                 setListError(detail);
                 message.error(detail);
             }
@@ -118,7 +119,7 @@ export default function AdminAnnouncementsPanel({
             setUncertainListReady(false);
             if (!loaded || reconciliationRequestId !== reconciliationRequestRef.current) return;
             setReconciliationLoading(true);
-            setReconciliationSummary("正在定位待核对公告…");
+            setReconciliationSummary(tr("正在定位待核对公告…"));
             try {
                 const summary = await inspectPendingReview(pendingReview);
                 if (reconciliationRequestId !== reconciliationRequestRef.current) return;
@@ -126,7 +127,7 @@ export default function AdminAnnouncementsPanel({
                 setUncertainListReady(true);
             } catch (error) {
                 if (reconciliationRequestId !== reconciliationRequestRef.current) return;
-                setReconciliationSummary(error instanceof Error ? `自动核对失败：${error.message}` : "自动核对失败，请重新刷新。");
+                setReconciliationSummary(error instanceof Error ? tr("自动核对失败：{0}", error.message) : tr("自动核对失败，请重新刷新。"));
             } finally {
                 if (reconciliationRequestId === reconciliationRequestRef.current) setReconciliationLoading(false);
             }
@@ -154,11 +155,11 @@ export default function AdminAnnouncementsPanel({
         event.target.value = "";
         if (!file) return;
         if (!file.type.startsWith("image/")) {
-            message.warning("公告配图必须是图片文件");
+            message.warning(tr("公告配图必须是图片文件"));
             return;
         }
         if (file.size > 10 * 1024 * 1024) {
-            message.warning("公告配图不能超过 10MB");
+            message.warning(tr("公告配图不能超过 10MB"));
             return;
         }
         setImageUploading(true);
@@ -168,9 +169,9 @@ export default function AdminAnnouncementsPanel({
             form.setFieldValue("imageResourceId", resource.id);
             setDraftImageResourceId(resource.id);
             setImagePreviewUrl(resourceFileUrl(resource.id));
-            message.success("公告配图已上传");
+            message.success(tr("公告配图已上传"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "公告配图上传失败");
+            message.error(error instanceof Error ? error.message : tr("公告配图上传失败"));
         } finally {
             setImageUploading(false);
         }
@@ -183,7 +184,7 @@ export default function AdminAnnouncementsPanel({
             form.setFieldValue("imageResourceId", "");
             setImagePreviewUrl("");
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "公告配图清理失败");
+            message.error(error instanceof Error ? error.message : tr("公告配图清理失败"));
         } finally {
             setImageUploading(false);
         }
@@ -199,7 +200,7 @@ export default function AdminAnnouncementsPanel({
             setImagePreviewUrl("");
             form.resetFields();
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "公告配图草稿清理失败，请重试");
+            message.error(error instanceof Error ? error.message : tr("公告配图草稿清理失败，请重试"));
         } finally {
             setImageUploading(false);
         }
@@ -223,7 +224,7 @@ export default function AdminAnnouncementsPanel({
 
     const previewSave = (values: AnnouncementFormValues) => {
         if (writeBlockedRef.current) {
-            message.warning("请先完成上一次公告操作的核对");
+            message.warning(tr("请先完成上一次公告操作的核对"));
             return;
         }
         const normalized: AnnouncementFormValues = {
@@ -250,7 +251,7 @@ export default function AdminAnnouncementsPanel({
     const saveAnnouncement = async () => {
         if (!pendingSave || saveInFlightRef.current) return;
         if (writeBlockedRef.current) {
-            message.warning("请先完成上一次公告操作的核对");
+            message.warning(tr("请先完成上一次公告操作的核对"));
             return;
         }
         saveInFlightRef.current = true;
@@ -277,9 +278,9 @@ export default function AdminAnnouncementsPanel({
             setStatus("all");
             setPage(1);
             setListRefreshNonce((value) => value + 1);
-            message.success(isUpdate ? "公告已更新并重新发布" : "公告已发布");
+            message.success(isUpdate ? tr("公告已更新并重新发布") : tr("公告已发布"));
         } catch (error) {
-            const detail = error instanceof Error ? error.message : isUpdate ? "重新发布公告失败" : "发布公告失败";
+            const detail = error instanceof Error ? error.message : isUpdate ? tr("重新发布公告失败") : tr("发布公告失败");
             if (isMutationResultUncertain(error)) {
                 writeBlockedRef.current = true;
                 setPendingSave(null);
@@ -293,7 +294,7 @@ export default function AdminAnnouncementsPanel({
                 setStatus("all");
                 setPage(1);
                 setUncertainListReady(false);
-                const notice = `上一次${isUpdate ? "重新发布" : "发布"}请求的结果暂时无法确认：${detail}。系统已切换到未筛选列表，请核对最新发布时间与内容。核对完成前，公告写操作已暂停。`;
+                const notice = tr("上一次{0}请求的结果暂时无法确认：{1}。系统已切换到未筛选列表，请核对最新发布时间与内容。核对完成前，公告写操作已暂停。", isUpdate ? tr("重新发布") : tr("发布"), detail);
                 const review: AnnouncementPendingReview = {
                     operation: isUpdate ? "update" : "create",
                     targetId: isUpdate ? pendingSave.id : undefined,
@@ -310,7 +311,7 @@ export default function AdminAnnouncementsPanel({
                 setReconciliationSummary("");
                 writeAnnouncementPendingReview(review);
                 setListRefreshNonce((value) => value + 1);
-                message.warning({ content: "公告发布结果待核对，系统没有自动重试。请检查完整列表后再继续。", duration: 7 });
+                message.warning({ content: tr("公告发布结果待核对，系统没有自动重试。请检查完整列表后再继续。"), duration: 7 });
             } else {
                 message.error(detail);
             }
@@ -323,7 +324,7 @@ export default function AdminAnnouncementsPanel({
     const closeAnnouncement = async (announcement: SystemAnnouncement) => {
         if (closeInFlightRef.current.has(announcement.id)) return;
         if (writeBlockedRef.current) {
-            message.warning("请先完成上一次公告操作的核对");
+            message.warning(tr("请先完成上一次公告操作的核对"));
             return;
         }
         closeInFlightRef.current.add(announcement.id);
@@ -333,9 +334,9 @@ export default function AdminAnnouncementsPanel({
         try {
             const result = await closeAdminAnnouncement(announcement.id);
             assertAnnouncementMutationResult(result, "closed", announcement.id, announcement);
-            message.success("公告已关闭");
+            message.success(tr("公告已关闭"));
         } catch (error) {
-            const detail = error instanceof Error ? error.message : "关闭公告失败";
+            const detail = error instanceof Error ? error.message : tr("关闭公告失败");
             if (isMutationResultUncertain(error)) {
                 writeBlockedRef.current = true;
                 reconciliationRequired = true;
@@ -344,7 +345,7 @@ export default function AdminAnnouncementsPanel({
                 setStatus("all");
                 setPage(1);
                 setUncertainListReady(false);
-                const notice = `上一次关闭请求的结果暂时无法确认：${detail}。系统已切换到未筛选列表，请核对该公告的最新状态。核对完成前，公告写操作已暂停。`;
+                const notice = tr("上一次关闭请求的结果暂时无法确认：{0}。系统已切换到未筛选列表，请核对该公告的最新状态。核对完成前，公告写操作已暂停。", detail);
                 const review: AnnouncementPendingReview = {
                     operation: "close",
                     targetId: announcement.id,
@@ -358,7 +359,7 @@ export default function AdminAnnouncementsPanel({
                 setReconciliationSummary("");
                 writeAnnouncementPendingReview(review);
                 setListRefreshNonce((value) => value + 1);
-                message.warning({ content: "公告关闭结果待核对，系统没有自动重试。", duration: 7 });
+                message.warning({ content: tr("公告关闭结果待核对，系统没有自动重试。"), duration: 7 });
             } else message.error(detail);
         } finally {
             if (!reconciliationRequired) setListRefreshNonce((value) => value + 1);
@@ -373,7 +374,7 @@ export default function AdminAnnouncementsPanel({
 
     const columns: ColumnsType<SystemAnnouncement> = [
         {
-            title: "公告",
+            title: tr("公告"),
             dataIndex: "title",
             width: 390,
             render: (_, announcement) => (
@@ -389,27 +390,27 @@ export default function AdminAnnouncementsPanel({
             ),
         },
         {
-            title: "展示",
+            title: tr("展示"),
             dataIndex: "pinned",
             width: 90,
             align: "center",
-            render: (pinned: boolean) => (pinned ? <AdminStatusBadge label="置顶" tone="warning" /> : <span className="text-xs text-foreground/35">普通</span>),
+            render: (pinned: boolean) => (pinned ? <AdminStatusBadge label={tr("置顶")} tone="warning" /> : <span className="text-xs text-foreground/35">{tr("普通")}</span>),
         },
         {
-            title: "类型",
+            title: tr("类型"),
             dataIndex: "level",
             width: 105,
             align: "center",
             render: renderAnnouncementLevel,
         },
         {
-            title: "发布状态",
+            title: tr("发布状态"),
             width: 225,
             align: "center",
             render: (_, announcement) => <AnnouncementLifecycle announcement={announcement} />,
         },
         {
-            title: "操作",
+            title: tr("操作"),
             key: "actions",
             width: 200,
             align: "center",
@@ -417,7 +418,7 @@ export default function AdminAnnouncementsPanel({
                 <div className="flex justify-center">
                     <AdminRowActions
                         primary={{
-                            label: !isKnownAnnouncementStatus(announcement.status) ? "状态待核对" : announcement.status === "closed" ? "重新发布" : "编辑发布",
+                            label: !isKnownAnnouncementStatus(announcement.status) ? tr("状态待核对") : announcement.status === "closed" ? tr("重新发布") : tr("编辑发布"),
                             icon: announcement.status === "closed" ? <RefreshCw className="size-3.5" /> : <PencilLine className="size-3.5" />,
                             disabled: publishBlocked || closingIds.has(announcement.id) || !isKnownAnnouncementStatus(announcement.status),
                             onClick: () => openEditDrawer(announcement),
@@ -427,13 +428,13 @@ export default function AdminAnnouncementsPanel({
                                 ? [
                                       {
                                           key: "close",
-                                          label: "关闭公告",
+                                          label: tr("关闭公告"),
                                           danger: true,
                                           disabled: publishBlocked || closingIds.has(announcement.id),
                                           confirm: {
-                                              title: `关闭“${announcement.title}”？`,
-                                              description: "关闭后服务端将不再下发该公告；已打开的页面会在下一次同步后移除（通常 5 分钟内），历史记录仍会保留。",
-                                              okText: "确认关闭",
+                                              title: tr("关闭“{0}”？", announcement.title),
+                                              description: tr("关闭后服务端将不再下发该公告；已打开的页面会在下一次同步后移除（通常 5 分钟内），历史记录仍会保留。"),
+                                              okText: tr("确认关闭"),
                                           },
                                           onClick: () => closeAnnouncement(announcement),
                                       },
@@ -452,34 +453,34 @@ export default function AdminAnnouncementsPanel({
             {pendingReview ? (
                 <div className="admin-announcement-uncertain-notice" role="alert">
                     <div className="admin-announcement-uncertain-copy">
-                        <strong>公告结果待核对</strong>
+                        <strong>{tr("公告结果待核对")}</strong>
                         <p>{pendingReview.notice}</p>
                         <dl className="admin-announcement-review-target">
                             <div>
-                                <dt>待核对操作</dt>
+                                <dt>{tr("待核对操作")}</dt>
                                 <dd>{formatPendingReviewOperation(pendingReview.operation)}</dd>
                             </div>
                             <div>
-                                <dt>公告标题</dt>
+                                <dt>{tr("公告标题")}</dt>
                                 <dd>{pendingReview.title}</dd>
                             </div>
                             <div>
-                                <dt>目标 ID</dt>
-                                <dd>{pendingReview.targetId || "新公告（响应中未取得 ID）"}</dd>
+                                <dt>{tr("目标 ID")}</dt>
+                                <dd>{pendingReview.targetId || tr("新公告（响应中未取得 ID）")}</dd>
                             </div>
                             <div>
-                                <dt>请求时间</dt>
+                                <dt>{tr("请求时间")}</dt>
                                 <dd>{formatDateTime(pendingReview.requestedAt)}</dd>
                             </div>
                             <div className="is-wide">
-                                <dt>请求正文</dt>
+                                <dt>{tr("请求正文")}</dt>
                                 <dd>
                                     <AnnouncementContent content={pendingReview.content} className="admin-announcement-review-content" />
                                 </dd>
                             </div>
                             <div className="is-wide" aria-live="polite">
-                                <dt>自动定位结果</dt>
-                                <dd>{reconciliationSummary || "刷新完整列表后将自动定位待核对记录。"}</dd>
+                                <dt>{tr("自动定位结果")}</dt>
+                                <dd>{reconciliationSummary || tr("刷新完整列表后将自动定位待核对记录。")}</dd>
                             </div>
                         </dl>
                     </div>
@@ -495,7 +496,7 @@ export default function AdminAnnouncementsPanel({
                                 setListRefreshNonce((value) => value + 1);
                             }}
                         >
-                            刷新完整列表
+                            {tr("刷新完整列表")}
                         </Button>
                         <Button
                             type="primary"
@@ -506,26 +507,26 @@ export default function AdminAnnouncementsPanel({
                                 setReconciliationSummary("");
                                 clearAnnouncementPendingReview();
                                 onPublishBlockedChange(false);
-                                message.success("已恢复公告发布操作");
+                                message.success(tr("已恢复公告发布操作"));
                             }}
                         >
-                            我已核对，恢复发布
+                            {tr("我已核对，恢复发布")}
                         </Button>
                     </div>
                 </div>
             ) : null}
 
-            <section className="flex min-h-0 flex-1" aria-label="系统公告列表">
+            <section className="flex min-h-0 flex-1" aria-label={tr("系统公告列表")}>
                 <AdminDataTable
                     toolbar={
                         <Input
                             allowClear
                             disabled={publishBlocked}
-                            aria-label="搜索系统公告"
+                            aria-label={tr("搜索系统公告")}
                             className="app-list-search"
                             prefix={<Search className="size-4 text-foreground/40" />}
                             value={keyword}
-                            placeholder="搜索公告标题或正文"
+                            placeholder={tr("搜索公告标题或正文")}
                             onChange={(event) => {
                                 setKeyword(event.target.value);
                                 setPage(1);
@@ -535,7 +536,7 @@ export default function AdminAnnouncementsPanel({
                     toolbarActive={hasFilters}
                     toolbarFilters={
                         <Select<"all" | AnnouncementStatus>
-                            aria-label="按公告状态筛选"
+                            aria-label={tr("按公告状态筛选")}
                             className="admin-announcement-status-filter w-32"
                             disabled={publishBlocked}
                             value={status}
@@ -544,9 +545,9 @@ export default function AdminAnnouncementsPanel({
                                 setPage(1);
                             }}
                             options={[
-                                { label: "全部状态", value: "all" },
-                                { label: "发布中", value: "active" },
-                                { label: "已关闭", value: "closed" },
+                                { label: tr("全部状态"), value: "all" },
+                                { label: tr("发布中"), value: "active" },
+                                { label: tr("已关闭"), value: "closed" },
                             ]}
                         />
                     }
@@ -569,15 +570,15 @@ export default function AdminAnnouncementsPanel({
                                 } else void reload();
                             }}
                         >
-                            刷新
+                            {tr("刷新")}
                         </Button>
                     }
                     table={{ rowKey: "id", size: "small", loading, pagination: false, columns, dataSource: announcements }}
                     empty={
                         <AdminTableEmpty
                             filtered={hasFilters}
-                            title={listError ? "公告读取失败" : !hasFilters ? "暂无系统公告" : undefined}
-                            description={listError || (!hasFilters ? "发布后的公告会在这里展示状态和历史记录。" : undefined)}
+                            title={listError ? tr("公告读取失败") : !hasFilters ? tr("暂无系统公告") : undefined}
+                            description={listError || (!hasFilters ? tr("发布后的公告会在这里展示状态和历史记录。") : undefined)}
                             action={
                                 !listError && !hasFilters && !publishBlocked ? (
                                     <Button
@@ -588,7 +589,7 @@ export default function AdminAnnouncementsPanel({
                                             onPublishOpenChange(true);
                                         }}
                                     >
-                                        发布首条公告
+                                        {tr("发布首条公告")}
                                     </Button>
                                 ) : undefined
                             }
@@ -640,9 +641,9 @@ function AnnouncementLifecycle({ announcement }: { announcement: SystemAnnouncem
     const closed = announcement.status === "closed";
     return (
         <div className="admin-announcement-lifecycle">
-            <AdminStatusBadge label={active ? "发布中" : closed ? "已关闭" : "未知状态"} tone={active ? "success" : "neutral"} />
-            <span>发布 {formatDateTime(announcement.publishedAt)}</span>
-            {closed ? <span>关闭 {formatDateTime(announcement.closedAt)}</span> : null}
+            <AdminStatusBadge label={active ? tr("发布中") : closed ? tr("已关闭") : tr("未知状态")} tone={active ? "success" : "neutral"} />
+            <span>{tr("发布")} {formatDateTime(announcement.publishedAt)}</span>
+            {closed ? <span>{tr("关闭")} {formatDateTime(announcement.closedAt)}</span> : null}
         </div>
     );
 }

@@ -1,10 +1,11 @@
+import { tr } from "@/i18n";
 const IMAGE_QUALITY_LABELS: Record<string, string> = {
-    auto: "自动",
-    low: "低",
-    medium: "中",
-    high: "高",
-    xhigh: "超高",
-    max: "最高",
+    auto: tr("自动"),
+    low: tr("低"),
+    medium: tr("中"),
+    high: tr("高"),
+    xhigh: tr("超高"),
+    max: tr("最高"),
     "1k": "1K",
     "2k": "2K",
     "4k": "4K",
@@ -18,25 +19,25 @@ export function imageQualityLabel(value: string) {
 export function imageQualityDescription(value: string) {
     switch (String(value || "").trim().toLowerCase()) {
         case "auto":
-            return "由模型决定";
+            return tr("由模型决定");
         case "low":
-            return "更快生成";
+            return tr("更快生成");
         case "medium":
-            return "均衡模式";
+            return tr("均衡模式");
         case "high":
-            return "优先速度";
+            return tr("优先速度");
         case "xhigh":
-            return "优先质量";
+            return tr("优先质量");
         case "max":
-            return "优先细节";
+            return tr("优先细节");
         case "1k":
-            return "标准清晰度";
+            return tr("标准清晰度");
         case "2k":
-            return "更高清晰度";
+            return tr("更高清晰度");
         case "4k":
-            return "最高清晰度";
+            return tr("最高清晰度");
         default:
-            return "模型支持的质量/分辨率";
+            return tr("模型支持的质量/分辨率");
     }
 }
 

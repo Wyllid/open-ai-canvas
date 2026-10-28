@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -45,13 +46,13 @@ export function DramaModelPicker({
     const modelDisabledReason = useCallback(
         (model: string) => {
             const keys = dramaChoiceKeys(config, model);
-            if (!keys.length) return "个人渠道的密钥只保存在浏览器，短剧在服务端无人值守执行，只能使用平台模型";
+            if (!keys.length) return tr("个人渠道的密钥只保存在浏览器，短剧在服务端无人值守执行，只能使用平台模型");
             if (!catalogQuery.data || matchChoice(model)) return "";
             for (const key of keys) {
                 const reason = blocked.get(key);
                 if (reason) return reason;
             }
-            return "模型列表已更新，请刷新页面后再选";
+            return tr("模型列表已更新，请刷新页面后再选");
         },
         [blocked, catalogQuery.data, config, matchChoice],
     );
@@ -66,7 +67,7 @@ export function DramaModelPicker({
             fullWidth
             modelDisabledReason={modelDisabledReason}
             className={cn("drama-model-picker", size === "sm" && "is-sm", className)}
-            placeholder={current ? placeholder || "选择模型" : value?.label || placeholder || "选择模型"}
+            placeholder={current ? placeholder || tr("选择模型") : value?.label || placeholder || tr("选择模型")}
             onChange={(model) => {
                 const choice = modelToDramaChoice(config, model);
                 if (!choice) return;

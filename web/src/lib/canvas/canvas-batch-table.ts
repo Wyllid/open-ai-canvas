@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 
 import type { CanvasBatchOperation, CanvasBatchReferenceColumn, CanvasBatchRow, CanvasBatchTableData, CanvasConnection, CanvasNodeData } from "@/types/canvas";
@@ -20,9 +21,9 @@ export function promoteLegacyBatchTableSize(node: CanvasNodeData): CanvasNodeDat
 
 export function defaultBatchReferenceColumns(): CanvasBatchReferenceColumn[] {
     return [
-        { id: "reference-1", label: "参考图 1" },
-        { id: "reference-2", label: "参考图 2" },
-        { id: "reference-3", label: "参考图 3" },
+        { id: "reference-1", label: tr("参考图 1") },
+        { id: "reference-2", label: tr("参考图 2") },
+        { id: "reference-3", label: tr("参考图 3") },
     ];
 }
 
@@ -47,7 +48,7 @@ export function batchTextInputColumns(node: CanvasNodeData, connections: CanvasC
 }
 
 export function batchReferenceMentionToken(index: number) {
-    return `@参考图${index + 1}`;
+    return tr("@参考图{0}", index + 1);
 }
 
 export function batchReferenceColumnId(handleId?: string) {
@@ -81,7 +82,7 @@ export function batchReferenceHandleAtY(node: CanvasNodeData, worldY: number, hi
 export function removeLastBatchReferenceColumn(table: CanvasBatchTableData): CanvasBatchTableData | null {
     const columns = batchReferenceColumns(table);
     if (columns.length <= MIN_BATCH_REFERENCE_COLUMNS) return null;
-    const nextColumns = columns.slice(0, -1).map((column, index) => ({ ...column, label: `参考图 ${index + 1}` }));
+    const nextColumns = columns.slice(0, -1).map((column, index) => ({ ...column, label: tr("参考图 {0}", index + 1) }));
     return {
         ...table,
         referenceColumns: nextColumns,
@@ -99,7 +100,7 @@ export function reorderBatchReferenceColumns(table: CanvasBatchTableData, fromCo
     nextColumns.splice(toIndex, 0, moved);
     return {
         ...table,
-        referenceColumns: nextColumns.map((column, index) => ({ ...column, label: `参考图 ${index + 1}` })),
+        referenceColumns: nextColumns.map((column, index) => ({ ...column, label: tr("参考图 {0}", index + 1) })),
         rows: table.rows.map((row) => ({
             ...row,
             inputNodeIds: nextColumns.map((column) => {

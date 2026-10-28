@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useUserStore } from "@/stores/use-user-store";
 import { useEffect, useRef, useState } from "react";
 import { CanvasToolPopover } from "./canvas-tool-popover";
@@ -70,7 +71,7 @@ export function CanvasChooseMotionPicker({
 
     return (
         <CanvasToolPopover
-            label="选择运镜"
+            label={tr("选择运镜")}
             open={actualOpen}
             onOpenChange={setOpen}
             trigger={["click"]}
@@ -95,37 +96,37 @@ export function CanvasChooseMotionPicker({
                                         </button>
                                     ))}
                                 </div>
-                                <input className="asset-search min-w-0 flex-1" placeholder="搜索名称/标签" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} aria-label="搜索运镜" />
+                                <input className="asset-search min-w-0 flex-1" placeholder={tr("搜索名称/标签")} value={searchInput} onChange={(event) => setSearchInput(event.target.value)} aria-label={tr("搜索运镜")} />
                                 {searchInput ? (
-                                    <button type="button" className="grid size-5 shrink-0 place-items-center rounded text-foreground/32 hover:bg-surface-hover hover:text-foreground" onClick={() => setSearchInput("")} aria-label="清空搜索">
+                                    <button type="button" className="grid size-5 shrink-0 place-items-center rounded text-foreground/32 hover:bg-surface-hover hover:text-foreground" onClick={() => setSearchInput("")} aria-label={tr("清空搜索")}>
                                         <X className="size-3" />
                                     </button>
                                 ) : null}
                             </div>
                             <div className="col-tag-filter mt-2">
-                                {[{ id: "", label: "全部" }, ...SUB_TAB_TAGS.motion].map((chip) => (
+                                {[{ id: "", label: tr("全部") }, ...SUB_TAB_TAGS.motion].map((chip) => (
                                     <button key={chip.id || "all"} type="button" className={`col-tag-chip${tagFilter === chip.id ? " on" : ""}`} aria-pressed={tagFilter === chip.id} onClick={() => setTagFilter(chip.id)}>
                                         {chip.label}
                                     </button>
                                 ))}
                             </div>
                         </div>
-                        <div className="thin-scrollbar grid max-h-80 grid-cols-5 gap-2 overflow-y-auto p-2" role="listbox" aria-label="运镜工具">
+                        <div className="thin-scrollbar grid max-h-80 grid-cols-5 gap-2 overflow-y-auto p-2" role="listbox" aria-label={tr("运镜工具")}>
                             {toolsQuery.isPending ? (
                                 <div className="col-span-5 grid h-24 place-items-center text-foreground/40">
                                     <LoaderCircle className="size-4 animate-spin" />
                                 </div>
                             ) : toolsQuery.isError ? (
-                                <div className="col-span-5 grid h-24 place-items-center text-xs text-foreground/40">运镜工具加载失败，请稍后重试</div>
+                                <div className="col-span-5 grid h-24 place-items-center text-xs text-foreground/40">{tr("运镜工具加载失败，请稍后重试")}</div>
                             ) : tools.length === 0 ? (
-                                <div className="col-span-5 grid h-24 place-items-center text-xs text-foreground/40">{searchText ? "没有匹配的运镜" : "暂无运镜工具"}</div>
+                                <div className="col-span-5 grid h-24 place-items-center text-xs text-foreground/40">{searchText ? tr("没有匹配的运镜") : tr("暂无运镜工具")}</div>
                             ) : (
                                 tools.map((tool) => <MotionToolCard key={tool.id} tool={tool} selected={activeIdSet.has(tool.id)} onSelect={handleSelect} />)
                             )}
                         </div>
                         {toolsQuery.hasNextPage && (
                             <button type="button" disabled={toolsQuery.isFetchingNextPage} onClick={() => void toolsQuery.fetchNextPage()}>
-                                加载更多
+                                {tr("加载更多")}
                             </button>
                         )}
                     </div>
@@ -136,7 +137,7 @@ export function CanvasChooseMotionPicker({
                 role="button"
                 tabIndex={0}
                 className="canvas-node-composer-header-action canvas-node-fixed-chip relative overflow-hidden cursor-pointer"
-                title={resolvedLabel ? `运镜：${resolvedLabel}` : "选择运镜"}
+                title={resolvedLabel ? tr("运镜：{0}", resolvedLabel) : tr("选择运镜")}
                 aria-expanded={actualOpen}
                 aria-haspopup="dialog"
                 onClick={() => setOpen(true)}
@@ -149,11 +150,11 @@ export function CanvasChooseMotionPicker({
                 onPointerDown={(event) => event.stopPropagation()}
             >
                 <Camera className="size-3 shrink-0" />
-                <span className="truncate">{resolvedLabel || "运镜"}</span>
+                <span className="truncate">{resolvedLabel || tr("运镜")}</span>
                 {activeIdSet.size > 0 && onClear ? (
                     <button
                         type="button"
-                        aria-label="移除运镜"
+                        aria-label={tr("移除运镜")}
                         onClick={(event) => {
                             event.stopPropagation();
                             onClear();

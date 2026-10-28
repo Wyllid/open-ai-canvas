@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { ResponseFunctionTool } from "@/services/api/image";
 
 const string = { type: "string" };
@@ -13,7 +14,7 @@ export const CREATIVE_AGENT_TOOLS: ResponseFunctionTool[] = [{
     type: "function",
     function: {
         name: "creative_respond",
-        description: "结合上下文更新需求并选择补問、提出创作方案或建议局部节点调整。提问形成等待屏障，不会执行节点或生成任务。已知字段不得重复提问。",
+        description: tr("结合上下文更新需求并选择补問、提出创作方案或建议局部节点调整。提问形成等待屏障，不会执行节点或生成任务。已知字段不得重复提问。"),
         parameters: object({
             scenario: { type: "string", enum: ["general", "short-film", "marketing", "ecommerce"] },
             message: string,

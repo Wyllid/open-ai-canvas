@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 export type ImageResolutionTier = string;
 
 export type ImageResolutionOption = {
@@ -49,7 +50,7 @@ export function imageRatioForSize(size: string) {
 }
 
 export function formatImageResolutionSize(size: string, options: ImageResolutionOption[]) {
-    if (size.trim().toLowerCase() === "auto") return "自动";
+    if (size.trim().toLowerCase() === "auto") return tr("自动");
     const option = imageResolutionOption(options, size);
     return option ? `${option.ratio} · ${option.tier.toUpperCase()}` : size;
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { Button, Input, Tooltip, type InputRef } from "antd";
 import { AudioLines, Check, Cpu, Film, Grid2X2, Image, Layers3, MessageSquare, Search, X } from "lucide-react";
@@ -28,7 +29,7 @@ const iconOptions = toc
     .map(createModelLogoOption)
     .filter((item) => Boolean(iconLoaders[item.id]));
 
-const logoFilters = [{ id: "all", label: "全部" } as const, ...MODEL_LOGO_CATEGORIES];
+const logoFilters = [{ id: "all", label: tr("全部") } as const, ...MODEL_LOGO_CATEGORIES];
 type ModelLogoFilter = ModelLogoCategory | "all";
 const categoryIcons = { all: Layers3, image: Image, video: Film, llm: MessageSquare, audio: AudioLines, platform: Grid2X2 };
 const pickerFocusClassName = "focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2";
@@ -112,7 +113,7 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                 <button
                     type="button"
                     className={cn("flex min-h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors duration-150 hover:bg-surface-hover motion-reduce:transition-none pointer-coarse:min-h-11", pickerFocusClassName)}
-                    aria-label="选择模型 Logo"
+                    aria-label={tr("选择模型 Logo")}
                     aria-haspopup="dialog"
                     aria-expanded={open}
                     onClick={() => {
@@ -122,11 +123,11 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                     }}
                 >
                     <ModelLogo icon={value} size={18} />
-                    <span className="min-w-0 flex-1 truncate">{selectedOption?.label || value || "选择 Logo"}</span>
-                    {!value ? <span className="text-xs text-muted-foreground">浏览</span> : null}
+                    <span className="min-w-0 flex-1 truncate">{selectedOption?.label || value || tr("选择 Logo")}</span>
+                    {!value ? <span className="text-xs text-muted-foreground">{tr("浏览")}</span> : null}
                 </button>
                 {value ? (
-                    <button type="button" className={cn("mr-1 grid size-6 shrink-0 place-items-center rounded-sm text-muted-foreground hover:bg-surface-hover pointer-coarse:size-11", pickerFocusClassName)} onClick={clear} aria-label="清除 Logo">
+                    <button type="button" className={cn("mr-1 grid size-6 shrink-0 place-items-center rounded-sm text-muted-foreground hover:bg-surface-hover pointer-coarse:size-11", pickerFocusClassName)} onClick={clear} aria-label={tr("清除 Logo")}>
                         <X size={12} aria-hidden />
                     </button>
                 ) : null}
@@ -135,7 +136,7 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
             <AppModal
                 flush
                 title={null}
-                aria-label="选择模型 Logo"
+                aria-label={tr("选择模型 Logo")}
                 open={open}
                 onCancel={close}
                 width={640}
@@ -146,10 +147,10 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                     if (visible) searchInputRef.current?.focus({ preventScroll: true });
                 }}
             >
-                <section className="bg-surface text-foreground" aria-label="选择模型 Logo">
+                <section className="bg-surface text-foreground" aria-label={tr("选择模型 Logo")}>
                     <header className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
-                        <h2 className="m-0 text-base font-semibold">选择模型 Logo</h2>
-                        <Button type="text" size="small" icon={<X size={16} aria-hidden />} onClick={close} aria-label="关闭 Logo 选择器" />
+                        <h2 className="m-0 text-base font-semibold">{tr("选择模型 Logo")}</h2>
+                        <Button type="text" size="small" icon={<X size={16} aria-hidden />} onClick={close} aria-label={tr("关闭 Logo 选择器")} />
                     </header>
                     <div className="px-5 pb-4">
                         <Input
@@ -157,13 +158,13 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                             prefix={<Search size={14} className="text-muted-foreground" aria-hidden />}
                             value={keyword}
                             onChange={(event) => setKeyword(event.target.value)}
-                            placeholder="搜索模型 Logo"
-                            aria-label="搜索全部模型 Logo"
+                            placeholder={tr("搜索模型 Logo")}
+                            aria-label={tr("搜索全部模型 Logo")}
                             allowClear
                         />
                     </div>
                     <div className="grid grid-cols-[calc(var(--space-10)*3)_minmax(0,1fr)] border-t border-border max-[520px]:grid-cols-1">
-                        <nav className="flex flex-col gap-1 border-r border-border px-2 py-3 max-[520px]:flex-row max-[520px]:border-r-0 max-[520px]:border-b max-[520px]:py-2" aria-label="Logo 分类">
+                        <nav className="flex flex-col gap-1 border-r border-border px-2 py-3 max-[520px]:flex-row max-[520px]:border-r-0 max-[520px]:border-b max-[520px]:py-2" aria-label={tr("Logo 分类")}>
                             {logoFilters.map((item) => {
                                 const Icon = categoryIcons[item.id];
                                 return (
@@ -188,14 +189,14 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                         </nav>
                         <div className="h-[min(360px,48dvh)] min-w-0 overflow-y-auto overscroll-contain p-3 [scrollbar-color:var(--control-selected-border)_transparent] [scrollbar-width:thin] max-[520px]:h-[min(320px,44dvh)]" ref={resultsRef}>
                             <div className="mb-2 flex items-center justify-between gap-2 text-[length:var(--typ-caption)] font-medium">
-                                <span>{query ? "搜索结果" : categoryLabel}</span>
+                                <span>{query ? tr("搜索结果") : categoryLabel}</span>
                                 <span className="text-xs font-normal text-muted-foreground" role="status">
-                                    {query ? "全部分类 · " : ""}
-                                    {filteredIcons.length} 个 Logo
+                                    {query ? tr("全部分类 · ") : ""}
+                                    {filteredIcons.length} {tr("个 Logo")}
                                 </span>
                             </div>
                             {filteredIcons.length ? (
-                                <ul className="m-0 grid list-none grid-cols-4 gap-1 p-0 max-[520px]:grid-cols-3" aria-label={query ? "Logo 搜索结果" : `${categoryLabel} Logo`}>
+                                <ul className="m-0 grid list-none grid-cols-4 gap-1 p-0 max-[520px]:grid-cols-3" aria-label={query ? tr("Logo 搜索结果") : `${categoryLabel} Logo`}>
                                     {filteredIcons.map((item) => {
                                         const selected = selectedId === item.id;
                                         return (
@@ -204,7 +205,7 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                                                     <button
                                                         type="button"
                                                         aria-pressed={selected}
-                                                        aria-label={`选择 ${item.label}`}
+                                                        aria-label={tr("选择 {0}", item.label)}
                                                         className={cn(
                                                             "relative flex h-full min-h-16 w-full flex-col items-center justify-center gap-1 rounded-md border border-transparent px-1 py-2 transition-colors duration-150 hover:bg-surface-hover aria-pressed:border-[var(--control-selected-border)] aria-pressed:bg-[var(--control-selected-bg)] aria-pressed:text-[var(--control-selected-fg)] motion-reduce:transition-none",
                                                             pickerFocusClassName,
@@ -226,9 +227,9 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                             ) : (
                                 <div className="flex flex-col items-center gap-3 px-2 py-10 text-center text-xs text-muted-foreground [overflow-wrap:anywhere]">
                                     <Search size={20} aria-hidden />
-                                    <span>未找到与“{keyword.trim()}”相关的 Logo</span>
+                                    <span>{tr("未找到与“")}{keyword.trim()}{tr("”相关的 Logo")}</span>
                                     <Button type="text" size="small" onClick={() => setKeyword("")}>
-                                        清空搜索
+                                        {tr("清空搜索")}
                                     </Button>
                                 </div>
                             )}
@@ -237,14 +238,14 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                     <footer className="flex items-center justify-between gap-3 border-t border-border px-5 py-3 text-xs max-[520px]:flex-wrap max-[520px]:px-3">
                         <div className="flex min-w-0 flex-1 items-center gap-2">
                             <ModelLogo icon={value} size={16} />
-                            <span className="shrink-0 text-muted-foreground">{value ? "当前" : "尚未设置 Logo"}</span>
+                            <span className="shrink-0 text-muted-foreground">{value ? tr("当前") : tr("尚未设置 Logo")}</span>
                             {value ? <span className="min-w-0 flex-1 truncate">{selectedOption?.label || value}</span> : null}
                         </div>
                         <div className="flex min-w-0 shrink-0 items-center gap-2">
-                            <span className="text-muted-foreground max-[520px]:hidden">单击图标即选用</span>
+                            <span className="text-muted-foreground max-[520px]:hidden">{tr("单击图标即选用")}</span>
                             {value ? (
                                 <Button type="text" size="small" onClick={clear}>
-                                    清除 Logo
+                                    {tr("清除 Logo")}
                                 </Button>
                             ) : null}
                         </div>

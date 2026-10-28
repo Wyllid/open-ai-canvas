@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useMemo, useState } from "react";
 import { Check, Flame, Search, X } from "lucide-react";
 
@@ -16,28 +17,28 @@ export function DramaStylePicker({ value, onChange }: { value: string; onChange:
         <section className="drama-styles">
             <div className="drama-styles-head">
                 <div className="min-w-0">
-                    <h2>视觉风格</h2>
+                    <h2>{tr("视觉风格")}</h2>
                     <p>
                         {selected ? (
                             <>
-                                已选 <b>{selected.name}</b> · {selected.description}
+                                {tr("已选")} <b>{selected.name}</b> · {selected.description}
                             </>
                         ) : (
-                            "决定全剧角色、场景和镜头的统一画风"
+                            tr("决定全剧角色、场景和镜头的统一画风")
                         )}
                     </p>
                 </div>
                 <label className="drama-search drama-styles-search">
                     <Search className="size-3.5 shrink-0 opacity-40" />
-                    <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索题材，如 霸总、仙侠" aria-label="搜索风格" />
+                    <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tr("搜索题材，如 霸总、仙侠")} aria-label={tr("搜索风格")} />
                     {query ? (
-                        <button type="button" onClick={() => setQuery("")} aria-label="清空搜索">
+                        <button type="button" onClick={() => setQuery("")} aria-label={tr("清空搜索")}>
                             <X className="size-3.5 opacity-40" />
                         </button>
                     ) : null}
                 </label>
             </div>
-            <div className="drama-styles-tabs" role="tablist" aria-label="风格分类">
+            <div className="drama-styles-tabs" role="tablist" aria-label={tr("风格分类")}>
                 {DRAMA_STYLE_CATEGORIES.map((item) => (
                     <button
                         key={item.key}
@@ -56,7 +57,7 @@ export function DramaStylePicker({ value, onChange }: { value: string; onChange:
                     </button>
                 ))}
             </div>
-            <div className="drama-style-grid thin-scrollbar" role="radiogroup" aria-label="视觉风格">
+            <div className="drama-style-grid thin-scrollbar" role="radiogroup" aria-label={tr("视觉风格")}>
                 {styles.map((style) => {
                     const active = style.id === value;
                     return (
@@ -68,7 +69,7 @@ export function DramaStylePicker({ value, onChange }: { value: string; onChange:
                                     </span>
                                 ) : null}
                                 {style.hot ? (
-                                    <span className="drama-style-hot" title="爆款">
+                                    <span className="drama-style-hot" title={tr("爆款")}>
                                         <Flame className="size-2.5" />
                                     </span>
                                 ) : null}
@@ -85,7 +86,7 @@ export function DramaStylePicker({ value, onChange }: { value: string; onChange:
                         </button>
                     );
                 })}
-                {!styles.length ? <div className="col-span-full py-10 text-center text-[var(--fs-label)] text-foreground/45">没有找到“{query}”相关的风格</div> : null}
+                {!styles.length ? <div className="col-span-full py-10 text-center text-[var(--fs-label)] text-foreground/45">{tr("没有找到“")}{query}{tr("”相关的风格")}</div> : null}
             </div>
         </section>
     );

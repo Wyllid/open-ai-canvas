@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import localforage from "localforage";
 
 import { nanoid } from "nanoid";
@@ -65,7 +66,7 @@ export async function uploadImage(input: string | Blob, onProgress?: (uploadedBy
     } catch (error) {
         // 鉴权失效、越权、体积超限这类失败重传也是同样结果，不能退化成"稍后自动同步"。
         if (error instanceof ResourceUploadError && error.permanent) throw error;
-        remoteUploadError = error instanceof Error ? error.message : "图片直传失败";
+        remoteUploadError = error instanceof Error ? error.message : tr("图片直传失败");
     }
     // 瞬时失败退回本机：文件仍可用，且云端数据同步会用同一幂等键重传。
     await store.setItem(storageKey, blob);
@@ -153,7 +154,7 @@ function blobToDataUrl(blob: Blob) {
     return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result || ""));
-        reader.onerror = () => reject(new Error("读取图片失败"));
+        reader.onerror = () => reject(new Error(tr("读取图片失败")));
         reader.readAsDataURL(blob);
     });
 }
@@ -162,7 +163,7 @@ async function normalizeImageBlob(blob: Blob, sourceName = "") {
     if (blob.type.startsWith("image/")) return blob;
     const bytes = new Uint8Array(await blob.slice(0, 32).arrayBuffer());
     const mimeType = detectImageMimeType(bytes) || imageMimeTypeFromName(sourceName);
-    if (!mimeType) throw new Error("无法识别参考图片格式，请重新上传 PNG、JPEG、WebP 或 GIF 图片");
+    if (!mimeType) throw new Error(tr("无法识别参考图片格式，请重新上传 PNG、JPEG、WebP 或 GIF 图片"));
     return blob.slice(0, blob.size, mimeType);
 }
 

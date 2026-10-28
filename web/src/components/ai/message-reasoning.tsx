@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Sparkles } from "lucide-react";
 
@@ -42,7 +43,7 @@ export function MessageReasoning({ reasoning, isStreaming }: { reasoning: string
     return <div className="mb-2 text-xs text-foreground/55">
         <button type="button" className="inline-flex min-h-8 items-center gap-2 rounded-md px-2 transition-colors hover:bg-surface-hover hover:text-foreground" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
             <Sparkles className="size-3.5" />
-            <span>{isStreaming ? <>正在思考<LiveReasoningCount /></> : durationSeconds ? <>已思考 <span className="font-mono tabular-nums">{durationSeconds}</span> 秒</> : "思考过程"}</span>
+            <span>{isStreaming ? <>{tr("正在思考")}<LiveReasoningCount /></> : durationSeconds ? <>{tr("已思考")} <span className="font-mono tabular-nums">{durationSeconds}</span> {tr("秒")}</> : tr("思考过程")}</span>
             <ChevronDown className={`size-3.5 transition-transform${open ? " rotate-180" : ""}`} />
         </button>
         {open ? <div className="mt-2 rounded-md bg-surface-active p-3 text-foreground/70"><AIMessageMarkdown isStreaming={isStreaming}>{reasoning}</AIMessageMarkdown></div> : null}

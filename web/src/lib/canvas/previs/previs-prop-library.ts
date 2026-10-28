@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { PrevisObject, PrevisVec3 } from "@/types/previs";
 
 /**
@@ -17,36 +18,36 @@ const item = (id: string, name: string, primitive: PrevisPropPrimitive, size: Pr
 export const PREVIS_PROP_LIBRARY: PrevisPropCategory[] = [
     {
         id: "furniture",
-        label: "家具",
+        label: tr("家具"),
         items: [
-            item("sofa-1", "单人沙发", "box", [0.9, 0.85, 0.85]),
-            item("sofa-3", "三人沙发", "box", [2.2, 0.85, 0.85]),
-            item("dining-table", "餐桌", "box", [1.6, 0.75, 0.9]),
-            item("coffee-table", "茶几", "box", [1.0, 0.45, 0.6]),
-            item("stool", "凳子", "cylinder", [0.4, 0.45, 0.4]),
-            item("bed", "双人床", "box", [1.8, 0.5, 2.1]),
+            item("sofa-1", tr("单人沙发"), "box", [0.9, 0.85, 0.85]),
+            item("sofa-3", tr("三人沙发"), "box", [2.2, 0.85, 0.85]),
+            item("dining-table", tr("餐桌"), "box", [1.6, 0.75, 0.9]),
+            item("coffee-table", tr("茶几"), "box", [1.0, 0.45, 0.6]),
+            item("stool", tr("凳子"), "cylinder", [0.4, 0.45, 0.4]),
+            item("bed", tr("双人床"), "box", [1.8, 0.5, 2.1]),
         ],
     },
     {
         id: "structure",
-        label: "空间结构",
-        items: [item("wall", "墙板", "box", [3, 2.8, 0.2]), item("door", "门", "box", [0.9, 2.1, 0.1]), item("window", "窗框", "box", [1.2, 1.4, 0.1]), item("floor", "地面板", "box", [4, 0.1, 4]), item("step", "台阶", "box", [1, 0.2, 0.3])],
+        label: tr("空间结构"),
+        items: [item("wall", tr("墙板"), "box", [3, 2.8, 0.2]), item("door", tr("门"), "box", [0.9, 2.1, 0.1]), item("window", tr("窗框"), "box", [1.2, 1.4, 0.1]), item("floor", tr("地面板"), "box", [4, 0.1, 4]), item("step", tr("台阶"), "box", [1, 0.2, 0.3])],
     },
     {
         id: "nature",
-        label: "自然 / 外景",
+        label: tr("自然 / 外景"),
         items: [
-            item("hill", "山体", "box", [8, 4, 6]),
-            item("rock", "岩石", "sphere", [1.5, 1, 1.2]),
-            item("trunk", "树干", "cylinder", [0.3, 3, 0.3]),
+            item("hill", tr("山体"), "box", [8, 4, 6]),
+            item("rock", tr("岩石"), "sphere", [1.5, 1, 1.2]),
+            item("trunk", tr("树干"), "cylinder", [0.3, 3, 0.3]),
             // 旧版用竖直 plane，放下去是一块立着的板；地面背板应当是平铺的薄板。
-            item("ground", "地面背板", "box", [6, 0.05, 6]),
+            item("ground", tr("地面背板"), "box", [6, 0.05, 6]),
         ],
     },
     {
         id: "props",
-        label: "道具",
-        items: [item("car", "汽车轮廓", "box", [4.5, 1.5, 2]), item("pillar", "柱子", "cylinder", [0.4, 3, 0.4]), item("crate", "箱子", "box", [0.6, 0.6, 0.6]), item("ball", "球体道具", "sphere", [0.5, 0.5, 0.5])],
+        label: tr("道具"),
+        items: [item("car", tr("汽车轮廓"), "box", [4.5, 1.5, 2]), item("pillar", tr("柱子"), "cylinder", [0.4, 3, 0.4]), item("crate", tr("箱子"), "box", [0.6, 0.6, 0.6]), item("ball", tr("球体道具"), "sphere", [0.5, 0.5, 0.5])],
     },
 ];
 

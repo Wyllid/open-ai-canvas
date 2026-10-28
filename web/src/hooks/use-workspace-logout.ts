@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -20,10 +21,10 @@ export function useWorkspaceLogout() {
         try {
             await logout();
             await applyUserSession({ user: null });
-            message.success("已退出登录");
+            message.success(tr("已退出登录"));
             navigate("/login", { replace: true });
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "退出失败");
+            message.error(error instanceof Error ? error.message : tr("退出失败"));
         } finally {
             setLoggingOut(false);
         }

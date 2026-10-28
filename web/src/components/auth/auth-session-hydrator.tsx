@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 
@@ -13,7 +14,7 @@ export function AuthSessionHydrator({ children }: { children: ReactNode }) {
     useEffect(() => {
         let cancelled = false;
         const startedAt = performance.now();
-        recordDiagnosticEvent({ category: "navigation", level: "info", code: "startup.auth_session_started", message: "开始恢复认证会话" });
+        recordDiagnosticEvent({ category: "navigation", level: "info", code: "startup.auth_session_started", message: tr("开始恢复认证会话") });
         getAuthSession()
             .then(async (payload) => {
                 if (cancelled) return;
@@ -21,7 +22,7 @@ export function AuthSessionHydrator({ children }: { children: ReactNode }) {
                     category: "navigation",
                     level: "info",
                     code: "startup.auth_session_ready",
-                    message: payload.user ? "认证会话已恢复" : "匿名会话已确认",
+                    message: payload.user ? tr("认证会话已恢复") : tr("匿名会话已确认"),
                     durationMs: performance.now() - startedAt,
                 });
                 if (!payload.user) {
@@ -30,7 +31,7 @@ export function AuthSessionHydrator({ children }: { children: ReactNode }) {
                         category: "navigation",
                         level: "info",
                         code: "startup.anonymous_ready",
-                        message: "匿名页面已解除启动阻塞",
+                        message: tr("匿名页面已解除启动阻塞"),
                         durationMs: performance.now() - startedAt,
                     });
                     return;
@@ -43,7 +44,7 @@ export function AuthSessionHydrator({ children }: { children: ReactNode }) {
                     category: "navigation",
                     level: "info",
                     code: "startup.workspace_ready",
-                    message: "登录工作区已解除启动阻塞",
+                    message: tr("登录工作区已解除启动阻塞"),
                     durationMs: performance.now() - startedAt,
                 });
                 preloadWorkspaceRoute(window.location.pathname);
@@ -55,7 +56,7 @@ export function AuthSessionHydrator({ children }: { children: ReactNode }) {
                         category: "navigation",
                         level: "warning",
                         code: "startup.auth_session_failed",
-                        message: "认证会话恢复失败，已降级为匿名页面",
+                        message: tr("认证会话恢复失败，已降级为匿名页面"),
                         durationMs: performance.now() - startedAt,
                     });
                 }

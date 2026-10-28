@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { getWelcomeAvailability } from "@/services/api/welcome";
@@ -15,9 +16,9 @@ async function renderWelcome() {
         console.error("Welcome page initialization failed", error);
         createRoot(document.getElementById("root")!).render(
             <main role="alert">
-                <p>暂时无法打开欢迎页，请稍后重试。</p>
-                <button onClick={() => window.location.reload()}>重试</button>
-                <a href="/">返回首页</a>
+                <p>{tr("暂时无法打开欢迎页，请稍后重试。")}</p>
+                <button onClick={() => window.location.reload()}>{tr("重试")}</button>
+                <a href="/">{tr("返回首页")}</a>
             </main>,
         );
     }

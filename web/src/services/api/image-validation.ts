@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { imageSizeRequest, type ImageCapabilityConfig } from "@/lib/model-capabilities";
 import type { ReferenceImage } from "@/types/image";
 
@@ -63,11 +64,11 @@ export function resolveSize(quality: string | undefined, ratio: string): string 
 
 export function parseImageRatio(value: string) {
     const parts = value.split(":");
-    if (parts.length !== 2) throw new Error("图像尺寸格式不支持，请使用 auto、9:16 或 1024x1024");
+    if (parts.length !== 2) throw new Error(tr("图像尺寸格式不支持，请使用 auto、9:16 或 1024x1024"));
     const w = Number(parts[0]);
     const h = Number(parts[1]);
-    if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) throw new Error("图像比例必须是正数，例如 9:16");
-    if (Math.max(w, h) / Math.min(w, h) > IMAGE_MAX_RATIO) throw new Error("图像宽高比不能超过 3:1，请调整尺寸");
+    if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) throw new Error(tr("图像比例必须是正数，例如 9:16"));
+    if (Math.max(w, h) / Math.min(w, h) > IMAGE_MAX_RATIO) throw new Error(tr("图像宽高比不能超过 3:1，请调整尺寸"));
     return { width: w, height: h };
 }
 
@@ -78,12 +79,12 @@ export function parseImageDimensions(value: string) {
 }
 
 export function validateImageSize(width: number, height: number, requireStepAlignment = true) {
-    if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) throw new Error("图像尺寸必须是正整数，例如 1024x1024");
-    if (requireStepAlignment && (width % IMAGE_SIZE_STEP !== 0 || height % IMAGE_SIZE_STEP !== 0)) throw new Error("图像尺寸的宽高必须是 16 的倍数，请调整尺寸");
-    if (Math.max(width, height) > IMAGE_MAX_EDGE) throw new Error("图像尺寸最长边不能超过 3840px，请调整尺寸");
-    if (Math.max(width, height) / Math.min(width, height) > IMAGE_MAX_RATIO) throw new Error("图像宽高比不能超过 3:1，请调整尺寸");
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) throw new Error(tr("图像尺寸必须是正整数，例如 1024x1024"));
+    if (requireStepAlignment && (width % IMAGE_SIZE_STEP !== 0 || height % IMAGE_SIZE_STEP !== 0)) throw new Error(tr("图像尺寸的宽高必须是 16 的倍数，请调整尺寸"));
+    if (Math.max(width, height) > IMAGE_MAX_EDGE) throw new Error(tr("图像尺寸最长边不能超过 3840px，请调整尺寸"));
+    if (Math.max(width, height) / Math.min(width, height) > IMAGE_MAX_RATIO) throw new Error(tr("图像宽高比不能超过 3:1，请调整尺寸"));
     const pixels = width * height;
-    if (pixels < IMAGE_MIN_PIXELS || pixels > IMAGE_MAX_PIXELS) throw new Error("图像总像素需在 655360 到 8294400 之间，请调整尺寸");
+    if (pixels < IMAGE_MIN_PIXELS || pixels > IMAGE_MAX_PIXELS) throw new Error(tr("图像总像素需在 655360 到 8294400 之间，请调整尺寸"));
 }
 
 export function resolveRequestSize(quality: string | undefined, size: string) {
@@ -95,14 +96,14 @@ export function resolveRequestSize(quality: string | undefined, size: string) {
         return `${dimensions.width}x${dimensions.height}`;
     }
     if (value.includes(":")) return resolveSize(quality, value);
-    throw new Error("图像尺寸格式不支持，请使用 auto、9:16 或 1024x1024");
+    throw new Error(tr("图像尺寸格式不支持，请使用 auto、9:16 或 1024x1024"));
 }
 
 export function resolveAspectRatio(value: string) {
     const normalized = value.trim().toLowerCase().replace("×", "x");
     if (normalized.includes(":")) return normalized;
     const dimensions = parseImageDimensions(normalized);
-    if (!dimensions) throw new Error("图像比例格式不支持，请使用 3:4 或 1024x1360");
+    if (!dimensions) throw new Error(tr("图像比例格式不支持，请使用 3:4 或 1024x1360"));
     const divisor = dimensionGCD(dimensions.width, dimensions.height);
     return `${dimensions.width / divisor}:${dimensions.height / divisor}`;
 }
@@ -119,7 +120,7 @@ export function resolveImageRequestSize(profile: ImageCapabilityConfig, quality:
         const normalized = normalizeQuality(quality || profile.quality.default);
         const tier = normalized === "low" ? "1k" : normalized === "medium" ? "2k" : normalized === "high" ? "4k" : undefined;
         if (tier && !profile.size.presets.some((preset) => preset.tier === tier && preset.ratio === request.value)) {
-            throw new Error("当前分辨率不支持所选图片宽高比");
+            throw new Error(tr("当前分辨率不支持所选图片宽高比"));
         }
     }
     const dimensions = parseImageDimensions(request.value);
@@ -133,9 +134,9 @@ export function resolveImageRequestSize(profile: ImageCapabilityConfig, quality:
 }
 
 export function validateImageCapability(profile: ImageCapabilityConfig, references: ReferenceImage[], mask?: ReferenceImage) {
-    if (references.length > profile.references.maxImages) throw new Error(`当前图片模型最多支持 ${profile.references.maxImages} 张参考图`);
-    if (mask && !profile.references.maskSupported) throw new Error("当前图片模型不支持蒙版编辑");
-    if (profile.references.maxImageBytes > 0 && references.some((image) => (image.bytes || 0) > profile.references.maxImageBytes)) throw new Error("参考图片文件超过当前模型大小限制");
+    if (references.length > profile.references.maxImages) throw new Error(tr("当前图片模型最多支持 {0} 张参考图", profile.references.maxImages));
+    if (mask && !profile.references.maskSupported) throw new Error(tr("当前图片模型不支持蒙版编辑"));
+    if (profile.references.maxImageBytes > 0 && references.some((image) => (image.bytes || 0) > profile.references.maxImageBytes)) throw new Error(tr("参考图片文件超过当前模型大小限制"));
 }
 
 export function normalizeVolcengineArkImageSize(size: string | undefined) {

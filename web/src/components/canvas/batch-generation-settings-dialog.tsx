@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useState } from "react";
 import { Button } from "antd";
 import { AppModal } from "@/components/ui/product/app-modal";
@@ -53,16 +54,16 @@ export function BatchGenerationSettingsDialog({ open, config, rowCount, concurre
             centered
             destroyOnHidden
             width={480}
-            title="批量生成设置"
+            title={tr("批量生成设置")}
         >
             <div className="flex flex-col gap-4 py-2">
                 <div className="rounded-lg bg-black/5 px-3 py-2 text-sm dark:bg-white/[0.04]">
-                    共 <span className="font-semibold">{rowCount}</span> 个任务（每行 1 张） · 并发上限 <span className="font-semibold">{concurrency}</span>
-                    <div className="mt-1 text-xs opacity-75">确认后将提交生成任务，并调用所选模型。</div>
+                    {tr("共")} <span className="font-semibold">{rowCount}</span> {tr("个任务（每行 1 张） · 并发上限")} <span className="font-semibold">{concurrency}</span>
+                    <div className="mt-1 text-xs opacity-75">{tr("确认后将提交生成任务，并调用所选模型。")}</div>
                 </div>
 
                 <div className="space-y-2">
-                    <div className="text-sm font-medium opacity-75">生成模型</div>
+                    <div className="text-sm font-medium opacity-75">{tr("生成模型")}</div>
                     <ModelPicker
                         config={generationConfig}
                         value={imageModel}
@@ -87,14 +88,14 @@ export function BatchGenerationSettingsDialog({ open, config, rowCount, concurre
 
                 <div className="flex items-center justify-between border-t pt-3" style={{ borderColor: theme.node.stroke }}>
                     <div>
-                        <div className="text-sm font-medium">摄像机控制</div>
-                        <div className="mt-1 text-xs opacity-60">为本批次统一应用镜头、焦段和光圈设置</div>
+                        <div className="text-sm font-medium">{tr("摄像机控制")}</div>
+                        <div className="mt-1 text-xs opacity-60">{tr("为本批次统一应用镜头、焦段和光圈设置")}</div>
                     </div>
                     <CanvasCameraControlPopover cameraControl={cameraControl} onCameraControlChange={setCameraControl} theme={theme} compact />
                 </div>
 
                 <div className="mt-2 flex justify-end gap-2">
-                    <Button icon={<X className="size-4" />} onClick={onClose}>取消</Button>
+                    <Button icon={<X className="size-4" />} onClick={onClose}>{tr("取消")}</Button>
                     <Button
                         type="primary"
                         icon={<WandSparkles className="size-4" />}
@@ -110,7 +111,7 @@ export function BatchGenerationSettingsDialog({ open, config, rowCount, concurre
                             cameraControl,
                         })}
                     >
-                        开始生成 {rowCount} 个任务
+                        {tr("开始生成")} {rowCount} {tr("个任务")}
                     </Button>
                 </div>
             </div>

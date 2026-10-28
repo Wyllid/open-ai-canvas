@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { ListChecks, RefreshCw } from "lucide-react";
 
 import { WorkspaceState } from "@/components/layout/workspace-state";
@@ -10,10 +11,10 @@ export function CanvasWorkspaceTaskPanel({ tasks, refreshing, onRefresh, onCance
         <>
             <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-2">
                 <ListChecks className="size-3.5 shrink-0" />
-                <span className="truncate text-xs font-semibold">任务</span>
-                <span className="tabular-nums text-foreground/32">{tasks.length.toLocaleString("zh-CN")}</span>
+                <span className="truncate text-xs font-semibold">{tr("任务")}</span>
+                <span className="tabular-nums text-foreground/32">{tasks.length.toLocaleString(currentLocale())}</span>
                 <span className="ml-auto">
-                    <button type="button" className="icon-btn tip-down" data-tip="刷新" aria-label="刷新" onClick={onRefresh}>
+                    <button type="button" className="icon-btn tip-down" data-tip="刷新" aria-label={tr("刷新")} onClick={onRefresh}>
                         <RefreshCw className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} />
                     </button>
                 </span>
@@ -27,7 +28,7 @@ export function CanvasWorkspaceTaskPanel({ tasks, refreshing, onRefresh, onCance
                         ))}
                     </div>
                 ) : (
-                    <WorkspaceState icon="canvas" compact title="暂无任务" description="点击画布上的生成按钮开始创作。" />
+                    <WorkspaceState icon="canvas" compact title={tr("暂无任务")} description={tr("点击画布上的生成按钮开始创作。")} />
                 )}
             </div>
         </>

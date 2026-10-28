@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 节点生成配置的默认值与补丁：按节点类型推导生成模式，合并全局模型配置。纯函数。
 
 import { type CanvasNodeData, CanvasNodeType } from "@/types/canvas";
@@ -11,10 +12,10 @@ import type { CanvasAudioSettingKey } from "./canvas-audio-settings-popover";
 import type { CanvasNodeGenerationMode } from "./canvas-node-prompt-panel";
 
 export function modeDisplayName(mode: CanvasNodeGenerationMode) {
-    if (mode === "image") return "图片";
-    if (mode === "video") return "视频";
-    if (mode === "audio") return "音频";
-    return "文本";
+    if (mode === "image") return tr("图片");
+    if (mode === "video") return tr("视频");
+    if (mode === "audio") return tr("音频");
+    return tr("文本");
 }
 
 export function defaultMode(type: CanvasNodeData["type"]): CanvasNodeGenerationMode {

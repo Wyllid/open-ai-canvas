@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 /**
  * 灵感库的本地管理状态：用户的增删改、收藏与隐藏。
  *
@@ -65,7 +66,7 @@ type InspirationStore = {
 };
 
 function nonEmpty(value: unknown, field: string): string {
-    if (typeof value !== "string" || !value.trim()) throw new Error(`缺少必填字段 ${field}`);
+    if (typeof value !== "string" || !value.trim()) throw new Error(tr("缺少必填字段 {0}", field));
     return value.trim();
 }
 
@@ -77,13 +78,13 @@ function asStringArray(value: unknown): string[] | undefined {
 
 /** 编辑器传来的草稿先按同一套规则收敛，不做「空字符串也写进去」的兜底。 */
 export function normalizeDraft(input: unknown): InspirationDraft {
-    if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("灵感内容格式不正确");
+    if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error(tr("灵感内容格式不正确"));
     const raw = input as Record<string, unknown>;
-    if (raw.mode !== "text" && raw.mode !== "image" && raw.mode !== "video") throw new Error("创作类型只能是 text、image 或 video");
+    if (raw.mode !== "text" && raw.mode !== "image" && raw.mode !== "video") throw new Error(tr("创作类型只能是 text、image 或 video"));
     return {
-        title: nonEmpty(raw.title, "标题"),
+        title: nonEmpty(raw.title, tr("标题")),
         description: typeof raw.description === "string" ? raw.description.trim() : "",
-        image: nonEmpty(raw.image, "封面地址"),
+        image: nonEmpty(raw.image, tr("封面地址")),
         mode: raw.mode,
         prompt: nonEmpty(raw.prompt, "提示词正文"),
         ...(typeof raw.promptZh === "string" && raw.promptZh.trim() ? { promptZh: raw.promptZh.trim() } : {}),
@@ -128,7 +129,7 @@ export const useInspirationStore = create<InspirationStore>()(
             },
 
             updateEntry: (id, patch) => {
-                if (!id) throw new Error("缺少要修改的灵感 ID");
+                if (!id) throw new Error(tr("缺少要修改的灵感 ID"));
                 const sanitized = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined && value !== ""));
                 if (!Object.keys(sanitized).length) return;
                 if (isCustomInspiration(id)) {
@@ -139,7 +140,7 @@ export const useInspirationStore = create<InspirationStore>()(
             },
 
             removeEntry: (id) => {
-                if (!id) throw new Error("缺少要删除的灵感 ID");
+                if (!id) throw new Error(tr("缺少要删除的灵感 ID"));
                 if (isCustomInspiration(id)) {
                     set((state) => ({
                         custom: state.custom.filter((item) => catalogIdOf(item) !== id),
@@ -157,7 +158,7 @@ export const useInspirationStore = create<InspirationStore>()(
             restoreEntry: (id) => set((state) => ({ hidden: state.hidden.filter((item) => item !== id) })),
 
             toggleFavorite: (id) => {
-                if (!id) throw new Error("缺少要收藏的灵感 ID");
+                if (!id) throw new Error(tr("缺少要收藏的灵感 ID"));
                 set((state) => ({ favorites: state.favorites.includes(id) ? state.favorites.filter((item) => item !== id) : [id, ...state.favorites] }));
             },
 
@@ -179,12 +180,12 @@ export const useInspirationStore = create<InspirationStore>()(
                 try {
                     parsed = JSON.parse(text);
                 } catch {
-                    throw new Error("文件不是合法的 JSON");
+                    throw new Error(tr("文件不是合法的 JSON"));
                 }
-                if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("文件结构不是灵感导出格式");
+                if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error(tr("文件结构不是灵感导出格式"));
                 const raw = parsed as Record<string, unknown>;
-                if (raw.version !== INSPIRATION_PAYLOAD_VERSION) throw new Error(`不支持的文件版本：${String(raw.version)}，当前支持 ${INSPIRATION_PAYLOAD_VERSION}`);
-                if (!Array.isArray(raw.custom)) throw new Error("文件缺少 custom 列表");
+                if (raw.version !== INSPIRATION_PAYLOAD_VERSION) throw new Error(tr("不支持的文件版本：{0}，当前支持 {1}", String(raw.version), INSPIRATION_PAYLOAD_VERSION));
+                if (!Array.isArray(raw.custom)) throw new Error(tr("文件缺少 custom 列表"));
 
                 const incoming = raw.custom.map(normalizeImportedEntry);
                 const entries = incoming.filter((item): item is CreationInspiration => item !== null);

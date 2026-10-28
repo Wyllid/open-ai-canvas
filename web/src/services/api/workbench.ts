@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { http } from "@/services/api/request";
 import { getResourceAccess, resolveResourceAccessURL, resourceStorageKey } from "@/services/api/resources";
 import type { GenerationTask } from "@/services/api/task-center";
@@ -220,7 +221,7 @@ export type WorkbenchTaskIntent = CreateWorkbenchTaskInput;
 export async function createWorkbenchTask(input: WorkbenchTaskIntent) {
     const result = await http.post<WorkbenchTaskReceipt | WorkbenchTaskReceipt["task"]>("/workbench/tasks", input);
     const task = result && "task" in result ? result.task : result;
-    if (!task?.id) throw new Error("任务已提交，但没有返回任务编号");
+    if (!task?.id) throw new Error(tr("任务已提交，但没有返回任务编号"));
     return task;
 }
 

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { modelCapabilityConfigFor } from "@/lib/model-capabilities";
 import { configuredModelMatchesCapability, type AiConfig } from "@/stores/use-config-store";
 import type { GenerationTask } from "@/services/api/task-center";
@@ -27,9 +28,9 @@ export type ImageLayerPlan = {
 };
 
 export function imageLayerPlannerError(config: AiConfig, model: string) {
-    if (!model) return "请选择用于识图规划的文本模型";
-    if (!configuredModelMatchesCapability(config, model, "text")) return "所选模型不是可用的文本模型";
-    if ((modelCapabilityConfigFor(config, model).text?.references.maxImages || 0) < 1) return "所选文本模型未配置识图输入，不能用于拆层规划；请选择支持参考图片的模型";
+    if (!model) return tr("请选择用于识图规划的文本模型");
+    if (!configuredModelMatchesCapability(config, model, "text")) return tr("所选模型不是可用的文本模型");
+    if ((modelCapabilityConfigFor(config, model).text?.references.maxImages || 0) < 1) return tr("所选文本模型未配置识图输入，不能用于拆层规划；请选择支持参考图片的模型");
     return "";
 }
 
@@ -59,31 +60,31 @@ export function applyImageLayerPlanningPurpose(plan: ImageLayerPlan, purpose: Im
     let preservedBase = false;
     const eligible = plan.layers.filter((layer, index) => {
         if (index > 0 && plan.layout === "continuous" && (layer.extraction?.method === "source-region" || layer.editUnit === "scene")) {
-            warnings.push(`“${layer.name}”是连续场景中的局部区域，未自动裁成素材，内容仍保留在底板；需要局部截图时可另行手动框选。`);
+            warnings.push(tr("“{0}”是连续场景中的局部区域，未自动裁成素材，内容仍保留在底板；需要局部截图时可另行手动框选。", layer.name));
             return false;
         }
         return true;
     });
-    if (eligible.length < 2) throw new Error("规划只提出了连续场景的局部裁块，没有可靠的独立素材；请重新规划完整主体，或关闭识图后手动配置");
+    if (eligible.length < 2) throw new Error(tr("规划只提出了连续场景的局部裁块，没有可靠的独立素材；请重新规划完整主体，或关闭识图后手动配置"));
     const layers = eligible.map((layer, index) => {
         if (index === 0 && purpose === "materials") {
             preservedBase = layer.extraction?.method !== "source" || plan.layers.some((item) => item.removeFromBackground);
-            return { ...layer, name: "原图底板", description: "保留完整原图，提取的素材另存副本", extraction: { method: "source" as const } };
+            return { ...layer, name: tr("原图底板"), description: tr("保留完整原图，提取的素材另存副本"), extraction: { method: "source" as const } };
         }
         if (index === 0) {
-            return { ...layer, name: "背景底图", extraction: { method: "generate" as const } };
+            return { ...layer, name: tr("背景底图"), extraction: { method: "generate" as const } };
         }
         let extraction = layer.extraction;
         // 完整场景是可见区域的素材，不是需要补画或抠出内部主体的对象。
         if (index > 0 && layer.editUnit === "scene" && extraction?.method !== "source-region") {
             extraction = { method: "source-region" };
-            warnings.push(`“${layer.name}”为完整场景，已改为原像素提取；请框选完整边界并选择形状，不会付费重画。`);
+            warnings.push(tr("“{0}”为完整场景，已改为原像素提取；请框选完整边界并选择形状，不会付费重画。", layer.name));
         }
         return { ...layer, removeFromBackground: purpose === "recompose", ...(extraction ? { extraction } : {}) };
     });
-    if (preservedBase) warnings.push("按提取素材目的保留原图底板，各素材另存副本；需要移除原内容时选择重组画面。");
+    if (preservedBase) warnings.push(tr("按提取素材目的保留原图底板，各素材另存副本；需要移除原内容时选择重组画面。"));
     if (purpose === "recompose" && (plan.layers[0].extraction?.method === "source" || eligible.slice(1).some((layer) => !layer.removeFromBackground))) {
-        warnings.push("按背景与前景分离目的移除已拆内容，底图使用模型修补；请核对背景效果及调用费用。");
+        warnings.push(tr("按背景与前景分离目的移除已拆内容，底图使用模型修补；请核对背景效果及调用费用。"));
     }
     return { ...plan, layers, ...(warnings.length ? { warnings } : {}) };
 }
@@ -95,13 +96,13 @@ export function imageLayerTargetName(target: string) {
             .replace(/<bbox>[^<]*<\/bbox>/g, "")
             .split(/[：:\n]/)[0]
             .trim()
-            .slice(0, 48) || "图层素材"
+            .slice(0, 48) || tr("图层素材")
     );
 }
 
 /** 语义计划必须有效；可选区域提示不能使已识别的整份计划失效，也不能猜测单位或裁剪坐标。 */
 export function parseImageLayerPlan(text: string, referenceSize?: ImageSize): ImageLayerPlan {
-    if (text.length > 32_000) throw new Error("识图规划结果过长，未提交拆图任务");
+    if (text.length > 32_000) throw new Error(tr("识图规划结果过长，未提交拆图任务"));
     const raw = text
         .trim()
         .replace(/^```(?:json)?\s*/i, "")
@@ -110,29 +111,29 @@ export function parseImageLayerPlan(text: string, referenceSize?: ImageSize): Im
     try {
         value = JSON.parse(raw);
     } catch {
-        throw new Error("识图规划没有返回有效 JSON，未提交拆图任务");
+        throw new Error(tr("识图规划没有返回有效 JSON，未提交拆图任务"));
     }
-    if (!value || typeof value !== "object" || value.canPlan !== true) throw new Error(`所选模型不能识图或无法规划拆层${typeof value?.reason === "string" ? `：${value.reason.slice(0, 300)}` : ""}`);
-    if (!Array.isArray(value.layers) || value.layers.length < 2 || value.layers.length > 8) throw new Error("识图规划必须包含 2–8 层");
+    if (!value || typeof value !== "object" || value.canPlan !== true) throw new Error(tr("所选模型不能识图或无法规划拆层{0}", typeof value?.reason === "string" ? `：${value.reason.slice(0, 300)}` : ""));
+    if (!Array.isArray(value.layers) || value.layers.length < 2 || value.layers.length > 8) throw new Error(tr("识图规划必须包含 2–8 层"));
     const names = new Set<string>();
     const warnings: string[] = [];
     const layers = value.layers.map((item: any, index: number) => {
-        if (!item || typeof item.name !== "string" || typeof item.description !== "string") throw new Error("识图规划缺少图层名称或内容");
+        if (!item || typeof item.name !== "string" || typeof item.description !== "string") throw new Error(tr("识图规划缺少图层名称或内容"));
         const name = item.name.trim();
         const description = item.description.trim();
-        if (!name || name.length > 80 || !description || description.length > 1200 || /[\r\n]/.test(name + description)) throw new Error("识图规划的名称或内容无效");
-        if (names.has(name)) throw new Error("识图规划包含重复图层");
+        if (!name || name.length > 80 || !description || description.length > 1200 || /[\r\n]/.test(name + description)) throw new Error(tr("识图规划的名称或内容无效"));
+        if (names.has(name)) throw new Error(tr("识图规划包含重复图层"));
         names.add(name);
         const kind = index === 0 ? ("background" as const) : ("object" as const);
-        if (item.kind !== kind) throw new Error("识图规划第一层必须为背景底图，其他层必须为独立对象");
+        if (item.kind !== kind) throw new Error(tr("识图规划第一层必须为背景底图，其他层必须为独立对象"));
         const generation = parseImageLayerGeneration(item.generation, index);
-        if (generation.prompt.length > 2400) throw new Error(`规划第 ${index + 1} 层的独立提示词过长，未提交拆图任务`);
-        if (item.removeFromBackground !== undefined && typeof item.removeFromBackground !== "boolean") throw new Error("识图规划的底图移除选项无效");
+        if (generation.prompt.length > 2400) throw new Error(tr("规划第 {0} 层的独立提示词过长，未提交拆图任务", index + 1));
+        if (item.removeFromBackground !== undefined && typeof item.removeFromBackground !== "boolean") throw new Error(tr("识图规划的底图移除选项无效"));
         let bbox: [number, number, number, number] | undefined;
         const nestedBbox = item.extraction?.bbox;
         const conflictingBbox = item.bbox !== undefined && nestedBbox !== undefined && JSON.stringify(item.bbox) !== JSON.stringify(nestedBbox);
         const regionBbox = conflictingBbox ? undefined : (item.bbox ?? nestedBbox);
-        if (conflictingBbox) warnings.push(`“${name}”返回了冲突的区域坐标，请核对原图并重新框选。`);
+        if (conflictingBbox) warnings.push(tr("“{0}”返回了冲突的区域坐标，请核对原图并重新框选。", name));
         if (regionBbox !== undefined) {
             const space = value.coordinateSpace ?? "normalized1000";
             const sizeMatches = !value.imageSize || (referenceSize && value.imageSize.width === referenceSize.width && value.imageSize.height === referenceSize.height);
@@ -141,7 +142,7 @@ export function parseImageLayerPlan(text: string, referenceSize?: ImageSize): Im
                 const normalized = regionBbox.map((number: number, i: number) => number * scale[i % 2]);
                 if (normalized.every((number: number) => number >= 0 && number <= 1000) && normalized[2] - normalized[0] >= 2 && normalized[3] - normalized[1] >= 2) bbox = normalized.map((number: number) => Math.round(number)) as typeof bbox;
             }
-            if (!bbox) warnings.push(`“${name}”的区域坐标无效或单位不明确，已忽略坐标并保留图层描述，请核对原图位置。`);
+            if (!bbox) warnings.push(tr("“{0}”的区域坐标无效或单位不明确，已忽略坐标并保留图层描述，请核对原图位置。", name));
         }
         let extraction: ImageLayerExtraction | undefined;
         if (item.extraction !== undefined) {
@@ -150,16 +151,16 @@ export function parseImageLayerPlan(text: string, referenceSize?: ImageSize): Im
             else if (method === "source" && index === 0) extraction = { method };
             else if (method === "source-region" && index > 0) {
                 const shape = item.extraction.shape;
-                if (!["rect", "rounded-rect", "ellipse"].includes(shape)) throw new Error("识图规划的原图提取形状无效");
+                if (!["rect", "rounded-rect", "ellipse"].includes(shape)) throw new Error(tr("识图规划的原图提取形状无效"));
                 const radiusRatio = item.extraction.radiusRatio;
                 // 保留可用的语义计划；显式选择原图区域却缺少几何坐标时，由编辑器阻止提交。
                 extraction = { method, ...(bbox ? { region: { bbox, shape, ...(shape === "rounded-rect" ? { radiusRatio } : {}) } } : {}) };
-                if (!bbox) warnings.push(`“${name}”使用原图提取，需要先在原图框选有效区域；不会自动改为付费生成。`);
-            } else throw new Error("识图规划的提取方式与图层角色不一致");
+                if (!bbox) warnings.push(tr("“{0}”使用原图提取，需要先在原图框选有效区域；不会自动改为付费生成。", name));
+            } else throw new Error(tr("识图规划的提取方式与图层角色不一致"));
         }
         const editUnits = ["scene", "object", "text", "decoration", "group"] as const;
         const editUnit = editUnits.find((unit) => unit === item.editUnit);
-        if (item.editUnit !== undefined && !editUnit) warnings.push(`“${name}”的编辑单元分类无效，请核对内容；未改变提取方式。`);
+        if (item.editUnit !== undefined && !editUnit) warnings.push(tr("“{0}”的编辑单元分类无效，请核对内容；未改变提取方式。", name));
         return { name, description, kind, generation, ...(editUnit ? { editUnit } : {}), ...(index ? { removeFromBackground: item.removeFromBackground ?? false } : {}), ...(bbox ? { bbox } : {}), ...(extraction ? { extraction } : {}) };
     });
     const fields = ["structure", "editingGoal", "strategy"] as const;
@@ -167,9 +168,9 @@ export function parseImageLayerPlan(text: string, referenceSize?: ImageSize): Im
         value.reasoning && fields.every((field) => typeof value.reasoning[field] === "string" && value.reasoning[field].trim().length > 0 && value.reasoning[field].length <= 400)
             ? (Object.fromEntries(fields.map((field) => [field, value.reasoning[field].trim()])) as ImageLayerPlan["reasoning"])
             : undefined;
-    if (value.reasoning && !reasoning) warnings.push("规划依据格式无效，已保留图层计划；请核对图像结构与提取方式。");
+    if (value.reasoning && !reasoning) warnings.push(tr("规划依据格式无效，已保留图层计划；请核对图像结构与提取方式。"));
     const layout = ["continuous", "composition", "mixed"].includes(value.layout) ? (value.layout as ImageLayerPlan["layout"]) : undefined;
-    if (value.layout !== undefined && !layout) warnings.push("图片结构分类无效，请核对是否为连续场景或嵌入式排版。");
+    if (value.layout !== undefined && !layout) warnings.push(tr("图片结构分类无效，请核对是否为连续场景或嵌入式排版。"));
     return { layers, ...(layout ? { layout } : {}), ...(reasoning ? { reasoning } : {}), ...(warnings.length ? { warnings } : {}) };
 }
 
@@ -186,7 +187,7 @@ export function latestImageLayerPlan(tasks: GenerationTask[], projectId: string,
                 ...plan,
                 taskId: task.id,
                 model: task.model,
-                warnings: [...(plan.warnings || []), `已读取 ${task.createdAt} 的已有规划，没有新增模型调用；请核对当前原图和拆层要求。`, ...(!metadata.sourceStorageKey ? ["旧记录未保存源图资源标识，请确认图片没有被替换。"] : [])],
+                warnings: [...(plan.warnings || []), tr("已读取 {0} 的已有规划，没有新增模型调用；请核对当前原图和拆层要求。", task.createdAt), ...(!metadata.sourceStorageKey ? [tr("旧记录未保存源图资源标识，请确认图片没有被替换。")] : [])],
             };
         } catch {
             /* 跳过未形成可用计划的旧记录，不创建或重试任务。 */
@@ -195,7 +196,7 @@ export function latestImageLayerPlan(tasks: GenerationTask[], projectId: string,
 }
 
 export function imageLayerPlanTargets(plan: ImageLayerPlan) {
-    return plan.layers.map((layer) => `${layer.name}：${layer.description}${layer.bbox ? `，区域 <bbox>${layer.bbox.join(" ")}</bbox>` : ""}`);
+    return plan.layers.map((layer) => `${layer.name}：${layer.description}${layer.bbox ? tr("，区域 <bbox>{0}</bbox>", layer.bbox.join(" ")) : ""}`);
 }
 
 /** 尺寸来自源图，不能把未支持的比例静默回退成模型默认方图。 */

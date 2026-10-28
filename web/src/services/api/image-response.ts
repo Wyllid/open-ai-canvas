@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import axios from "axios";
 import { nanoid } from "nanoid";
 import { consumeJsonEvents } from "@/lib/json-event-stream";
@@ -15,7 +16,7 @@ function text(value: unknown): string {
 }
 
 function assertEnvelope(payload: { code?: number; msg?: string }) {
-    if (typeof payload.code === "number" && payload.code !== 0) throw new Error(payload.msg || "请求失败");
+    if (typeof payload.code === "number" && payload.code !== 0) throw new Error(payload.msg || tr("请求失败"));
 }
 
 function imagesFrom(sources: Iterable<string | undefined | null>, emptyMessage: string) {
@@ -44,7 +45,7 @@ export function parseImagePayload(payload: ImageApiResponse) {
             yield encoded ? `data:image/png;base64,${encoded}` : text(item.url);
         }
     }
-    return imagesFrom(sources(), "接口没有返回图片");
+    return imagesFrom(sources(), tr("接口没有返回图片"));
 }
 
 export function parseChatCompletionPayload(payload: ChatCompletionPayload): ToolResponseResult {
@@ -95,7 +96,7 @@ export function parseGeminiImagePayload(payload: GeminiPayload) {
             yield inline?.data ? `data:${mime || "image/png"};base64,${inline.data}` : part.fileData?.fileUri;
         }
     }
-    return imagesFrom(sources(), "Gemini 接口没有返回图片");
+    return imagesFrom(sources(), tr("Gemini 接口没有返回图片"));
 }
 
 export function responseErrorMessage(value: unknown) {
@@ -109,21 +110,21 @@ export function validateResponsePayload(payload: ResponseApiPayload) {
 }
 
 export function validateGeminiPayload(payload: GeminiPayload) {
-    const failure = payload.error?.message || (payload.promptFeedback?.blockReason ? `Gemini 拒绝了本次请求：${payload.promptFeedback.blockReason}` : "");
+    const failure = payload.error?.message || (payload.promptFeedback?.blockReason ? tr("Gemini 拒绝了本次请求：{0}", payload.promptFeedback.blockReason) : "");
     if (failure) throw new Error(failure);
 }
 
 export function readStatusError(status: number | undefined, fallback: string) {
     const known: Record<number, string> = {
-        401: "鉴权失败，请检查 API Key、套餐权限或模型权限",
-        403: "鉴权失败，请检查 API Key、套餐权限或模型权限",
-        429: "请求被限流或额度不足，请稍后重试",
+        401: tr("鉴权失败，请检查 API Key、套餐权限或模型权限"),
+        403: tr("鉴权失败，请检查 API Key、套餐权限或模型权限"),
+        429: tr("请求被限流或额度不足，请稍后重试"),
     };
     return status ? known[status] || `${fallback}：${status}` : fallback;
 }
 
 export function readAxiosError(error: unknown, fallback: string) {
-    if (axios.isCancel(error) || (error instanceof DOMException && error.name === "AbortError")) return "请求已取消";
+    if (axios.isCancel(error) || (error instanceof DOMException && error.name === "AbortError")) return tr("请求已取消");
     if (!axios.isAxiosError(error)) return error instanceof Error ? error.message : fallback;
     const payload = record(error.response?.data);
     return text(payload.msg) || text(record(payload.error).message) || readStatusError(error.response?.status, fallback);
@@ -147,7 +148,7 @@ export async function readJsonPayload<T>(response: Response, fallback: string): 
     try {
         return JSON.parse(body) as T;
     } catch {
-        const detail = /^\s*(?:<!doctype|<html)/i.test(body) ? "后端代理返回了前端网页，请检查 VITE_CANVAS_BACKEND_URL 和反向代理配置" : `${fallback}：接口没有返回有效 JSON`;
+        const detail = /^\s*(?:<!doctype|<html)/i.test(body) ? tr("后端代理返回了前端网页，请检查 VITE_CANVAS_BACKEND_URL 和反向代理配置") : tr("{0}：接口没有返回有效 JSON", fallback);
         throw new Error(detail);
     }
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { getDataUrlByteSize } from "@/lib/image-utils";
 import { canvasNodeVideoPreviewUrl } from "@/lib/canvas/canvas-media-preview";
 import type { Asset, AssetCategory, NewAsset } from "@/stores/use-asset-store";
@@ -144,8 +145,8 @@ export function canvasNodeAssetCategory(node: CanvasNodeData): AssetCategory {
 }
 
 function canvasAssetFallbackTitle(type: CanvasNodeTypeId) {
-    if (type === CanvasNodeType.Image) return "画布图片";
-    if (type === CanvasNodeType.Video) return "画布视频";
-    if (type === CanvasNodeType.Audio) return "画布音频";
-    return "画布文本";
+    if (type === CanvasNodeType.Image) return tr("画布图片");
+    if (type === CanvasNodeType.Video) return tr("画布视频");
+    if (type === CanvasNodeType.Audio) return tr("画布音频");
+    return tr("画布文本");
 }

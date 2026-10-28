@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useRef, useState } from "react";
 import { Alert, App, AutoComplete, Button, Form, Input, Segmented, Switch, Tabs } from "antd";
 import { useAdminContext } from "../admin-context";
@@ -50,7 +51,7 @@ export function ChannelModelEditor({
 }) {
     const { message, modal } = App.useApp();
     const { references } = useAdminContext();
-    const displayNameOptions = [...new Set(["未分类", ...references.channels.flatMap((item) => item.modelDisplayNames ?? [])])].sort((a, b) => a.localeCompare(b, "zh-CN")).map((value) => ({ value }));
+    const displayNameOptions = [...new Set([tr("未分类"), ...references.channels.flatMap((item) => item.modelDisplayNames ?? [])])].sort((a, b) => a.localeCompare(b, "zh-CN")).map((value) => ({ value }));
     const [groupSearch, setGroupSearch] = useState("");
     const [form] = Form.useForm<FormValues>();
     const [initialValues] = useState(() => draftValues ?? initialChannelModelValues(editing, protocols));
@@ -79,7 +80,7 @@ export function ChannelModelEditor({
             onClose();
             return;
         }
-        modal.confirm({ title: "放弃未保存的修改？", content: "当前修改尚未保存，关闭后将丢弃。", okText: "放弃修改", cancelText: "继续编辑", onOk: onClose });
+        modal.confirm({ title: tr("放弃未保存的修改？"), content: tr("当前修改尚未保存，关闭后将丢弃。"), okText: tr("放弃修改"), cancelText: tr("继续编辑"), onOk: onClose });
     };
 
     const handleFormValuesChange = (changed: Partial<FormValues>) => {
@@ -115,8 +116,8 @@ export function ChannelModelEditor({
             if (fields?.length) {
                 setActiveSection(editorSectionForField(fields[0].name));
                 requestAnimationFrame(() => form.scrollToField(fields[0].name, { block: "center", focus: true }));
-                message.warning("请检查标记的配置项后重试");
-            } else message.error(error instanceof Error ? error.message : "表单校验失败");
+                message.warning(tr("请检查标记的配置项后重试"));
+            } else message.error(error instanceof Error ? error.message : tr("表单校验失败"));
             return undefined;
         } finally {
             busyRef.current = false;
@@ -136,7 +137,7 @@ export function ChannelModelEditor({
             const payload = {
                 modelKey: values.modelKey.trim(),
                 providerModelKey: upstreamModel,
-                displayName: values.displayName?.trim() || "未分类",
+                displayName: values.displayName?.trim() || tr("未分类"),
                 channelLabel: values.channelLabel?.trim() || upstreamModel,
                 tags: (values.tags || []).map((tag) => ({ text: tag.text.trim(), color: tag.color })),
                 description: values.description?.trim() || "",
@@ -152,12 +153,12 @@ export function ChannelModelEditor({
             try {
                 await onSaved();
             } catch {
-                message.warning("模型已保存，但列表刷新失败，请手动刷新");
+                message.warning(tr("模型已保存，但列表刷新失败，请手动刷新"));
             }
             onClose();
-            message.success(editing ? "模型配置已更新" : "模型已添加");
+            message.success(editing ? tr("模型配置已更新") : tr("模型已添加"));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "保存模型失败");
+            message.error(error instanceof Error ? error.message : tr("保存模型失败"));
         } finally {
             busyRef.current = false;
             setSaving(false);
@@ -181,9 +182,9 @@ export function ChannelModelEditor({
                 protocol: values.protocol,
                 capabilityConfig,
             });
-            message.success(`模型测试通过，耗时 ${(result.durationMs / 1000).toFixed(2)} 秒`);
+            message.success(tr("模型测试通过，耗时 {0} 秒", (result.durationMs / 1000).toFixed(2)));
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "模型测试失败");
+            message.error(error instanceof Error ? error.message : tr("模型测试失败"));
         } finally {
             busyRef.current = false;
             setTesting(false);
@@ -195,9 +196,9 @@ export function ChannelModelEditor({
             open
             title={
                 <div className="admin-model-editor-title">
-                    <span>{draftValues ? "复制模型" : editing ? "编辑模型" : "新增模型"}</span>
+                    <span>{draftValues ? tr("复制模型") : editing ? tr("编辑模型") : tr("新增模型")}</span>
                     <p>
-                        {channel.name} · {editing?.displayName || editing?.modelKey || draftValues?.displayName || "配置调用方式与规格"}
+                        {channel.name} · {editing?.displayName || editing?.modelKey || draftValues?.displayName || tr("配置调用方式与规格")}
                     </p>
                 </div>
             }
@@ -214,7 +215,7 @@ export function ChannelModelEditor({
                 <div className="admin-model-editor-footer-actions">
                     <div className="admin-model-editor-footer-status">
                         <Switch
-                            aria-label="启用模型"
+                            aria-label={tr("启用模型")}
                             checked={modelEnabled}
                             disabled={busy}
                             onChange={(checked) => {
@@ -223,8 +224,8 @@ export function ChannelModelEditor({
                             }}
                         />
                         <div>
-                            <strong>{modelEnabled ? "模型启用" : "模型停用"}</strong>
-                            <small>保存后生效</small>
+                            <strong>{modelEnabled ? tr("模型启用") : tr("模型停用")}</strong>
+                            <small>{tr("保存后生效")}</small>
                         </div>
                     </div>
                     <div className="admin-model-editor-footer-primary">
@@ -232,15 +233,15 @@ export function ChannelModelEditor({
                             icon={<FlaskConical className="size-4" />}
                             loading={testing}
                             disabled={saving || protocolLoading || Boolean(protocolError)}
-                            onClick={() => modal.confirm({ title: "测试模型连接？", content: "测试会向上游发送真实请求，可能产生供应商费用；不会保存当前修改。", okText: "开始测试", cancelText: "取消", onOk: testModel })}
+                            onClick={() => modal.confirm({ title: tr("测试模型连接？"), content: tr("测试会向上游发送真实请求，可能产生供应商费用；不会保存当前修改。"), okText: tr("开始测试"), cancelText: tr("取消"), onOk: testModel })}
                         >
-                            测试模型
+                            {tr("测试模型")}
                         </Button>
                         <Button disabled={busy} onClick={requestClose}>
-                            取消
+                            {tr("取消")}
                         </Button>
                         <Button type="primary" loading={saving} disabled={testing || protocolLoading || Boolean(protocolError)} onClick={() => void save()}>
-                            {editing ? "保存修改" : "添加模型"}
+                            {editing ? tr("保存修改") : tr("添加模型")}
                         </Button>
                     </div>
                 </div>
@@ -260,18 +261,18 @@ export function ChannelModelEditor({
                     items={[
                         {
                             key: "identity",
-                            label: "基本信息",
+                            label: tr("基本信息"),
                             forceRender: true,
                             children: (
                                 <div className="admin-model-editor-tab-content">
                                     <section className="admin-model-editor-section">
-                                        <SectionHeading title="模型身份" description="区分产品侧展示标识与上游实际调用 ID。" />
+                                        <SectionHeading title={tr("模型身份")} description={tr("区分产品侧展示标识与上游实际调用 ID。")} />
                                         <div className="admin-model-editor-section-content admin-model-identity-grid admin-model-identity-grid-with-icon">
                                             <Form.Item
                                                 name="modelKey"
-                                                label="产品模型标识"
-                                                tooltip="不同渠道使用相同标识时，创作端归为同一个产品模型。不同版本（例如 Fast）应使用不同标识；请勿为分组随意修改已有标识。"
-                                                rules={[{ required: true, whitespace: true, message: "请输入产品模型标识" }]}
+                                                label={tr("产品模型标识")}
+                                                tooltip={tr("不同渠道使用相同标识时，创作端归为同一个产品模型。不同版本（例如 Fast）应使用不同标识；请勿为分组随意修改已有标识。")}
+                                                rules={[{ required: true, whitespace: true, message: tr("请输入产品模型标识") }]}
                                             >
                                                 <Input
                                                     prefix={
@@ -279,13 +280,13 @@ export function ChannelModelEditor({
                                                             <ModelIcon model={modelKey} />
                                                         </span>
                                                     }
-                                                    placeholder="例如：seedance-2-5"
+                                                    placeholder={tr("例如：seedance-2-5")}
                                                 />
                                             </Form.Item>
-                                            <Form.Item name="providerModelKey" label="上游模型 ID" tooltip="实际发送给供应商；留空时使用产品模型标识。规格档可配置独立上游 ID，命中时优先于此处。">
-                                                <Input placeholder="留空则使用产品模型标识" />
+                                            <Form.Item name="providerModelKey" label={tr("上游模型 ID")} tooltip={tr("实际发送给供应商；留空时使用产品模型标识。规格档可配置独立上游 ID，命中时优先于此处。")}>
+                                                <Input placeholder={tr("留空则使用产品模型标识")} />
                                             </Form.Item>
-                                            <Form.Item name="displayName" label="模型展示名（一级目录）" tooltip="跨所有系统渠道按此名称分组；新模型默认未分类。同名模型归入同一组，不改变调用 ID。">
+                                            <Form.Item name="displayName" label={tr("模型展示名（一级目录）")} tooltip={tr("跨所有系统渠道按此名称分组；新模型默认未分类。同名模型归入同一组，不改变调用 ID。")}>
                                                 <AutoComplete
                                                     options={displayNameOptions}
                                                     filterOption={(_, option) => Boolean(option?.value.toLowerCase().includes(groupSearch.trim().toLowerCase()))}
@@ -294,25 +295,25 @@ export function ChannelModelEditor({
                                                     onOpenChange={(open) => {
                                                         if (open) setGroupSearch("");
                                                     }}
-                                                    placeholder="选择已有分组或输入新名称，默认为未分类"
+                                                    placeholder={tr("选择已有分组或输入新名称，默认为未分类")}
                                                     allowClear
                                                 />
                                             </Form.Item>
                                             <Form.Item
                                                 name="channelLabel"
-                                                label="渠道展示名（二级目录）"
-                                                tooltip="默认跟随上游模型 ID；手动名称最多 80 字。"
+                                                label={tr("渠道展示名（二级目录）")}
+                                                tooltip={tr("默认跟随上游模型 ID；手动名称最多 80 字。")}
                                                 rules={[
                                                     {
                                                         validator: async (_, value: string | undefined) => {
-                                                            if (value?.trim() !== modelUpstream && Array.from(value?.trim() || "").length > 80) throw new Error("渠道展示名不能超过 80 字");
+                                                            if (value?.trim() !== modelUpstream && Array.from(value?.trim() || "").length > 80) throw new Error(tr("渠道展示名不能超过 80 字"));
                                                         },
                                                     },
                                                 ]}
                                             >
-                                                <Input maxLength={80} placeholder={modelUpstream || "默认使用上游模型 ID"} />
+                                                <Input maxLength={80} placeholder={modelUpstream || tr("默认使用上游模型 ID")} />
                                             </Form.Item>
-                                            <Form.Item name="icon" label="模型 Logo">
+                                            <Form.Item name="icon" label={tr("模型 Logo")}>
                                                 <ModelIconPicker />
                                             </Form.Item>
                                         </div>
@@ -320,41 +321,41 @@ export function ChannelModelEditor({
                                             <Alert
                                                 type="info"
                                                 showIcon
-                                                title={`${tiersWithOwnUpstream.length} 个规格档配置了独立上游模型 ID`}
-                                                description="命中的请求会优先使用规格档的上游 ID；修改上方上游模型 ID 时，只有与旧值相同的档位会自动跟随更新，其余保持不变。"
+                                                title={tr("{0} 个规格档配置了独立上游模型 ID", tiersWithOwnUpstream.length)}
+                                                description={tr("命中的请求会优先使用规格档的上游 ID；修改上方上游模型 ID 时，只有与旧值相同的档位会自动跟随更新，其余保持不变。")}
                                             />
                                         ) : null}
                                         <ChannelModelTagsEditor />
-                                        <Form.Item name="description" label="模型描述" extra="在创作端二级渠道选项中常驻显示，可说明适用场景、渠道差异和注意事项。" rules={[{ max: 500, message: "模型描述不能超过 500 字" }]}>
-                                            <Input.TextArea rows={3} maxLength={500} showCount placeholder="填写此渠道模型的使用说明" />
+                                        <Form.Item name="description" label={tr("模型描述")} extra={tr("在创作端二级渠道选项中常驻显示，可说明适用场景、渠道差异和注意事项。")} rules={[{ max: 500, message: tr("模型描述不能超过 500 字") }]}>
+                                            <Input.TextArea rows={3} maxLength={500} showCount placeholder={tr("填写此渠道模型的使用说明")} />
                                         </Form.Item>
                                     </section>
                                     <section className="admin-model-editor-section">
-                                        <SectionHeading title="能力与协议" description="先选任务类型，再选择对应的调用协议；更换后请核对参数与规格。" />
+                                        <SectionHeading title={tr("能力与协议")} description={tr("先选任务类型，再选择对应的调用协议；更换后请核对参数与规格。")} />
                                         <div className="admin-model-editor-section-content admin-model-protocol-grid">
-                                            <Form.Item name="capability" label="模型能力" rules={[{ required: true }]}>
+                                            <Form.Item name="capability" label={tr("模型能力")} rules={[{ required: true }]}>
                                                 <Segmented
                                                     block
                                                     options={[
-                                                        { label: "文本", value: "text" },
-                                                        { label: "图片", value: "image" },
-                                                        { label: "视频", value: "video" },
-                                                        { label: "音频", value: "audio" },
+                                                        { label: tr("文本"), value: "text" },
+                                                        { label: tr("图片"), value: "image" },
+                                                        { label: tr("视频"), value: "video" },
+                                                        { label: tr("音频"), value: "audio" },
                                                     ]}
                                                 />
                                             </Form.Item>
-                                            <Form.Item className="admin-model-protocol-field" name="protocol" label="调用协议" rules={[{ validator: async (_, value) => validateChannelModelProtocol(form.getFieldValue("capability"), value, protocols) }]}>
+                                            <Form.Item className="admin-model-protocol-field" name="protocol" label={tr("调用协议")} rules={[{ validator: async (_, value) => validateChannelModelProtocol(form.getFieldValue("capability"), value, protocols) }]}>
                                                 <ModelProtocolBrowser disabled={busy} capability={modelCapability} protocols={protocols} loading={protocolLoading} error={protocolError} />
                                             </Form.Item>
                                             {protocolError && (
                                                 <Alert
                                                     type="error"
                                                     showIcon
-                                                    title="协议目录读取失败"
+                                                    title={tr("协议目录读取失败")}
                                                     description={protocolError}
                                                     action={
                                                         <Button size="small" onClick={onRetryProtocols}>
-                                                            重试
+                                                            {tr("重试")}
                                                         </Button>
                                                     }
                                                 />
@@ -366,14 +367,14 @@ export function ChannelModelEditor({
                         },
                         {
                             key: "capabilities",
-                            label: "能力与参数",
+                            label: tr("能力与参数"),
                             forceRender: true,
                             children: (
                                 <div className="admin-model-editor-tab-content">
-                                    {configurationChanged && <Alert type="warning" showIcon title="能力或协议已变更" description="引用与参数已恢复为新协议默认值，旧规格条件已在切换能力时清除，请在保存前核对。" />}{" "}
+                                    {configurationChanged && <Alert type="warning" showIcon title={tr("能力或协议已变更")} description={tr("引用与参数已恢复为新协议默认值，旧规格条件已在切换能力时清除，请在保存前核对。")} />}{" "}
                                     {modelCapability === "text" || modelCapability === "image" || modelCapability === "video" ? (
                                         <section className="admin-model-editor-section admin-model-editor-section-stacked admin-model-editor-references">
-                                            <SectionHeading title="引用与限制" description="按媒体类型纵向配置数量、大小、时长及通用约束。" />
+                                            <SectionHeading title={tr("引用与限制")} description={tr("按媒体类型纵向配置数量、大小、时长及通用约束。")} />
                                             <div className="admin-model-editor-section-content">
                                                 <ModelCapabilityEditor
                                                     capability={modelCapability}
@@ -393,7 +394,7 @@ export function ChannelModelEditor({
                                     ) : null}
                                     {modelCapability === "text" || modelCapability === "image" || modelCapability === "video" ? (
                                         <section className="admin-model-editor-section admin-model-editor-section-stacked admin-model-editor-parameters">
-                                            <SectionHeading title="协议参数" description="配置可发送参数、支持值与默认值；仅影响当前模型。" />
+                                            <SectionHeading title={tr("协议参数")} description={tr("配置可发送参数、支持值与默认值；仅影响当前模型。")} />
                                             <div className="admin-model-editor-section-content">
                                                 <ModelCapabilityEditor
                                                     capability={modelCapability}
@@ -411,19 +412,19 @@ export function ChannelModelEditor({
                                             </div>
                                         </section>
                                     ) : null}
-                                    {modelCapability === "audio" && <Alert type="info" title="音频模型无需额外配置引用与参数" description="调用协议和规格仍需在对应分组中配置。" />}
+                                    {modelCapability === "audio" && <Alert type="info" title={tr("音频模型无需额外配置引用与参数")} description={tr("调用协议和规格仍需在对应分组中配置。")} />}
                                 </div>
                             ),
                         },
                         {
                             key: "pricing",
-                            label: "规格",
+                            label: tr("规格"),
                             forceRender: true,
                             children: (
                                 <div className="admin-model-editor-tab-content">
-                                    {configurationChanged && <Alert type="warning" showIcon title="请核对规格" description="能力或协议已变更。请重新检查规格条件。" />}{" "}
+                                    {configurationChanged && <Alert type="warning" showIcon title={tr("请核对规格")} description={tr("能力或协议已变更。请重新检查规格条件。")} />}{" "}
                                     <section className="admin-model-editor-section">
-                                        <SectionHeading title="模型规格" description="默认只需一个统一规格；需要按生成方式、质量或尺寸路由到不同上游模型时，再添加规格档。" />
+                                        <SectionHeading title={tr("模型规格")} description={tr("默认只需一个统一规格；需要按生成方式、质量或尺寸路由到不同上游模型时，再添加规格档。")} />
                                         <div className="admin-model-editor-section-content">
                                             <Form.List
                                                 name="priceTiers"
@@ -437,7 +438,7 @@ export function ChannelModelEditor({
                                             >
                                                 {(fields, { add, remove }, { errors }) => (
                                                     <div className="admin-price-tier-list-shell">
-                                                        <div className="admin-price-tier-list" aria-label="规格档列表">
+                                                        <div className="admin-price-tier-list" aria-label={tr("规格档列表")}>
                                                             {fields.map((field, index) => (
                                                                 <PriceTierFields
                                                                     key={field.key}
@@ -457,7 +458,7 @@ export function ChannelModelEditor({
                                                         </div>
                                                         <div className="admin-price-tier-list-footer">
                                                             <Button className="admin-model-editor-add-tier" type="dashed" block icon={<Plus className="size-4" />} onClick={() => add(defaultPriceTier(hasDefaultPriceTier ? "advanced" : "default"))}>
-                                                                {hasDefaultPriceTier ? "新增规格档" : "新增统一默认规格"}
+                                                                {hasDefaultPriceTier ? tr("新增规格档") : tr("新增统一默认规格")}
                                                             </Button>
                                                             <Form.ErrorList errors={errors} />
                                                         </div>

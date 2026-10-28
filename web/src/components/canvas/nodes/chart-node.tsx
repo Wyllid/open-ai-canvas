@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { ChartColumn } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -85,7 +86,7 @@ export function ChartNodeContent({ node, theme }: ChartNodeContentProps) {
         return (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center" style={{ color: theme.node.muted }}>
                 <ChartColumn className="size-5 opacity-60" />
-                <span style={{ fontSize: "var(--fs-label)" }}>{source.trim() ? "无法解析为图表数据（需要 JSON 数组或 CSV）" : "连接输出 JSON 数组或 CSV 的文本节点"}</span>
+                <span style={{ fontSize: "var(--fs-label)" }}>{source.trim() ? tr("无法解析为图表数据（需要 JSON 数组或 CSV）") : tr("连接输出 JSON 数组或 CSV 的文本节点")}</span>
             </div>
         );
     }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ComponentProps } from "react";
 import { isVideoProvider, MediaPlayer, MediaProvider, type MediaPlayerInstance, type VideoMimeType } from "@vidstack/react";
@@ -28,45 +29,45 @@ type VideoPlayerProps = {
 };
 
 const zhCNTranslations = {
-    Accessibility: "辅助功能",
-    AirPlay: "隔空播放",
-    Audio: "音频",
-    Auto: "自动",
-    Boost: "音量增强",
-    Captions: "字幕",
-    "Caption Styles": "字幕样式",
-    Chapters: "章节",
-    "Closed-Captions Off": "关闭字幕",
-    "Closed-Captions On": "开启字幕",
-    Connected: "已连接",
-    Connecting: "连接中",
-    Default: "默认",
-    Disabled: "已禁用",
-    Disconnected: "已断开",
-    Download: "下载",
-    "Enter Fullscreen": "进入全屏",
-    "Enter PiP": "进入画中画",
-    "Exit Fullscreen": "退出全屏",
-    "Exit PiP": "退出画中画",
-    Fullscreen: "全屏",
-    Loop: "循环播放",
-    Mute: "静音",
-    Normal: "正常",
-    Off: "关闭",
-    Pause: "暂停",
-    Play: "播放",
-    Playback: "播放",
-    PiP: "画中画",
-    Quality: "画质",
-    Replay: "重新播放",
-    Reset: "重置",
-    Seek: "跳转",
-    "Seek Backward": "快退",
-    "Seek Forward": "快进",
-    Settings: "设置",
-    Speed: "倍速",
-    Unmute: "取消静音",
-    Volume: "音量",
+    Accessibility: tr("辅助功能"),
+    AirPlay: tr("隔空播放"),
+    Audio: tr("音频"),
+    Auto: tr("自动"),
+    Boost: tr("音量增强"),
+    Captions: tr("字幕"),
+    "Caption Styles": tr("字幕样式"),
+    Chapters: tr("章节"),
+    "Closed-Captions Off": tr("关闭字幕"),
+    "Closed-Captions On": tr("开启字幕"),
+    Connected: tr("已连接"),
+    Connecting: tr("连接中"),
+    Default: tr("默认"),
+    Disabled: tr("已禁用"),
+    Disconnected: tr("已断开"),
+    Download: tr("下载"),
+    "Enter Fullscreen": tr("进入全屏"),
+    "Enter PiP": tr("进入画中画"),
+    "Exit Fullscreen": tr("退出全屏"),
+    "Exit PiP": tr("退出画中画"),
+    Fullscreen: tr("全屏"),
+    Loop: tr("循环播放"),
+    Mute: tr("静音"),
+    Normal: tr("正常"),
+    Off: tr("关闭"),
+    Pause: tr("暂停"),
+    Play: tr("播放"),
+    Playback: tr("播放"),
+    PiP: tr("画中画"),
+    Quality: tr("画质"),
+    Replay: tr("重新播放"),
+    Reset: tr("重置"),
+    Seek: tr("跳转"),
+    "Seek Backward": tr("快退"),
+    "Seek Forward": tr("快进"),
+    Settings: tr("设置"),
+    Speed: tr("倍速"),
+    Unmute: tr("取消静音"),
+    Volume: tr("音量"),
 } satisfies Partial<DefaultLayoutTranslations>;
 
 const supportedVideoMimeTypes = new Set<VideoMimeType>(["video/mp4", "video/webm", "video/3gp", "video/ogg", "video/avi", "video/mpeg", "video/object"]);
@@ -75,7 +76,7 @@ const supportedVideoMimeTypes = new Set<VideoMimeType>(["video/mp4", "video/webm
  * 统一视频播放表面，保留原生媒体 URL 契约，同时提供可访问的完整控件布局。
  * 画布节点需要隔离播放器手势，避免拖动进度条时被误判为拖动画布。
  */
-export function VideoPlayer({ src, mimeType, title = "视频", className, brandColor = "#f5f5f5", preload = "metadata", autoPlay = false, dataCanvasNoZoom = false, compactControls = false, hasAudio, onCanPlay, onPlay, onError }: VideoPlayerProps) {
+export function VideoPlayer({ src, mimeType, title = tr("视频"), className, brandColor = "#f5f5f5", preload = "metadata", autoPlay = false, dataCanvasNoZoom = false, compactControls = false, hasAudio, onCanPlay, onPlay, onError }: VideoPlayerProps) {
     const [detectedHasAudio, setDetectedHasAudio] = useState<boolean | undefined>(undefined);
     const autoPlayAttemptedRef = useRef(false);
     const audioProbeGenerationRef = useRef(0);

@@ -449,7 +449,7 @@ describe("引导浮层契约", () => {
 
     test("非阻塞浮层：region 语义，不是 dialog，也没有遮罩与焦点陷阱", () => {
         expect(code).toContain("<section");
-        expect(code).toContain('aria-label="预演台上手引导"');
+        expect(code).toContain('aria-label={tr("预演台上手引导")}');
         expect(code).not.toContain('role="dialog"');
         expect(code).not.toContain("aria-modal");
         expect(code).not.toContain("Modal");
@@ -469,14 +469,14 @@ describe("引导浮层契约", () => {
     });
 
     test("进度既有文本又有播报，装饰性圆点对读屏隐藏", () => {
-        expect(code).toContain("第 ${position} 步 / 共 ${total} 步");
+        expect(code).toContain('tr("第 {0} 步 / 共 {1} 步", position, total)');
         expect(code).toContain('aria-live="polite"');
         expect(code).toContain("aria-hidden");
     });
 
     test("首步禁用上一步，末步把主按钮换成中性的结束文案", () => {
         expect(code).toContain("disabled={busy || isFirst}");
-        expect(code).toContain('{isLast ? "结束引导" : "下一步"}');
+        expect(code).toContain('{isLast ? tr("结束引导") : tr("下一步")}');
     });
 
     test("只用既有 token，不写颜色/圆角/字号字面值", () => {
@@ -560,7 +560,7 @@ describe("引导产品接线", () => {
     test("工作台渲染非模态引导，并提供可发现的重新开始入口", () => {
         expect(workbenchCode).toContain('import { CanvasPrevisOnboarding } from "@/components/canvas/previs/canvas-previs-onboarding"');
         expect(workbenchCode).toContain("onboardingScope: string");
-        expect(workbenchCode).toContain('label="重新开始引导"');
+        expect(workbenchCode).toContain('label={tr("重新开始引导")}');
         expect(workbenchCode).toContain("setOnboardingRestartSignal((value) => value + 1)");
         expect(workbenchCode).toContain("<CanvasPrevisOnboarding");
         expect(workbenchCode).toContain("scope={onboardingScope}");

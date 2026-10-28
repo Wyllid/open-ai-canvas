@@ -1,5 +1,6 @@
+import { tr } from "@/i18n";
 const maxChapterHeadingLength = 120;
-const chineseChapterNumber = "[零〇○一二两三四五六七八九十百千万亿壹贰叁肆伍陆柒捌玖拾佰仟\\d]+";
+const chineseChapterNumber = tr("[零〇○一二两三四五六七八九十百千万亿壹贰叁肆伍陆柒捌玖拾佰仟\\d]+");
 const englishChapterNumber = "(?:\\d+|[ivxlcdm]+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)";
 const chapterTitleSuffix = "(?:\\s*[-—–:：·.]\\s*.*|\\s+.*)?";
 const chapterHeadingPatterns = [
@@ -47,7 +48,7 @@ export function decodeNovelText(buffer: ArrayBuffer) {
 
 export function splitTextIntoChapters(text: string) {
     const normalized = text.replace(/\r\n?/g, "\n").trim();
-    if (!normalized) return [{ title: "第 1 章", plainText: "" }];
+    if (!normalized) return [{ title: tr("第 1 章"), plainText: "" }];
     const lines = normalized.split("\n");
     const sections: Array<{ title: string; lines: string[] }> = [];
     let current: { title: string; lines: string[] } | null = null;
@@ -64,7 +65,7 @@ export function splitTextIntoChapters(text: string) {
         else preface.push(line);
     }
     if (current) sections.push(current);
-    if (!sections.length) return [{ title: "第 1 章", plainText: normalized }];
-    if (preface.some((line) => line.trim())) sections.unshift({ title: "序章", lines: preface });
+    if (!sections.length) return [{ title: tr("第 1 章"), plainText: normalized }];
+    if (preface.some((line) => line.trim())) sections.unshift({ title: tr("序章"), lines: preface });
     return sections.map((section): ImportedNovelChapter => ({ title: section.title, plainText: section.lines.join("\n").trim() }));
 }

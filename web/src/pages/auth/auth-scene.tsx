@@ -1,3 +1,5 @@
+import { tr } from "@/i18n";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -10,9 +12,9 @@ import { brandStudioLabel, useAppearanceStore } from "@/stores/use-appearance-st
 import { useThemeStore } from "@/stores/use-theme-store";
 
 const authCopy = {
-    eyebrow: "WELCOME BACK",
-    title: "Enter the studio",
-    description: "Pick up your canvases, assets and generation tasks.",
+    eyebrow: tr("WELCOME BACK"),
+    title: tr("Enter the studio"),
+    description: tr("Pick up your canvases, assets and generation tasks."),
 } as const;
 
 export function LinuxDOIcon() {
@@ -56,7 +58,7 @@ export function AuthScene() {
     return (
         <main className="auth-scene h-dvh min-h-0 overflow-y-auto lg:overflow-hidden">
             <div className="grid min-h-full lg:h-full lg:grid-cols-[minmax(0,1.32fr)_minmax(520px,1fr)]">
-                <section className="auth-scene-hero relative min-h-[250px] overflow-hidden sm:min-h-[320px] lg:min-h-0" aria-label={`${appearance.brandName} brand film`}>
+                <section className="auth-scene-hero relative min-h-[250px] overflow-hidden sm:min-h-[320px] lg:min-h-0" aria-label={tr("{0} brand film", appearance.brandName)}>
                     {videoActive && appearance.authVideoUrl ? <video ref={videoRef} className="absolute inset-0 size-full object-cover" src={appearance.authVideoUrl} poster={appearance.authVideoPosterUrl || undefined} autoPlay muted loop playsInline preload="metadata" onPlay={() => setVideoPlaying(true)} onPause={() => setVideoPlaying(false)} /> : appearance.authVideoPosterUrl && failedPosterURL !== appearance.authVideoPosterUrl ? <img className="absolute inset-0 size-full object-cover" src={appearance.authVideoPosterUrl} alt="" decoding="async" onError={() => setFailedPosterURL(appearance.authVideoPosterUrl)} /> : null}
                     <div aria-hidden className="auth-scene-hero-overlay absolute inset-0" />
                     <div aria-hidden className="auth-scene-video-blend absolute inset-y-0 right-0 hidden w-[clamp(120px,14vw,240px)] lg:block" />
@@ -67,7 +69,7 @@ export function AuthScene() {
                         </Link>
                         <button type="button" className="auth-scene-hero-control inline-flex items-center gap-2 rounded-full px-3 py-2 text-[var(--fs-label)] backdrop-blur-xl transition disabled:cursor-default" onClick={playVideo} disabled={videoPlaying || !appearance.authVideoUrl} aria-pressed={videoPlaying}>
                             <Play className="size-3 fill-current" />
-                            {videoPlaying ? "Playing" : "Play brand film"}
+                            {videoPlaying ? tr("Playing") : tr("Play brand film")}
                         </button>
                     </div>
                     <motion.div
@@ -83,9 +85,10 @@ export function AuthScene() {
                 </section>
 
                 <section className="auth-scene-form-pane relative flex min-h-[660px] flex-col items-center overflow-y-auto px-4 pt-20 sm:px-8 lg:min-h-0 lg:px-10 lg:pt-20">
+                    <LanguageSwitcher className="auth-scene-return absolute left-5 top-5 z-20 inline-flex h-9 items-center gap-2 rounded-full px-4 text-xs backdrop-blur-xl transition lg:left-8 lg:top-8" />
                     <Link to="/" className="auth-scene-return absolute right-5 top-5 z-20 inline-flex h-9 items-center gap-2 rounded-full px-4 text-xs backdrop-blur-xl transition lg:right-8 lg:top-8">
                         <ArrowLeft className="size-3.5" />
-                        Back to home
+                        {tr("Back to home")}
                     </Link>
 
                     <div className="flex w-full flex-1 items-center justify-center">

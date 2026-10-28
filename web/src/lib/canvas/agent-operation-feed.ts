@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { agentToolCategory, agentToolName, agentToolRetryLabel, agentToolStatus, friendlyAgentToolSummary } from "./agent-tool-presentation";
 import { agentToolRetry } from "./agent-tool-retry";
 
@@ -49,22 +50,22 @@ export function isAgentReasoningRecord(item: AgentFeedRecord): boolean {
 
 /** 折叠行上报的那一步：最新一条操作记录的友好摘要（等待执行时用"准备…"口径）。 */
 export function agentOperationLabel(item: AgentFeedRecord): string {
-    const name = agentToolName(item.title || "工具执行", item.detail);
+    const name = agentToolName(item.title || tr("工具执行"), item.detail);
     const retry = agentToolRetry(item.detail);
     // 自动纠正分组在卡片里只显示纠正记录，折叠行跟上同一口径，否则会报一个"已完成"的假象。
-    if (retry) return `${agentToolRetryLabel(retry)} · ${retry.attempt}/${retry.maxAttempts} 次尝试`;
+    if (retry) return tr("{0} · {1}/{2} 次尝试", agentToolRetryLabel(retry), retry.attempt, retry.maxAttempts);
     return friendlyAgentToolSummary(name, item.text, item.detail, agentToolStatus(name, item.text, item.detail) === "pending");
 }
 
 /** 失败/被拒的操作默认展开：错误不该被折进一行里看不见。 */
 export function agentOperationFailed(item: AgentFeedRecord): boolean {
-    const status = agentToolStatus(agentToolName(item.title || "工具执行", item.detail), item.text, item.detail);
+    const status = agentToolStatus(agentToolName(item.title || tr("工具执行"), item.detail), item.text, item.detail);
     return status === "failed" || status === "rejected";
 }
 
 /** 一条操作记录的类别（折叠行徽标用它）：按工具契约判定，不看文案。 */
 export function agentOperationCategory(item: AgentFeedRecord) {
-    return agentToolCategory(agentToolName(item.title || "工具执行", item.detail), item.detail);
+    return agentToolCategory(agentToolName(item.title || tr("工具执行"), item.detail), item.detail);
 }
 
 /**
@@ -96,7 +97,7 @@ export function agentOperationSegmentLabel(items: readonly AgentFeedRecord[]): s
         }
     }
     if (!viewed.size) return agentOperationLabel(latest);
-    return `查看了 ${viewed.size} 张画面${latestTitle ? ` · 最新《${latestTitle}》` : ""}`;
+    return tr("查看了 {0} 张画面{1}", viewed.size, latestTitle ? tr(" · 最新《{0}》", latestTitle) : "");
 }
 
 /**

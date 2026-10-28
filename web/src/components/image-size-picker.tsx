@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useState } from "react";
 import "./image-size-picker.css";
 import { Input, Button } from "antd";
@@ -111,7 +112,7 @@ export function ImageSizePicker({
                 if (first) select(first);
             }
         } catch (reason) {
-            setError(reason instanceof Error ? reason.message : "尺寸格式无效");
+            setError(reason instanceof Error ? reason.message : tr("尺寸格式无效"));
         }
     };
     const applyCustom = () => {
@@ -121,7 +122,7 @@ export function ImageSizePicker({
                 return;
             }
             const match = custom.trim().match(/^(\d+)\s*[x×]\s*(\d+)$/i);
-            if (!match) throw new Error("输入比例 16:9，或像素 1824x1024");
+            if (!match) throw new Error(tr("输入比例 16:9，或像素 1824x1024"));
             const width = Number(match[1]),
                 height = Number(match[2]);
             if (profile.size.parameter === "aspect_ratio") {
@@ -138,13 +139,13 @@ export function ImageSizePicker({
             };
             select(preset);
         } catch (reason) {
-            setError(reason instanceof Error ? reason.message : "尺寸格式无效");
+            setError(reason instanceof Error ? reason.message : tr("尺寸格式无效"));
         }
     };
     if (profile.size.parameter === "none")
         return profile.resolution.supported ? (
             <div className="image-size-picker">
-                <div className="image-size-label">分辨率</div>
+                <div className="image-size-label">{tr("分辨率")}</div>
                 <div className="image-size-tiers">
                     {profile.resolution.values.map((value) => (
                         <button type="button" key={value} aria-pressed={value === imageResolution} disabled={Boolean(canSelectResolution && !canSelectResolution(value))} onClick={() => onChange(size, undefined, value)}>
@@ -158,7 +159,7 @@ export function ImageSizePicker({
         <div className="image-size-picker">
             {profile.resolution.supported ? (
                 <>
-                    <div className="image-size-label">分辨率</div>
+                    <div className="image-size-label">{tr("分辨率")}</div>
                     <div className="image-size-tiers">
                         {profile.resolution.values.map((value) => (
                             <button
@@ -179,7 +180,7 @@ export function ImageSizePicker({
                 </>
             ) : !ungrouped && visibleTiers.length && (profile.size.parameter === "size" || !profile.quality.supported || imageResolutionUsesQuality(profile)) ? (
                 <>
-                    <div className="image-size-label">分辨率</div>
+                    <div className="image-size-label">{tr("分辨率")}</div>
                     <div className="image-size-tiers">
                         {visibleTiers.map((value) => (
                             <button type="button" key={value} aria-pressed={size !== "auto" && active?.tier === value} onClick={() => changeTier(value)}>
@@ -199,10 +200,10 @@ export function ImageSizePicker({
                         onChange("auto");
                     }}
                 >
-                    自动尺寸
+                    {tr("自动尺寸")}
                 </button>
             ) : null}
-            {choices.length ? <div className="image-size-label">宽高比</div> : null}
+            {choices.length ? <div className="image-size-label">{tr("宽高比")}</div> : null}
             <div className="image-size-ratios">
                 {choices.map((preset) => (
                     <button
@@ -217,17 +218,17 @@ export function ImageSizePicker({
                     </button>
                 ))}
             </div>
-            {!choices.length ? <p className="image-size-hint">未配置预设尺寸{profile.size.allowCustom ? "，可输入自定义比例或尺寸" : ""}</p> : null}
+            {!choices.length ? <p className="image-size-hint">{tr("未配置预设尺寸")}{profile.size.allowCustom ? tr("，可输入自定义比例或尺寸") : ""}</p> : null}
             <output aria-live="polite" className="image-size-output">
-                {size === "auto" ? "尺寸由模型决定" : active ? `${active.ratio} · ${active.width} × ${active.height} px` : size.replace("x", " × ")}
+                {size === "auto" ? tr("尺寸由模型决定") : active ? `${active.ratio} · ${active.width} × ${active.height} px` : size.replace("x", " × ")}
             </output>
-            {profile.size.parameter === "aspect_ratio" ? <p className="image-size-hint">尺寸为换算参考，实际像素由模型决定{!imageResolutionUsesQuality(profile) && visibleTiers.length <= 1 ? "；当前协议未配置独立分辨率" : ""}。</p> : null}
+            {profile.size.parameter === "aspect_ratio" ? <p className="image-size-hint">{tr("尺寸为换算参考，实际像素由模型决定")}{!imageResolutionUsesQuality(profile) && visibleTiers.length <= 1 ? tr("；当前协议未配置独立分辨率") : ""}。</p> : null}
             {profile.size.allowCustom ? (
                 <details className="image-size-custom">
-                    <summary>自定义比例或尺寸</summary>
+                    <summary>{tr("自定义比例或尺寸")}</summary>
                     <div className="image-size-custom-input">
-                        <Input aria-label="自定义比例或尺寸" placeholder="16:9 或 1824x1024" value={custom} onChange={(event) => setCustom(event.target.value)} onPressEnter={applyCustom} />
-                        <Button onClick={applyCustom}>应用</Button>
+                        <Input aria-label={tr("自定义比例或尺寸")} placeholder={tr("16:9 或 1824x1024")} value={custom} onChange={(event) => setCustom(event.target.value)} onPressEnter={applyCustom} />
+                        <Button onClick={applyCustom}>{tr("应用")}</Button>
                     </div>
                 </details>
             ) : null}

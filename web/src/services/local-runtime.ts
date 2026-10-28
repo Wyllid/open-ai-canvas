@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { LocalRuntimeClientError } from "@/services/local-runtime-session";
 
 export type LocalRuntimeModuleId = "canvas-agent" | "dreamina" | "portrait-clearance" | "depth-estimation" | "lineart-estimation" | "pose-estimation";
@@ -143,11 +144,11 @@ function isModuleId(value: unknown): value is LocalRuntimeModuleId {
 }
 
 function invalidResponse(status: number) {
-    return new LocalRuntimeClientError("runtime_response_invalid", "本机运行时响应无效", status);
+    return new LocalRuntimeClientError("runtime_response_invalid", tr("本机运行时响应无效"), status);
 }
 
 function publicRequestError(code: string) {
-    if (code === "session_required") return "本机会话已失效，请重新连接";
-    if (code === "scope_denied") return "本机会话权限不足";
-    return "本机运行时请求失败";
+    if (code === "session_required") return tr("本机会话已失效，请重新连接");
+    if (code === "scope_denied") return tr("本机会话权限不足");
+    return tr("本机运行时请求失败");
 }

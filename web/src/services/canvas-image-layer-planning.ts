@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { MAX_LAYER_PIXELS } from "@/lib/canvas/canvas-image-layers";
 import { latestImageLayerPlan } from "@/lib/canvas/canvas-image-layer-plan";
 import { listGenerationTasks, queryGenerationTask } from "@/services/api/task-center";
@@ -17,7 +18,7 @@ export async function readImageLayerPlanningHistory(projectId: string, sourceNod
         const plan = latestImageLayerPlan([task], projectId, sourceNodeId, sourceStorageKey);
         if (plan) return plan;
     }
-    throw new Error("最近 50 条任务中没有这张源图的可用规划，请重新识图或关闭规划后手工填写目标");
+    throw new Error(tr("最近 50 条任务中没有这张源图的可用规划，请重新识图或关闭规划后手工填写目标"));
 }
 
 /** 只预处理识图输入，最终拆层仍使用完整源图；读取和上传沿用账号资源链路。 */
@@ -27,7 +28,7 @@ export async function prepareImageLayerPlanningReference(source: ReferenceImage,
     signal.throwIfAborted();
     if (!blob) {
         const response = await fetch(source.url || source.dataUrl, { signal });
-        if (!response.ok) throw new Error("无法读取识图源图，请重新上传图片");
+        if (!response.ok) throw new Error(tr("无法读取识图源图，请重新上传图片"));
         blob = await response.blob();
     }
     signal.throwIfAborted();
@@ -35,7 +36,7 @@ export async function prepareImageLayerPlanningReference(source: ReferenceImage,
     try {
         signal.throwIfAborted();
         const sourceSize = { width: bitmap.width, height: bitmap.height };
-        if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > MAX_LAYER_PIXELS) throw new Error("识图源图尺寸无效或超过处理上限");
+        if (!bitmap.width || !bitmap.height || bitmap.width * bitmap.height > MAX_LAYER_PIXELS) throw new Error(tr("识图源图尺寸无效或超过处理上限"));
         if (input === "original" || Math.max(bitmap.width, bitmap.height) <= 1000) return { reference: { ...source, ...sourceSize }, sourceSize };
         const ratio = 1000 / Math.max(bitmap.width, bitmap.height);
         const canvas = document.createElement("canvas");
@@ -43,11 +44,11 @@ export async function prepareImageLayerPlanningReference(source: ReferenceImage,
         canvas.height = Math.max(1, Math.round(bitmap.height * ratio));
         try {
             const context = canvas.getContext("2d");
-            if (!context) throw new Error("浏览器不支持识图预览，请选择原图输入");
+            if (!context) throw new Error(tr("浏览器不支持识图预览，请选择原图输入"));
             context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
             const type = blob.type === "image/jpeg" ? "image/jpeg" : "image/png";
             const dataUrl = canvas.toDataURL(type, 0.92);
-            if (!dataUrl.startsWith(`data:${type};base64,`)) throw new Error("识图预览编码失败，请选择原图输入");
+            if (!dataUrl.startsWith(`data:${type};base64,`)) throw new Error(tr("识图预览编码失败，请选择原图输入"));
             signal.throwIfAborted();
             const reference: ReferenceImage = { id: source.id, name: `layer-plan-${source.id}.${type === "image/jpeg" ? "jpg" : "png"}`, type, dataUrl, width: canvas.width, height: canvas.height };
             return { reference, sourceSize };

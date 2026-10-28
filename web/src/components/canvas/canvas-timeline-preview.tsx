@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 
@@ -136,7 +137,7 @@ export function CanvasTimelinePreview({ clips, nodes, playheadMs, playing, theme
                         <button
                             type="button"
                             className="absolute inset-0 z-10 grid place-items-center"
-                            aria-label={playing ? "暂停预览" : "播放预览"}
+                            aria-label={playing ? tr("暂停预览") : tr("播放预览")}
                             onClick={(event) => {
                                 event.stopPropagation();
                                 onTogglePlay();
@@ -148,18 +149,18 @@ export function CanvasTimelinePreview({ clips, nodes, playheadMs, playing, theme
                         </button>
                     </>
                 ) : (
-                    <div className="px-4 text-center text-xs opacity-55">该位置无视频片段</div>
+                    <div className="px-4 text-center text-xs opacity-55">{tr("该位置无视频片段")}</div>
                 )}
             </div>
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 text-xs">
                     <span className="truncate font-semibold" style={{ color: theme.accent.primary }}>
-                        {activeVideoClip?.title || "无视频片段"}
+                        {activeVideoClip?.title || tr("无视频片段")}
                     </span>
                     <span className="opacity-45 tabular-nums">{activeVideoClip ? `${formatTimelineTime(activeVideoClip.startMs)} ~ ${formatTimelineTime(activeVideoClip.startMs + activeVideoClip.durationMs)}` : ""}</span>
                 </div>
                 <div className="mt-2 max-h-16 min-h-10 overflow-y-auto rounded-lg border px-2 py-2 text-xs leading-5" style={{ borderColor: theme.toolbar.border, background: theme.node.fill }}>
-                    {activeSubtitleClip ? activeSubtitleClip.text : <span className="opacity-40">此处无字幕，点选字幕片段后在下方编辑</span>}
+                    {activeSubtitleClip ? activeSubtitleClip.text : <span className="opacity-40">{tr("此处无字幕，点选字幕片段后在下方编辑")}</span>}
                 </div>
             </div>
         </div>

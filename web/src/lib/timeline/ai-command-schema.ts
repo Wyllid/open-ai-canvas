@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // AI 编辑命令的边界层：同一份注册表同时约束模型输出和宿主执行，避免提示词与真实能力列表分叉。
 // 本文件只负责 JSON 结构解析、批量预检和提示词契约生成；命令的参数合法性仍由编辑命令注册表统一判定。
 // 预检使用与正式执行相同的纯函数注册表，保证“模型看见的能力”和“宿主实际允许的能力”一致。
@@ -27,7 +28,7 @@ function extractFirstJsonObject(text: string): string {
     const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
     const candidate = fenced ? fenced[1] : text;
     const start = candidate.indexOf("{");
-    if (start < 0) throw new AiCommandPlanError("输出中未找到 JSON 对象（需要 { commands: [...] }）");
+    if (start < 0) throw new AiCommandPlanError(tr("输出中未找到 JSON 对象（需要 { commands: [...] }）"));
     // 从首个 { 起逐字符数括号，找配对的收尾 }（字符串内括号不计）。
     let depth = 0;
     let inString = false;
@@ -53,26 +54,26 @@ function extractFirstJsonObject(text: string): string {
             if (depth === 0) return candidate.slice(start, i + 1);
         }
     }
-    throw new AiCommandPlanError("JSON 对象未闭合（缺少收尾 }）");
+    throw new AiCommandPlanError(tr("JSON 对象未闭合（缺少收尾 }）"));
 }
 
 function assertPlanShape(raw: unknown): asserts raw is AiCommandPlan {
-    if (typeof raw !== "object" || raw === null) throw new AiCommandPlanError("输出必须是 JSON 对象");
+    if (typeof raw !== "object" || raw === null) throw new AiCommandPlanError(tr("输出必须是 JSON 对象"));
     const plan = raw as Record<string, unknown>;
     if (plan.reasoning !== undefined && typeof plan.reasoning !== "string") {
-        throw new AiCommandPlanError("reasoning 必须是字符串");
+        throw new AiCommandPlanError(tr("reasoning 必须是字符串"));
     }
-    if (!Array.isArray(plan.commands)) throw new AiCommandPlanError("缺少 commands 数组");
+    if (!Array.isArray(plan.commands)) throw new AiCommandPlanError(tr("缺少 commands 数组"));
     if (plan.commands.length > AI_EDITING_MAX_COMMANDS) {
-        throw new AiCommandPlanError(`commands 超过 ${AI_EDITING_MAX_COMMANDS} 条上限`);
+        throw new AiCommandPlanError(tr("commands 超过 {0} 条上限", AI_EDITING_MAX_COMMANDS));
     }
     // commands 为空数组 = 只读问答 / 无可用命令，合法终态
     plan.commands.forEach((cmd, i) => {
-        if (typeof cmd !== "object" || cmd === null) throw new AiCommandPlanError(`commands[${i}] 必须是对象`);
+        if (typeof cmd !== "object" || cmd === null) throw new AiCommandPlanError(tr("commands[{0}] 必须是对象", i));
         const c = cmd as Record<string, unknown>;
-        if (typeof c.op !== "string" || c.op.length === 0) throw new AiCommandPlanError(`commands[${i}].op 必须是非空字符串`);
+        if (typeof c.op !== "string" || c.op.length === 0) throw new AiCommandPlanError(tr("commands[{0}].op 必须是非空字符串", i));
         if (typeof c.payload !== "object" || c.payload === null || Array.isArray(c.payload)) {
-            throw new AiCommandPlanError(`commands[${i}].op=${c.op} 缺少对象 payload`);
+            throw new AiCommandPlanError(tr("commands[{0}].op={1} 缺少对象 payload", i, c.op));
         }
     });
 }
@@ -87,7 +88,7 @@ export function parseAiCommandPlan(text: string): AiCommandPlan {
         raw = JSON.parse(extractFirstJsonObject(text));
     } catch (error) {
         if (error instanceof AiCommandPlanError) throw error;
-        throw new AiCommandPlanError(`JSON 解析失败：${(error as Error).message}`);
+        throw new AiCommandPlanError(tr("JSON 解析失败：{0}", (error as Error).message));
     }
     assertPlanShape(raw);
     return raw;
@@ -130,62 +131,62 @@ export const AI_EDITING_OP_CATALOG: ReadonlyArray<{
 }> = [
     {
         op: "addClip",
-        desc: "新增媒体/文本片段到已存在轨道",
-        payload: "{ clip: { id(新唯一), kind: video|audio|image|text, trackId(必须存在), nodeId(源素材), startMs≥0, durationMs>0, title?, volume?, fadeInMs?, fadeOutMs? } }",
+        desc: tr("新增媒体/文本片段到已存在轨道"),
+        payload: tr("{ clip: { id(新唯一), kind: video|audio|image|text, trackId(必须存在), nodeId(源素材), startMs≥0, durationMs>0, title?, volume?, fadeInMs?, fadeOutMs? } }"),
     },
     {
         op: "moveClip",
-        desc: "移动片段（时间点/跨轨）",
-        payload: "{ id, startMs≥0, trackId?(可选, 必须存在) }",
+        desc: tr("移动片段（时间点/跨轨）"),
+        payload: tr("{ id, startMs≥0, trackId?(可选, 必须存在) }"),
     },
     {
         op: "trimClip",
-        desc: "裁剪片段（时间线位置/时长/源内起点）",
-        payload: "{ id, startMs?(≥0), durationMs?(>0 且≤sourceDurationMs), sourceStartMs?(≥0, 与 durationMs 之和≤sourceDurationMs) }",
+        desc: tr("裁剪片段（时间线位置/时长/源内起点）"),
+        payload: tr("{ id, startMs?(≥0), durationMs?(>0 且≤sourceDurationMs), sourceStartMs?(≥0, 与 durationMs 之和≤sourceDurationMs) }"),
     },
     {
         op: "splitClip",
-        desc: "在片段内部切一刀成两段",
-        payload: "{ id, splitAtMs(严格大于 startMs 且小于 startMs+durationMs) }",
+        desc: tr("在片段内部切一刀成两段"),
+        payload: tr("{ id, splitAtMs(严格大于 startMs 且小于 startMs+durationMs) }"),
     },
     {
         op: "removeClip",
-        desc: "删除片段",
+        desc: tr("删除片段"),
         payload: "{ id }",
     },
     {
         op: "setClipProperty",
-        desc: "修改片段属性（白名单）",
-        payload: "{ id, patch: { title? | text? | volume? | fadeInMs? | fadeOutMs? | subtitleEntryIndex? }（至少一项） }",
+        desc: tr("修改片段属性（白名单）"),
+        payload: tr("{ id, patch: { title? | text? | volume? | fadeInMs? | fadeOutMs? | subtitleEntryIndex? }（至少一项） }"),
     },
     {
         op: "addSubtitle",
-        desc: "新增字幕片段",
-        payload: "{ clip: { kind: subtitle, trackId(字幕轨), id/nodeId/startMs/durationMs/text } }",
+        desc: tr("新增字幕片段"),
+        payload: tr("{ clip: { kind: subtitle, trackId(字幕轨), id/nodeId/startMs/durationMs/text } }"),
     },
     {
         op: "removeSubtitle",
-        desc: "删除字幕片段",
+        desc: tr("删除字幕片段"),
         payload: "{ id }",
     },
     {
         op: "rebuildSubtitleClips",
-        desc: "按节点字幕条目重建字幕片段",
-        payload: "{ nodeId, entries: [{ index≥0(唯一), startMs≥0, endMs>startMs, text }], trackId?(字幕轨) }",
+        desc: tr("按节点字幕条目重建字幕片段"),
+        payload: tr("{ nodeId, entries: [{ index≥0(唯一), startMs≥0, endMs>startMs, text }], trackId?(字幕轨) }"),
     },
     {
         op: "addTrack",
-        desc: "新增轨道（id/label 由系统生成，勿传）",
+        desc: tr("新增轨道（id/label 由系统生成，勿传）"),
         payload: "{ kind: video|image|text|audio|subtitle }",
     },
     {
         op: "removeTrack",
-        desc: "删除整条轨道及片段（每种轨道至少保留一条）",
+        desc: tr("删除整条轨道及片段（每种轨道至少保留一条）"),
         payload: "{ trackId }",
     },
     {
         op: "setTrackFlag",
-        desc: "轨道开关",
+        desc: tr("轨道开关"),
         payload: "{ trackId, flag: visible|muted, value: boolean }",
     },
 ];

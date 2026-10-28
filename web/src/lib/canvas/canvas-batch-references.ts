@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CanvasBatchRow, CanvasBatchTableData, CanvasConnection, CanvasNodeData, CanvasNodeMetadata } from "@/types/canvas";
 import { batchInputColumns, batchPromptForRow, batchReferenceColumns, createBatchRow } from "./canvas-batch-table";
 import { canvasBatchInputToken } from "./canvas-batch-input-signature";
@@ -43,7 +44,7 @@ export function batchCellAnchor(node: CanvasNodeData, handle: string | undefined
     const rawY = BATCH_TABLE_HEADER_HEIGHT + BATCH_COLUMN_HEADER_HEIGHT + rowIndex * BATCH_ROW_HEIGHT + BATCH_ROW_HEIGHT / 2 - scroll.top;
     const x = Math.max(4, Math.min(node.width - 8, rawX));
     const y = Math.max(BATCH_TABLE_HEADER_HEIGHT + BATCH_COLUMN_HEADER_HEIGHT + 4, Math.min(node.height - 8, rawY));
-    return { x: node.position.x + x, y: node.position.y + y, clipped: x !== rawX || y !== rawY, label: `任务 ${rowIndex + 1} · 参考图 ${columnIndex + 1}` };
+    return { x: node.position.x + x, y: node.position.y + y, clipped: x !== rawX || y !== rawY, label: tr("任务 {0} · 参考图 {1}", rowIndex + 1, columnIndex + 1) };
 }
 
 /** Column inputs update references in place, never reconstruct user/AI task rows. */
@@ -229,9 +230,9 @@ export function batchOutputResultPending(metadata: CanvasNodeMetadata | undefine
 export function batchCellConnectionError(nodes: CanvasNodeData[], sourceId: string, tableId: string, handleId?: string) {
     const source = nodes.find((node) => node.id === sourceId);
     const table = nodes.find((node) => node.id === tableId);
-    if (!table || table.type !== "batch-table" || !batchCellAnchor(table, handleId)) return "找不到目标参考格";
-    if (table.metadata?.locked) return "批量创作表已锁定";
-    if (source?.type !== "image") return "批量创作表节点只接受图片输入";
-    if (!(source.metadata?.content || source.metadata?.storageKey)) return "请先为图片节点添加图片";
+    if (!table || table.type !== "batch-table" || !batchCellAnchor(table, handleId)) return tr("找不到目标参考格");
+    if (table.metadata?.locked) return tr("批量创作表已锁定");
+    if (source?.type !== "image") return tr("批量创作表节点只接受图片输入");
+    if (!(source.metadata?.content || source.metadata?.storageKey)) return tr("请先为图片节点添加图片");
     return "";
 }

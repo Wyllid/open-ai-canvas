@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { memo, useEffect, useState } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp, Clock3, LoaderCircle, MoreHorizontal, XCircle } from "lucide-react";
 import { Dropdown, type MenuProps } from "antd";
@@ -21,11 +22,11 @@ export const TaskListItem = memo(function TaskListItem({ task, onCancelTask }: {
     const progress = showsProgress && typeof task.progress === "number" ? Math.max(0, Math.min(100, Math.round(task.progress))) : undefined;
     const startedAt = task.startedAt || task.createdAt;
     const elapsedMs = Math.max(0, (task.completedAt ? parseTime(task.completedAt) : now) - parseTime(startedAt));
-    const durationLabel = `${task.status === "queued" ? "已等待" : "已运行"} ${formatDuration(elapsedMs)}`;
+    const durationLabel = `${task.status === "queued" ? tr("已等待") : tr("已运行")} ${formatDuration(elapsedMs)}`;
     const isActive = task.status === "queued" || task.status === "running";
     const statusColor = task.status === "running" ? "var(--primary)" : task.status === "succeeded" ? "var(--success, #16a34a)" : task.status === "failed" ? "var(--danger, #dc2626)" : "color-mix(in srgb, var(--foreground) 40%, transparent)";
 
-    const menuItems: MenuProps["items"] = [...(onCancelTask && canCancelGenerationTask(task) ? [{ key: "cancel", danger: true, icon: <XCircle className="size-3.5" />, label: "取消任务", onClick: () => onCancelTask(task) }] : [])];
+    const menuItems: MenuProps["items"] = [...(onCancelTask && canCancelGenerationTask(task) ? [{ key: "cancel", danger: true, icon: <XCircle className="size-3.5" />, label: tr("取消任务"), onClick: () => onCancelTask(task) }] : [])];
 
     return (
         <div
@@ -73,18 +74,18 @@ export const TaskListItem = memo(function TaskListItem({ task, onCancelTask }: {
             {expanded ? (
                 <div className="mt-2 border-t border-border/50 px-1 pt-2 text-[var(--fs-label)] leading-3 text-foreground/50">
                     <div className="flex items-center justify-between gap-2">
-                        <span>当前阶段</span>
+                        <span>{tr("当前阶段")}</span>
                         <span className="max-w-[200px] truncate text-right text-foreground/70">{generationTaskStageLabel(task)}</span>
                     </div>
                     {task.model ? (
                         <div className="mt-1 flex items-center justify-between gap-2">
-                            <span>模型</span>
+                            <span>{tr("模型")}</span>
                             <span className="max-w-[200px] truncate text-right text-foreground/70">{task.model}</span>
                         </div>
                     ) : null}
                     {task.prompt ? (
                         <div className="mt-1">
-                            <span className="block">提示词</span>
+                            <span className="block">{tr("提示词")}</span>
                             <span className="mt-0.5 block line-clamp-2 text-foreground/60">{task.prompt}</span>
                         </div>
                     ) : null}
@@ -93,7 +94,7 @@ export const TaskListItem = memo(function TaskListItem({ task, onCancelTask }: {
 
             {menuItems.length > 0 ? (
                 <Dropdown trigger={["click"]} menu={{ items: menuItems }}>
-                    <button type="button" className="asset-more absolute right-1 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100" aria-label="更多操作" title="更多">
+                    <button type="button" className="asset-more absolute right-1 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100" aria-label={tr("更多操作")} title={tr("更多")}>
                         <MoreHorizontal className="size-3.5" />
                     </button>
                 </Dropdown>

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { PixelSize } from "@/lib/canvas/image-operation-plan";
 
 /** 区域框使用原图像素坐标；index 创建后不再变化，删除区域不会重排已写进提示词的 @区域N。 */
@@ -9,7 +10,7 @@ export const IMAGE_REGION_COLOR = "#2f7cf6";
 const REGION_MENTION_PATTERN = /@区域(\d+)/g;
 
 export function regionMentionLabel(index: number) {
-    return `区域${index}`;
+    return tr("区域{0}", index);
 }
 
 export function nextRegionIndex(regions: readonly ImageEditRegion[]) {
@@ -86,7 +87,7 @@ function percent(value: number, total: number) {
 }
 
 export function describeRegionPosition(region: ImageEditRegion, size: PixelSize) {
-    return `左 ${percent(region.x, size.width)}，上 ${percent(region.y, size.height)}，宽 ${percent(region.width, size.width)}，高 ${percent(region.height, size.height)}`;
+    return tr("左 {0}，上 {1}，宽 {2}，高 {3}", percent(region.x, size.width), percent(region.y, size.height), percent(region.width, size.width), percent(region.height, size.height));
 }
 
 /**
@@ -117,7 +118,7 @@ export function renderRegionAnnotatedImage(source: CanvasImageSource, size: Pixe
     const surface = document.createElement("canvas");
     Object.assign(surface, { width: size.width, height: size.height });
     const context = surface.getContext("2d");
-    if (!context) throw new Error("无法创建标注画布");
+    if (!context) throw new Error(tr("无法创建标注画布"));
     context.drawImage(source, 0, 0, size.width, size.height);
     const line = Math.max(2, Math.round(Math.min(size.width, size.height) * 0.004));
     const radius = badgeRadius(size);
@@ -138,22 +139,22 @@ export function renderRegionAnnotatedImage(source: CanvasImageSource, size: Pixe
         context.fillText(String(region.index), cx, cy + radius * 0.05);
     }
     const dataUrl = surface.toDataURL("image/jpeg", 0.92);
-    if (!dataUrl.startsWith("data:image/jpeg")) throw new Error("标注参考图导出失败");
+    if (!dataUrl.startsWith("data:image/jpeg")) throw new Error(tr("标注参考图导出失败"));
     return dataUrl;
 }
 
 /** 与 exportEditMask 相同合同：透明像素表示可编辑，其余保持不透明。 */
 export function exportRegionMask(size: PixelSize, regions: readonly ImageEditRegion[]) {
-    if (!regions.length) throw new Error("请先框选需要修改的区域");
+    if (!regions.length) throw new Error(tr("请先框选需要修改的区域"));
     const surface = document.createElement("canvas");
     Object.assign(surface, { width: size.width, height: size.height });
     const context = surface.getContext("2d");
-    if (!context) throw new Error("无法创建遮罩画布");
+    if (!context) throw new Error(tr("无法创建遮罩画布"));
     context.fillStyle = "black";
     context.fillRect(0, 0, size.width, size.height);
     for (const region of regions) context.clearRect(region.x, region.y, region.width, region.height);
     const png = surface.toDataURL("image/png");
-    if (!png.startsWith("data:image/png")) throw new Error("遮罩导出失败");
+    if (!png.startsWith("data:image/png")) throw new Error(tr("遮罩导出失败"));
     return png;
 }
 

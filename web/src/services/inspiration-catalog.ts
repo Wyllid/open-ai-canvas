@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 /**
  * 全量灵感目录的运行时加载。
  *
@@ -36,15 +37,15 @@ let pending: Promise<InspirationCatalog> | null = null;
 
 async function fetchJson<T>(url: string): Promise<T> {
     const response = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error(`加载灵感目录失败：${url} 返回 HTTP ${response.status}`);
+    if (!response.ok) throw new Error(tr("加载灵感目录失败：{0} 返回 HTTP {1}", url, response.status));
     return (await response.json()) as T;
 }
 
 /** 目录文件是构建期生成的，但仍然是外部数据：形状不对就抛错，不能当成空目录糊过去。 */
 function readEntries(payload: unknown, file: string): CreationInspiration[] {
-    if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error(`${file} 结构不是目录格式`);
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error(tr("{0} 结构不是目录格式", file));
     const entries = (payload as { entries?: unknown }).entries;
-    if (!Array.isArray(entries)) throw new Error(`${file} 缺少 entries 列表`);
+    if (!Array.isArray(entries)) throw new Error(tr("{0} 缺少 entries 列表", file));
     return entries as CreationInspiration[];
 }
 

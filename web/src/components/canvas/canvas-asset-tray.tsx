@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Crosshair, FolderOpen, ImageIcon, Images, PanelLeftClose, Plus, Search, X } from "lucide-react";
@@ -165,8 +166,8 @@ export function CanvasAssetTray({ assetImages, canvasImages, showLibrary = true,
     const dockItems: FloatingDockEntry[] = [
         {
             id: "asset-tray-toggle",
-            label: open ? "收起素材空间" : `打开素材空间，共 ${(showLibrary ? assetImages.length : 0) + canvasImages.length} 项`,
-            displayLabel: "素材",
+            label: open ? tr("收起素材空间") : tr("打开素材空间，共 {0} 项", (showLibrary ? assetImages.length : 0) + canvasImages.length),
+            displayLabel: tr("素材"),
             badge: (showLibrary ? assetImages.length : 0) + canvasImages.length,
             icon: <Images />,
             active: open,
@@ -190,7 +191,7 @@ export function CanvasAssetTray({ assetImages, canvasImages, showLibrary = true,
                         className="canvas-asset-tray-panel aceternity-floating-panel absolute bottom-[var(--canvas-dock-popover-offset)] left-0 flex w-[min(88vw,312px)] origin-bottom-left flex-col overflow-hidden rounded-[var(--r-2xl)] p-2 backdrop-blur-2xl"
                         style={{ background: theme.spatial.elevated, color: theme.node.text, height: safeTrayHeight, minHeight: Math.min(TRAY_MIN_HEIGHT, getMaxTrayHeight()), maxHeight: "calc(100vh - 6rem)", boxShadow: `0 32px 100px ${theme.spatial.shadow}` }}
                     >
-                        <button type="button" className="canvas-asset-tray-resize-handle absolute left-1/2 top-1 z-10 flex h-5 w-28 -translate-x-1/2 items-center justify-center rounded-full opacity-35 transition-opacity hover:opacity-75" onPointerDown={startResize} aria-label="从顶部调整素材托盘高度" title="拖动调整高度">
+                        <button type="button" className="canvas-asset-tray-resize-handle absolute left-1/2 top-1 z-10 flex h-5 w-28 -translate-x-1/2 items-center justify-center rounded-full opacity-35 transition-opacity hover:opacity-75" onPointerDown={startResize} aria-label={tr("从顶部调整素材托盘高度")} title={tr("拖动调整高度")}>
                             <span className="h-1 w-12 rounded-full bg-current" />
                         </button>
 
@@ -200,24 +201,24 @@ export function CanvasAssetTray({ assetImages, canvasImages, showLibrary = true,
                                     <FolderOpen className="size-3.5" />
                                 </span>
                                 <span className="min-w-0">
-                                    <span className="block text-xs font-semibold">素材空间</span>
-                                    <span className="mt-0.5 block truncate text-[var(--fs-micro)]" style={{ color: theme.node.muted }}>拖入画布，或定位已经使用的图片</span>
+                                    <span className="block text-xs font-semibold">{tr("素材空间")}</span>
+                                    <span className="mt-0.5 block truncate text-[var(--fs-micro)]" style={{ color: theme.node.muted }}>{tr("拖入画布，或定位已经使用的图片")}</span>
                                 </span>
                             </div>
-                            <motion.button type="button" whileHover={motionEnabled ? { rotate: -5, scale: 1.05 } : undefined} whileTap={motionEnabled ? { scale: 0.92 } : undefined} className="grid size-7 shrink-0 place-items-center rounded-full outline-none focus-visible:ring-2" style={{ background: theme.spatial.surface, color: theme.node.muted }} onClick={() => setOpen(false)} aria-label="收起素材空间">
+                            <motion.button type="button" whileHover={motionEnabled ? { rotate: -5, scale: 1.05 } : undefined} whileTap={motionEnabled ? { scale: 0.92 } : undefined} className="grid size-7 shrink-0 place-items-center rounded-full outline-none focus-visible:ring-2" style={{ background: theme.spatial.surface, color: theme.node.muted }} onClick={() => setOpen(false)} aria-label={tr("收起素材空间")}>
                                 <PanelLeftClose className="size-3" />
                             </motion.button>
                         </div>
 
                         <div className={cn("relative grid gap-1 rounded-[var(--r-lg)] p-0.5", showLibrary ? "grid-cols-2" : "grid-cols-1")} style={{ background: theme.spatial.surface }}>
-                            {showLibrary ? <TrayTabButton active={tab === "library"} label={`素材库 ${assetImages.length}`} theme={theme} onClick={() => setTab("library")} /> : null}
-                            <TrayTabButton active={tab === "canvas"} label={`当前画布 ${canvasImages.length}`} theme={theme} onClick={() => setTab("canvas")} />
+                            {showLibrary ? <TrayTabButton active={tab === "library"} label={tr("素材库 {0}", assetImages.length)} theme={theme} onClick={() => setTab("library")} /> : null}
+                            <TrayTabButton active={tab === "canvas"} label={tr("当前画布 {0}", canvasImages.length)} theme={theme} onClick={() => setTab("canvas")} />
                         </div>
 
                         <label className="mt-2 flex h-8 items-center gap-2 rounded-[12px] px-2 focus-within:ring-2" style={{ background: theme.spatial.surface }}>
                             <Search className="size-3.5 shrink-0" style={{ color: theme.node.muted }} />
-                            <input type="search" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="搜索图片素材..." className="min-w-0 flex-1 bg-transparent text-[var(--fs-tiny)] outline-none placeholder:opacity-55" aria-label="搜索图片素材" />
-                            {keyword ? <button type="button" className="grid size-6 shrink-0 place-items-center rounded-full opacity-55 hover:opacity-100" onClick={() => setKeyword("")} aria-label="清空搜索"><X className="size-3" /></button> : null}
+                            <input type="search" value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder={tr("搜索图片素材...")} className="min-w-0 flex-1 bg-transparent text-[var(--fs-tiny)] outline-none placeholder:opacity-55" aria-label={tr("搜索图片素材")} />
+                            {keyword ? <button type="button" className="grid size-6 shrink-0 place-items-center rounded-full opacity-55 hover:opacity-100" onClick={() => setKeyword("")} aria-label={tr("清空搜索")}><X className="size-3" /></button> : null}
                         </label>
 
                         <div className="thin-scrollbar mt-2 min-h-0 flex-1 overflow-y-auto pr-1">
@@ -229,7 +230,7 @@ export function CanvasAssetTray({ assetImages, canvasImages, showLibrary = true,
                                         ))}
                                     </div>
                                 ) : (
-                                    <TrayEmpty text="没有匹配的图片素材" theme={theme} />
+                                    <TrayEmpty text={tr("没有匹配的图片素材")} theme={theme} />
                                 )
                             ) : filteredNodes.length ? (
                                 <div className="space-y-2">
@@ -238,19 +239,19 @@ export function CanvasAssetTray({ assetImages, canvasImages, showLibrary = true,
                                     ))}
                                 </div>
                             ) : (
-                                <TrayEmpty text="当前画布没有匹配图片" theme={theme} />
+                                <TrayEmpty text={tr("当前画布没有匹配图片")} theme={theme} />
                             )}
                         </div>
 
                         <div className="flex items-center justify-between px-1 pt-2 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>
-                            <span>{showLibrary && tab === "library" ? "点击插入 · 拖拽定位" : "点击回到节点"}</span>
-                            <span className="rounded-full px-2 py-0.5 tabular-nums" style={{ background: theme.spatial.surface }}>{activeItems.length} 项</span>
+                            <span>{showLibrary && tab === "library" ? tr("点击插入 · 拖拽定位") : tr("点击回到节点")}</span>
+                            <span className="rounded-full px-2 py-0.5 tabular-nums" style={{ background: theme.spatial.surface }}>{activeItems.length} {tr("项")}</span>
                         </div>
                     </motion.aside>
                 ) : null}
             </AnimatePresence>
 
-            <FloatingDock items={dockItems} showLabels className="canvas-floating-dock" style={canvasDockStyle(theme)} ariaLabel="素材空间" />
+            <FloatingDock items={dockItems} showLabels className="canvas-floating-dock" style={canvasDockStyle(theme)} ariaLabel={tr("素材空间")} />
         </div>
     );
 }
@@ -286,7 +287,7 @@ function AssetTrayRow({ title, imageUrl, storageKey, icon, active = false, dragg
             </span>
             <span className="min-w-0">
                 <span className="block truncate text-[var(--fs-tiny)] font-semibold">{title}</span>
-                <span className="mt-0.5 block text-[var(--fs-micro)] opacity-45">{active ? "当前已选择" : draggable ? "拖入画布或点击插入" : "点击定位到画布"}</span>
+                <span className="mt-0.5 block text-[var(--fs-micro)] opacity-45">{active ? tr("当前已选择") : draggable ? tr("拖入画布或点击插入") : tr("点击定位到画布")}</span>
             </span>
             <span className={cn("rounded-full px-2 py-0.5 text-[var(--fs-micro)] font-semibold", location === "oss" ? "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300" : location === "local" ? "bg-amber-500/12 text-amber-700 dark:text-amber-300" : "bg-black/5 text-stone-400 dark:bg-white/8 dark:text-stone-500")} title={resourceStorageTitle(storageKey)}>
                 {resourceStorageLabel(storageKey)}
@@ -306,5 +307,5 @@ function TrayEmpty({ text, theme }: { text: string; theme: CanvasTheme }) {
 
 function canvasImageTitle(node: CanvasNodeData) {
     if (node.type !== CanvasNodeType.Image) return node.title;
-    return node.title || node.metadata?.prompt || "图片节点";
+    return node.title || node.metadata?.prompt || tr("图片节点");
 }

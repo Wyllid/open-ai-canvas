@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 
 import { NODE_DEFAULT_SIZE } from "@/constant/canvas";
@@ -49,7 +50,7 @@ export function prepareCanvasBatchTableGeneration({
 }) {
     const sourceNode = nodes.find((node) => node.id === sourceNodeId);
     const table = sourceNode?.metadata?.batchTable;
-    if (!sourceNode || !table || sourceNode.metadata?.locked) throw new Error("批量创作表已变化或锁定，请重新选择");
+    if (!sourceNode || !table || sourceNode.metadata?.locked) throw new Error(tr("批量创作表已变化或锁定，请重新选择"));
     const imageSpec = NODE_DEFAULT_SIZE[CanvasNodeType.Image];
     const nextNodes = [...nodes];
     let nextConnections = [...connections];
@@ -91,7 +92,7 @@ export function prepareCanvasBatchTableGeneration({
             generationMode: "image" as const,
             generationType: "edit" as const,
             workflowKind: "final" as const,
-            workflowTitle: `${table.operation === "try_on" ? "换装" : "创意"}任务 ${index + 1}`,
+            workflowTitle: tr("{0}任务 {1}", table.operation === "try_on" ? tr("换装") : tr("创意"), index + 1),
             status: "idle" as const,
             batchSourceNodeId: sourceNodeId,
             batchRowId: row.id,
@@ -106,7 +107,7 @@ export function prepareCanvasBatchTableGeneration({
             existingIndex >= 0
                 ? { ...nextNodes[existingIndex], metadata }
                 : createCanvasNode(CanvasNodeType.Image, { x: sourceNode.position.x + sourceNode.width + 120 + imageSpec.width / 2, y: sourceNode.position.y + index * (imageSpec.height + 32) + imageSpec.height / 2 }, metadata);
-        output.title = `${table.operation === "try_on" ? "换装" : "创意"} · ${index + 1}`;
+        output.title = `${table.operation === "try_on" ? tr("换装") : tr("创意")} · ${index + 1}`;
         if (existingIndex >= 0) nextNodes[existingIndex] = output;
         else nextNodes.push(output);
         nextConnections = nextConnections.filter((connection) => connection.toNodeId !== output.id);

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { ART_CRITIQUE_STAGE_PROGRESS, CritiqueOverlay, ArtCritiqueProgress, IssueDetailView, ReportSummary, OptionCard, FilterChip, IssueCard } from "./ai-art-critique-report";
 import { resolveImageUrl } from "@/services/image-storage";
 import { repairIssueTarget, layoutArtCritiqueLabels, ART_CRITIQUE_CATEGORY_COLORS } from "@/lib/art-critique/annotation";
@@ -48,7 +49,7 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
     const theme = canvasThemes[useActiveTheme()];
     const effectiveConfig = useEffectiveConfig();
     const selectedCritiqueModel = effectiveConfig.textModel.trim();
-    const configuredCritiqueModelLabel = selectedCritiqueModel ? modelOptionLabel(effectiveConfig, selectedCritiqueModel) : "未配置文本/视觉理解模型";
+    const configuredCritiqueModelLabel = selectedCritiqueModel ? modelOptionLabel(effectiveConfig, selectedCritiqueModel) : tr("未配置文本/视觉理解模型");
     const enabled = usePluginStore((state) => state.pluginStates[ART_CRITIQUE_PLUGIN_ID]?.effectiveEnabled ?? (ART_CRITIQUE_PLUGIN_ID in state.runtimeStatuses ? state.runtimeStatuses[ART_CRITIQUE_PLUGIN_ID] === "enabled" : Boolean(state.installations.find((item) => item.manifest.id === ART_CRITIQUE_PLUGIN_ID)?.enabled)));
     const input = useMemo(() => { const images = upstreamNodes.filter(isArtCritiqueImageInput); return images.length === 1 ? images[0] : undefined; }, [upstreamNodes]);
     const state = node?.metadata?.artCritique || createDefaultArtCritiqueState();
@@ -139,15 +140,15 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
     const runReview = async (resume = false) => {
         if (abortRef.current) return;
         if (!node || !input) {
-            setLocalError("请连接且仅连接一张已有图片");
+            setLocalError(tr("请连接且仅连接一张已有图片"));
             return;
         }
         if (!enabled) {
-            setLocalError("插件尚未启用，请先到插件管理中开启 AI 审美批改");
+            setLocalError(tr("插件尚未启用，请先到插件管理中开启 AI 审美批改"));
             return;
         }
         if (resume && (!state.billingRunId || state.sourceFingerprint !== artCritiqueSourceFingerprint(input) || state.lastRunModel !== selectedCritiqueModel)) {
-            setLocalError("原分析的图片或模型已变化，请开始新的分析");
+            setLocalError(tr("原分析的图片或模型已变化，请开始新的分析"));
             return;
         }
         setView("overview");
@@ -241,10 +242,10 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
             if (controller.signal.aborted) {
                 setActiveStage(undefined);
                 setDraftReportVisible(false);
-                publishState({ ...baseState, stageTaskIds: { ...stageTaskIds }, status: "failed", analysisStage: "failed", errorCode: "analysis_interrupted", errorMessage: "分析观察已停止；已提交阶段保留在任务中心，不会自动重复提交。", updatedAt: new Date().toISOString() });
+                publishState({ ...baseState, stageTaskIds: { ...stageTaskIds }, status: "failed", analysisStage: "failed", errorCode: "analysis_interrupted", errorMessage: tr("分析观察已停止；已提交阶段保留在任务中心，不会自动重复提交。"), updatedAt: new Date().toISOString() });
                 return;
             }
-            const errorMessage = error instanceof Error ? error.message : "AI 批改失败，请稍后重试";
+            const errorMessage = error instanceof Error ? error.message : tr("AI 批改失败，请稍后重试");
             setActiveStage("failed");
             setDraftReportVisible(false);
             setLocalError(errorMessage);
@@ -266,9 +267,9 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
         void runReview(Boolean(!restartRequested && state.billingRunId && state.status !== "completed" && state.sourceFingerprint === currentFingerprint && state.lastRunModel === selectedCritiqueModel));
     }, [open, node?.id, startRequestId, running]);
 
-    const modelStatusLabel = running ? "正在使用" : visibleState.report?.modelLabel ? "报告使用" : selectedCritiqueModel ? "待使用" : "需要配置";
+    const modelStatusLabel = running ? tr("正在使用") : visibleState.report?.modelLabel ? tr("报告使用") : selectedCritiqueModel ? tr("待使用") : tr("需要配置");
     const modelStatusColor = selectedCritiqueModel || visibleState.report?.modelLabel ? theme.node.muted : "var(--status-warning)";
-    const modelInlineLabel = selectedCritiqueModel || visibleState.report?.modelLabel ? `${modelStatusLabel} · ${displayedModelLabel}` : "请到设置中选择支持图片理解的文本模型";
+    const modelInlineLabel = selectedCritiqueModel || visibleState.report?.modelLabel ? `${modelStatusLabel} · ${displayedModelLabel}` : tr("请到设置中选择支持图片理解的文本模型");
 
     return (
         <AppModal
@@ -290,15 +291,15 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                     </span>
                     <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 items-center gap-2">
-                            <h2 className="truncate text-base font-semibold">AI 审美批改</h2>
+                            <h2 className="truncate text-base font-semibold">{tr("AI 审美批改")}</h2>
                             {visibleState.report ? (
                                 <span className="shrink-0 rounded-full px-2 py-0.5 text-[var(--fs-micro)] font-semibold" style={{ background: "color-mix(in oklch, var(--status-success) 12%, transparent)", color: "var(--status-success)" }}>
-                                    {visibleState.report.issues.length ? `${visibleState.report.issues.length} 个问题` : reportOptions.length ? `${reportOptions.length} 个可选方向` : "本轮未发现重点问题"}
+                                    {visibleState.report.issues.length ? tr("{0} 个问题", visibleState.report.issues.length) : reportOptions.length ? tr("{0} 个可选方向", reportOptions.length) : tr("本轮未发现重点问题")}
                                 </span>
                             ) : null}
                         </div>
                         <div className="mt-0.5 truncate text-xs" style={{ color: theme.node.muted }}>
-                            {input?.title || "等待图片输入"} · 输入图片，输出批改报告，不修改原图
+                            {input?.title || tr("等待图片输入")} {tr("· 输入图片，输出批改报告，不修改原图")}
                         </div>
                     </div>
                     <div className="hidden shrink-0 items-center gap-2 sm:flex">
@@ -306,43 +307,43 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                             {running
                                 ? artCritiqueStageLabel(visibleState.analysisStage)
                                 : visibleState.status === "completed" && !stale
-                                  ? "分析完成"
+                                  ? tr("分析完成")
                                   : visibleState.status === "stale"
-                                    ? "需要更新"
+                                    ? tr("需要更新")
                                     : visibleState.status === "failed"
-                                      ? "分析失败"
-                                      : "尚未分析"}
+                                      ? tr("分析失败")
+                                      : tr("尚未分析")}
                         </span>
                     </div>
-                    <IconButton variant="ghost" size="sm" icon={X} onClick={close} aria-label="关闭批改报告" />
+                    <IconButton variant="ghost" size="sm" icon={X} onClick={close} aria-label={tr("关闭批改报告")} />
                 </header>
 
                 <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,1.45fr)_minmax(360px,.85fr)]">
                     <section className="flex h-[min(48dvh,520px)] min-h-[300px] min-w-0 flex-col gap-3 border-b p-4 lg:h-auto lg:min-h-0 lg:border-b-0 lg:border-r" style={{ borderColor: theme.node.edge }}>
                         <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-[var(--r-lg)] border p-2" style={{ borderColor: theme.node.edge, background: "rgba(0,0,0,.18)" }}>
                             {previewUrl ? (
-                                <img src={previewUrl} alt={input?.title || "输入图片"} className="max-h-full max-w-full rounded-[var(--r-md)] object-contain shadow-[var(--shadow-md)]" draggable={false} />
+                                <img src={previewUrl} alt={input?.title || tr("输入图片")} className="max-h-full max-w-full rounded-[var(--r-md)] object-contain shadow-[var(--shadow-md)]" draggable={false} />
                             ) : (
-                                <EmptyState size="compact" icon={ImageIcon} title={input ? "正在加载图片" : "还没有图片输入"} />
+                                <EmptyState size="compact" icon={ImageIcon} title={input ? tr("正在加载图片") : tr("还没有图片输入")} />
                             )}
                             {overlayIssues.length && previewUrl ? <CritiqueOverlay issues={overlayIssues} issueNumberById={issueNumberById} selectedIssueId={overlayIssues[0]?.id || null} labelPlacements={labelPlacements} onSelect={openIssue} /> : null}
                         </div>
                         <div className="flex shrink-0 items-center justify-between gap-3">
                             <div className="min-w-0">
-                                <div className="truncate text-sm font-semibold">{input?.title || "等待图片输入"}</div>
+                                <div className="truncate text-sm font-semibold">{input?.title || tr("等待图片输入")}</div>
                                 <div className="mt-1 truncate text-xs" style={{ color: theme.node.muted }}>
                                     {draftReportVisible && visibleState.status === "running"
-                                        ? "报告初稿已出，矩形标注将在定位复核完成后显示"
+                                        ? tr("报告初稿已出，矩形标注将在定位复核完成后显示")
                                         : view === "detail" && detailIssue
-                                          ? "当前只显示此问题的定位框"
+                                          ? tr("当前只显示此问题的定位框")
                                           : input
-                                            ? "悬停查看问题位置，点击问题进入详情"
-                                            : "请从图片节点连接一条输入"}
+                                            ? tr("悬停查看问题位置，点击问题进入详情")
+                                            : tr("请从图片节点连接一条输入")}
                                 </div>
                             </div>
                             {visibleState.report?.issues.length ? (
                                 <span className="shrink-0 rounded-full px-2 py-1 text-[var(--fs-micro)] font-semibold" style={{ background: "color-mix(in oklch, var(--workspace-accent) 12%, transparent)", color: "var(--workspace-accent)" }}>
-                                    {view === "detail" && detailIssue && detailIndex >= 0 ? `问题 ${detailIndex + 1} / ${repairedIssues.length}` : `${visibleState.report.issues.length} 个问题`}
+                                    {view === "detail" && detailIssue && detailIndex >= 0 ? tr("问题 {0} / {1}", detailIndex + 1, repairedIssues.length) : tr("{0} 个问题", visibleState.report.issues.length)}
                                 </span>
                             ) : null}
                         </div>
@@ -351,25 +352,25 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                     <aside className="min-h-0 flex-1 overflow-y-auto" data-canvas-wheel-scroll>
                         <div className="flex min-h-full flex-col gap-4 p-4">
                             {execution.quote ? <CreativeQuoteCard quote={execution.quote} busy={execution.busy} onApprove={() => void approvalRef.current?.approve(execution.quote!.items.map((item) => item.id))} onRefresh={() => void approvalRef.current?.refresh()} /> : null}
-                            {execution.error ? <Callout tone="warning" title="生成确认未完成">{execution.error}</Callout> : null}
+                            {execution.error ? <Callout tone="warning" title={tr("生成确认未完成")}>{execution.error}</Callout> : null}
                             {running || visibleState.status === "running" ? <ArtCritiqueProgress stage={progressStage} theme={theme} /> : null}
                             {draftReportVisible && visibleState.status === "running" && visibleState.report ? (
-                                <Callout tone="info" title="报告初稿已生成">
-                                    问题和建议已先展示，正在精确定位并复核矩形标注。
+                                <Callout tone="info" title={tr("报告初稿已生成")}>
+                                    {tr("问题和建议已先展示，正在精确定位并复核矩形标注。")}
                                 </Callout>
                             ) : null}
                             {!enabled && !visibleState.report ? (
-                                <Callout tone="warning" title="插件尚未启用">
-                                    请先到插件管理中开启 AI 审美批改，再运行分析。
+                                <Callout tone="warning" title={tr("插件尚未启用")}>
+                                    {tr("请先到插件管理中开启 AI 审美批改，再运行分析。")}
                                 </Callout>
                             ) : null}
                             {visibleState.status === "stale" ? (
-                                <Callout tone="warning" title="输入图片已经变化">
-                                    当前报告针对旧图片生成，请重新批改。
+                                <Callout tone="warning" title={tr("输入图片已经变化")}>
+                                    {tr("当前报告针对旧图片生成，请重新批改。")}
                                 </Callout>
                             ) : null}
                             {localError || visibleState.errorMessage ? (
-                                <Callout tone="error" title="批改失败">
+                                <Callout tone="error" title={tr("批改失败")}>
                                     {localError || visibleState.errorMessage}
                                 </Callout>
                             ) : null}
@@ -391,7 +392,7 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                                     {visibleState.report ? (
                                         <ReportSummary report={visibleState.report} theme={theme} isDraft={draftReportVisible && visibleState.status === "running"} />
                                     ) : (
-                                        <EmptyState className="my-auto" size="compact" icon={FileText} title="还没有批改报告" />
+                                        <EmptyState className="my-auto" size="compact" icon={FileText} title={tr("还没有批改报告")} />
                                     )}
 
                                     {visibleState.report && !visibleState.report.issues.length ? (
@@ -401,9 +402,9 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                                         >
                                             <CheckCircle2 className="mt-0.5 size-4 shrink-0" style={{ color: "var(--status-success)" }} aria-hidden="true" />
                                             <div>
-                                                <div className="font-semibold">本轮未发现需要优先修改的问题</div>
+                                                <div className="font-semibold">{tr("本轮未发现需要优先修改的问题")}</div>
                                                 <div className="mt-1 text-xs leading-5" style={{ color: theme.node.muted }}>
-                                                    {reportOptions.length ? `有 ${reportOptions.length} 个可选方向，但它们不是确定性错误。` : "这表示当前检查没有找到证据充分、确实影响画面表达的重点问题。"}
+                                                    {reportOptions.length ? tr("有 {0} 个可选方向，但它们不是确定性错误。", reportOptions.length) : tr("这表示当前检查没有找到证据充分、确实影响画面表达的重点问题。")}
                                                 </div>
                                             </div>
                                         </div>
@@ -412,9 +413,9 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                                     {reportOptions.length ? (
                                         <section className="flex flex-col gap-2">
                                             <div className="flex items-center justify-between gap-3">
-                                                <h3 className="m-0 text-sm font-semibold">可选方向</h3>
+                                                <h3 className="m-0 text-sm font-semibold">{tr("可选方向")}</h3>
                                                 <span className="text-xs" style={{ color: theme.node.muted }}>
-                                                    不代表画面有错
+                                                    {tr("不代表画面有错")}
                                                 </span>
                                             </div>
                                             <div className="flex flex-col gap-2">
@@ -428,13 +429,13 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                                     {visibleState.report?.issues.length ? (
                                         <section className="flex flex-col gap-2">
                                             <div className="flex items-center justify-between gap-3">
-                                                <h3 className="m-0 text-sm font-semibold">重点问题</h3>
+                                                <h3 className="m-0 text-sm font-semibold">{tr("重点问题")}</h3>
                                                 <span className="text-xs" style={{ color: theme.node.muted }}>
-                                                    {visibleIssues.length} / {visibleState.report.issues.length} 项
+                                                    {visibleIssues.length} / {visibleState.report.issues.length} {tr("项")}
                                                 </span>
                                             </div>
-                                            <div className="flex items-center gap-1 overflow-x-auto pb-1" role="group" aria-label="问题分类筛选">
-                                                <FilterChip label="全部" active={filter === "all"} onClick={() => setFilter("all")} />
+                                            <div className="flex items-center gap-1 overflow-x-auto pb-1" role="group" aria-label={tr("问题分类筛选")}>
+                                                <FilterChip label={tr("全部")} active={filter === "all"} onClick={() => setFilter("all")} />
                                                 {CATEGORIES.map((category) => (
                                                     <FilterChip key={category} label={artCritiqueCategoryLabel(category)} active={filter === category} color={ART_CRITIQUE_CATEGORY_COLORS[category]} onClick={() => setFilter(category)} />
                                                 ))}
@@ -447,7 +448,7 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                                                 </div>
                                             ) : (
                                                 <div className="rounded-[var(--r-lg)] border border-dashed px-3 py-6 text-center text-xs" style={{ borderColor: theme.node.edge, color: theme.node.muted }}>
-                                                    当前分类没有问题
+                                                    {tr("当前分类没有问题")}
                                                 </div>
                                             )}
                                         </section>
@@ -462,10 +463,10 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                                 <div className="ml-auto flex shrink-0 items-center gap-2">
                                     {running ? (
                                         <Button type="text" size="small" onClick={() => abortRef.current?.abort()}>
-                                            取消分析
+                                            {tr("取消分析")}
                                         </Button>
                                     ) : null}
-                                    {!running && state.billingRunId && state.status !== "completed" && !stale && state.lastRunModel === selectedCritiqueModel ? <Button size="small" disabled={!input || !enabled} onClick={() => void runReview(true)}>继续上次分析</Button> : null}
+                                    {!running && state.billingRunId && state.status !== "completed" && !stale && state.lastRunModel === selectedCritiqueModel ? <Button size="small" disabled={!input || !enabled} onClick={() => void runReview(true)}>{tr("继续上次分析")}</Button> : null}
                                     <Button
                                         type="primary"
                                         size="small"
@@ -475,7 +476,7 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                                         disabled={running || !input || !enabled || !selectedCritiqueModel}
                                         onClick={() => void runReview()}
                                     >
-                                        {visibleState.report ? "重新批改" : "开始批改"}
+                                        {visibleState.report ? tr("重新批改") : tr("开始批改")}
                                     </Button>
                                 </div>
                             </div>

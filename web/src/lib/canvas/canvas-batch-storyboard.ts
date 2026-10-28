@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { createStoryboardRow } from "@/lib/canvas/canvas-project-domain";
 import type { CanvasBatchRow, CanvasBatchTableData, CanvasNodeData, StoryboardRow } from "@/types/canvas";
 
@@ -8,25 +9,25 @@ type StoryboardField =
     | "continuityOut" | "negativePrompt";
 
 const FIELD_ALIASES: Record<StoryboardField, string[]> = {
-    shotNumber: ["镜头", "镜头号", "镜号", "分镜", "序号"],
-    durationSeconds: ["时长", "秒数", "持续时间", "镜头时长"],
-    plotDescription: ["画面描述", "剧情", "画面", "镜头内容", "场景描述", "分镜描述"],
-    dialogue: ["台词", "对白", "旁白", "文案", "口播"],
-    narrativeIntent: ["叙事目的", "剧情目的", "表达目的"],
-    viewerPOV: ["视角", "观看视角", "观众视角"],
-    performanceBlocking: ["表演调度", "动作调度", "人物动作", "表演"],
-    shotSize: ["景别", "镜头景别", "景别设计"],
-    emotion: ["情绪", "情感"],
-    lightingAndAtmosphere: ["光影氛围", "灯光", "氛围", "光线"],
-    audioEffects: ["音效", "声音", "音乐", "音频"],
-    camera: ["镜头设计", "摄影机", "摄影", "机位", "相机"],
-    motion: ["运镜", "镜头运动", "运动方式", "镜头动作"],
-    timeBeats: ["时间节拍", "节拍", "时间点", "时间线"],
+    shotNumber: [tr("镜头"), tr("镜头号"), tr("镜号"), tr("分镜"), tr("序号")],
+    durationSeconds: [tr("时长"), tr("秒数"), tr("持续时间"), tr("镜头时长")],
+    plotDescription: [tr("画面描述"), tr("剧情"), tr("画面"), tr("镜头内容"), tr("场景描述"), tr("分镜描述")],
+    dialogue: [tr("台词"), tr("对白"), tr("旁白"), tr("文案"), tr("口播")],
+    narrativeIntent: [tr("叙事目的"), tr("剧情目的"), tr("表达目的")],
+    viewerPOV: [tr("视角"), tr("观看视角"), tr("观众视角")],
+    performanceBlocking: [tr("表演调度"), tr("动作调度"), tr("人物动作"), tr("表演")],
+    shotSize: [tr("景别"), tr("镜头景别"), tr("景别设计")],
+    emotion: [tr("情绪"), tr("情感")],
+    lightingAndAtmosphere: [tr("光影氛围"), tr("灯光"), tr("氛围"), tr("光线")],
+    audioEffects: [tr("音效"), tr("声音"), tr("音乐"), tr("音频")],
+    camera: [tr("镜头设计"), tr("摄影机"), tr("摄影"), tr("机位"), tr("相机")],
+    motion: [tr("运镜"), tr("镜头运动"), tr("运动方式"), tr("镜头动作")],
+    timeBeats: [tr("时间节拍"), tr("节拍"), tr("时间点"), tr("时间线")],
     imageGenerationPrompt: ["首帧提示词", "图片提示词", "画面提示词", "生图提示词"],
     videoMotionPrompt: ["视频提示词", "动态提示词", "视频生成提示词", "视频描述"],
-    mustHave: ["必须包含", "必备元素", "关键元素"],
-    optionalDetails: ["可选细节", "补充细节"],
-    continuityOut: ["衔接", "结尾状态", "镜头衔接", "连续性"],
+    mustHave: [tr("必须包含"), tr("必备元素"), tr("关键元素")],
+    optionalDetails: [tr("可选细节"), tr("补充细节")],
+    continuityOut: [tr("衔接"), tr("结尾状态"), tr("镜头衔接"), tr("连续性")],
     negativePrompt: ["负面提示词", "不要出现", "禁用元素"],
 };
 

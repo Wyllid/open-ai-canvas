@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { ART_CRITIQUE_RUBRIC_VERSION, type ArtCritiqueCategory, type ArtCritiqueImageType } from "./contracts";
 
 export type RubricCategory = Exclude<ArtCritiqueCategory, "other">;
@@ -33,48 +34,48 @@ export type ArtCritiqueRubricSection = {
 export const ART_CRITIQUE_RUBRIC: readonly ArtCritiqueRubricSection[] = [
     {
         category: "composition",
-        label: "构图与视觉层级",
+        label: tr("构图与视觉层级"),
         references: ["CADB / SAMP-Net", "CG-IAA", "PhotoFramer-Assessment"],
         checks: [
-            { id: "subject-placement", label: "主体位置", check: "主体位置是否服务于画面意图和叙事方向", flagWhen: "主体位置让画面失去方向感，或明显削弱了主题表达", applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["subject", "placement"] },
-            { id: "visual-balance", label: "视觉平衡", check: "左右、上下和前后景的视觉重量是否合理", flagWhen: "一侧重量明显压住另一侧，且不是有意制造的不平衡", applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["balance", "weight"] },
-            { id: "negative-space", label: "留白与呼吸", check: "留白是否提供呼吸感、方向感或叙事空间", flagWhen: "留白挤压主体、切断动作方向，或空白区域没有发挥作用", applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["negative-space", "space"] },
-            { id: "visual-flow", label: "视觉动线", check: "第一视觉焦点、第二焦点和视线移动路径是否清楚", flagWhen: "背景或局部高对比抢走主体注意力，视线无法自然进入画面", applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["flow", "focus"] },
-            { id: "composition-pattern", label: "构图模式", check: "当前画面更接近居中、三分、黄金比例、三角、水平、垂直、对角、对称、曲线、放射、消失点、pattern 或 fill-frame 中的哪一种", flagWhen: "构图模式与画面意图冲突（不能仅因没有使用三分法就报告）", applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.6, mergeKeys: ["pattern", "intent"] },
-            { id: "crop-and-depth", label: "裁切与景深", check: "裁切、遮挡和前中后景是否强化主体关系", flagWhen: "裁切破坏主体结构，或空间层次让画面关系难以理解", applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["crop", "depth"] },
+            { id: "subject-placement", label: tr("主体位置"), check: tr("主体位置是否服务于画面意图和叙事方向"), flagWhen: tr("主体位置让画面失去方向感，或明显削弱了主题表达"), applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["subject", "placement"] },
+            { id: "visual-balance", label: tr("视觉平衡"), check: tr("左右、上下和前后景的视觉重量是否合理"), flagWhen: tr("一侧重量明显压住另一侧，且不是有意制造的不平衡"), applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["balance", "weight"] },
+            { id: "negative-space", label: tr("留白与呼吸"), check: tr("留白是否提供呼吸感、方向感或叙事空间"), flagWhen: tr("留白挤压主体、切断动作方向，或空白区域没有发挥作用"), applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["negative-space", "space"] },
+            { id: "visual-flow", label: tr("视觉动线"), check: tr("第一视觉焦点、第二焦点和视线移动路径是否清楚"), flagWhen: tr("背景或局部高对比抢走主体注意力，视线无法自然进入画面"), applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["flow", "focus"] },
+            { id: "composition-pattern", label: tr("构图模式"), check: tr("当前画面更接近居中、三分、黄金比例、三角、水平、垂直、对角、对称、曲线、放射、消失点、pattern 或 fill-frame 中的哪一种"), flagWhen: tr("构图模式与画面意图冲突（不能仅因没有使用三分法就报告）"), applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.6, mergeKeys: ["pattern", "intent"] },
+            { id: "crop-and-depth", label: tr("裁切与景深"), check: tr("裁切、遮挡和前中后景是否强化主体关系"), flagWhen: tr("裁切破坏主体结构，或空间层次让画面关系难以理解"), applicableImageTypes: ["portrait", "landscape", "product", "illustration", "concept-art", "architecture", "still-life", "other"], evidenceRequired: true, minConfidence: 0.55, mergeKeys: ["crop", "depth"] },
         ],
     },
     {
         category: "color",
-        label: "色彩",
+        label: tr("色彩"),
         references: ["CG-IAA", "AesExpert"],
         checks: [
-            { id: "palette", label: "色彩关系", check: "主色、辅色和强调色是否形成清楚的色彩关系", flagWhen: "颜色彼此争夺注意力，或主色关系混乱到削弱主题" },
-            { id: "temperature", label: "冷暖与和谐", check: "冷暖关系、色相关系和整体氛围是否一致", flagWhen: "局部冷暖或色相突然跳出，且没有叙事或焦点上的理由" },
-            { id: "value-and-saturation", label: "明度与饱和度", check: "明度层次和饱和度分布是否支持视觉层级", flagWhen: "主体与背景明度接近、颜色发灰发脏，或次要区域过度鲜艳" },
-            { id: "color-separation", label: "色彩分离", check: "主体与背景、相邻形体之间是否有足够的色彩区分", flagWhen: "关键形体融入背景，导致轮廓、情绪或信息无法被读出" },
+            { id: "palette", label: tr("色彩关系"), check: tr("主色、辅色和强调色是否形成清楚的色彩关系"), flagWhen: tr("颜色彼此争夺注意力，或主色关系混乱到削弱主题") },
+            { id: "temperature", label: tr("冷暖与和谐"), check: tr("冷暖关系、色相关系和整体氛围是否一致"), flagWhen: tr("局部冷暖或色相突然跳出，且没有叙事或焦点上的理由") },
+            { id: "value-and-saturation", label: tr("明度与饱和度"), check: tr("明度层次和饱和度分布是否支持视觉层级"), flagWhen: tr("主体与背景明度接近、颜色发灰发脏，或次要区域过度鲜艳") },
+            { id: "color-separation", label: tr("色彩分离"), check: tr("主体与背景、相邻形体之间是否有足够的色彩区分"), flagWhen: tr("关键形体融入背景，导致轮廓、情绪或信息无法被读出") },
         ],
     },
     {
         category: "lighting",
-        label: "光线",
+        label: tr("光线"),
         references: ["CG-IAA", "AesExpert", "HumanAesExpert"],
         checks: [
-            { id: "light-direction", label: "光源方向", check: "主光源方向、高光和阴影方向是否一致", flagWhen: "同一画面不同对象的光照方向互相矛盾" },
-            { id: "exposure", label: "曝光与对比", check: "曝光、局部对比和高光阴影是否保留了重要信息", flagWhen: "主体关键区域过曝、死黑，或局部对比不足以建立焦点" },
-            { id: "volume", label: "体积与空间", check: "光线是否帮助形体、距离和空间深度被理解", flagWhen: "形体变平、空间关系混乱，或光线没有服务于主体" },
-            { id: "subject-separation", label: "主体分离", check: "主体是否通过光线与环境建立清楚的层次", flagWhen: "主体与背景的亮度或光质接近，导致主体被吞没" },
+            { id: "light-direction", label: tr("光源方向"), check: tr("主光源方向、高光和阴影方向是否一致"), flagWhen: tr("同一画面不同对象的光照方向互相矛盾") },
+            { id: "exposure", label: tr("曝光与对比"), check: tr("曝光、局部对比和高光阴影是否保留了重要信息"), flagWhen: tr("主体关键区域过曝、死黑，或局部对比不足以建立焦点") },
+            { id: "volume", label: tr("体积与空间"), check: tr("光线是否帮助形体、距离和空间深度被理解"), flagWhen: tr("形体变平、空间关系混乱，或光线没有服务于主体") },
+            { id: "subject-separation", label: tr("主体分离"), check: tr("主体是否通过光线与环境建立清楚的层次"), flagWhen: tr("主体与背景的亮度或光质接近，导致主体被吞没") },
         ],
     },
     {
         category: "proportion",
-        label: "比例、结构与透视",
+        label: tr("比例、结构与透视"),
         references: ["HumanAesExpert", "PhotoFramer-Assessment", "CG-IAA"],
         checks: [
-            { id: "human-proportion", label: "人物比例", check: "人物的脸部、五官、手脚、肢体长度和头身关系是否自然", flagWhen: "可见的结构异常影响可信度（不要把正常透视变化误判为畸形）", applicableImageTypes: ["portrait"], evidenceRequired: true, minConfidence: 0.7, mergeKeys: ["human", "proportion"] },
-            { id: "object-scale", label: "物体相对尺寸", check: "物体之间的相对大小是否符合场景关系", flagWhen: "关键物体大小关系破坏空间或叙事逻辑" },
-            { id: "perspective", label: "透视与遮挡", check: "消失方向、近大远小、地面关系和遮挡顺序是否一致", flagWhen: "透视线索互相冲突，或遮挡关系让空间无法成立" },
-            { id: "detail-consistency", label: "细节一致性", check: "关键边缘、纹理、清晰度和风格是否保持一致", flagWhen: "局部明显崩坏、重复、异常，且会影响主体阅读" },
+            { id: "human-proportion", label: tr("人物比例"), check: tr("人物的脸部、五官、手脚、肢体长度和头身关系是否自然"), flagWhen: tr("可见的结构异常影响可信度（不要把正常透视变化误判为畸形）"), applicableImageTypes: ["portrait"], evidenceRequired: true, minConfidence: 0.7, mergeKeys: ["human", "proportion"] },
+            { id: "object-scale", label: tr("物体相对尺寸"), check: tr("物体之间的相对大小是否符合场景关系"), flagWhen: tr("关键物体大小关系破坏空间或叙事逻辑") },
+            { id: "perspective", label: tr("透视与遮挡"), check: tr("消失方向、近大远小、地面关系和遮挡顺序是否一致"), flagWhen: tr("透视线索互相冲突，或遮挡关系让空间无法成立") },
+            { id: "detail-consistency", label: tr("细节一致性"), check: tr("关键边缘、纹理、清晰度和风格是否保持一致"), flagWhen: tr("局部明显崩坏、重复、异常，且会影响主体阅读") },
         ],
     },
 ];
@@ -88,19 +89,19 @@ export function findArtCritiqueRubricCheck(checkId: string) {
 }
 
 export const ART_CRITIQUE_REFERENCE_METHODS = [
-    "用 CG-IAA / AesExpert 的维度化 critique 思路组织评价，不把审美压成单一分数。",
-    "用 CADB 的构图模式作为参考，但先判断画面意图，不把三分法等几何规则当成绝对答案。",
-    "用 HumanAesExpert 的人物维度补充人像模式，只有看得清且确实影响画面时才指出结构问题。",
-    "用 PhotoFramer 的 shift、zoom/crop、view change 思路组织修改动作，建议必须能转成下一轮提示词。",
-    "用 Grounding-IQA 的描述与区域绑定思路表达 target；无法可靠定位时使用 global。",
+    tr("用 CG-IAA / AesExpert 的维度化 critique 思路组织评价，不把审美压成单一分数。"),
+    tr("用 CADB 的构图模式作为参考，但先判断画面意图，不把三分法等几何规则当成绝对答案。"),
+    tr("用 HumanAesExpert 的人物维度补充人像模式，只有看得清且确实影响画面时才指出结构问题。"),
+    tr("用 PhotoFramer 的 shift、zoom/crop、view change 思路组织修改动作，建议必须能转成下一轮提示词。"),
+    tr("用 Grounding-IQA 的描述与区域绑定思路表达 target；无法可靠定位时使用 global。"),
 ] as const;
 
 export function buildArtCritiqueRubricPrompt(options: ArtCritiqueRubricPromptOptions = {}) {
     const selectedCategories = options.categories?.length ? new Set(options.categories) : undefined;
     const sectionsToRender = selectedCategories ? ART_CRITIQUE_RUBRIC.filter((section) => selectedCategories.has(section.category)) : ART_CRITIQUE_RUBRIC;
     const sections = sectionsToRender.map((section) => {
-        const checks = section.checks.map((item) => `- ${item.label}（规则 ID：${item.id}；适用图片：${(item.applicableImageTypes || ["所有图片"]).join("、")}；最低置信度：${item.minConfidence ?? 0.55}；需要证据：${item.evidenceRequired !== false ? "是" : "否"}；合并关键词：${(item.mergeKeys || []).join("、")}）：检查${item.check}；只有在${item.flagWhen}时才报告。`).join("\n");
-        return [`【${section.label}｜${section.category}】`, `方法参考：${section.references.join("、")}`, checks].join("\n");
+        const checks = section.checks.map((item) => tr("- {0}（规则 ID：{1}；适用图片：{2}；最低置信度：{3}；需要证据：{4}；合并关键词：{5}）：检查{6}；只有在{7}时才报告。", item.label, item.id, (item.applicableImageTypes || [tr("所有图片")]).join("、"), item.minConfidence ?? 0.55, item.evidenceRequired !== false ? tr("是") : tr("否"), (item.mergeKeys || []).join("、"), item.check, item.flagWhen)).join("\n");
+        return [`【${section.label}｜${section.category}】`, tr("方法参考：{0}", section.references.join("、")), checks].join("\n");
     }).join("\n\n");
     const includeReferenceMapping = options.includeReferenceMapping ?? !selectedCategories;
 

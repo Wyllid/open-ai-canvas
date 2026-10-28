@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { App, Button, Input, InputNumber, Select } from "antd";
 import { AntTooltip as Tooltip } from "@/components/ui/base/tooltip/ant-tooltip";
@@ -14,8 +15,8 @@ import { CAST_KIND_LABEL, mediaBusy, MediaThumb } from "../drama-shared";
 import { SegmentTakes, type TakeReviewInput } from "./segment-takes";
 import { promptReady, referenceMissingReason, secondsLabel, SegmentInputs, SegmentStatus, SegmentVideo, videoWaitLabel } from "./segment-parts";
 
-const SHOT_SIZES = ["特写", "近景", "中景", "全景", "远景"];
-const CAMERAS = ["固定", "推", "拉", "摇", "跟", "环绕", "升降", "手持"];
+const SHOT_SIZES = [tr("特写"), tr("近景"), tr("中景"), tr("全景"), tr("远景")];
+const CAMERAS = [tr("固定"), tr("推"), tr("拉"), tr("摇"), tr("跟"), tr("环绕"), tr("升降"), tr("手持")];
 
 const PROMPT_NOTICE: Record<DramaSegment["promptStatus"], string> = {
     none: "还没有撰写本段视频提示词",
@@ -92,14 +93,14 @@ export function SegmentDialog({
             centered
             width="min(1280px, calc(100vw - 48px))"
             rootClassName="drama-root drama-sd-root"
-            aria-label={segment ? `第 ${segment.index + 1} 段` : "剧情段"}
+            aria-label={segment ? tr("第 {0} 段", segment.index + 1) : tr("剧情段")}
         >
             {segment && detail ? (
                 <div className="drama-sd">
                     <header className="drama-sd-head">
                         <div className="min-w-0">
                             <div className="drama-eyebrow">
-                                第 {detail.episode.number} 集 · 第 {segment.index + 1} / {segments.length} 段 · {shots.length} 镜 · {secondsLabel(segment.durationMs)}
+                                {tr("第")} {detail.episode.number} {tr("集 · 第")} {segment.index + 1} / {segments.length} {tr("段 ·")} {shots.length} {tr("镜 ·")} {secondsLabel(segment.durationMs)}
                             </div>
                             <div className="drama-sd-title">
                                 <h2>{segment.title}</h2>
@@ -107,13 +108,13 @@ export function SegmentDialog({
                             </div>
                         </div>
                         <div className="drama-sd-nav">
-                            <Tooltip title="上一段">
-                                <Button icon={<ChevronLeft className="size-4" />} aria-label="上一段" disabled={position <= 0} onClick={() => onNavigate(segments[position - 1].index)} />
+                            <Tooltip title={tr("上一段")}>
+                                <Button icon={<ChevronLeft className="size-4" />} aria-label={tr("上一段")} disabled={position <= 0} onClick={() => onNavigate(segments[position - 1].index)} />
                             </Tooltip>
-                            <Tooltip title="下一段">
-                                <Button icon={<ChevronRight className="size-4" />} aria-label="下一段" disabled={position >= segments.length - 1} onClick={() => onNavigate(segments[position + 1].index)} />
+                            <Tooltip title={tr("下一段")}>
+                                <Button icon={<ChevronRight className="size-4" />} aria-label={tr("下一段")} disabled={position >= segments.length - 1} onClick={() => onNavigate(segments[position + 1].index)} />
                             </Tooltip>
-                            <Button type="text" icon={<X className="size-4" />} aria-label="关闭" onClick={onClose} />
+                            <Button type="text" icon={<X className="size-4" />} aria-label={tr("关闭")} onClick={onClose} />
                         </div>
                     </header>
                     <div className="drama-sd-body">
@@ -121,14 +122,14 @@ export function SegmentDialog({
                             <SegmentVideo segment={segment} aspectRatio={aspectRatio} />
                             {segment.videoStatus === "failed" && segment.videoError ? (
                                 <div className="drama-sd-error">
-                                    <strong>{segment.videoReprocessable ? "视频已生成，后处理失败" : "视频生成失败"}</strong>
+                                    <strong>{segment.videoReprocessable ? tr("视频已生成，后处理失败") : tr("视频生成失败")}</strong>
                                     <span>{segment.videoError}</span>
                                     {segment.videoReprocessable ? (
                                         <>
-                                            <span>重新处理只针对这条已生成的视频，不会重新生成或扣费。</span>
+                                            <span>{tr("重新处理只针对这条已生成的视频，不会重新生成或扣费。")}</span>
                                             <div className="drama-sd-error-actions">
                                                 <Button size="small" icon={<RotateCcw className="size-3.5" />} loading={reprocessing} disabled={busy} onClick={() => onReprocess(segment)}>
-                                                    重新处理视频
+                                                    {tr("重新处理视频")}
                                                 </Button>
                                             </div>
                                         </>
@@ -137,7 +138,7 @@ export function SegmentDialog({
                             ) : null}
                             {segment.videoStatus === "queued" && segment.videoWait ? (
                                 <div className="drama-sd-error is-wait" role="status">
-                                    <strong>视频尚未提交</strong>
+                                    <strong>{tr("视频尚未提交")}</strong>
                                     <span>{segment.videoWait}</span>
                                 </div>
                             ) : null}
@@ -145,9 +146,9 @@ export function SegmentDialog({
                             <SegmentGenerate key={segment.id} segment={segment} busy={busy} defaultVideoModel={defaultVideoModel} onGenerate={(model) => onGenerate(segment, model)} />
                             <section className="drama-sd-block">
                                 <div className="drama-sd-label">
-                                    <span>生成依据</span>
+                                    <span>{tr("生成依据")}</span>
                                     <small>
-                                        {segment.request.seconds ? `生成 ${segment.request.seconds} 秒` : ""}
+                                        {segment.request.seconds ? tr("生成 {0} 秒", segment.request.seconds) : ""}
                                         {segment.videoModel?.label ? ` · ${segment.videoModel.label}` : ""}
                                     </small>
                                 </div>
@@ -157,14 +158,14 @@ export function SegmentDialog({
                             </section>
                             <section className="drama-sd-block">
                                 <div className="drama-sd-label">
-                                    <span>本段镜头</span>
-                                    <small>改动后本段提示词与视频需要重新生成</small>
+                                    <span>{tr("本段镜头")}</span>
+                                    <small>{tr("改动后本段提示词与视频需要重新生成")}</small>
                                 </div>
                                 <div className="drama-sd-shots">
                                     {shots.map((item) => (
                                         <button key={item.id} type="button" className="drama-sd-shot" aria-pressed={item.id === shot?.id} onClick={() => onNavigate(segment.index, item.id === shot?.id ? undefined : item.id)}>
                                             <b>{item.position + 1}</b>
-                                            <span>{item.dialogue ? `${item.speaker || "旁白"}：${item.dialogue}` : item.action || item.imagePrompt}</span>
+                                            <span>{item.dialogue ? `${item.speaker || tr("旁白")}：${item.dialogue}` : item.action || item.imagePrompt}</span>
                                             <em>{secondsLabel(item.durationMs)}</em>
                                         </button>
                                     ))}
@@ -172,7 +173,7 @@ export function SegmentDialog({
                                 {shot ? <ShotEditor key={shot.id} shot={shot} onPatch={(patch) => onPatchShot(shot, patch)} /> : null}
                             </section>
                         </aside>
-                        <section className="drama-sd-main" aria-label="完整视频提示词">
+                        <section className="drama-sd-main" aria-label={tr("完整视频提示词")}>
                             <SegmentPrompt segment={segment} writing={writing} onSave={(override) => onSavePrompt(segment, override)} onWrite={() => onWritePrompt(segment)} />
                         </section>
                     </div>
@@ -204,19 +205,19 @@ function ReferenceEditor({ segment, castById, busy, onChange, onOpenCast }: { se
         const used = new Set(request.references.map((ref) => ref.castId));
         return CAST_KIND_ORDER.map((kind) => ({
             label: CAST_KIND_LABEL[kind],
-            options: [...castById.values()].filter((cast) => cast.kind === kind && !used.has(cast.id)).map((cast) => ({ value: cast.id, label: cast.imageStatus === "ready" && cast.imageResourceId ? cast.name : `${cast.name}（暂无参考图）` })),
+            options: [...castById.values()].filter((cast) => cast.kind === kind && !used.has(cast.id)).map((cast) => ({ value: cast.id, label: cast.imageStatus === "ready" && cast.imageResourceId ? cast.name : tr("{0}（暂无参考图）", cast.name) })),
         })).filter((group) => group.options.length);
     }, [castById, request.references]);
     return (
         <div className="drama-ref-editor">
             <div className="drama-ref-editor-head">
-                <b>{custom ? "手动指定参考图" : "按镜头自动取参考图"}</b>
+                <b>{custom ? tr("手动指定参考图") : tr("按镜头自动取参考图")}</b>
                 <small>
-                    发送 {sent}/{request.references.length} 张 · 本段最多 {request.referenceCapacity} 张{request.modelMaxImages ? ` · 模型上限 ${request.modelMaxImages} 张（含首帧）` : ""}
+                    {tr("发送")} {sent}/{request.references.length} {tr("张 · 本段最多")} {request.referenceCapacity} {tr("张")}{request.modelMaxImages ? tr(" · 模型上限 {0} 张（含首帧）", request.modelMaxImages) : ""}
                 </small>
                 {custom ? (
                     <Button size="small" type="text" icon={<RotateCcw className="size-3.5" />} disabled={busy} onClick={() => onChange(null)}>
-                        恢复自动
+                        {tr("恢复自动")}
                     </Button>
                 ) : null}
             </div>
@@ -226,7 +227,7 @@ function ReferenceEditor({ segment, castById, busy, onChange, onOpenCast }: { se
                         const cast = castById.get(ref.castId);
                         return (
                             <li key={ref.castId} className={ref.sent ? "" : "is-missing"}>
-                                <button type="button" className="drama-ref-thumb" aria-label={`查看${ref.name}设定`} onClick={() => onOpenCast(ref.castId)}>
+                                <button type="button" className="drama-ref-thumb" aria-label={tr("查看{0}设定", ref.name)} onClick={() => onOpenCast(ref.castId)}>
                                     {cast?.imageResourceId ? <MediaThumb resourceId={cast.imageResourceId} alt={ref.name} /> : <span>{CAST_KIND_LABEL[ref.kind]}</span>}
                                 </button>
                                 <span className="drama-ref-text">
@@ -234,37 +235,37 @@ function ReferenceEditor({ segment, castById, busy, onChange, onOpenCast }: { se
                                         {ref.label} · {ref.name}
                                     </b>
                                     <small>
-                                        {CAST_KIND_LABEL[ref.kind]} · {ref.sent ? "随请求发送" : `未附图：${referenceMissingReason(segment, cast)}`}
+                                        {CAST_KIND_LABEL[ref.kind]} · {ref.sent ? tr("随请求发送") : tr("未附图：{0}", referenceMissingReason(segment, cast))}
                                     </small>
                                 </span>
-                                <Tooltip title="提前（优先发送）">
-                                    <Button size="small" type="text" icon={<ArrowUp className="size-3.5" />} aria-label={`提前${ref.name}`} disabled={busy || index === 0} onClick={() => onChange(moveItem(ids, index, index - 1))} />
+                                <Tooltip title={tr("提前（优先发送）")}>
+                                    <Button size="small" type="text" icon={<ArrowUp className="size-3.5" />} aria-label={tr("提前{0}", ref.name)} disabled={busy || index === 0} onClick={() => onChange(moveItem(ids, index, index - 1))} />
                                 </Tooltip>
-                                <Tooltip title="不作为本段参考图">
-                                    <Button size="small" type="text" icon={<X className="size-3.5" />} aria-label={`移除${ref.name}`} disabled={busy} onClick={() => onChange(ids.filter((id) => id !== ref.castId))} />
+                                <Tooltip title={tr("不作为本段参考图")}>
+                                    <Button size="small" type="text" icon={<X className="size-3.5" />} aria-label={tr("移除{0}", ref.name)} disabled={busy} onClick={() => onChange(ids.filter((id) => id !== ref.castId))} />
                                 </Tooltip>
                             </li>
                         );
                     })}
                 </ol>
             ) : (
-                <p className="drama-sg-note">本段不发送参考图，按文字设定生成。</p>
+                <p className="drama-sg-note">{tr("本段不发送参考图，按文字设定生成。")}</p>
             )}
             <Select
                 className="w-full"
                 size="small"
                 showSearch
                 value={null}
-                placeholder="添加参考图：角色、道具或场景"
+                placeholder={tr("添加参考图：角色、道具或场景")}
                 optionFilterProp="label"
                 options={options}
                 disabled={busy || !options.length}
-                aria-label="添加参考图"
+                aria-label={tr("添加参考图")}
                 onChange={(id: string | null) => {
                     if (id) onChange([...ids, id]);
                 }}
             />
-            <p className="drama-sg-note">调整后参考图编号会变，模型撰写的视频提示词需要重新撰写；手写的提示词请自行核对编号。</p>
+            <p className="drama-sg-note">{tr("调整后参考图编号会变，模型撰写的视频提示词需要重新撰写；手写的提示词请自行核对编号。")}</p>
         </div>
     );
 }
@@ -277,17 +278,17 @@ function SegmentGenerate({ segment, busy, defaultVideoModel, onGenerate }: { seg
     const running = mediaBusy(segment.videoStatus);
     return (
         <div className="drama-sd-generate">
-            <DramaModelPicker capability="video" size="sm" value={choice} onChange={setChoice} placeholder="视频模型" />
+            <DramaModelPicker capability="video" size="sm" value={choice} onChange={setChoice} placeholder={tr("视频模型")} />
             <Button type="primary" icon={<Play className="size-4" />} disabled={busy || !promptReady(segment) || running} onClick={() => onGenerate(changed ? choice : undefined)}>
                 {running
                     ? segment.videoStatus === "queued" && segment.videoWait
                         ? videoWaitLabel(segment.videoWait)
                         : segment.request.firstFramePending
-                          ? `排队中 · 等第 ${segment.index} 段`
-                          : "视频生成中"
+                          ? tr("排队中 · 等第 {0} 段", segment.index)
+                          : tr("视频生成中")
                     : segment.videoResourceId && segment.videoStatus !== ""
-                      ? "重新生成本段视频"
-                      : "生成本段视频"}
+                      ? tr("重新生成本段视频")
+                      : tr("生成本段视频")}
             </Button>
         </div>
     );
@@ -313,16 +314,16 @@ function SegmentPrompt({ segment, writing, onSave, onWrite }: { segment: DramaSe
     return (
         <div className="drama-sd-pane">
             <div className="drama-sd-pane-bar">
-                <span className="drama-sd-pane-caption">完整视频提示词{segment.custom ? <em>已改写</em> : null}</span>
+                <span className="drama-sd-pane-caption">{tr("完整视频提示词")}{segment.custom ? <em>{tr("已改写")}</em> : null}</span>
                 <span className="drama-sd-pane-tools">
                     {!busy && segment.promptStatus !== "none" ? (
                         <Button size="small" type="text" icon={<Sparkles className="size-3.5" />} loading={writing} onClick={onWrite}>
-                            重新撰写
+                            {tr("重新撰写")}
                         </Button>
                     ) : null}
                     {segment.custom ? (
                         <Button size="small" type="text" icon={<RotateCcw className="size-3.5" />} onClick={() => onSave("")}>
-                            恢复模型版本
+                            {tr("恢复模型版本")}
                         </Button>
                     ) : null}
                     <Button
@@ -332,19 +333,19 @@ function SegmentPrompt({ segment, writing, onSave, onWrite }: { segment: DramaSe
                         disabled={!draft}
                         onClick={() =>
                             void navigator.clipboard.writeText(sent).then(
-                                () => message.success("已复制发送全文"),
-                                () => message.error("复制失败"),
+                                () => message.success(tr("已复制发送全文")),
+                                () => message.error(tr("复制失败")),
                             )
                         }
                     >
-                        复制发送全文
+                        {tr("复制发送全文")}
                     </Button>
                 </span>
             </div>
             {notice && segment.videoPrompt ? <PromptNotice segment={segment} text={notice} /> : null}
             {segment.request.header ? (
-                <div className="drama-sd-header" aria-label="系统追加的参考图说明">
-                    <span>提交时加在开头</span>
+                <div className="drama-sd-header" aria-label={tr("系统追加的参考图说明")}>
+                    <span>{tr("提交时加在开头")}</span>
                     <pre>{segment.request.header}</pre>
                 </div>
             ) : null}
@@ -363,8 +364,8 @@ function SegmentPrompt({ segment, writing, onSave, onWrite }: { segment: DramaSe
                 <Input.TextArea
                     className="drama-sd-text thin-scrollbar"
                     value={draft}
-                    aria-label="完整视频提示词"
-                    placeholder="也可以直接在这里手写本段完整视频提示词，失焦保存；开头的参考图说明由系统自动追加。"
+                    aria-label={tr("完整视频提示词")}
+                    placeholder={tr("也可以直接在这里手写本段完整视频提示词，失焦保存；开头的参考图说明由系统自动追加。")}
                     onChange={(event) => setDraft(event.target.value)}
                     onBlur={commit}
                     onKeyDown={(event) => {
@@ -384,12 +385,12 @@ function SegmentPrompt({ segment, writing, onSave, onWrite }: { segment: DramaSe
                 <div className="drama-sd-empty">
                     <Loader2 className="size-5 animate-spin" aria-hidden />
                     <span>{notice}</span>
-                    <small>写好后自动显示</small>
+                    <small>{tr("写好后自动显示")}</small>
                 </div>
             )}
             <div className="drama-sd-pane-foot">
-                {dirty ? <span className="is-dirty">未保存 · 失焦或 ⌘↵ 保存，Esc 放弃</span> : <span>直接修改正文，失焦自动保存</span>}
-                <span>{draft.length} 字</span>
+                {dirty ? <span className="is-dirty">{tr("未保存 · 失焦或 ⌘↵ 保存，Esc 放弃")}</span> : <span>{tr("直接修改正文，失焦自动保存")}</span>}
+                <span>{draft.length} {tr("字")}</span>
             </div>
         </div>
     );
@@ -412,17 +413,17 @@ function PromptNotice({ segment, text }: { segment: DramaSegment; text: ReactNod
 export function ShotEditor({ shot, onPatch }: { shot: DramaShot; onPatch: (patch: DramaShotPatch) => void }) {
     return (
         <div className="drama-sd-form">
-            <FieldText label="台词" value={shot.dialogue} placeholder="无台词" onSave={(value) => onPatch({ dialogue: value })} />
+            <FieldText label={tr("台词")} value={shot.dialogue} placeholder={tr("无台词")} onSave={(value) => onPatch({ dialogue: value })} />
             <div className="drama-sd-row">
                 <label className="drama-sd-field">
                     <span className="drama-sd-label">
-                        <span>说话人</span>
+                        <span>{tr("说话人")}</span>
                     </span>
                     <Input
                         defaultValue={shot.speaker}
                         key={`${shot.id}-speaker-${shot.speaker}`}
-                        placeholder="旁白"
-                        aria-label="说话人"
+                        placeholder={tr("旁白")}
+                        aria-label={tr("说话人")}
                         onBlur={(event) => {
                             if (event.target.value.trim() !== shot.speaker) onPatch({ speaker: event.target.value });
                         }}
@@ -430,7 +431,7 @@ export function ShotEditor({ shot, onPatch }: { shot: DramaShot; onPatch: (patch
                 </label>
                 <label className="drama-sd-field">
                     <span className="drama-sd-label">
-                        <span>时长</span>
+                        <span>{tr("时长")}</span>
                     </span>
                     <InputNumber
                         key={`${shot.id}-${shot.durationMs}`}
@@ -440,8 +441,8 @@ export function ShotEditor({ shot, onPatch }: { shot: DramaShot; onPatch: (patch
                         step={0.5}
                         precision={1}
                         defaultValue={shot.durationMs / 1000}
-                        suffix="秒"
-                        aria-label="镜头时长"
+                        suffix={tr("秒")}
+                        aria-label={tr("镜头时长")}
                         onBlur={(event) => {
                             const seconds = Number(event.target.value);
                             if (Number.isFinite(seconds) && Math.abs(seconds * 1000 - shot.durationMs) >= 50) onPatch({ durationSeconds: seconds });
@@ -453,36 +454,36 @@ export function ShotEditor({ shot, onPatch }: { shot: DramaShot; onPatch: (patch
             <div className="drama-sd-row is-three">
                 <label className="drama-sd-field">
                     <span className="drama-sd-label">
-                        <span>景别</span>
+                        <span>{tr("景别")}</span>
                     </span>
-                    <Select className="w-full" value={shot.shotSize || undefined} placeholder="自动" aria-label="景别" options={SHOT_SIZES.map((value) => ({ value, label: value }))} onChange={(value) => onPatch({ shotSize: value })} />
+                    <Select className="w-full" value={shot.shotSize || undefined} placeholder={tr("自动")} aria-label={tr("景别")} options={SHOT_SIZES.map((value) => ({ value, label: value }))} onChange={(value) => onPatch({ shotSize: value })} />
                 </label>
                 <label className="drama-sd-field">
                     <span className="drama-sd-label">
-                        <span>运镜</span>
+                        <span>{tr("运镜")}</span>
                     </span>
-                    <Select className="w-full" value={shot.camera || undefined} placeholder="自动" aria-label="运镜" options={CAMERAS.map((value) => ({ value, label: value }))} onChange={(value) => onPatch({ camera: value })} />
+                    <Select className="w-full" value={shot.camera || undefined} placeholder={tr("自动")} aria-label={tr("运镜")} options={CAMERAS.map((value) => ({ value, label: value }))} onChange={(value) => onPatch({ camera: value })} />
                 </label>
                 <label className="drama-sd-field">
                     <span className="drama-sd-label">
-                        <span>转场</span>
+                        <span>{tr("转场")}</span>
                     </span>
                     <Select
                         className="w-full"
                         value={(shot.transition || "cut") as DramaTransition}
-                        aria-label="转场"
+                        aria-label={tr("转场")}
                         options={(Object.keys(TRANSITION_LABEL) as DramaTransition[]).map((value) => ({ value, label: TRANSITION_LABEL[value] }))}
                         disabled={shot.position === 0}
                         onChange={(value) => onPatch({ transition: value })}
                     />
                 </label>
             </div>
-            <FieldText label="动作" value={shot.action} rows={2} onSave={(value) => onPatch({ action: value })} />
-            <FieldText label="起幅画面" value={shot.imagePrompt} rows={2} onSave={(value) => onPatch({ imagePrompt: value })} />
+            <FieldText label={tr("动作")} value={shot.action} rows={2} onSave={(value) => onPatch({ action: value })} />
+            <FieldText label={tr("起幅画面")} value={shot.imagePrompt} rows={2} onSave={(value) => onPatch({ imagePrompt: value })} />
             {shot.sourceQuote ? (
                 <div className="drama-sd-quote">
                     <span className="drama-sd-label">
-                        <span>原文</span>
+                        <span>{tr("原文")}</span>
                     </span>
                     <p>「{shot.sourceQuote}」</p>
                 </div>
@@ -498,7 +499,7 @@ function FieldText({ label, value, placeholder, rows = 1, onSave }: { label: str
         <label className="drama-sd-field">
             <span className="drama-sd-label">
                 <span>{label}</span>
-                {draft !== value ? <small className="is-dirty">未保存</small> : null}
+                {draft !== value ? <small className="is-dirty">{tr("未保存")}</small> : null}
             </span>
             <Input.TextArea
                 value={draft}

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useSyncExternalStore } from "react";
 import { useParams } from "react-router";
 import { PencilLine } from "lucide-react";
@@ -20,7 +21,7 @@ export function CanvasTextLeaseIndicator({ nodeId, canvasId }: { nodeId: string;
     return (
         <span className="inline-flex max-w-full items-center gap-1 text-[var(--fs-tiny)] text-muted-foreground">
             <PencilLine className={state.typing ? "size-3 shrink-0 motion-safe:animate-pulse" : "size-3 shrink-0"} />
-            <span className="truncate">{state.remote ? "其他窗口正在输入" : "正在输入"}</span>
+            <span className="truncate">{state.remote ? tr("其他窗口正在输入") : tr("正在输入")}</span>
         </span>
     );
 }

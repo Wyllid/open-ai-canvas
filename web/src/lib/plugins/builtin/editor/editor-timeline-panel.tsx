@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 渲染链路：store.project（当前命令状态）→ 轨道/片段绝对定位 → 拖拽手势
 // （moveClip / trimClip）经 previewGesture 逐帧预览、commitGesture 一次性入历史。
 // 手势数学与渲染同源（同一 pxPerMs），保证拖拽所见即所得。
@@ -34,7 +35,7 @@ const LABEL_COLUMN_PX = 192;
 const MIN_SPLIT_MS = 100;
 
 // 不可移除轨道的原因文案（title 悬停与点击提示共用，单一来源）。
-const trackRemoveBlockedReason = (kind: TimelineTrack["kind"]) => `${TRACK_KIND_BASE_LABELS[kind]}轨道至少保留一条，无法移除`;
+const trackRemoveBlockedReason = (kind: TimelineTrack["kind"]) => tr("{0}轨道至少保留一条，无法移除", TRACK_KIND_BASE_LABELS[kind]);
 
 // 工具条按钮颜色角色（唯一来源，各按钮内不得重复字面量颜色）：
 // 常态 = 次级前景 + hover 弱背景；选中/按下 = 反白块 + 强前景（中性，无 accent 蓝图标）。
@@ -102,7 +103,7 @@ export function EditorTimelinePanel() {
         }
     }, [transportMs, zoomLevel]);
 
-    if (!project) return <div className="flex h-full items-center justify-center text-sm text-[var(--previs-dock-fg)]">时间线未加载</div>;
+    if (!project) return <div className="flex h-full items-center justify-center text-sm text-[var(--previs-dock-fg)]">{tr("时间线未加载")}</div>;
 
     const visualEndMs = Math.max(MIN_VISUAL_END_MS, getTimelineVisualEndMs(project.clips));
     // 像素/毫秒由缩放级别独立决定（不随时长漂移）：拖动片段时轨道随内容等比扩展，
@@ -169,9 +170,9 @@ export function EditorTimelinePanel() {
                 <div className="flex items-center gap-0.5 rounded-md bg-[var(--previs-control-hover)] p-0.5">
                     <button
                         type="button"
-                        aria-label="选择工具"
+                        aria-label={tr("选择工具")}
                         aria-pressed={activeTool === "select"}
-                        title="选择工具"
+                        title={tr("选择工具")}
                         onClick={() => setActiveTool("select")}
                         className={`grid size-6 place-items-center rounded-[8px] transition-colors ${
                             activeTool === "select" ? TOOL_FG_ACTIVE : TOOL_FG_IDLE
@@ -181,9 +182,9 @@ export function EditorTimelinePanel() {
                     </button>
                     <button
                         type="button"
-                        aria-label="剃刀工具"
+                        aria-label={tr("剃刀工具")}
                         aria-pressed={activeTool === "razor"}
-                        title="剃刀工具：点击片段在光标处分割"
+                        title={tr("剃刀工具：点击片段在光标处分割")}
                         onClick={() => setActiveTool((tool) => (tool === "razor" ? "select" : "razor"))}
                         className={`grid size-6 place-items-center rounded-[8px] transition-colors ${
                             activeTool === "razor" ? TOOL_FG_ACTIVE : TOOL_FG_IDLE
@@ -196,9 +197,9 @@ export function EditorTimelinePanel() {
                 {/* 在播放头分割当前片段 */}
                 <button
                     type="button"
-                    aria-label="在播放头分割"
+                    aria-label={tr("在播放头分割")}
                     disabled={!clipAtPlayhead}
-                    title="在播放头分割片段"
+                    title={tr("在播放头分割片段")}
                     onClick={handleSplitAtPlayhead}
                     className={`grid size-7 place-items-center rounded-md ${TOOL_FG_IDLE} disabled:cursor-not-allowed disabled:opacity-40`}
                 >
@@ -207,9 +208,9 @@ export function EditorTimelinePanel() {
                 {/* 删除选中片段 */}
                 <button
                     type="button"
-                    aria-label="删除选中片段"
+                    aria-label={tr("删除选中片段")}
                     disabled={!selectedClip}
-                    title="删除选中片段"
+                    title={tr("删除选中片段")}
                     onClick={handleDeleteSelected}
                     className={`grid size-7 place-items-center rounded-md ${TOOL_FG_IDLE} disabled:cursor-not-allowed disabled:opacity-40`}
                 >
@@ -219,9 +220,9 @@ export function EditorTimelinePanel() {
                 {/* 吸附开关 */}
                 <button
                     type="button"
-                    aria-label="吸附"
+                    aria-label={tr("吸附")}
                     aria-pressed={snapEnabled}
-                    title="吸附（拖动与时间刻度对齐）"
+                    title={tr("吸附（拖动与时间刻度对齐）")}
                     onClick={() => setSnapEnabled((v) => !v)}
                     className={`grid size-7 place-items-center rounded-md transition-colors ${
                         snapEnabled ? TOOL_FG_ACTIVE : TOOL_FG_IDLE
@@ -233,9 +234,9 @@ export function EditorTimelinePanel() {
                 <div className="relative">
                     <button
                         type="button"
-                        aria-label="新增轨道"
+                        aria-label={tr("新增轨道")}
                         aria-expanded={addMenuOpen}
-                        title="新增轨道"
+                        title={tr("新增轨道")}
                         onClick={() => setAddMenuOpen((v) => !v)}
                         className={`grid size-7 place-items-center rounded-md ${TOOL_FG_IDLE}`}
                     >
@@ -251,7 +252,7 @@ export function EditorTimelinePanel() {
                                     className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs ${TOOL_FG_IDLE}`}
                                 >
                                     <Film className="size-3.5" />
-                                    视频轨道
+                                    {tr("视频轨道")}
                                 </button>
                                 <button
                                     type="button"
@@ -259,7 +260,7 @@ export function EditorTimelinePanel() {
                                     className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs ${TOOL_FG_IDLE}`}
                                 >
                                     <Music2 className="size-3.5" />
-                                    音频轨道
+                                    {tr("音频轨道")}
                                 </button>
                                 <button
                                     type="button"
@@ -267,7 +268,7 @@ export function EditorTimelinePanel() {
                                     className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs ${TOOL_FG_IDLE}`}
                                 >
                                     <Subtitles className="size-3.5" />
-                                    字幕轨道
+                                    {tr("字幕轨道")}
                                 </button>
                             </div>
                         </>
@@ -276,13 +277,13 @@ export function EditorTimelinePanel() {
                 <div className="flex-1" />
                 {/* 播放头时码 */}
                 <span className="w-16 text-right text-xs tabular-nums text-[var(--previs-dock-fg)]">{formatTimelineTime(playheadMs)}</span>
-                <span className="text-xs tabular-nums text-[var(--previs-dock-fg)]">片段 {project.clips.length}</span>
+                <span className="text-xs tabular-nums text-[var(--previs-dock-fg)]">{tr("片段")} {project.clips.length}</span>
                 <div className="mx-1 h-5 w-px bg-[var(--previs-sequencer-border)]" />
                 {/* 适应宽度 */}
                 <button
                     type="button"
-                    aria-label="适应宽度"
-                    title="适应宽度"
+                    aria-label={tr("适应宽度")}
+                    title={tr("适应宽度")}
                     onClick={handleFitWidth}
                     className={`grid size-7 place-items-center rounded-md ${TOOL_FG_IDLE}`}
                 >
@@ -290,8 +291,8 @@ export function EditorTimelinePanel() {
                 </button>
                 <button
                     type="button"
-                    aria-label="缩小时间线"
-                    title="缩小时间线"
+                    aria-label={tr("缩小时间线")}
+                    title={tr("缩小时间线")}
                     onClick={() => setZoomLevel((z) => zoomOut(z))}
                     className={`grid size-7 place-items-center rounded-md ${TOOL_FG_IDLE}`}
                 >
@@ -300,8 +301,8 @@ export function EditorTimelinePanel() {
                 <span className="w-10 text-center text-xs tabular-nums text-[var(--previs-dock-fg)]">{Math.round(zoomLevel * 100)}%</span>
                 <button
                     type="button"
-                    aria-label="放大时间线"
-                    title="放大时间线"
+                    aria-label={tr("放大时间线")}
+                    title={tr("放大时间线")}
                     onClick={() => setZoomLevel((z) => zoomIn(z))}
                     className={`grid size-7 place-items-center rounded-md ${TOOL_FG_IDLE}`}
                 >
@@ -314,7 +315,7 @@ export function EditorTimelinePanel() {
                 {project.clips.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-2 text-[var(--previs-dock-fg)]">
                         <Scissors className="size-8" />
-                        <p className="text-sm">从素材库加入素材后即可开始剪辑</p>
+                        <p className="text-sm">{tr("从素材库加入素材后即可开始剪辑")}</p>
                     </div>
                 ) : (
                     <div className="relative min-w-full" style={{ width: contentWidth }}>
@@ -326,9 +327,9 @@ export function EditorTimelinePanel() {
                             onScrub={handleScrub}
                         />
                         {[
-                            { label: "视觉轨道", tracks: visualTracks },
-                            { label: "音频轨道", tracks: audioTracks },
-                            { label: "字幕轨道", tracks: subtitleTracks },
+                            { label: tr("视觉轨道"), tracks: visualTracks },
+                            { label: tr("音频轨道"), tracks: audioTracks },
+                            { label: tr("字幕轨道"), tracks: subtitleTracks },
                         ]
                             .filter((group) => group.tracks.length > 0)
                             .map((group) => (
@@ -425,7 +426,7 @@ function TimelineRuler({
             <div
                 ref={areaRef}
                 role="slider"
-                aria-label="播放头"
+                aria-label={tr("播放头")}
                 aria-valuemin={0}
                 aria-valuemax={Math.round(endMs)}
                 aria-valuenow={Math.round(playheadMs)}
@@ -514,12 +515,12 @@ function TrackRow({
                     >
                         {track.label}
                     </div>
-                    <div className="text-[var(--fs-label)] text-[var(--previs-dock-fg)]">{clips.length} 个片段</div>
+                    <div className="text-[var(--fs-label)] text-[var(--previs-dock-fg)]">{clips.length} {tr("个片段")}</div>
                 </div>
                 <button
                     type="button"
-                    aria-label={track.visible === false ? "显示轨道" : "隐藏轨道"}
-                    title={track.visible === false ? "显示轨道" : "隐藏轨道"}
+                    aria-label={track.visible === false ? tr("显示轨道") : tr("隐藏轨道")}
+                    title={track.visible === false ? tr("显示轨道") : tr("隐藏轨道")}
                     aria-pressed={track.visible === false}
                     onClick={() => onToggleTrackFlag(track.id, "visible", track.visible === false)}
                     className={`grid size-6 shrink-0 place-items-center rounded-md transition-colors ${
@@ -532,8 +533,8 @@ function TrackRow({
                 </button>
                 <button
                     type="button"
-                    aria-label={track.muted ? "取消静音" : "静音轨道"}
-                    title={track.muted ? "取消静音" : "静音轨道"}
+                    aria-label={track.muted ? tr("取消静音") : tr("静音轨道")}
+                    title={track.muted ? tr("取消静音") : tr("静音轨道")}
                     aria-pressed={track.muted === true}
                     onClick={() => onToggleTrackFlag(track.id, "muted", !track.muted)}
                     className={`grid size-6 shrink-0 place-items-center rounded-md transition-colors ${
@@ -546,8 +547,8 @@ function TrackRow({
                 </button>
                 <button
                     type="button"
-                    aria-label={`移除轨道 ${track.label}`}
-                    title={removable ? "移除轨道" : trackRemoveBlockedReason(track.kind)}
+                    aria-label={tr("移除轨道 {0}", track.label)}
+                    title={removable ? tr("移除轨道") : trackRemoveBlockedReason(track.kind)}
                     onClick={() => (removable ? onRemoveTrack(track.id) : onRemoveBlocked(track.kind))}
                     className={`grid size-6 shrink-0 place-items-center rounded-md transition-opacity ${
                         removable

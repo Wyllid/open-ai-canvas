@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { AiTextMessage } from "@/services/api/image";
 import { imageReferenceLabel } from "@/lib/image-reference-prompt";
 import { seedanceReferenceLabel } from "@/lib/seedance-video";
@@ -73,8 +74,8 @@ export function buildNodeGenerationContext(nodeId: string, nodes: CanvasNodeData
     const pendingConversion = findPendingMediaConversionInput(nodeId, nodes, connections);
     if (pendingConversion) {
         const status = pendingConversion.metadata?.mediaConversion?.status;
-        const reason = status === "stale" ? "输入或方式已变化" : status === "processing" ? "仍在处理中" : "尚未完成本地转换";
-        throw new Error(`转换节点「${pendingConversion.title || pendingConversion.id}」${reason}，完成后才能执行下游生成`);
+        const reason = status === "stale" ? tr("输入或方式已变化") : status === "processing" ? tr("仍在处理中") : tr("尚未完成本地转换");
+        throw new Error(tr("转换节点「{0}」{1}，完成后才能执行下游生成", pendingConversion.title || pendingConversion.id, reason));
     }
     const connectedInputs = withArkAssetReferenceInputs(buildNodeGenerationInputs(nodeId, nodes, connections), nodes, assets);
     const sourceNode = nodes.find((node) => node.id === nodeId);
@@ -273,9 +274,9 @@ function hasResolvableGenerationMention(prompt: string, inputs: NodeGenerationIn
 function assertResolvableGenerationMentions(prompt: string, inputs: NodeGenerationInput[]) {
     const { unresolved } = inspectGenerationMentions(prompt, inputs);
     const canvasMentions = unresolved.filter((token) => !token.startsWith("@[asset:"));
-    if (canvasMentions.length) throw new Error(`提示词中的 ${canvasMentions.join("、")} 没有对应的画布资源，请重新选择引用后再生成`);
+    if (canvasMentions.length) throw new Error(tr("提示词中的 {0} 没有对应的画布资源，请重新选择引用后再生成", canvasMentions.join("、")));
     // 素材令牌只含内部 ID，提示里不展示 ID。
-    if (unresolved.length) throw new Error("提示词引用的素材库素材已删除、无权访问或不能用于生成，请删除该引用或重新从素材库选择后再生成");
+    if (unresolved.length) throw new Error(tr("提示词引用的素材库素材已删除、无权访问或不能用于生成，请删除该引用或重新从素材库选择后再生成"));
 }
 
 function inspectGenerationMentions(prompt: string, inputs: NodeGenerationInput[]) {
@@ -414,23 +415,23 @@ function getConnectedStoryboardRows(nodeId: string, nodes: CanvasNodeData[], con
         seen.add(inputId);
         const characters = (row.characters || []).map((character) => [character.characterName, character.characterDescription].filter(Boolean).join("：")).filter(Boolean).join("、");
         const text = [
-            `【分镜 ${row.shotNumber}】`,
-            `时长：${row.durationSeconds} 秒`,
-            row.plotDescription && `画面描述：${row.plotDescription}`,
-            row.dialogue && `台词/旁白：${row.dialogue}`,
-            characters && `角色：${characters}`,
-            row.shotSize && `景别：${row.shotSize}`,
-            row.emotion && `情绪：${row.emotion}`,
-            row.lightingAndAtmosphere && `光影氛围：${row.lightingAndAtmosphere}`,
-            row.audioEffects && `音效：${row.audioEffects}`,
-            row.camera && `镜头设计：${row.camera}`,
-            row.motion && `运镜：${row.motion}`,
-            row.timeBeats && `时间节拍：${row.timeBeats}`,
-            row.imageGenerationPrompt && `图片提示词：${row.imageGenerationPrompt}`,
-            row.videoMotionPrompt && `视频提示词：${row.videoMotionPrompt}`,
-            row.negativePrompt && `负面要求：${row.negativePrompt}`,
+            tr("【分镜 {0}】", row.shotNumber),
+            tr("时长：{0} 秒", row.durationSeconds),
+            row.plotDescription && tr("画面描述：{0}", row.plotDescription),
+            row.dialogue && tr("台词/旁白：{0}", row.dialogue),
+            characters && tr("角色：{0}", characters),
+            row.shotSize && tr("景别：{0}", row.shotSize),
+            row.emotion && tr("情绪：{0}", row.emotion),
+            row.lightingAndAtmosphere && tr("光影氛围：{0}", row.lightingAndAtmosphere),
+            row.audioEffects && tr("音效：{0}", row.audioEffects),
+            row.camera && tr("镜头设计：{0}", row.camera),
+            row.motion && tr("运镜：{0}", row.motion),
+            row.timeBeats && tr("时间节拍：{0}", row.timeBeats),
+            row.imageGenerationPrompt && tr("图片提示词：{0}", row.imageGenerationPrompt),
+            row.videoMotionPrompt && tr("视频提示词：{0}", row.videoMotionPrompt),
+            row.negativePrompt && tr("负面要求：{0}", row.negativePrompt),
         ].filter(Boolean).join("\n");
-        return [{ nodeId: inputId, type: "text", title: `${scriptNode.title} · 镜头 ${row.shotNumber}`, text, alwaysIncludeText: true }];
+        return [{ nodeId: inputId, type: "text", title: tr("{0} · 镜头 {1}", scriptNode.title, row.shotNumber), text, alwaysIncludeText: true }];
     });
 }
 
@@ -473,12 +474,12 @@ export async function hydrateNodeGenerationContext(
     const remainingBudget = Math.max(0, (referenceLimits?.maxImages ?? 9) - referenceImages.length);
     const selectedEntries = details.flatMap((detail, index) => {
         const reference = context.characterReferences[index];
-        if (reference.requestedVersionId && reference.requestedVersionId !== detail.character.versionId) throw new Error(`角色「${detail.asset.title}」的固定版本已变化，请重新选择角色后生成`);
+        if (reference.requestedVersionId && reference.requestedVersionId !== detail.character.versionId) throw new Error(tr("角色「{0}」的固定版本已变化，请重新选择角色后生成", detail.asset.title));
         const representation = preferredCharacterRepresentation(detail.character.representations);
-        if (!representation && mode !== "audio" && mode !== "text") throw new Error(`角色「${detail.asset.title}」缺少可用的主参考图，请补充形象后再生成`);
+        if (!representation && mode !== "audio" && mode !== "text") throw new Error(tr("角色「{0}」缺少可用的主参考图，请补充形象后再生成", detail.asset.title));
         return representation ? [{ nodeId: reference.nodeId, representation }] : [];
     });
-    if (selectedEntries.length > remainingBudget) throw new Error(`当前模型参考图容量不足：角色至少需要 ${selectedEntries.length} 张主参考图`);
+    if (selectedEntries.length > remainingBudget) throw new Error(tr("当前模型参考图容量不足：角色至少需要 {0} 张主参考图", selectedEntries.length));
     const usedResourceIds = new Set(selectedEntries.map((item) => item.representation.resourceId));
     const supplementEntries = details.flatMap((detail, index) => {
         const reference = context.characterReferences[index];
@@ -514,7 +515,7 @@ export async function hydrateNodeGenerationContext(
         if (!image) {
             const characterIndex = context.characterReferences.findIndex((reference) => reference.nodeId === slot.nodeId);
             const detail = details[characterIndex];
-            if (slot.kind !== "character" || !detail || (mode !== "text" && mode !== "audio")) throw new Error("参考图片槽位无法解析，请重新选择引用后生成");
+            if (slot.kind !== "character" || !detail || (mode !== "text" && mode !== "audio")) throw new Error(tr("参考图片槽位无法解析，请重新选择引用后生成"));
             providerMentionBySlot.set(`@图片${index + 1}`, detail.asset.title.replaceAll("@", "＠"));
             return;
         }
@@ -534,8 +535,8 @@ export async function hydrateNodeGenerationContext(
         const nodeId = context.characterReferences[index]?.nodeId;
         const primaryLabel = nodeId ? orderedIndexByNodeId.get(nodeId) : undefined;
         const supplementLabels = nodeId ? supplementLabelsByNodeId.get(nodeId) || [] : [];
-        const referenceLine = primaryLabel ? `参考图片：@${imageReferenceLabel(primaryLabel - 1)}${supplementLabels.length ? `；补充视角：${supplementLabels.join("、")}` : ""}` : "";
-        const heading = includeCharacterPrompt ? compileCharacterReferencePrompt(detail.asset.title, detail.character.definition) : `【角色卡：${detail.asset.title}】`;
+        const referenceLine = primaryLabel ? tr("参考图片：@{0}{1}", imageReferenceLabel(primaryLabel - 1), supplementLabels.length ? tr("；补充视角：{0}", supplementLabels.join("、")) : "") : "";
+        const heading = includeCharacterPrompt ? compileCharacterReferencePrompt(detail.asset.title, detail.character.definition) : tr("【角色卡：{0}】", detail.asset.title);
         return [heading, referenceLine].filter(Boolean).join("\n");
     });
     const resolvedCharacterVersions = details.map((detail) => ({ assetId: detail.asset.id, versionId: detail.character.versionId }));
@@ -571,13 +572,13 @@ export async function hydrateNodeGenerationContext(
         });
     }
     const maxAudios = referenceLimits?.maxAudios ?? 3;
-    if (context.referenceAudios.length + voiceSamples.length > maxAudios) throw new Error(`当前模型参考音频容量不足：已连接 ${context.referenceAudios.length} 个音频，角色声音样本还需要 ${voiceSamples.length} 个名额`);
+    if (context.referenceAudios.length + voiceSamples.length > maxAudios) throw new Error(tr("当前模型参考音频容量不足：已连接 {0} 个音频，角色声音样本还需要 {1} 个名额", context.referenceAudios.length, voiceSamples.length));
     const characterVoiceAudios = await Promise.all(voiceSamples.map(async (voice) => {
         const resource = await getResource(voice.sampleResourceId!);
         const extension = audioFileExtension(resource.mimeType, resource.objectKey);
         return {
             id: `character-voice-${voice.assetId}`,
-            name: `${voice.characterName}-声音样本.${extension}`,
+            name: tr("{0}-声音样本.{1}", voice.characterName, extension),
             type: resource.mimeType || "audio/mpeg",
             url: resourceFileUrl(voice.sampleResourceId!),
             storageKey: resourceStorageKey(voice.sampleResourceId!),
@@ -588,8 +589,8 @@ export async function hydrateNodeGenerationContext(
         const sampleIndex = voice.sampleResourceId ? referenceAudios.findIndex((audio) => getResourceIdFromStorageKey(audio.storageKey) === voice.sampleResourceId) : -1;
         if (sampleIndex < 0 && !includeCharacterPrompt) return [];
         return [[
-            includeCharacterPrompt ? compileResolvedVoicePrompt(voice) : `【角色声音：${voice.characterName}】`,
-            sampleIndex >= 0 ? `声音参考：@音频${sampleIndex + 1}` : "",
+            includeCharacterPrompt ? compileResolvedVoicePrompt(voice) : tr("【角色声音：{0}】", voice.characterName),
+            sampleIndex >= 0 ? tr("声音参考：@音频{0}", sampleIndex + 1) : "",
         ].filter(Boolean).join("\n")];
     }) : [];
     return {
@@ -637,30 +638,30 @@ function readSkillInput(node: CanvasNodeData) {
     const skill = node.metadata?.skillSnapshot;
     if (!skill) return node.metadata?.content || "";
     return [
-        `【技能：${skill.name}】`,
-        skill.description ? `用途：${skill.description}` : "",
-        `执行模板：\n${skill.template}`,
-        skill.outputContract ? `输出约束：\n${skill.outputContract}` : "",
-        "请严格执行该技能，只输出结果，不要输出解释性套话。",
+        tr("【技能：{0}】", skill.name),
+        skill.description ? tr("用途：{0}", skill.description) : "",
+        tr("执行模板：\n{0}", skill.template),
+        skill.outputContract ? tr("输出约束：\n{0}", skill.outputContract) : "",
+        tr("请严格执行该技能，只输出结果，不要输出解释性套话。"),
     ]
         .filter(Boolean)
         .join("\n\n");
 }
 
 function generationLabel(type: NodeGenerationInput["type"] | "drawing", index: number) {
-    if (type === "character") return `角色${index + 1}`;
-    if (type === "drawing") return `绘图${index + 1}`;
+    if (type === "character") return tr("角色{0}", index + 1);
+    if (type === "drawing") return tr("绘图{0}", index + 1);
     if (type === "image") return imageReferenceLabel(index);
     if (type === "video") return seedanceReferenceLabel("video", index);
     if (type === "audio") return seedanceReferenceLabel("audio", index);
-    return `文本${index + 1}`;
+    return tr("文本{0}", index + 1);
 }
 
 function readReferenceImage(node: CanvasNodeData, nodes: CanvasNodeData[], connections: CanvasConnection[]): ReferenceImage | null {
     if (node.type === CanvasNodeType.Drawing && node.metadata?.drawingId) {
         return {
             id: node.id,
-            name: node.title || `绘图-${node.id}`,
+            name: node.title || tr("绘图-{0}", node.id),
             type: "image/png",
             dataUrl: "",
             source: {
@@ -684,11 +685,11 @@ function readReferenceImage(node: CanvasNodeData, nodes: CanvasNodeData[], conne
         // 未调色时直接透传源图，省掉一次渲染与上传（也就不占文件容量）。
         if (!grade || isNeutralColorGrade(grade)) {
             const passthrough = nodeReferenceImage(source);
-            return passthrough ? { ...passthrough, id: node.id, name: node.title || `调色-${node.id}` } : null;
+            return passthrough ? { ...passthrough, id: node.id, name: node.title || tr("调色-{0}", node.id) } : null;
         }
         return {
             id: node.id,
-            name: node.title || `调色-${node.id}`,
+            name: node.title || tr("调色-{0}", node.id),
             type: "image/png",
             dataUrl: "",
             source: { kind: "colorgrade", url, grade },

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 渠道模型选项的编码、解析与展示：channelId + 模型名组合成选择值，按能力过滤可选模型。
 
 import { type AiConfig, type ModelChannel, resolveModelChannel } from "./use-config-store";
@@ -44,7 +45,7 @@ export function modelDisplayName(config: AiConfig, value: string) {
     const channel = resolveModelChannel(config, value);
     const displayName = channel.modelCosts?.find((item) => item.model === model)?.displayName?.trim();
     if (displayName) return displayName;
-    return channel.scope === "system" ? "系统模型" : model;
+    return channel.scope === "system" ? tr("系统模型") : model;
 }
 
 export function modelIcon(config: AiConfig, value: string) {

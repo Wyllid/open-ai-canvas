@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 
 import type { PrevisKeyframe, PrevisTransform, PrevisVec3 } from "@/types/previs";
@@ -29,7 +30,7 @@ function segmentDistance(point: PrevisVec3, start: PrevisVec3, end: PrevisVec3) 
 
 /** Removes invalid/repeated samples and preserves meaningful corners in 3D. */
 export function simplifyPrevisPath(points: readonly PrevisVec3[], tolerance = 0.025): PrevisVec3[] {
-    if (!Number.isFinite(tolerance) || tolerance <= 0) throw new Error("轨迹精度无效");
+    if (!Number.isFinite(tolerance) || tolerance <= 0) throw new Error(tr("轨迹精度无效"));
     const clean: PrevisVec3[] = [];
     for (const point of points) {
         if (!finitePoint(point)) continue;
@@ -60,8 +61,8 @@ export function simplifyPrevisPath(points: readonly PrevisVec3[], tolerance = 0.
 
 /** Maps points to time by travelled distance, independent of pointer speed/event count. */
 export function timePrevisPath(points: readonly PrevisVec3[], start: number, duration: number): PrevisPathWaypoint[] {
-    if (!Number.isFinite(start) || start < 0) throw new Error("轨迹起始时间无效");
-    if (!Number.isFinite(duration) || duration <= 0) throw new Error("轨迹时长无效");
+    if (!Number.isFinite(start) || start < 0) throw new Error(tr("轨迹起始时间无效"));
+    if (!Number.isFinite(duration) || duration <= 0) throw new Error(tr("轨迹时长无效"));
     const clean: PrevisVec3[] = [];
     for (const point of points) {
         if (!finitePoint(point)) continue;

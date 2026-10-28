@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { CanvasWorkspacePanel } from "@/components/canvas/canvas-workspace-panel";
 import { CanvasNodeResizeMotionProvider } from "@/components/canvas/canvas-node-resize-motion";
 import "@/lib/plugins/builtin/ai-art-critique";
@@ -365,7 +366,7 @@ function CanvasViewportPage() {
     const saveCanvasAppearanceDefault = useCallback(
         (next: CanvasAppearance) => {
             writeCanvasAppearanceDefault({ appearance: next, backgroundMode });
-            message.success("已保存为当前账号在本机的新建画布默认外观");
+            message.success(tr("已保存为当前账号在本机的新建画布默认外观"));
         },
         [backgroundMode, message],
     );
@@ -456,7 +457,7 @@ function CanvasViewportPage() {
             if (node.type !== CanvasNodeType.Image) return;
             const reference = agentMentionReferences.find((item) => item.nodeId === node.id && item.kind === "image");
             if (!reference) {
-                message.warning("这张图片暂时没有可供 Agent 引用的画布资源");
+                message.warning(tr("这张图片暂时没有可供 Agent 引用的画布资源"));
                 return;
             }
             if (!selectedNodeIdsRef.current.has(node.id)) {
@@ -493,7 +494,7 @@ function CanvasViewportPage() {
                 connectionsRef.current = previousConnections;
                 setNodes(previousNodes);
                 setConnections(previousConnections);
-                throw new Error("画布保存失败，已撤销本次 LibTV 导入");
+                throw new Error(tr("画布保存失败，已撤销本次 LibTV 导入"));
             }
         },
         [saveCanvasProject, setConnections, setNodes],
@@ -514,7 +515,7 @@ function CanvasViewportPage() {
                 connectionsRef.current = previousConnections;
                 setNodes(previousNodes);
                 setConnections(previousConnections);
-                throw new Error("画布保存失败，已撤销本次 TapNow 导入");
+                throw new Error(tr("画布保存失败，已撤销本次 TapNow 导入"));
             }
         },
         [saveCanvasProject, setConnections, setNodes],
@@ -538,9 +539,9 @@ function CanvasViewportPage() {
                         }),
                     );
                     void refetchLinkedProject();
-                    message.success(`已归档到“${folder.title}”`);
+                    message.success(tr("已归档到“{0}”", folder.title));
                 })
-                .catch((error) => message.error(error instanceof Error ? error.message : "素材归档失败"));
+                .catch((error) => message.error(error instanceof Error ? error.message : tr("素材归档失败")));
         },
         [linkedProjectId, message, projectId, refetchLinkedProject, setNodes],
     );
@@ -580,19 +581,19 @@ function CanvasViewportPage() {
     const cancelCanvasTask = useCallback(
         (task: import("@/services/api/task-center").GenerationTask) => {
             if (!canCancelGenerationTask(task)) {
-                message.info("第三方请求已提交，任务将继续创作，不能取消");
+                message.info(tr("第三方请求已提交，任务将继续创作，不能取消"));
                 return;
             }
             modal.confirm({
-                title: "取消生成任务？",
-                content: "任务会立即停止本地执行；如果已经提交到上游，系统会继续核对取消结果和积分状态。",
-                okText: "取消任务",
+                title: tr("取消生成任务？"),
+                content: tr("任务会立即停止本地执行；如果已经提交到上游，系统会继续核对取消结果和积分状态。"),
+                okText: tr("取消任务"),
                 okButtonProps: { danger: true },
-                cancelText: "继续等待",
+                cancelText: tr("继续等待"),
                 onOk: async () => {
                     const latestTask = taskDetail?.id === task.id ? taskDetail : task;
                     if (!canCancelGenerationTask(latestTask)) {
-                        message.info("第三方请求已提交，任务将继续创作，不能取消");
+                        message.info(tr("第三方请求已提交，任务将继续创作，不能取消"));
                         return;
                     }
                     try {
@@ -601,9 +602,9 @@ function CanvasViewportPage() {
                         if (node) bindGenerationTask(node.id, next);
                         setTaskDetail((current) => (current?.id === task.id ? next : current));
                         await queryClient.invalidateQueries({ queryKey: ["canvas-active-tasks", projectId] });
-                        message.success("任务已取消");
+                        message.success(tr("任务已取消"));
                     } catch (error) {
-                        message.error(error instanceof Error ? error.message : "取消任务失败");
+                        message.error(error instanceof Error ? error.message : tr("取消任务失败"));
                     }
                 },
             });
@@ -615,7 +616,7 @@ function CanvasViewportPage() {
         const sessionId = searchParams.get("conversation");
         if (!projectLoaded || !sessionId) return;
         if (!chatSessions.some((session) => session.id === sessionId)) {
-            message.warning("未找到要接续的会话，请从首页重新进入。");
+            message.warning(tr("未找到要接续的会话，请从首页重新进入。"));
         } else {
             activeChatIdRef.current = sessionId;
             setActiveChatId(sessionId);
@@ -723,7 +724,7 @@ function CanvasViewportPage() {
             prompt: profile.prompt,
             status: NODE_STATUS_SUCCESS,
             workflowKind: "styleboard" as const,
-            workflowTitle: "项目画风",
+            workflowTitle: tr("项目画风"),
             workflowDescription: profile.description,
             stylePresetId: profile.presetId,
             styleProfileJson: serializeStyleProfile(profile),
@@ -732,11 +733,11 @@ function CanvasViewportPage() {
         };
         if (current) {
             if (current.metadata?.stylePresetId === profile.presetId && current.metadata?.content === profile.prompt && current.metadata?.styleProfileJson === nextMetadata.styleProfileJson && current.metadata?.locked) return;
-            setNodes((nodes) => nodes.map((node) => (node.id === current.id ? { ...node, title: `项目画风 · ${profile.title}`, metadata: { ...node.metadata, ...nextMetadata } } : node)));
+            setNodes((nodes) => nodes.map((node) => (node.id === current.id ? { ...node, title: tr("项目画风 · {0}", profile.title), metadata: { ...node.metadata, ...nextMetadata } } : node)));
             return;
         }
         const node = createCanvasNode(CanvasNodeType.Text, getCanvasCenter(), nextMetadata);
-        node.title = `项目画风 · ${profile.title}`;
+        node.title = tr("项目画风 · {0}", profile.title);
         node.width = 420;
         node.height = 240;
         setNodes((nodes) => [...nodes, node]);
@@ -816,7 +817,7 @@ function CanvasViewportPage() {
 
     useEffect(() => {
         if (!projectLoaded || searchParams.get("mode") !== "handoff") return;
-        void loadAssetsForUse(canvasAssetHandoffIds(searchParams)).catch((error) => message.error(error instanceof Error ? error.message : "转入素材读取失败"));
+        void loadAssetsForUse(canvasAssetHandoffIds(searchParams)).catch((error) => message.error(error instanceof Error ? error.message : tr("转入素材读取失败")));
     }, [projectLoaded, searchParams, message]);
 
     useEffect(() => {
@@ -983,7 +984,7 @@ function CanvasViewportPage() {
             setContextMenu((current) => (current?.type === "node" && removedIds.has(current.nodeId) ? null : current));
             const removedDrawingIds = removedNodes.flatMap((node) => (node.type === CanvasNodeType.Drawing && node.metadata?.drawingId ? [node.metadata.drawingId] : []));
             if (removedDrawingIds.length) {
-                void Promise.all(removedDrawingIds.map((drawingId) => removeCanvasDrawing(projectId, drawingId))).catch(() => message.warning("绘图节点已删除，但本地绘图缓存清理失败"));
+                void Promise.all(removedDrawingIds.map((drawingId) => removeCanvasDrawing(projectId, drawingId))).catch(() => message.warning(tr("绘图节点已删除，但本地绘图缓存清理失败")));
             }
             cleanupCanvasFiles({ projectId, nodes: nextNodes, chatSessions });
         },
@@ -1093,7 +1094,7 @@ function CanvasViewportPage() {
             connectionsRef.current = nextConnections;
             setNodes(nextNodes);
             setConnections(nextConnections);
-            message.success(`已将参考图「${oldReference.label || "参考图"}」替换为「${sourceNode.title || "新图片"}」，提示词已同步更新`);
+            message.success(tr("已将参考图「{0}」替换为「{1}」，提示词已同步更新", oldReference.label || tr("参考图"), sourceNode.title || tr("新图片")));
         },
         [connectionsRef, message, nodesRef, setConnections, setNodes],
     );
@@ -1104,7 +1105,7 @@ function CanvasViewportPage() {
             if (!file || !oldReference.nodeId) return;
             void replaceNodeMedia(oldReference.nodeId, file).then((success: boolean) => {
                 if (success) {
-                    message.success("参考图片已替换");
+                    message.success(tr("参考图片已替换"));
                 }
             });
         },
@@ -1295,7 +1296,7 @@ function CanvasViewportPage() {
         toggleNodeFreeResize,
     } = useCanvasNodeEditor({
         canvasId: projectId,
-        canvasTitle: currentProject?.title || "未命名画布",
+        canvasTitle: currentProject?.title || tr("未命名画布"),
         domainProjectId: linkedProjectId,
         nodesRef,
         setNodes,
@@ -1352,7 +1353,7 @@ function CanvasViewportPage() {
     const handleProjectFolderInsert = useCallback(
         (folderId: string) => {
             const folder = linkedProjectQuery.data?.assetFolders.find((item) => item.id === folderId);
-            if (!folder || !linkedProjectId) throw new Error("素材文件夹已不存在，请刷新后重试");
+            if (!folder || !linkedProjectId) throw new Error(tr("素材文件夹已不存在，请刷新后重试"));
             const style: CanvasFolderStyle = folder.style === "stacked" || folder.style === "midnight" || folder.style === "paper" || folder.style === "cinema" || folder.style === "compact" ? folder.style : "glass";
             const theme: CanvasFolderTheme = folder.theme === "obsidian" || folder.theme === "ember" || folder.theme === "pearl" ? folder.theme : "aurora";
             createFolder(projectAssetInsertPosition, { id: folder.id, projectId: linkedProjectId, title: folder.name, style, theme, createdAt: folder.createdAt });
@@ -1632,7 +1633,7 @@ function CanvasViewportPage() {
     const { dismissLastAgentChange, lastAgentChange, undoAgentOps, viewLastAgentChange } = useCanvasOperationHistory({
         projectId,
         domainProjectId: currentProject?.projectId,
-        projectTitle: currentProject?.title || "未命名画布",
+        projectTitle: currentProject?.title || tr("未命名画布"),
         nodes,
         connections,
         selectedNodeIds,
@@ -1710,7 +1711,7 @@ function CanvasViewportPage() {
     const clearCanvas = useCallback(() => {
         const drawingIds = nodesRef.current.flatMap((node) => (node.type === CanvasNodeType.Drawing && node.metadata?.drawingId ? [node.metadata.drawingId] : []));
         if (drawingIds.length) {
-            void Promise.all(drawingIds.map((drawingId) => removeCanvasDrawing(projectId, drawingId))).catch(() => message.warning("画布已清空，但部分本地绘图缓存清理失败"));
+            void Promise.all(drawingIds.map((drawingId) => removeCanvasDrawing(projectId, drawingId))).catch(() => message.warning(tr("画布已清空，但部分本地绘图缓存清理失败")));
         }
         setNodes([]);
         setConnections([]);
@@ -1771,7 +1772,7 @@ function CanvasViewportPage() {
     });
 
     const startTitleEditing = useCallback(() => {
-        setTitleDraft(currentProject?.title || "未命名画布");
+        setTitleDraft(currentProject?.title || tr("未命名画布"));
         setTitleEditing(true);
     }, [currentProject?.title]);
 
@@ -1790,7 +1791,7 @@ function CanvasViewportPage() {
                     const handled = await pasteSystemClipboard(position);
                     if (!handled) pasteCopiedNodes(position);
                 } catch {
-                    if (!pasteCopiedNodes(position)) message.warning("无法读取剪贴板内容");
+                    if (!pasteCopiedNodes(position)) message.warning(tr("无法读取剪贴板内容"));
                 }
             })();
         },
@@ -1805,7 +1806,7 @@ function CanvasViewportPage() {
             releaseCopiedNodesPastePriority();
             if (!node) {
                 copyingNodeContentRef.current = false;
-                message.warning("没有可复制的内容");
+                message.warning(tr("没有可复制的内容"));
                 return;
             }
 
@@ -1816,21 +1817,21 @@ function CanvasViewportPage() {
                 // copy operations on the configured CDN/OSS URL instead of copying the
                 // platform file endpoint or a stale URL persisted in canvas metadata.
                 const copySource = resourceId ? resolveResourceAccessURL((await getResourceAccess(`resource:${resourceId}`, "copy")).url) : content || "";
-                if (!copySource) throw new Error("没有可复制的内容");
+                if (!copySource) throw new Error(tr("没有可复制的内容"));
                 if (node.type === CanvasNodeType.Image) {
                     try {
                         await copyImageToSystemClipboard(copySource, node.metadata?.storageKey);
-                        message.success("图片已复制到剪贴板");
+                        message.success(tr("图片已复制到剪贴板"));
                         return;
                     } catch (imageErr) {
                         const fallbackUrl = new URL(copySource, window.location.href).toString();
                         if (navigator.clipboard?.writeText) {
                             await navigator.clipboard.writeText(fallbackUrl).catch(() => undefined);
-                            message.info("由于浏览器未获得焦点，已为您复制图片地址");
+                            message.info(tr("由于浏览器未获得焦点，已为您复制图片地址"));
                             return;
                         }
                         if (await copyToClipboard(fallbackUrl)) {
-                            message.info("由于浏览器未获得焦点，已为您复制图片地址");
+                            message.info(tr("由于浏览器未获得焦点，已为您复制图片地址"));
                             return;
                         }
                         throw imageErr;
@@ -1838,10 +1839,10 @@ function CanvasViewportPage() {
                 }
 
                 if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(copySource);
-                else if (!copyToClipboard(copySource)) throw new Error("当前浏览器不支持写入剪贴板");
-                message.success(node.type === CanvasNodeType.Text ? "文本已复制" : "内容链接已复制");
+                else if (!copyToClipboard(copySource)) throw new Error(tr("当前浏览器不支持写入剪贴板"));
+                message.success(node.type === CanvasNodeType.Text ? tr("文本已复制") : tr("内容链接已复制"));
             } catch (error) {
-                message.error(error instanceof Error ? error.message : "复制失败，请检查浏览器剪贴板权限");
+                message.error(error instanceof Error ? error.message : tr("复制失败，请检查浏览器剪贴板权限"));
             } finally {
                 copyingNodeContentRef.current = false;
             }
@@ -1858,12 +1859,12 @@ function CanvasViewportPage() {
                 const resourceId = resourceIdFromStorageKey(storageKey);
                 const mediaPath = content && !content.startsWith("data:") && !content.startsWith("blob:") ? content : "";
                 const mediaURL = resourceId ? resolveResourceAccessURL((await getResourceAccess(`resource:${resourceId}`, "copy")).url) : mediaPath ? new URL(mediaPath, window.location.href).toString() : "";
-                if (!mediaURL) throw new Error("当前媒体只有本地内容，没有可复制的地址");
+                if (!mediaURL) throw new Error(tr("当前媒体只有本地内容，没有可复制的地址"));
                 if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(mediaURL);
-                else if (!(await copyToClipboard(mediaURL))) throw new Error("当前浏览器不支持写入剪贴板");
-                message.success(node?.type === CanvasNodeType.Video ? "视频地址已复制" : "图片地址已复制");
+                else if (!(await copyToClipboard(mediaURL))) throw new Error(tr("当前浏览器不支持写入剪贴板"));
+                message.success(node?.type === CanvasNodeType.Video ? tr("视频地址已复制") : tr("图片地址已复制"));
             } catch (error) {
-                message.error(error instanceof Error ? error.message : "媒体地址复制失败");
+                message.error(error instanceof Error ? error.message : tr("媒体地址复制失败"));
             }
         },
         [message, releaseCopiedNodesPastePriority],
@@ -1872,29 +1873,29 @@ function CanvasViewportPage() {
     const uploadNodeImageToArkPrivateAsset = useCallback(
         async (node: CanvasNodeData) => {
             if (node.type !== CanvasNodeType.Image || !node.metadata?.content) {
-                message.warning("请选择一张可用图片后再上传");
+                message.warning(tr("请选择一张可用图片后再上传"));
                 return;
             }
             if (arkPrivateAssetUploadNodeId === node.id) return;
             const feedbackKey = `ark-private-asset-${node.id}`;
             setArkPrivateAssetUploadNodeId(node.id);
-            message.loading({ key: feedbackKey, content: "正在保存并上传到方舟素材库...", duration: 0 });
+            message.loading({ key: feedbackKey, content: tr("正在保存并上传到方舟素材库..."), duration: 0 });
             try {
                 let resourceID = resourceIdFromStorageKey(node.metadata.storageKey);
                 let persistedNode = node;
                 if (!resourceID) {
                     const uploaded = await uploadImage(node.metadata.content);
                     resourceID = resourceIdFromStorageKey(uploaded.storageKey);
-                    if (!resourceID) throw new Error("图片未能保存到系统素材库，请检查对象存储配置后重试");
+                    if (!resourceID) throw new Error(tr("图片未能保存到系统素材库，请检查对象存储配置后重试"));
                     handleConfigNodeChange(node.id, imageMetadata(uploaded));
                     persistedNode = { ...node, metadata: { ...node.metadata, ...imageMetadata(uploaded) } };
                 }
                 const asset = await ensureCanvasNodeAsset({ canvasId: projectId, domainProjectId: currentProject?.projectId, node: persistedNode, source: "canvas-manual" });
                 handleConfigNodeChange(node.id, { assetId: asset.assetId });
                 await syncResourceToArkPrivateAsset(resourceID);
-                message.success({ key: feedbackKey, content: "已同步到方舟素材库，Seedance 将自动复用该素材", duration: 4 });
+                message.success({ key: feedbackKey, content: tr("已同步到方舟素材库，Seedance 将自动复用该素材"), duration: 4 });
             } catch (error) {
-                message.error({ key: feedbackKey, content: error instanceof Error ? error.message : "上传到方舟素材库失败", duration: 5 });
+                message.error({ key: feedbackKey, content: error instanceof Error ? error.message : tr("上传到方舟素材库失败"), duration: 5 });
             } finally {
                 setArkPrivateAssetUploadNodeId((current) => (current === node.id ? null : current));
             }
@@ -1905,10 +1906,10 @@ function CanvasViewportPage() {
     const confirmUploadNodeImageToArkPrivateAsset = useCallback(
         (node: CanvasNodeData) => {
             modal.confirm({
-                title: "上传到方舟素材库",
-                content: "仅可上传你拥有肖像、版权或其他合法使用权的图片。方舟审核通过后，Seedance 会使用受控素材标识生成视频。",
-                okText: "确认拥有使用权并上传",
-                cancelText: "取消",
+                title: tr("上传到方舟素材库"),
+                content: tr("仅可上传你拥有肖像、版权或其他合法使用权的图片。方舟审核通过后，Seedance 会使用受控素材标识生成视频。"),
+                okText: tr("确认拥有使用权并上传"),
+                cancelText: tr("取消"),
                 onOk: () => uploadNodeImageToArkPrivateAsset(node),
             });
         },
@@ -2039,7 +2040,7 @@ function CanvasViewportPage() {
             const table = tableNode?.metadata?.batchTable;
             if (!tableNode || !table || table.contentKind !== "storyboard") return;
             const rows = storyboardRowsFromBatchTable(table);
-            if (!rows.length) return message.warning("当前表格没有可用的分镜行");
+            if (!rows.length) return message.warning(tr("当前表格没有可用的分镜行"));
             const sourceIds = Array.from(
                 new Set([...(table.storyboardSourceNodeIds || []), ...connectionsRef.current.filter((connection) => connection.toNodeId === tableNodeId && connection.relation !== "batch-output").map((connection) => connection.fromNodeId)]),
             ).filter((id) => nodesRef.current.some((node) => node.id === id));
@@ -2057,12 +2058,12 @@ function CanvasViewportPage() {
                     storyboard: { rows, visibleColumns: cinematicStoryboardColumns(), referenceNodeIds: sourceIds },
                     storyboardVideoInputMode: useKeyframes ? "keyframe" : "direct",
                     workflowKind: "storyboard",
-                    workflowTitle: table.storyboardTitle || "视频脚本",
-                    composerContent: table.storyboardTitle || "来自多维表格的视频分镜脚本",
+                    workflowTitle: table.storyboardTitle || tr("视频脚本"),
+                    composerContent: table.storyboardTitle || tr("来自多维表格的视频分镜脚本"),
                     status: "idle",
                 },
             );
-            scriptNode.title = table.storyboardTitle || "视频脚本";
+            scriptNode.title = table.storyboardTitle || tr("视频脚本");
             const nextConnections = [...connectionsRef.current, ...sourceIds.map((sourceId) => ({ id: nanoid(), fromNodeId: sourceId, toNodeId: scriptNode.id, toHandleId: "storyboard:context", relation: "storyboard-asset-reference" as const }))];
             const nextNodes = [...nodesRef.current, scriptNode];
             nodesRef.current = nextNodes;
@@ -2092,12 +2093,12 @@ function CanvasViewportPage() {
                     );
                     nodesRef.current = withFrames;
                     setNodes(withFrames);
-                    message.success(`已创建视频脚本并自动抽取 ${frameNodes.length} 个关键帧，点击“生成视频”继续`);
+                    message.success(tr("已创建视频脚本并自动抽取 {0} 个关键帧，点击“生成视频”继续", frameNodes.length));
                 } else {
-                    message.warning("视频脚本已创建，但关键帧抽取失败；请检查视频是否已保存或允许跨域读取");
+                    message.warning(tr("视频脚本已创建，但关键帧抽取失败；请检查视频是否已保存或允许跨域读取"));
                 }
             } else {
-                message.success(`已创建视频脚本：${rows.length} 个镜头`);
+                message.success(tr("已创建视频脚本：{0} 个镜头", rows.length));
             }
         },
         [connectionsRef, extractVideoFrames, message, nodesRef, setConnections, setDialogNodeId, setNodes, setSelectedNodeIds],
@@ -2121,14 +2122,14 @@ function CanvasViewportPage() {
         async (node: CanvasNodeData) => {
             const taskId = node.metadata?.taskId;
             if (!taskId || !node.metadata?.resourceReloadAvailable) return;
-            setNodes((current) => current.map((item) => (item.id === node.id ? { ...item, metadata: { ...item.metadata, status: "loading", taskStage: "正在重新加载资源", errorDetails: undefined } } : item)));
+            setNodes((current) => current.map((item) => (item.id === node.id ? { ...item, metadata: { ...item.metadata, status: "loading", taskStage: tr("正在重新加载资源"), errorDetails: undefined } } : item)));
             try {
                 const task = await queryGenerationTask(taskId);
-                if (task.status !== "succeeded") throw new Error("原生成任务尚未成功，无法重新加载资源");
+                if (task.status !== "succeeded") throw new Error(tr("原生成任务尚未成功，无法重新加载资源"));
                 await applyGenerationTaskResult(node.id, task);
             } catch (error) {
                 setNodes((current) =>
-                    current.map((item) => (item.id === node.id ? { ...item, metadata: { ...item.metadata, status: "error", errorDetails: error instanceof Error ? error.message : "资源重新加载失败", resourceReloadAvailable: true } } : item)),
+                    current.map((item) => (item.id === node.id ? { ...item, metadata: { ...item.metadata, status: "error", errorDetails: error instanceof Error ? error.message : tr("资源重新加载失败"), resourceReloadAvailable: true } } : item)),
                 );
             }
         },
@@ -2163,7 +2164,7 @@ function CanvasViewportPage() {
         (node: CanvasNodeData) => {
             const prompt = (node.metadata?.content || node.metadata?.prompt || "").trim();
             if (!prompt) {
-                message.warning("文本节点为空，无法生图");
+                message.warning(tr("文本节点为空，无法生图"));
                 return;
             }
             const sourceNode = nodesRef.current.find((item) => item.id === node.id);
@@ -2177,7 +2178,7 @@ function CanvasViewportPage() {
                 },
                 {
                     prompt: "@文本1",
-                    composerContent: "@文本1",
+                    composerContent: tr("@文本1"),
                     model: effectiveConfig.imageModel || effectiveConfig.model,
                     size: effectiveConfig.size,
                     quality: effectiveConfig.quality,
@@ -2185,7 +2186,7 @@ function CanvasViewportPage() {
                     count: getGenerationCount(effectiveConfig.canvasImageCount || effectiveConfig.count),
                 },
             );
-            imageNode.title = "图片生成";
+            imageNode.title = tr("图片生成");
             const connection = { id: nanoid(), fromNodeId: sourceNode.id, toNodeId: imageNode.id };
             const nextNodes = nodesRef.current.map((item) => (item.id === sourceNode.id ? { ...item, metadata: { ...item.metadata, content: prompt, richText: undefined, prompt, status: NODE_STATUS_SUCCESS } } : item)).concat(imageNode);
             const nextConnections = [...connectionsRef.current, connection];
@@ -2239,7 +2240,7 @@ function CanvasViewportPage() {
                             setConnections(linked.connections);
                             return linked.reference;
                         } catch (cause) {
-                            message.warning(cause instanceof Error ? cause.message : "文本引用失败");
+                            message.warning(cause instanceof Error ? cause.message : tr("文本引用失败"));
                             return undefined;
                         }
                     }}
@@ -2491,13 +2492,13 @@ function CanvasViewportPage() {
             if (node.metadata?.imageLayerWorkflow && !node.metadata.experimentalLayerPlan && !node.metadata.layerDecomposition) {
                 const source = nodesRef.current.find((item) => item.id === node.metadata!.imageLayerWorkflow!.sourceNodeId);
                 if (source?.metadata?.content) setLayerDecompositionNodeId(source.id);
-                else message.error("拆层源图片已不存在，请重新选择图片");
+                else message.error(tr("拆层源图片已不存在，请重新选择图片"));
                 return;
             }
             if (node.type === CanvasNodeType.Script) {
                 const prompt = (node.metadata?.composerContent || node.metadata?.prompt || "").trim();
                 if (!prompt) {
-                    message.warning("分镜脚本缺少剧情内容，无法重试");
+                    message.warning(tr("分镜脚本缺少剧情内容，无法重试"));
                     return;
                 }
                 void generateScriptRows(node.id, prompt);
@@ -2510,10 +2511,10 @@ function CanvasViewportPage() {
             if (node.type === CanvasNodeType.Image && node.metadata?.isBatchRoot) {
                 const failedChildren = failedImageBatchChildren(node, nodesRef.current);
                 if (!failedChildren.length) {
-                    message.info("当前批次没有需要重试的失败图片");
+                    message.info(tr("当前批次没有需要重试的失败图片"));
                     return;
                 }
-                message.info(`正在重试 ${failedChildren.length} 个失败图片`);
+                message.info(tr("正在重试 {0} 个失败图片", failedChildren.length));
                 retryImageBatchChildren(node.id, failedChildren);
                 return;
             }
@@ -2536,7 +2537,7 @@ function CanvasViewportPage() {
     const locateProjectStyleNode = useCallback(() => {
         const styleNode = nodesRef.current.find((node) => node.type === CanvasNodeType.Text && node.metadata?.workflowKind === "styleboard");
         if (!styleNode) {
-            message.info("项目画风节点正在同步，请稍后再试");
+            message.info(tr("项目画风节点正在同步，请稍后再试"));
             return;
         }
         focusCanvasNode(styleNode.id);
@@ -2588,7 +2589,7 @@ function CanvasViewportPage() {
             <CanvasFreeformEmptyState commands={freeformCreateCommands} />
         ) : emptyStateKind === "linked" ? (
             <CanvasLinkedProjectEmptyState
-                projectName={linkedProjectQuery.data?.project.name || currentProject?.title || "项目画布"}
+                projectName={linkedProjectQuery.data?.project.name || currentProject?.title || tr("项目画布")}
                 hasChapter={Boolean(linkedProjectQuery.data?.units.length)}
                 onAddFirstChapter={() => {
                     const first = linkedProjectQuery.data?.units.slice().sort((left, right) => left.position - right.position)[0];
@@ -2619,7 +2620,7 @@ function CanvasViewportPage() {
         const currentNodes = nodesRef.current;
         const target = currentNodes.find((node) => node.id === nodeId);
         if (!target) {
-            message.info("该节点已删除或尚未同步到画布");
+            message.info(tr("该节点已删除或尚未同步到画布"));
             return;
         }
         const parent = target.parentId ? currentNodes.find((node) => node.id === target.parentId) : null;
@@ -2658,12 +2659,12 @@ function CanvasViewportPage() {
     const promoteAssetVersion = useCallback((version: CanvasAssetVersion) => {
         const node = nodesRef.current.find((item) => item.id === version.nodeId);
         if (!node) {
-            message.info("该节点已删除或尚未同步到画布");
+            message.info(tr("该节点已删除或尚未同步到画布"));
             return;
         }
         if (version.source === "batch") {
             setBatchPrimary(node);
-            message.success(`已将${version.label}设为主图`);
+            message.success(tr("已将{0}设为主图", version.label));
             return;
         }
         if (version.mediaVersionId && !adoptNodeMediaVersion(node.id, version.mediaVersionId)) return;
@@ -2697,8 +2698,8 @@ function CanvasViewportPage() {
         return (
             <main className="flex h-full flex-col items-center justify-center gap-4">
                 <p role="alert">{loadError}</p>
-                <Button onClick={retryLoad}>重新加载</Button>
-                <Link to="/canvas">返回画布库</Link>
+                <Button onClick={retryLoad}>{tr("重新加载")}</Button>
+                <Link to="/canvas">{tr("返回画布库")}</Link>
             </main>
         );
     if (!projectLoaded) return <CanvasRefreshShell />;
@@ -2709,7 +2710,7 @@ function CanvasViewportPage() {
                 href="#canvas-main"
                 className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[var(--z-toast)] focus:rounded-md focus:border focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg"
             >
-                跳转到画布主内容
+                {tr("跳转到画布主内容")}
             </a>
             <main
                 id="canvas-main"
@@ -2755,7 +2756,7 @@ function CanvasViewportPage() {
                                 <CanvasTopBar
                                     view={canvasView}
                                     onViewChange={changeCanvasView}
-                                    title={currentProject?.title || "未命名画布"}
+                                    title={currentProject?.title || tr("未命名画布")}
                                     titleDraft={titleDraft}
                                     isTitleEditing={titleEditing}
                                     onTitleDraftChange={setTitleDraft}
@@ -3089,7 +3090,7 @@ function CanvasViewportPage() {
                                     }}
                                 >
                                     <ArrowLeftRight className="size-3 text-blue-400" />
-                                    <span>松开替换</span>
+                                    <span>{tr("松开替换")}</span>
                                     <span className="rounded bg-white/15 px-2 py-0.5 text-[var(--fs-label)] font-semibold text-blue-200">@{connectionReplaceHover.referenceLabel}</span>
                                 </div>
                             ) : null}
@@ -3378,7 +3379,7 @@ function CanvasViewportPage() {
                                 <Suspense
                                     fallback={
                                         <div className="fixed inset-0 z-[var(--z-toast)] grid place-items-center px-5" style={{ background: theme.canvas.background, color: theme.node.text }}>
-                                            <WorkspaceState icon="loading" title="正在加载绘图编辑器" description="正在准备绘图画布。" />
+                                            <WorkspaceState icon="loading" title={tr("正在加载绘图编辑器")} description={tr("正在准备绘图画布。")} />
                                         </div>
                                     }
                                 >
@@ -3405,7 +3406,7 @@ function CanvasViewportPage() {
                                                         : node,
                                                 ),
                                             );
-                                            message.success("绘图已保存");
+                                            message.success(tr("绘图已保存"));
                                         }}
                                     />
                                 </Suspense>
@@ -3434,7 +3435,7 @@ function CanvasViewportPage() {
                                     }
                                 }}
                                 onCopyPrompt={(prompt) => {
-                                    void navigator.clipboard?.writeText(prompt).then(() => message.success("已复制全景提示词"));
+                                    void navigator.clipboard?.writeText(prompt).then(() => message.success(tr("已复制全景提示词")));
                                 }}
                                 previewImageUrl={panoramaConfigNodeId ? nodes.find((n) => n.id === panoramaConfigNodeId)?.metadata?.content : undefined}
                                 nodes={nodes}
@@ -3483,7 +3484,7 @@ function CanvasViewportPage() {
                                                 return source ? { ...node, metadata: { ...node.metadata, assetCategory: normalizeAssetCategory(source.category) } } : node;
                                             }),
                                         );
-                                        if (!nodesRef.current.some((node) => node.id === storyboardAssetNode.id && node.metadata?.storyboard?.rows.some((row) => row.id === storyboardAssetRow.id))) throw new Error("镜头已不存在，请重新选择");
+                                        if (!nodesRef.current.some((node) => node.id === storyboardAssetNode.id && node.metadata?.storyboard?.rows.some((row) => row.id === storyboardAssetRow.id))) throw new Error(tr("镜头已不存在，请重新选择"));
                                         if (imported.length) {
                                             nodesRef.current = [...nodesRef.current, ...imported];
                                             setNodes(nodesRef.current);
@@ -3523,7 +3524,7 @@ function CanvasViewportPage() {
                                 <Suspense
                                     fallback={
                                         <div className="fixed inset-0 z-[var(--z-toast)] grid place-items-center px-5" style={{ background: theme.canvas.background, color: theme.node.text }}>
-                                            <WorkspaceState icon="loading" title="正在加载 3D 预演台" description="准备场景、镜头与空间控制。" />
+                                            <WorkspaceState icon="loading" title={tr("正在加载 3D 预演台")} description={tr("准备场景、镜头与空间控制。")} />
                                         </div>
                                     }
                                 >
@@ -3571,7 +3572,7 @@ function CanvasViewportPage() {
                                 onLayerDecomposition={(node, payload) => void decomposeImageLayers(node, payload)}
                                 onDetectText={() => {
                                     const node = textEditNodeId ? nodeById.get(textEditNodeId) : null;
-                                    return node ? detectImageText(node) : Promise.reject(new Error("图片节点已不存在"));
+                                    return node ? detectImageText(node) : Promise.reject(new Error(tr("图片节点已不存在")));
                                 }}
                                 onTextEdit={(node, payload) => void editTextImageNode(node, payload)}
                                 onUpscale={(node, params) => void upscaleImageNode(node, params)}

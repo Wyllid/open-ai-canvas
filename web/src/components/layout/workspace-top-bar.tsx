@@ -1,6 +1,8 @@
+import { tr } from "@/i18n";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { SystemAnnouncementCenter } from "@/components/layout/system-announcement-center";
 import { WorkspaceAccountMenu } from "@/components/layout/workspace-account-menu";
 import { WorkspaceTopBarExtensionSlot } from "@/components/layout/workspace-top-bar-extension";
@@ -10,15 +12,15 @@ import { useUserStore } from "@/stores/use-user-store";
 import { useAppearanceStore } from "@/stores/use-appearance-store";
 
 const PAGE_TITLES: Record<string, string> = {
-    home: "创作",
-    create: "创作",
-    projects: "短剧制作",
-    canvas: "自由画布",
-    tasks: "创作历史",
-    assets: "资产",
-    skills: "技能",
-    plugins: "插件",
-    settings: "设置",
+    home: tr("创作"),
+    create: tr("创作"),
+    projects: tr("短剧制作"),
+    canvas: tr("自由画布"),
+    tasks: tr("创作历史"),
+    assets: tr("资产"),
+    skills: tr("技能"),
+    plugins: tr("插件"),
+    settings: tr("设置"),
 };
 
 export function WorkspaceTopBar({ sidebarOpen, onToggleSidebar }: { sidebarOpen: boolean; onToggleSidebar: () => void }) {
@@ -32,10 +34,10 @@ export function WorkspaceTopBar({ sidebarOpen, onToggleSidebar }: { sidebarOpen:
 
     return (
         <header className="app-workspace-topbar">
-            <button type="button" className="app-workspace-mobile-menu app-workspace-topbar-icon-button" aria-label={sidebarOpen ? "收起侧栏" : "展开侧栏"} onClick={onToggleSidebar}>
+            <button type="button" className="app-workspace-mobile-menu app-workspace-topbar-icon-button" aria-label={sidebarOpen ? tr("收起侧栏") : tr("展开侧栏")} onClick={onToggleSidebar}>
                 {sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}
             </button>
-            <nav className="app-workspace-topbar-breadcrumb" aria-label="当前位置">
+            <nav className="app-workspace-topbar-breadcrumb" aria-label={tr("当前位置")}>
                 <Link to="/" className="font-medium text-foreground/65 transition-colors hover:text-foreground">
                     {brandName}
                 </Link>
@@ -44,8 +46,9 @@ export function WorkspaceTopBar({ sidebarOpen, onToggleSidebar }: { sidebarOpen:
             </nav>
             <WorkspaceTopBarExtensionSlot />
             <div className="app-workspace-topbar-actions">
+                <LanguageSwitcher className="app-workspace-topbar-feedback-pill" />
                 {user ? <SystemAnnouncementCenter userId={user.id} className="app-workspace-topbar-icon-button" autoOpen /> : null}
-                <AnimatedThemeToggler className="app-workspace-topbar-icon-button" theme={theme} onThemeChange={setTheme} aria-label="切换主题" />
+                <AnimatedThemeToggler className="app-workspace-topbar-icon-button" theme={theme} onThemeChange={setTheme} aria-label={tr("切换主题")} />
                 <WorkspaceAccountMenu />
             </div>
         </header>

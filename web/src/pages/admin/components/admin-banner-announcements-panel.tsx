@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Switch } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Trash2, Edit3, Search } from "lucide-react";
@@ -72,7 +73,7 @@ export default function AdminBannerAnnouncementsPanel({
             setBanners(data.banners || []);
             setTotal(data.total || 0);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "读取常驻通知列表失败");
+            message.error(error instanceof Error ? error.message : tr("读取常驻通知列表失败"));
         } finally {
             setLoading(false);
         }
@@ -127,10 +128,10 @@ export default function AdminBannerAnnouncementsPanel({
             return;
         }
         modal.confirm({
-            title: "放弃未保存的修改？",
-            content: "关闭后本次编辑的内容不会保留。",
-            okText: "放弃修改",
-            cancelText: "继续编辑",
+            title: tr("放弃未保存的修改？"),
+            content: tr("关闭后本次编辑的内容不会保留。"),
+            okText: tr("放弃修改"),
+            cancelText: tr("继续编辑"),
             okButtonProps: { danger: true },
             onOk: () => setDialog(null),
         });
@@ -139,11 +140,11 @@ export default function AdminBannerAnnouncementsPanel({
     const handleDelete = async (id: string) => {
         try {
             await deleteAdminBanner(id);
-            message.success("常驻通知已删除");
+            message.success(tr("常驻通知已删除"));
             void queryClient.invalidateQueries({ queryKey: ["active-banner-announcements"] });
             void reload(page, pageSize);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "删除失败");
+            message.error(error instanceof Error ? error.message : tr("删除失败"));
         }
     };
 
@@ -159,11 +160,11 @@ export default function AdminBannerAnnouncementsPanel({
                 startsAt: banner.startsAt,
                 endsAt: banner.endsAt,
             });
-            message.success(nextStatus ? "常驻通知已启用" : "常驻通知已禁用");
+            message.success(nextStatus ? tr("常驻通知已启用") : tr("常驻通知已禁用"));
             void queryClient.invalidateQueries({ queryKey: ["active-banner-announcements"] });
             void reload(page, pageSize);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "更新状态失败");
+            message.error(error instanceof Error ? error.message : tr("更新状态失败"));
         }
     };
 
@@ -172,11 +173,11 @@ export default function AdminBannerAnnouncementsPanel({
         const runs = normalizeBannerTitleRuns(titleRuns);
         const plain = bannerTitlePlainText(runs).trim();
         if (!plain || !runs.length) {
-            message.error("请填写通知标题");
+            message.error(tr("请填写通知标题"));
             return;
         }
         if (bannerTitleCharCount(runs) > BANNER_TITLE_MAX_CHARS) {
-            message.error(`通知标题不能超过 ${BANNER_TITLE_MAX_CHARS} 个字符`);
+            message.error(tr("通知标题不能超过 {0} 个字符", BANNER_TITLE_MAX_CHARS));
             return;
         }
         setSubmitting(true);
@@ -197,17 +198,17 @@ export default function AdminBannerAnnouncementsPanel({
 
             if (dialog?.mode === "edit") {
                 await updateAdminBanner(dialog.banner.id, payload);
-                message.success("常驻通知已更新");
+                message.success(tr("常驻通知已更新"));
             } else {
                 await createAdminBanner(payload);
-                message.success("常驻通知已新建");
+                message.success(tr("常驻通知已新建"));
             }
             setDialog(null);
             form.resetFields();
             void queryClient.invalidateQueries({ queryKey: ["active-banner-announcements"] });
             void reload(1, pageSize);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "保存常驻通知失败");
+            message.error(error instanceof Error ? error.message : tr("保存常驻通知失败"));
         } finally {
             setSubmitting(false);
         }
@@ -215,7 +216,7 @@ export default function AdminBannerAnnouncementsPanel({
 
     const columns: ColumnsType<BannerAnnouncement> = [
         {
-            title: "通知标题",
+            title: tr("通知标题"),
             dataIndex: "title",
             key: "title",
             render: (text: string, record) => (
@@ -230,7 +231,7 @@ export default function AdminBannerAnnouncementsPanel({
             ),
         },
         {
-            title: "类型",
+            title: tr("类型"),
             key: "noticeType",
             width: 92,
             // 用真实底色渲染类型，和前台/预览看到的是同一个 token。
@@ -244,7 +245,7 @@ export default function AdminBannerAnnouncementsPanel({
             ),
         },
         {
-            title: "状态",
+            title: tr("状态"),
             dataIndex: "status",
             key: "status",
             width: 110,
@@ -257,42 +258,42 @@ export default function AdminBannerAnnouncementsPanel({
             ),
         },
         {
-            title: "有效期",
+            title: tr("有效期"),
             key: "validity",
             width: 280,
             render: (_, record) => {
                 if (!record.startsAt && !record.endsAt) {
-                    return <span className="text-foreground/45">长期有效</span>;
+                    return <span className="text-foreground/45">{tr("长期有效")}</span>;
                 }
-                const startStr = record.startsAt ? dayjs(record.startsAt).format("YYYY-MM-DD HH:mm") : "不限";
-                const endStr = record.endsAt ? dayjs(record.endsAt).format("YYYY-MM-DD HH:mm") : "不限";
+                const startStr = record.startsAt ? dayjs(record.startsAt).format("YYYY-MM-DD HH:mm") : tr("不限");
+                const endStr = record.endsAt ? dayjs(record.endsAt).format("YYYY-MM-DD HH:mm") : tr("不限");
                 return (
                     <span className="text-xs text-foreground/75 font-mono">
-                        {startStr} 至 {endStr}
+                        {startStr} {tr("至")} {endStr}
                     </span>
                 );
             },
         },
         {
-            title: "创建时间",
+            title: tr("创建时间"),
             dataIndex: "createdAt",
             key: "createdAt",
             width: 160,
             render: (date: string) => <span className="text-xs text-foreground/60 font-mono">{dayjs(date).format("YYYY-MM-DD HH:mm")}</span>,
         },
         {
-            title: "操作",
+            title: tr("操作"),
             key: "action",
             width: 120,
             align: "right",
             render: (_, record) => (
                 <div className="flex justify-end gap-1">
                     <Button type="text" size="small" icon={<Edit3 className="size-3.5" />} onClick={() => openEdit(record)}>
-                        编辑
+                        {tr("编辑")}
                     </Button>
-                    <Popconfirm title="确认删除此常驻通知？" onConfirm={() => void handleDelete(record.id)}>
+                    <Popconfirm title={tr("确认删除此常驻通知？")} onConfirm={() => void handleDelete(record.id)}>
                         <Button type="text" size="small" danger icon={<Trash2 className="size-3.5" />}>
-                            删除
+                            {tr("删除")}
                         </Button>
                     </Popconfirm>
                 </div>
@@ -310,11 +311,11 @@ export default function AdminBannerAnnouncementsPanel({
                 toolbar={
                     <Input
                         allowClear
-                        aria-label="搜索常驻通知标题"
+                        aria-label={tr("搜索常驻通知标题")}
                         className="app-list-search"
                         prefix={<Search className="size-4 text-foreground/40" />}
                         value={keyword}
-                        placeholder="搜索常驻通知标题"
+                        placeholder={tr("搜索常驻通知标题")}
                         onChange={(event) => {
                             setKeyword(event.target.value);
                             setPage(1);
@@ -324,7 +325,7 @@ export default function AdminBannerAnnouncementsPanel({
                 toolbarActive={hasFilters}
                 toolbarFilters={
                     <Select
-                        aria-label="按状态筛选常驻通知"
+                        aria-label={tr("按状态筛选常驻通知")}
                         className="w-32"
                         value={status}
                         onChange={(value) => {
@@ -332,9 +333,9 @@ export default function AdminBannerAnnouncementsPanel({
                             setPage(1);
                         }}
                         options={[
-                            { label: "全部状态", value: "all" },
-                            { label: "已启用", value: "active" },
-                            { label: "已禁用", value: "disabled" },
+                            { label: tr("全部状态"), value: "all" },
+                            { label: tr("已启用"), value: "active" },
+                            { label: tr("已禁用"), value: "disabled" },
                         ]}
                     />
                 }
@@ -363,7 +364,7 @@ export default function AdminBannerAnnouncementsPanel({
             />
 
             <Modal
-                title={dialog?.mode === "edit" ? "编辑常驻通知" : "新建常驻通知"}
+                title={dialog?.mode === "edit" ? tr("编辑常驻通知") : tr("新建常驻通知")}
                 open={Boolean(dialog)}
                 onCancel={requestClose}
                 onOk={() => form.submit()}
@@ -381,7 +382,7 @@ export default function AdminBannerAnnouncementsPanel({
                     onFinish={(values) => void handleSubmit(values)}
                     onValuesChange={() => setDirty(true)}
                 >
-                    <Form.Item name="noticeType" label="通知类型" extra="决定通知条底色；浅色 / 深色主题各有一档取值">
+                    <Form.Item name="noticeType" label={tr("通知类型")} extra={tr("决定通知条底色；浅色 / 深色主题各有一档取值")}>
                         <BannerNoticeTypeSelector
                             value={noticeType}
                             onChange={(next) => {
@@ -393,15 +394,15 @@ export default function AdminBannerAnnouncementsPanel({
                     </Form.Item>
 
                     <Form.Item
-                        label="通知标题"
+                        label={tr("通知标题")}
                         required
                         validateStatus={titleMissing || titleTooLong ? "error" : undefined}
                         help={
                             titleMissing
-                                ? "请输入常驻通知标题"
+                                ? tr("请输入常驻通知标题")
                                 : titleTooLong
-                                  ? `已超出 ${BANNER_TITLE_MAX_CHARS} 个字符上限`
-                                  : "支持按选区设置字号、字重、字体与颜色，用「图标」插入 emoji 素材；标题在通知条内固定单行展示"
+                                  ? tr("已超出 {0} 个字符上限", BANNER_TITLE_MAX_CHARS)
+                                  : tr("支持按选区设置字号、字重、字体与颜色，用「图标」插入 emoji 素材；标题在通知条内固定单行展示")
                         }
                     >
                         <BannerTitleEditor
@@ -416,27 +417,27 @@ export default function AdminBannerAnnouncementsPanel({
 
                     {/* 预览放在 Form 内但不用 Form.Item：避免 AntD 向非表单控件注入 value/onChange/ref。 */}
                     <div className="mb-6">
-                        <div className="mb-2 text-sm text-foreground/85">前台效果预览</div>
+                        <div className="mb-2 text-sm text-foreground/85">{tr("前台效果预览")}</div>
                         <BannerNoticePreview runs={titleRuns} hasLink={Boolean(linkValue?.trim())} noticeType={noticeType} />
                     </div>
 
                     <Form.Item
                         name="link"
-                        label="跳转链接（可选）"
-                        extra="支持 https:// 外链或以 / 开头的站内路径（如 /projects）；留空表示不可点击"
-                        rules={[{ max: 500, message: "链接最多 500 字符" }]}
+                        label={tr("跳转链接（可选）")}
+                        extra={tr("支持 https:// 外链或以 / 开头的站内路径（如 /projects）；留空表示不可点击")}
+                        rules={[{ max: 500, message: tr("链接最多 500 字符") }]}
                     >
-                        <Input maxLength={500} placeholder="https://… 或 /projects" />
+                        <Input maxLength={500} placeholder={tr("https://… 或 /projects")} />
                     </Form.Item>
 
-                    <Form.Item name="status" label="发布状态" valuePropName="checked">
-                        <Switch checkedChildren="启用" unCheckedChildren="禁用" />
+                    <Form.Item name="status" label={tr("发布状态")} valuePropName="checked">
+                        <Switch checkedChildren={tr("启用")} unCheckedChildren={tr("禁用")} />
                     </Form.Item>
-                    <Form.Item name="sortOrder" label="展示顺序" extra="数字越小越靠前；相同顺序按创建时间倒序">
+                    <Form.Item name="sortOrder" label={tr("展示顺序")} extra={tr("数字越小越靠前；相同顺序按创建时间倒序")}>
                         <InputNumber min={0} max={999999} precision={0} className="w-full" />
                     </Form.Item>
 
-                    <Form.Item name="dateRange" label="有效期（可选）" extra="留空表示长期有效；设置时间段后仅在有效期内于前台展示">
+                    <Form.Item name="dateRange" label={tr("有效期（可选）")} extra={tr("留空表示长期有效；设置时间段后仅在有效期内于前台展示")}>
                         <DatePicker.RangePicker showTime format="YYYY-MM-DD HH:mm" className="w-full" />
                     </Form.Item>
                 </Form>

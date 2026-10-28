@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { NODE_DEFAULT_SIZE, getNodeSpec } from "@/constant/canvas";
 import { PromptTemplateOperation } from "@/lib/prompts";
 import { STORYBOARD_HEADER_HEIGHT, STORYBOARD_ROW_HEIGHT, storyboardTableHeight } from "@/lib/canvas/canvas-storyboard-layout";
@@ -21,7 +22,7 @@ export function createCanvasNode(type: CanvasNodeTypeId, position: Position, met
     const builtinSpec = type in NODE_DEFAULT_SIZE ? getNodeSpec(type as CanvasNodeType) : undefined;
     const pluginDefinition = getNodeDefinition(type);
     const spec = builtinSpec || (pluginDefinition ? { width: pluginDefinition.defaultSize.width, height: pluginDefinition.defaultSize.height, title: pluginDefinition.defaultTitle, metadata: pluginDefinition.defaultMetadata } : undefined);
-    if (!spec) throw new Error(`未注册的画布节点类型：${type}`);
+    if (!spec) throw new Error(tr("未注册的画布节点类型：{0}", type));
     const id = `${type}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const now = new Date().toISOString();
 
@@ -107,23 +108,23 @@ export function cinematicStoryboardColumns(columns?: StoryboardColumn[]): Storyb
 // 章节分镜走的是自定义 prompt，缺这段约束时模型会按自然语言习惯返回 Markdown 表格，解析阶段拿不到 rows。
 export function storyboardRowsOutputContract(requirement: string) {
     return [
-        "【受保护输出契约】",
-        "- 只返回一个 JSON 对象，不要 Markdown、表格、代码块、注释或任何解释文字。",
+        tr("【受保护输出契约】"),
+        tr("- 只返回一个 JSON 对象，不要 Markdown、表格、代码块、注释或任何解释文字。"),
         `- 顶层固定为 {"title": string, "rows": object[]}，rows 至少 1 项。${requirement}`,
-        "- rows 每项对应一个镜头，按剧情顺序排列；字段缺失时填空字符串或空数组，不要省略字段：",
-        "  shotNumber（整数，从 1 递增）、durationSeconds（整数，1-60）、plotDescription（本镜可见的剧情与关键动作）、",
-        "  dialogue（本镜实际念出的台词或简短旁白，超长必须拆镜）、characters（本镜出现的角色名数组）、",
-        "  narrativeIntent、viewerPOV、performanceBlocking、shotSize（景别）、emotion、lightingAndAtmosphere、",
-        "  audioEffects、camera、motion、timeBeats、imageGenerationPrompt（首帧画面提示词）、",
-        "  videoMotionPrompt（运镜与结尾状态）、continuityOut、negativePrompt、",
-        "  mustHave（数组，最多 3 项）、optionalDetails（数组）。",
-        "- 镜头数量以完整覆盖剧情因果、人物关系和关键台词为准，不要为压缩数量删减关键情节。",
+        tr("- rows 每项对应一个镜头，按剧情顺序排列；字段缺失时填空字符串或空数组，不要省略字段："),
+        tr("  shotNumber（整数，从 1 递增）、durationSeconds（整数，1-60）、plotDescription（本镜可见的剧情与关键动作）、"),
+        tr("  dialogue（本镜实际念出的台词或简短旁白，超长必须拆镜）、characters（本镜出现的角色名数组）、"),
+        tr("  narrativeIntent、viewerPOV、performanceBlocking、shotSize（景别）、emotion、lightingAndAtmosphere、"),
+        tr("  audioEffects、camera、motion、timeBeats、imageGenerationPrompt（首帧画面提示词）、"),
+        tr("  videoMotionPrompt（运镜与结尾状态）、continuityOut、negativePrompt、"),
+        tr("  mustHave（数组，最多 3 项）、optionalDetails（数组）。"),
+        tr("- 镜头数量以完整覆盖剧情因果、人物关系和关键台词为准，不要为压缩数量删减关键情节。"),
     ].join("\n");
 }
 
 // 旧版本会把项目画风执行规范追加到分镜剧情末尾；分镜规划只保留用户原始剧情。
 export function stripProjectStyleExecutionBlocks(prompt: string): string {
-    const marker = "【项目画风执行规范】";
+    const marker = tr("【项目画风执行规范】");
     const markerIndex = prompt.indexOf(marker);
     return (markerIndex >= 0 ? prompt.slice(0, markerIndex) : prompt).trim();
 }
@@ -137,9 +138,9 @@ export function withStoryboardOutputContract(prompt: string, options: { shotCoun
     const shotCount = Math.trunc(Number(options.shotCount) || 0);
     const shotDurationSeconds = Math.trunc(Number(options.shotDurationSeconds) || 0);
     const requirement = [
-        shotCount > 0 ? `全片共 ${shotCount} 个镜头` : "",
-        shotDurationSeconds > 0 ? `每镜约 ${shotDurationSeconds} 秒，durationSeconds 填写该值` : "",
-        "每个镜头必须能独立用于生成首帧图片和镜头视频。",
+        shotCount > 0 ? tr("全片共 {0} 个镜头", shotCount) : "",
+        shotDurationSeconds > 0 ? tr("每镜约 {0} 秒，durationSeconds 填写该值", shotDurationSeconds) : "",
+        tr("每个镜头必须能独立用于生成首帧图片和镜头视频。"),
     ].filter(Boolean).join("；");
     return [prompt, storyboardRowsOutputContract(requirement)].join("\n\n");
 }
@@ -212,7 +213,7 @@ function normalizeStoryboardRow(row: Partial<StoryboardRow>): Partial<Storyboard
 
 export function storyboardRowsFromTask(task: GenerationTask) {
     const result = parseStoryboardRowsPayload(task.resultJson || "{}");
-    if (!Array.isArray(result.rows) || !result.rows.length) throw new Error("分镜任务没有返回镜头行");
+    if (!Array.isArray(result.rows) || !result.rows.length) throw new Error(tr("分镜任务没有返回镜头行"));
     return {
         // 旧任务和部分模型会把 title 返回成对象/数组；恢复路径必须只接受字符串，
         // 否则可选链只能防 undefined，仍会在对象上调用 trim 使整页恢复失败。
@@ -343,7 +344,7 @@ export function attachNodeToStoryboardRow(nodes: CanvasNodeData[], connection: P
 
     return nodes.map((node) => {
         if (row && node.id === linkedNode.id && scriptNodeId === connection.fromNodeId && node.type === CanvasNodeType.Video) {
-            return { ...node, title: `镜头 ${row.shotNumber} · 视频`, metadata: { ...node.metadata, prompt: videoPrompt, composerContent: videoComposerContent, ...storyboardPromptTemplateMetadata(row, "video"), workflowKind: "shot" as const, workflowTitle: `镜头 ${row.shotNumber} 视频`, shotIndex: row.shotNumber, generationMode: "video" as const, videoEditOperation: node.metadata?.videoEditOperation || "text_to_video", seconds: String(row.durationSeconds) } };
+            return { ...node, title: tr("镜头 {0} · 视频", row.shotNumber), metadata: { ...node.metadata, prompt: videoPrompt, composerContent: videoComposerContent, ...storyboardPromptTemplateMetadata(row, "video"), workflowKind: "shot" as const, workflowTitle: tr("镜头 {0} 视频", row.shotNumber), shotIndex: row.shotNumber, generationMode: "video" as const, videoEditOperation: node.metadata?.videoEditOperation || "text_to_video", seconds: String(row.durationSeconds) } };
         }
         if (node.id !== scriptNodeId || node.type !== CanvasNodeType.Script) return node;
         const storyboard = node.metadata?.storyboard;
@@ -374,7 +375,7 @@ export function storyboardRowFromHandle(nodes: CanvasNodeData[], nodeId: string,
 export function expandStoryboardTextMentions(prompt: string, references: CanvasResourceReference[]) {
     let expanded = prompt;
     references.filter((reference) => reference.active && reference.kind === "text" && reference.text?.trim()).forEach((reference) => {
-        const replacement = `【项目设定：${reference.title}】\n${reference.text!.trim()}`;
+        const replacement = tr("【项目设定：{0}】\n{1}", reference.title, reference.text!.trim());
         for (const token of [canvasResourceMentionToken(reference), `@${reference.label}`, reference.nodeId ? canvasNodeMentionToken(reference.nodeId) : ""]) {
             if (!token) continue;
             if (expanded.includes(token)) expanded = expanded.split(token).join(replacement);
@@ -566,9 +567,9 @@ export function removeCanvasNodes(nodes: CanvasNodeData[], requestedIds: Set<str
 }
 
 export function buildAngleLabel(params: CanvasImageAngleParams) {
-    const horizontal = params.horizontalAngle === 0 ? "正面视角" : params.horizontalAngle > 0 ? `向右旋转 ${params.horizontalAngle} 度` : `向左旋转 ${Math.abs(params.horizontalAngle)} 度`;
-    const pitch = params.pitchAngle === 0 ? "水平视角" : params.pitchAngle > 0 ? `俯视 ${params.pitchAngle} 度` : `仰视 ${Math.abs(params.pitchAngle)} 度`;
-    return `AI 多角度：${horizontal}，${pitch}，镜头距离 ${params.cameraDistance.toFixed(1)}，${params.wideAngle ? "广角" : "标准"}镜头`;
+    const horizontal = params.horizontalAngle === 0 ? tr("正面视角") : params.horizontalAngle > 0 ? tr("向右旋转 {0} 度", params.horizontalAngle) : tr("向左旋转 {0} 度", Math.abs(params.horizontalAngle));
+    const pitch = params.pitchAngle === 0 ? tr("水平视角") : params.pitchAngle > 0 ? tr("俯视 {0} 度", params.pitchAngle) : tr("仰视 {0} 度", Math.abs(params.pitchAngle));
+    return tr("AI 多角度：{0}，{1}，镜头距离 {2}，{3}镜头", horizontal, pitch, params.cameraDistance.toFixed(1), params.wideAngle ? tr("广角") : tr("标准"));
 }
 
 export function buildAnglePrompt(params: CanvasImageAngleParams) {

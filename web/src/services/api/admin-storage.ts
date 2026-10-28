@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { http, apiBaseURL, compactApiParams } from "@/services/api/request";
 
 export type AdminStorageResource = {
@@ -102,7 +103,7 @@ export function adminResourceFileUrl(id: string, download = false) {
 export async function downloadAdminResource(resource: AdminStorageResource) {
     const response = await fetch(adminResourceFileUrl(resource.id, true), { credentials: "include" });
     if (!response.ok) {
-        let message = "下载资源失败";
+        let message = tr("下载资源失败");
         try {
             const body = (await response.json()) as { msg?: string };
             if (body.msg) message = body.msg;

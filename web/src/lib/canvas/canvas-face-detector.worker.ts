@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 /// <reference lib="webworker" />
 
 import { FaceDetector } from "@mediapipe/tasks-vision";
@@ -29,7 +30,7 @@ const workerGlobal = self as typeof self & {
 workerGlobal.importScripts = () => { throw new TypeError("module worker uses dynamic import"); };
 workerGlobal.import = async (url: string) => {
     const response = await fetch(url.replace(/\?import(?:&.*)?$/, ""));
-    if (!response.ok) throw new Error(`MediaPipe loader 加载失败：${response.status}`);
+    if (!response.ok) throw new Error(tr("MediaPipe loader 加载失败：{0}", response.status));
     const blobUrl = URL.createObjectURL(new Blob([await response.text()], { type: "text/javascript" }));
     try {
         return await import(/* @vite-ignore */ blobUrl);
@@ -75,7 +76,7 @@ self.onmessage = async (event: MessageEvent<DetectFaceRequest>) => {
             }];
         });
     } catch (error) {
-        response.error = error instanceof Error ? error.message : "人脸识别失败";
+        response.error = error instanceof Error ? error.message : tr("人脸识别失败");
     } finally {
         image.close();
     }

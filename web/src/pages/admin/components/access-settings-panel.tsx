@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { App, Button, Form, Input, Skeleton } from "antd";
 import { Switch } from "@/pages/admin/ui/controls";
 import { AlertTriangle, BadgeCheck, ChevronDown, FileText, Globe2, KeyRound, LockKeyhole, RefreshCw, RotateCcw, Save, ShieldCheck, Sparkles, UserPlus, UsersRound } from "lucide-react";
@@ -32,7 +33,7 @@ type LinuxDOFormValues = Omit<LinuxDOSetting, "hasClientSecret" | "updatedAt">;
 
 export default function AccessSettingsPanel() {
     const { message, modal } = App.useApp();
-    const brandName = useAppearanceStore((state) => state.appearance.brandName) || "平台";
+    const brandName = useAppearanceStore((state) => state.appearance.brandName) || tr("平台");
     const [linuxdo, setLinuxdo] = useState<LinuxDOSetting | null>(null);
     const [registration, setRegistration] = useState<RegistrationSetting | null>(null);
     const [loading, setLoading] = useState(true);
@@ -68,10 +69,10 @@ export default function AccessSettingsPanel() {
                 setAgreementDirty(false);
                 setDirty(false);
                 setSaveError("");
-                if (announce) message.success("已重新读取当前登录与注册配置");
+                if (announce) message.success(tr("已重新读取当前登录与注册配置"));
             } catch (error) {
                 if (requestVersion !== requestVersionRef.current) return;
-                const errorMessage = error instanceof Error ? error.message : "读取登录与注册配置失败";
+                const errorMessage = error instanceof Error ? error.message : tr("读取登录与注册配置失败");
                 setLoadError(errorMessage);
                 if (!initial) message.error(errorMessage);
             } finally {
@@ -118,10 +119,10 @@ export default function AccessSettingsPanel() {
         navigationConfirmOpenRef.current = true;
         navigationTriggerRef.current = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
         modal.confirm({
-            title: "放弃未保存的登录与注册调整？",
-            content: "当前有尚未保存的表单调整，离开后这些内容会丢失。用户注册状态不受影响。",
-            okText: "放弃并离开",
-            cancelText: "继续编辑",
+            title: tr("放弃未保存的登录与注册调整？"),
+            content: tr("当前有尚未保存的表单调整，离开后这些内容会丢失。用户注册状态不受影响。"),
+            okText: tr("放弃并离开"),
+            cancelText: tr("继续编辑"),
             okButtonProps: { danger: true },
             onOk: () => {
                 navigationConfirmOpenRef.current = false;
@@ -148,7 +149,7 @@ export default function AccessSettingsPanel() {
         setDraftLinuxDOEnabled(linuxdo.enabled);
         setDirty(false);
         setSaveError("");
-        message.info("已撤销 Linux.do 登录的未保存调整");
+        message.info(tr("已撤销 Linux.do 登录的未保存调整"));
     };
 
     const saveAgreement = async () => {
@@ -165,10 +166,10 @@ export default function AccessSettingsPanel() {
             setAgreementTitle(data.setting.agreementTitle || "");
             setAgreementContent(data.setting.agreementContent || "");
             setAgreementDirty(false);
-            message.success("服务协议已保存，注册页将立即生效");
+            message.success(tr("服务协议已保存，注册页将立即生效"));
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "保存服务协议失败";
-            setSaveError(`${errorMessage}。未自动重试，请重新读取当前配置后再决定是否保存。`);
+            const errorMessage = error instanceof Error ? error.message : tr("保存服务协议失败");
+            setSaveError(tr("{0}。未自动重试，请重新读取当前配置后再决定是否保存。", errorMessage));
             message.error(errorMessage);
         } finally {
             setSavingAgreement(false);
@@ -180,7 +181,7 @@ export default function AccessSettingsPanel() {
         setAgreementTitle(registration.agreementTitle || "");
         setAgreementContent(registration.agreementContent || "");
         setAgreementDirty(false);
-        message.info("已撤销服务协议的未保存调整");
+        message.info(tr("已撤销服务协议的未保存调整"));
     };
 
     const requestRefresh = () => {
@@ -189,10 +190,10 @@ export default function AccessSettingsPanel() {
             return;
         }
         modal.confirm({
-            title: "放弃调整并重新读取？",
-            content: "重新读取会丢弃当前表单中的未保存内容（含服务协议），并以服务端配置为准。",
-            okText: "放弃并刷新",
-            cancelText: "继续编辑",
+            title: tr("放弃调整并重新读取？"),
+            content: tr("重新读取会丢弃当前表单中的未保存内容（含服务协议），并以服务端配置为准。"),
+            okText: tr("放弃并刷新"),
+            cancelText: tr("继续编辑"),
             okButtonProps: { danger: true },
             onOk: () => load(false, true),
         });
@@ -203,9 +204,9 @@ export default function AccessSettingsPanel() {
         try {
             const data = await updateAdminRegistrationSetting(enabled);
             setRegistration(data.setting);
-            message.success(enabled ? "用户注册已开启" : "用户注册已关闭");
+            message.success(enabled ? tr("用户注册已开启") : tr("用户注册已关闭"));
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "更新注册设置失败";
+            const errorMessage = error instanceof Error ? error.message : tr("更新注册设置失败");
             message.error(errorMessage);
             throw error;
         } finally {
@@ -224,13 +225,13 @@ export default function AccessSettingsPanel() {
         setSaveError("");
         try {
             const result = await updateAdminLinuxDOSetting(expected);
-            if (!linuxDOResponseMatches(result.setting, expected)) throw new Error("服务端返回的 Linux.do 配置与本次保存内容不一致，请重新读取后核对");
+            if (!linuxDOResponseMatches(result.setting, expected)) throw new Error(tr("服务端返回的 Linux.do 配置与本次保存内容不一致，请重新读取后核对"));
             setLinuxdo(result.setting);
             setDirty(false);
-            message.success("Linux.do 登录配置已保存");
+            message.success(tr("Linux.do 登录配置已保存"));
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "保存 Linux.do 配置失败";
-            setSaveError(`${errorMessage}。未自动重试，请重新读取当前配置后再决定是否保存。`);
+            const errorMessage = error instanceof Error ? error.message : tr("保存 Linux.do 配置失败");
+            setSaveError(tr("{0}。未自动重试，请重新读取当前配置后再决定是否保存。", errorMessage));
             message.error(errorMessage);
             throw error;
         } finally {
@@ -267,7 +268,7 @@ export default function AccessSettingsPanel() {
 
     if (loading && (!linuxdo || !registration)) {
         return (
-            <div className="admin-settings-stack admin-access-settings" aria-label="正在读取登录与注册配置" role="status">
+            <div className="admin-settings-stack admin-access-settings" aria-label={tr("正在读取登录与注册配置")} role="status">
                 <div className="admin-access-loading-card">
                     <Skeleton active paragraph={{ rows: 6 }} />
                 </div>
@@ -283,11 +284,11 @@ export default function AccessSettingsPanel() {
                         <AlertTriangle className="size-5" aria-hidden="true" />
                     </span>
                     <div>
-                        <h2>无法读取登录与注册配置</h2>
-                        <p>{loadError || "当前没有可显示的配置，请稍后重试。"}</p>
+                        <h2>{tr("无法读取登录与注册配置")}</h2>
+                        <p>{loadError || tr("当前没有可显示的配置，请稍后重试。")}</p>
                     </div>
                     <Button icon={<RefreshCw className="size-4" />} loading={refreshing} onClick={() => void load(false, true)}>
-                        重新读取
+                        {tr("重新读取")}
                     </Button>
                 </div>
             </div>
@@ -302,18 +303,18 @@ export default function AccessSettingsPanel() {
                         <ShieldCheck className="size-4" aria-hidden="true" />
                     </span>
                     <div>
-                        <strong>{dirty ? "Linux.do 有未保存的调整" : "登录与注册设置"}</strong>
-                        <p>{dirty ? "完成接入信息后保存生效。" : `新用户注册${registration.enabled ? "已开放" : "已关闭"} · Linux.do ${linuxdo.enabled ? "已启用" : "未启用"}`}</p>
+                        <strong>{dirty ? tr("Linux.do 有未保存的调整") : tr("登录与注册设置")}</strong>
+                        <p>{dirty ? tr("完成接入信息后保存生效。") : tr("新用户注册{0} · Linux.do {1}", registration.enabled ? tr("已开放") : tr("已关闭"), linuxdo.enabled ? tr("已启用") : tr("未启用"))}</p>
                     </div>
                 </div>
                 <div className="admin-access-command-actions">
                     {dirty ? (
                         <Button icon={<RotateCcw className="size-4" />} disabled={savingLinuxDO} onClick={resetLinuxDODraft}>
-                            撤销调整
+                            {tr("撤销调整")}
                         </Button>
                     ) : null}
                     <Button icon={<RefreshCw className="size-4" />} loading={refreshing} disabled={savingLinuxDO || savingRegistration} onClick={requestRefresh}>
-                        刷新状态
+                        {tr("刷新状态")}
                     </Button>
                 </div>
             </div>
@@ -321,7 +322,7 @@ export default function AccessSettingsPanel() {
             {loadError || saveError ? (
                 <div className="admin-access-inline-alert" role="alert">
                     <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
-                    <span>{saveError || `${loadError}。页面仍显示上一次成功读取的配置。`}</span>
+                    <span>{saveError || tr("{0}。页面仍显示上一次成功读取的配置。", loadError)}</span>
                 </div>
             ) : null}
 
@@ -329,9 +330,9 @@ export default function AccessSettingsPanel() {
                 <SettingsSectionCard
                     className="admin-access-section admin-access-registration-section"
                     icon={<UserPlus className="size-4" aria-hidden="true" />}
-                    title="1. 是否允许创建新账号"
-                    description="先决定是否开放注册。关闭后已有账号仍可登录，已有数据不会删除。"
-                    status={<AdminStatusBadge label={registration.enabled ? "已开放" : "已关闭"} tone={registration.enabled ? "success" : "neutral"} />}
+                    title={tr("1. 是否允许创建新账号")}
+                    description={tr("先决定是否开放注册。关闭后已有账号仍可登录，已有数据不会删除。")}
+                    status={<AdminStatusBadge label={registration.enabled ? tr("已开放") : tr("已关闭")} tone={registration.enabled ? "success" : "neutral"} />}
                 >
                     <div className="admin-access-registration-policy">
                         <span className="admin-access-policy-icon">
@@ -339,13 +340,13 @@ export default function AccessSettingsPanel() {
                         </span>
                         <div className="admin-access-policy-copy">
                             <div className="flex flex-wrap items-center gap-2">
-                                <strong>允许创建新账号</strong>
-                                <AdminStatusBadge label="切换即保存" tone="info" />
+                                <strong>{tr("允许创建新账号")}</strong>
+                                <AdminStatusBadge label={tr("切换即保存")} tone="info" />
                             </div>
-                            <p>关闭后，本地注册和未绑定账号的 Linux.do 首次登录都会被拒绝；已有账号及已绑定身份仍可继续登录。</p>
-                            <span>{formatSettingTime(registration.updatedAt, "当前来自部署环境默认值")}</span>
+                            <p>{tr("关闭后，本地注册和未绑定账号的 Linux.do 首次登录都会被拒绝；已有账号及已绑定身份仍可继续登录。")}</p>
+                            <span>{formatSettingTime(registration.updatedAt, tr("当前来自部署环境默认值"))}</span>
                         </div>
-                        <Switch checked={registration.enabled} loading={savingRegistration} disabled={loading || refreshing || savingLinuxDO} onChange={requestRegistrationChange} aria-label="允许创建新账号，切换后立即生效" />
+                        <Switch checked={registration.enabled} loading={savingRegistration} disabled={loading || refreshing || savingLinuxDO} onChange={requestRegistrationChange} aria-label={tr("允许创建新账号，切换后立即生效")} />
                     </div>
                 </SettingsSectionCard>
             </div>
@@ -354,23 +355,23 @@ export default function AccessSettingsPanel() {
                 <SettingsSectionCard
                     className="admin-access-section admin-access-linuxdo-section"
                     icon={<KeyRound className="size-4" aria-hidden="true" />}
-                    title="2. 是否开放 Linux.do 登录"
-                    description="先决定是否在登录与注册页展示 Linux.do。开启后再填写 OAuth 接入信息。"
-                    status={<AdminStatusBadge label={draftLinuxDOEnabled ? (dirty ? "待启用" : "运行中") : dirty && linuxdo.enabled ? "待停用" : "未启用"} tone={dirty ? "warning" : draftLinuxDOEnabled ? "success" : "neutral"} />}
+                    title={tr("2. 是否开放 Linux.do 登录")}
+                    description={tr("先决定是否在登录与注册页展示 Linux.do。开启后再填写 OAuth 接入信息。")}
+                    status={<AdminStatusBadge label={draftLinuxDOEnabled ? (dirty ? tr("待启用") : tr("运行中")) : dirty && linuxdo.enabled ? tr("待停用") : tr("未启用")} tone={dirty ? "warning" : draftLinuxDOEnabled ? "success" : "neutral"} />}
                     footer={
                         <>
                             <div className="admin-access-footer-note">
                                 <BadgeCheck className="size-4" aria-hidden="true" />
-                                <span>{draftLinuxDOEnabled ? "完整填写 OAuth 接入信息后保存" : "关闭后隐藏入口，已有账号绑定不受影响"}</span>
+                                <span>{draftLinuxDOEnabled ? tr("完整填写 OAuth 接入信息后保存") : tr("关闭后隐藏入口，已有账号绑定不受影响")}</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
                                 {dirty ? (
                                     <Button icon={<RotateCcw className="size-4" />} disabled={savingLinuxDO} onClick={resetLinuxDODraft}>
-                                        撤销
+                                        {tr("撤销")}
                                     </Button>
                                 ) : null}
                                 <Button type="primary" icon={<Save className="size-4" />} loading={savingLinuxDO} disabled={!dirty || loading || refreshing} onClick={() => void submitLinuxDOSave()}>
-                                    {draftLinuxDOEnabled ? "保存并启用" : "保存并关闭"}
+                                    {draftLinuxDOEnabled ? tr("保存并启用") : tr("保存并关闭")}
                                 </Button>
                             </div>
                         </>
@@ -394,56 +395,56 @@ export default function AccessSettingsPanel() {
                             </span>
                             <div className="admin-access-policy-copy">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <strong>在登录与注册页显示 Linux.do</strong>
-                                    <AdminStatusBadge label="保存后生效" tone="info" />
+                                    <strong>{tr("在登录与注册页显示 Linux.do")}</strong>
+                                    <AdminStatusBadge label={tr("保存后生效")} tone="info" />
                                 </div>
-                                <p>开启后显示第三方登录入口；首次登录是否能创建账号仍受上方注册开关控制。</p>
-                                {!draftLinuxDOEnabled ? <span>当前关闭，因此 OAuth 凭据和端点配置已收起。</span> : null}
+                                <p>{tr("开启后显示第三方登录入口；首次登录是否能创建账号仍受上方注册开关控制。")}</p>
+                                {!draftLinuxDOEnabled ? <span>{tr("当前关闭，因此 OAuth 凭据和端点配置已收起。")}</span> : null}
                             </div>
                             <Form.Item noStyle name="enabled" valuePropName="checked">
-                                <Switch aria-label="在登录与注册页显示 Linux.do" onChange={toggleLinuxDO} />
+                                <Switch aria-label={tr("在登录与注册页显示 Linux.do")} onChange={toggleLinuxDO} />
                             </Form.Item>
                         </div>
 
                         {draftLinuxDOEnabled ? (
                             <>
                                 <div className="admin-access-form-section">
-                                    <FormSectionTitle icon={<KeyRound className="size-4" />} title="应用凭据" description="填写 Linux.do OAuth 应用的客户端信息；密钥只保存在服务端。" />
+                                    <FormSectionTitle icon={<KeyRound className="size-4" />} title={tr("应用凭据")} description={tr("填写 Linux.do OAuth 应用的客户端信息；密钥只保存在服务端。")} />
                                     <div className="admin-access-form-grid is-credentials">
-                                        <Form.Item name="clientAuthMethod" label="Token 请求鉴权方式" rules={[{ required: true, message: "请选择鉴权方式" }]} extra="应用未特别要求时使用 Client Secret Post。">
+                                        <Form.Item name="clientAuthMethod" label={tr("Token 请求鉴权方式")} rules={[{ required: true, message: tr("请选择鉴权方式") }]} extra={tr("应用未特别要求时使用 Client Secret Post。")}>
                                             <Select
                                                 options={[
-                                                    { label: "Client Secret Post（推荐）", value: "client_secret_post" },
+                                                    { label: tr("Client Secret Post（推荐）"), value: "client_secret_post" },
                                                     { label: "Client Secret Basic", value: "client_secret_basic" },
                                                 ]}
                                             />
                                         </Form.Item>
                                         <Form.Item name="clientId" label="Client ID">
-                                            <Input autoComplete="off" placeholder="Linux.do OAuth 应用的 Client ID" />
+                                            <Input autoComplete="off" placeholder={tr("Linux.do OAuth 应用的 Client ID")} />
                                         </Form.Item>
                                         <Form.Item name="clientSecret" label={linuxdo.hasClientSecret ? `Client Secret（${configuredSecretText}）` : "Client Secret"}>
-                                            <Input.Password autoComplete="new-password" placeholder={linuxdo.hasClientSecret ? "留空保留原密钥" : "Linux.do OAuth 应用的 Client Secret"} />
+                                            <Input.Password autoComplete="new-password" placeholder={linuxdo.hasClientSecret ? tr("留空保留原密钥") : tr("Linux.do OAuth 应用的 Client Secret")} />
                                         </Form.Item>
                                     </div>
                                 </div>
 
                                 <div className="admin-access-form-section">
-                                    <FormSectionTitle icon={<Globe2 className="size-4" />} title="OAuth 连接地址" description="授权、Token 和用户资料端点必须使用 HTTPS；本地回环回调可使用 HTTP。" />
+                                    <FormSectionTitle icon={<Globe2 className="size-4" />} title={tr("OAuth 连接地址")} description={tr("授权、Token 和用户资料端点必须使用 HTTPS；本地回环回调可使用 HTTP。")} />
                                     <div className="admin-access-form-grid">
-                                        <Form.Item name="authorizationUrl" label="授权地址">
+                                        <Form.Item name="authorizationUrl" label={tr("授权地址")}>
                                             <Input inputMode="url" placeholder="https://connect.linux.do/oauth2/authorize" />
                                         </Form.Item>
-                                        <Form.Item name="tokenUrl" label="Token 地址">
+                                        <Form.Item name="tokenUrl" label={tr("Token 地址")}>
                                             <Input inputMode="url" placeholder="https://connect.linux.do/oauth2/token" />
                                         </Form.Item>
-                                        <Form.Item name="userInfoUrl" label="用户资料地址">
+                                        <Form.Item name="userInfoUrl" label={tr("用户资料地址")}>
                                             <Input inputMode="url" placeholder="https://connect.linux.do/api/user" />
                                         </Form.Item>
-                                        <Form.Item name="redirectUrl" label="本站回调地址" extra="必须与 Linux.do OAuth 应用登记值完全一致；推荐使用 /oauth/linuxdo/callback。">
-                                            <Input inputMode="url" placeholder="https://你的域名/oauth/linuxdo/callback" />
+                                        <Form.Item name="redirectUrl" label={tr("本站回调地址")} extra={tr("必须与 Linux.do OAuth 应用登记值完全一致；推荐使用 /oauth/linuxdo/callback。")}>
+                                            <Input inputMode="url" placeholder={tr("https://你的域名/oauth/linuxdo/callback")} />
                                         </Form.Item>
-                                        <Form.Item name="scopes" label="授权范围（Scopes）" className="admin-access-form-span-full" extra="通常使用 openid、profile、email；按 Linux.do 应用实际授权范围填写。">
-                                            <Select mode="tags" tokenSeparators={[",", " "]} placeholder="输入后按回车添加" />
+                                        <Form.Item name="scopes" label={tr("授权范围（Scopes）")} className="admin-access-form-span-full" extra={tr("通常使用 openid、profile、email；按 Linux.do 应用实际授权范围填写。")}>
+                                            <Select mode="tags" tokenSeparators={[",", " "]} placeholder={tr("输入后按回车添加")} />
                                         </Form.Item>
                                     </div>
                                 </div>
@@ -454,26 +455,26 @@ export default function AccessSettingsPanel() {
                                             <LockKeyhole className="size-4" aria-hidden="true" />
                                         </span>
                                         <span>
-                                            <strong>高级：用户资料字段映射</strong>
-                                            <small>指定从 Linux.do 响应中读取本地账号信息的字段路径。</small>
+                                            <strong>{tr("高级：用户资料字段映射")}</strong>
+                                            <small>{tr("指定从 Linux.do 响应中读取本地账号信息的字段路径。")}</small>
                                         </span>
-                                        <AdminStatusBadge label="通常无需修改" tone="neutral" />
+                                        <AdminStatusBadge label={tr("通常无需修改")} tone="neutral" />
                                         <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
                                     </summary>
                                     <div className="admin-access-form-grid is-mapping">
-                                        <Form.Item name="subjectField" label="唯一用户 ID 字段" extra="账号绑定的唯一依据，必须长期稳定。">
+                                        <Form.Item name="subjectField" label={tr("唯一用户 ID 字段")} extra={tr("账号绑定的唯一依据，必须长期稳定。")}>
                                             <Input placeholder="id" />
                                         </Form.Item>
-                                        <Form.Item name="usernameField" label="用户名字段" extra="用于生成本站用户名。">
+                                        <Form.Item name="usernameField" label={tr("用户名字段")} extra={tr("用于生成本站用户名。")}>
                                             <Input placeholder="username" />
                                         </Form.Item>
-                                        <Form.Item name="displayNameField" label="显示名称字段" extra="显示在用户菜单中的名称。">
+                                        <Form.Item name="displayNameField" label={tr("显示名称字段")} extra={tr("显示在用户菜单中的名称。")}>
                                             <Input placeholder="name" />
                                         </Form.Item>
-                                        <Form.Item name="emailField" label="邮箱字段" extra="没有或无效时允许留空。">
+                                        <Form.Item name="emailField" label={tr("邮箱字段")} extra={tr("没有或无效时允许留空。")}>
                                             <Input placeholder="email" />
                                         </Form.Item>
-                                        <Form.Item name="avatarField" label="头像地址字段" extra="支持 data.user.avatar_url 这类嵌套路径。">
+                                        <Form.Item name="avatarField" label={tr("头像地址字段")} extra={tr("支持 data.user.avatar_url 这类嵌套路径。")}>
                                             <Input placeholder="avatar_url" />
                                         </Form.Item>
                                     </div>
@@ -488,23 +489,23 @@ export default function AccessSettingsPanel() {
                 <SettingsSectionCard
                     className="admin-access-section admin-access-agreement-section"
                     icon={<FileText className="size-4" aria-hidden="true" />}
-                    title="3. 服务协议名称与条款"
-                    description="注册页勾选框与弹窗展示的内容。协议名称留空时自动跟随品牌名生成，条款留空时注册页给出待补充提示。"
-                    status={<AdminStatusBadge label={agreementDirty ? "待保存" : agreementContent.trim() ? "已自定义" : "待补充"} tone={agreementDirty ? "warning" : agreementContent.trim() ? "success" : "neutral"} />}
+                    title={tr("3. 服务协议名称与条款")}
+                    description={tr("注册页勾选框与弹窗展示的内容。协议名称留空时自动跟随品牌名生成，条款留空时注册页给出待补充提示。")}
+                    status={<AdminStatusBadge label={agreementDirty ? tr("待保存") : agreementContent.trim() ? tr("已自定义") : tr("待补充")} tone={agreementDirty ? "warning" : agreementContent.trim() ? "success" : "neutral"} />}
                     footer={
                         <>
                             <div className="admin-access-footer-note">
                                 <BadgeCheck className="size-4" aria-hidden="true" />
-                                <span>保存后注册页立即生效，无需重启服务</span>
+                                <span>{tr("保存后注册页立即生效，无需重启服务")}</span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
                                 {agreementDirty ? (
                                     <Button icon={<RotateCcw className="size-4" />} disabled={savingAgreement} onClick={resetAgreementDraft}>
-                                        撤销
+                                        {tr("撤销")}
                                     </Button>
                                 ) : null}
                                 <Button type="primary" icon={<Save className="size-4" />} loading={savingAgreement} disabled={!agreementDirty || loading || refreshing} onClick={() => void saveAgreement()}>
-                                    保存服务协议
+                                    {tr("保存服务协议")}
                                 </Button>
                             </div>
                         </>
@@ -512,14 +513,14 @@ export default function AccessSettingsPanel() {
                 >
                     <Form layout="vertical" requiredMark={false} disabled={loading || refreshing || savingAgreement}>
                         <Form.Item
-                            label="协议名称"
-                            extra={`留空时自动跟随品牌名生成，即《${brandName}服务协议》。此处只需填名称本身，书名号由注册页补充。`}
+                            label={tr("协议名称")}
+                            extra={tr("留空时自动跟随品牌名生成，即《{0}服务协议》。此处只需填名称本身，书名号由注册页补充。", brandName)}
                             className="admin-access-agreement-title-field"
                         >
                             <Input
                                 value={agreementTitle}
                                 maxLength={60}
-                                placeholder={`${brandName}服务协议`}
+                                placeholder={tr("{0}服务协议", brandName)}
                                 onChange={(event) => {
                                     setAgreementTitle(event.target.value);
                                     setAgreementDirty(true);
@@ -527,15 +528,15 @@ export default function AccessSettingsPanel() {
                             />
                         </Form.Item>
                         <Form.Item
-                            label="协议条款内容"
-                            extra="支持多段落文本，按空行分段展示；留空时注册页弹窗显示“服务协议内容待补充”。"
+                            label={tr("协议条款内容")}
+                            extra={tr("支持多段落文本，按空行分段展示；留空时注册页弹窗显示“服务协议内容待补充”。")}
                             className="admin-access-agreement-content-field"
                         >
                             <Input.TextArea
                                 value={agreementContent}
                                 maxLength={20000}
                                 autoSize={{ minRows: 8, maxRows: 20 }}
-                                placeholder="输入服务协议条款正文"
+                                placeholder={tr("输入服务协议条款正文")}
                                 onChange={(event) => {
                                     setAgreementContent(event.target.value);
                                     setAgreementDirty(true);
@@ -545,11 +546,11 @@ export default function AccessSettingsPanel() {
                         <div className="admin-access-agreement-toolbar">
                             <div className="admin-access-agreement-template-note">
                                 <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
-                                <span>没有准备条款时，可先填入通用模板再按需修改。</span>
+                                <span>{tr("没有准备条款时，可先填入通用模板再按需修改。")}</span>
                             </div>
                             <div className="admin-access-agreement-template-actions">
                                 <span className="admin-access-agreement-metric">
-                                    {agreementContent.trim() ? `${agreementParagraphsCount} 段 · ${agreementContent.length} 字` : "尚未填写条款"}
+                                    {agreementContent.trim() ? tr("{0} 段 · {1} 字", agreementParagraphsCount, agreementContent.length) : tr("尚未填写条款")}
                                 </span>
                                 <Button
                                     size="small"
@@ -559,7 +560,7 @@ export default function AccessSettingsPanel() {
                                         setAgreementDirty(true);
                                     }}
                                 >
-                                    填入通用模板
+                                    {tr("填入通用模板")}
                                 </Button>
                                 {agreementContent.trim() ? (
                                     <Button
@@ -572,7 +573,7 @@ export default function AccessSettingsPanel() {
                                             setAgreementDirty(true);
                                         }}
                                     >
-                                        清空
+                                        {tr("清空")}
                                     </Button>
                                 ) : null}
                             </div>
@@ -645,9 +646,9 @@ function hasLinuxDOChanges(values: LinuxDOFormValues, setting: LinuxDOSetting | 
 function validateLinuxDODraft(values: LinuxDOFormValues, setting: LinuxDOSetting | null) {
     const draft = normalizeLinuxDOFormValues(values);
     if (!draft.enabled) return "";
-    if (!draft.clientId || (!draft.clientSecret && !setting?.hasClientSecret) || !draft.authorizationUrl || !draft.tokenUrl || !draft.userInfoUrl || !draft.redirectUrl) return "启用 Linux.do 登录前请完整填写 Client、端点和回调配置";
-    for (const value of [draft.authorizationUrl, draft.tokenUrl, draft.userInfoUrl]) if (!isValidURL(value, true)) return "Linux.do 授权、Token 和用户资料地址必须是有效的 HTTPS URL";
-    if (!isValidRedirectURL(draft.redirectUrl)) return "Linux.do 回调地址必须使用 HTTPS，本地回环地址可使用 HTTP";
+    if (!draft.clientId || (!draft.clientSecret && !setting?.hasClientSecret) || !draft.authorizationUrl || !draft.tokenUrl || !draft.userInfoUrl || !draft.redirectUrl) return tr("启用 Linux.do 登录前请完整填写 Client、端点和回调配置");
+    for (const value of [draft.authorizationUrl, draft.tokenUrl, draft.userInfoUrl]) if (!isValidURL(value, true)) return tr("Linux.do 授权、Token 和用户资料地址必须是有效的 HTTPS URL");
+    if (!isValidRedirectURL(draft.redirectUrl)) return tr("Linux.do 回调地址必须使用 HTTPS，本地回环地址可使用 HTTP");
     return "";
 }
 
@@ -681,5 +682,5 @@ function formatSettingTime(value: string | undefined, fallback: string) {
     if (!value) return fallback;
     const date = new Date(value);
     if (Number.isNaN(date.getTime()) || date.getFullYear() < 2000) return fallback;
-    return `更新于 ${date.toLocaleString("zh-CN", { hour12: false })}`;
+    return tr("更新于 {0}", date.toLocaleString(currentLocale(), { hour12: false }));
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { type FormEvent, useEffect, useState, type ReactNode } from "react";
 import { App, Button, Input } from "antd";
 import { ArrowRight, LockKeyhole, UserRound } from "lucide-react";
@@ -31,10 +32,10 @@ export default function LoginPage() {
             await login({ username, password });
             const { applyUserSession } = await import("@/lib/user-session");
             await applyUserSession(await getAuthSession());
-            message.success("Signed in");
+            message.success(tr("Signed in"));
             navigate(next, { replace: true });
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "Sign-in failed");
+            message.error(error instanceof Error ? error.message : tr("Sign-in failed"));
         } finally {
             setSubmitting(false);
         }
@@ -42,25 +43,25 @@ export default function LoginPage() {
 
     return (
         <form onSubmit={submit} className="space-y-5">
-            <AuthField label="Username" htmlFor="login-account">
+            <AuthField label={tr("Username")} htmlFor="login-account">
                 <Input id="login-account" size="large" prefix={<UserRound className="auth-scene-icon size-4" />} value={username} onChange={(event) => setUsername(event.target.value)} placeholder="admin" autoComplete="username" required />
             </AuthField>
-            <AuthField label="Password" htmlFor="login-password">
+            <AuthField label={tr("Password")} htmlFor="login-password">
                 <Input.Password
                     id="login-password"
                     size="large"
                     prefix={<LockKeyhole className="auth-scene-icon size-4" />}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Password"
+                    placeholder={tr("Password")}
                     autoComplete="current-password"
                     required
                 />
             </AuthField>
             <Button type="primary" htmlType="submit" size="large" block loading={submitting} icon={<ArrowRight className="size-4" />} iconPlacement="end">
-                Sign in
+                {tr("Sign in")}
             </Button>
-            <p className="auth-scene-muted text-center text-xs leading-5">Credentials come from CANVAS_ADMIN_USERNAME and CANVAS_ADMIN_PASSWORD (default admin / admin).</p>
+            <p className="auth-scene-muted text-center text-xs leading-5">{tr("Credentials come from CANVAS_ADMIN_USERNAME and CANVAS_ADMIN_PASSWORD (default admin / admin).")}</p>
         </form>
     );
 }

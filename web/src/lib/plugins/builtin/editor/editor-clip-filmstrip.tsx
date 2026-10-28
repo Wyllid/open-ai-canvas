@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { memo, useEffect, useMemo, useState } from "react";
 import { Film } from "lucide-react";
 import { getFilmstripTiles } from "@/lib/timeline/timeline-clip-view";
@@ -33,7 +34,7 @@ export const EditorClipFilmstrip = memo(function EditorClipFilmstrip({ clip, pxP
         const read =
             clip.kind === "image"
                 ? (media.storageKey ? resolveMediaUrl(media.storageKey, media.url || media.dataUrl || "") : Promise.resolve(media.url || media.dataUrl || "")).then((url) => {
-                      if (!url) throw new Error("图片不可用");
+                      if (!url) throw new Error(tr("图片不可用"));
                       requested.forEach((time) => publish(time, url));
                   })
                 : readTimelineFrames(media, requested, controller.signal, publish);
@@ -46,7 +47,7 @@ export const EditorClipFilmstrip = memo(function EditorClipFilmstrip({ clip, pxP
     }, [source, scope, clip.kind, times]);
 
     return (
-        <div className="editor-filmstrip" aria-label={clip.kind === "image" ? "图片缩略图" : "视频帧缩略图"} title={failed ? "画面缩略图暂不可用，仍可选择和预览片段" : undefined}>
+        <div className="editor-filmstrip" aria-label={clip.kind === "image" ? tr("图片缩略图") : tr("视频帧缩略图")} title={failed ? tr("画面缩略图暂不可用，仍可选择和预览片段") : undefined}>
             {tiles.map((tile) => (
                 <div key={tile.left} className="editor-filmstrip-tile" data-source-time-ms={tile.timeMs} style={{ left: tile.left, width: tile.width }}>
                     {frames[tile.timeMs] ? (

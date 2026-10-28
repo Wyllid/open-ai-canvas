@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { Button } from "antd";
 import { ArrowUp, Redo2, RotateCcw, SquareDashed, Undo2, X } from "lucide-react";
@@ -55,7 +56,7 @@ type DragState = { kind: "create"; pointerId: number; start: RegionPoint } | { k
 
 type Corner = "nw" | "ne" | "sw" | "se";
 const CORNERS: Corner[] = ["nw", "ne", "sw", "se"];
-const MENTION_MENU_LABELS = { connected: "图片区域", search: "搜索区域" };
+const MENTION_MENU_LABELS = { connected: tr("图片区域"), search: tr("搜索区域") };
 
 export function CanvasNodeRegionEditDialog(props: RegionEditorProps) {
     return props.open && props.image.url ? <RegionEditor key={`${props.image.storageKey || ""}:${props.image.url}`} {...props} /> : null;
@@ -106,14 +107,14 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
         const request = new AbortController();
         void imageToDataUrl({ url: image.url, storageKey: image.storageKey })
             .then((dataUrl) => {
-                if (!dataUrl) throw new Error("图片读取失败");
+                if (!dataUrl) throw new Error(tr("图片读取失败"));
                 return loadRasterImage(dataUrl, request.signal).then((element) => ({ url: dataUrl, element }));
             })
             .then(({ url, element }) => {
                 if (!request.signal.aborted) setSource({ url, element, size: { width: element.naturalWidth, height: element.naturalHeight } });
             })
             .catch((failure: unknown) => {
-                if (!request.signal.aborted) setLoadError(failure instanceof Error ? failure.message : "图片读取失败");
+                if (!request.signal.aborted) setLoadError(failure instanceof Error ? failure.message : tr("图片读取失败"));
             });
         return () => request.abort();
     }, [image.storageKey, image.url]);
@@ -272,17 +273,17 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
 
     const submit = () => {
         if (!source || !size) return;
-        if (!regions.length) return setError("请先在图片上框选至少一个区域");
-        if (!trimmedPrompt) return setError("请写下修改要求，可用 @区域1 指定区域");
+        if (!regions.length) return setError(tr("请先在图片上框选至少一个区域"));
+        if (!trimmedPrompt) return setError(tr("请写下修改要求，可用 @区域1 指定区域"));
         const missing = missingRegionReferences(trimmedPrompt, regions);
-        if (missing.length) return setError(`提示词引用了不存在的 ${missing.map((index) => regionMentionToken(index)).join("、")}`);
+        if (missing.length) return setError(tr("提示词引用了不存在的 {0}", missing.map((index) => regionMentionToken(index)).join("、")));
         let annotatedDataUrl: string;
         let maskDataUrl: string;
         try {
             annotatedDataUrl = renderRegionAnnotatedImage(source.element, size, orderedRegions);
             maskDataUrl = exportRegionMask(size, orderedRegions);
         } catch (failure) {
-            setError(failure instanceof Error ? failure.message : "区域标注导出失败");
+            setError(failure instanceof Error ? failure.message : tr("区域标注导出失败"));
             return;
         }
         const { model, quality, count, transparentBackground } = settings;
@@ -300,22 +301,22 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
             : {};
 
     return (
-        <AppModal open centered flush closable={false} footer={null} width="min(1360px, calc(100vw - 48px))" onCancel={onClose} aria-label="区域标注">
+        <AppModal open centered flush closable={false} footer={null} width="min(1360px, calc(100vw - 48px))" onCancel={onClose} aria-label={tr("区域标注")}>
             <div className="rgn" style={{ "--rgn-color": IMAGE_REGION_COLOR } as CSSProperties}>
-                <section className="rgn-stage" aria-label="标注画面">
+                <section className="rgn-stage" aria-label={tr("标注画面")}>
                     <div className="rgn-stage-hint">
                         <SquareDashed className="size-3.5" aria-hidden />
-                        拖拽框选要修改的地方，可框选多个 · <kbd>Delete</kbd> 删除
+                        {tr("拖拽框选要修改的地方，可框选多个 ·")} <kbd>Delete</kbd> {tr("删除")}
                     </div>
                     <div className="rgn-canvas">
                         {source && size ? (
                             <div className="rgn-frame">
-                                <img src={source.url} alt="待标注图片" draggable={false} />
+                                <img src={source.url} alt={tr("待标注图片")} draggable={false} />
                                 <div
                                     ref={surfaceRef}
                                     role="application"
                                     tabIndex={0}
-                                    aria-label="在图片上拖拽框选需要修改的区域，可框选多个"
+                                    aria-label={tr("在图片上拖拽框选需要修改的区域，可框选多个")}
                                     className="rgn-surface"
                                     onPointerDown={(event) => {
                                         if (event.target !== event.currentTarget) return;
@@ -342,7 +343,7 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                                                 <span className="rgn-badge">{region.index}</span>
                                                 {active ? (
                                                     <>
-                                                        <button type="button" aria-label={`删除${regionMentionLabel(region.index)}`} className="rgn-box-delete" onPointerDown={(event) => event.stopPropagation()} onClick={() => removeRegion(region.index)}>
+                                                        <button type="button" aria-label={tr("删除{0}", regionMentionLabel(region.index))} className="rgn-box-delete" onPointerDown={(event) => event.stopPropagation()} onClick={() => removeRegion(region.index)}>
                                                             <X className="size-3.5" strokeWidth={2.4} />
                                                         </button>
                                                         {CORNERS.map((corner) => (
@@ -369,23 +370,23 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                                 </div>
                             </div>
                         ) : (
-                            <p className="rgn-loading">{loadError || "正在读取图片…"}</p>
+                            <p className="rgn-loading">{loadError || tr("正在读取图片…")}</p>
                         )}
                     </div>
-                    <div className="rgn-dock" role="toolbar" aria-label="区域标注工具">
+                    <div className="rgn-dock" role="toolbar" aria-label={tr("区域标注工具")}>
                         <span className="rgn-dock-mode">
                             <SquareDashed className="size-4" aria-hidden />
-                            框选
+                            {tr("框选")}
                         </span>
                         <span aria-hidden className="rgn-dock-divider" />
-                        <DockButton title="撤销 ⌘Z" disabled={!past.length} onClick={undo}>
+                        <DockButton title={tr("撤销 ⌘Z")} disabled={!past.length} onClick={undo}>
                             <Undo2 className="size-4" />
                         </DockButton>
-                        <DockButton title="重做 ⇧⌘Z" disabled={!future.length} onClick={redo}>
+                        <DockButton title={tr("重做 ⇧⌘Z")} disabled={!future.length} onClick={redo}>
                             <Redo2 className="size-4" />
                         </DockButton>
                         <DockButton
-                            title="清空全部区域"
+                            title={tr("清空全部区域")}
                             disabled={!regions.length}
                             onClick={() => {
                                 commit([]);
@@ -396,7 +397,7 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                         </DockButton>
                         <span aria-hidden className="rgn-dock-divider" />
                         <span className="rgn-dock-count" aria-live="polite">
-                            已标记 <strong>{regions.length}</strong> 处
+                            {tr("已标记")} <strong>{regions.length}</strong> {tr("处")}
                         </span>
                     </div>
                 </section>
@@ -404,16 +405,16 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                 <aside className="rgn-panel">
                     <header className="rgn-panel-header">
                         <div className="rgn-panel-heading">
-                            <h2>区域标注</h2>
-                            <p>框选区域后，用 @区域N 分别描述要怎么改</p>
+                            <h2>{tr("区域标注")}</h2>
+                            <p>{tr("框选区域后，用 @区域N 分别描述要怎么改")}</p>
                         </div>
-                        <button type="button" className="rgn-close" aria-label="关闭" onClick={onClose}>
+                        <button type="button" className="rgn-close" aria-label={tr("关闭")} onClick={onClose}>
                             <X className="size-4" />
                         </button>
                     </header>
 
                     <div className="rgn-body">
-                        <div className="rgn-label">区域{regions.length ? <span className="rgn-label-count">{regions.length}</span> : null}</div>
+                        <div className="rgn-label">{tr("区域")}{regions.length ? <span className="rgn-label-count">{regions.length}</span> : null}</div>
                         {orderedRegions.length ? (
                             <div className="rgn-tiles">
                                 {orderedRegions.map((region) => {
@@ -421,12 +422,12 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                                     const thumbnail = thumbnails.get(region.index);
                                     return (
                                         <div key={region.index} className="rgn-tile">
-                                            <button type="button" className="rgn-tile-select" aria-pressed={region.index === selected} aria-label={`选中${label}`} onClick={() => setSelected(region.index)}>
+                                            <button type="button" className="rgn-tile-select" aria-pressed={region.index === selected} aria-label={tr("选中{0}", label)} onClick={() => setSelected(region.index)}>
                                                 {thumbnail ? <img src={thumbnail} alt="" draggable={false} /> : null}
                                                 <span className="rgn-tile-badge">{region.index}</span>
                                             </button>
                                             <span className="rgn-tile-name">{label}</span>
-                                            <button type="button" className="rgn-tile-remove" aria-label={`删除${label}`} onClick={() => removeRegion(region.index)}>
+                                            <button type="button" className="rgn-tile-remove" aria-label={tr("删除{0}", label)} onClick={() => removeRegion(region.index)}>
                                                 <X className="size-3" strokeWidth={2.4} />
                                             </button>
                                         </div>
@@ -439,13 +440,13 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                                     <SquareDashed className="size-5" />
                                 </span>
                                 <div>
-                                    <strong>还没有区域</strong>
-                                    <span>在左侧图片上拖拽画框，每个框会自动编号，并在提示词里加一行引用。</span>
+                                    <strong>{tr("还没有区域")}</strong>
+                                    <span>{tr("在左侧图片上拖拽画框，每个框会自动编号，并在提示词里加一行引用。")}</span>
                                 </div>
                             </div>
                         )}
 
-                        <div className="rgn-label">修改要求</div>
+                        <div className="rgn-label">{tr("修改要求")}</div>
                         <div ref={editorRef} className="rgn-editor">
                             <CanvasResourceMentionTextarea
                                 value={prompt}
@@ -461,13 +462,13 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                                 containerClassName="rgn-editor-input"
                                 className="thin-scrollbar h-full w-full resize-none border-none bg-transparent px-4 py-3 text-[var(--fs-body)] leading-7 !outline-none !ring-0 !shadow-none placeholder:text-current placeholder:opacity-40"
                                 style={{ color: "var(--foreground)", outline: "none", boxShadow: "none" }}
-                                placeholder={regions.length ? "在区域后写下修改要求，例如：@区域1 换成一艘渔船" : "先在左侧框选区域"}
-                                aria-label="区域修改要求，可输入 @ 引用区域"
+                                placeholder={regions.length ? tr("在区域后写下修改要求，例如：@区域1 换成一艘渔船") : tr("先在左侧框选区域")}
+                                aria-label={tr("区域修改要求，可输入 @ 引用区域")}
                             />
                             <div className="rgn-editor-tip">
-                                <span>输入 @ 引用区域</span>
+                                <span>{tr("输入 @ 引用区域")}</span>
                                 <span>
-                                    <kbd>⌘</kbd> <kbd>Enter</kbd> 生成
+                                    <kbd>⌘</kbd> <kbd>Enter</kbd> {tr("生成")}
                                 </span>
                             </div>
                         </div>
@@ -498,7 +499,7 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                             />
                             <span className="rgn-footer-spacer" />
                             <Button className="rgn-submit" type="primary" shape="round" icon={<ArrowUp className="size-4" strokeWidth={2.4} />} disabled={!canSubmit} onClick={submit}>
-                                生成
+                                {tr("生成")}
                             </Button>
                         </div>
                     </footer>

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { CanvasResourceReference } from "@/lib/canvas/canvas-resource-references";
 
 export type AgentCanvasAction = { nodeId: string; title: string; nodeType: string; action: string; fields?: string[]; resultTitle?: string; targetNodeId?: string; targetTitle?: string; targetNodeType?: string };
@@ -67,14 +68,14 @@ export function agentCanvasActions(toolName: string, detail: unknown, references
 }
 
 export function agentCanvasActionLabel(action: AgentCanvasAction) {
-    const kind = ({ image: "图片", video: "视频", audio: "音频", text: "文本", markdown: "Markdown", script: "分镜", character: "角色卡" } as Record<string, string>)[action.nodeType] || "";
+    const kind = ({ image: tr("图片"), video: tr("视频"), audio: tr("音频"), text: tr("文本"), markdown: "Markdown", script: tr("分镜"), character: tr("角色卡") } as Record<string, string>)[action.nodeType] || "";
     if (action.action === "referenced" && action.targetTitle) {
-        const targetKind = ({ image: "图片", video: "视频", audio: "音频", text: "文本", markdown: "Markdown", script: "分镜", character: "角色卡" } as Record<string, string>)[action.targetNodeType || ""] || "";
-        return `建立引用：${kind}节点《${action.title}》 → ${targetKind}节点《${action.targetTitle}》`;
+        const targetKind = ({ image: tr("图片"), video: tr("视频"), audio: tr("音频"), text: tr("文本"), markdown: "Markdown", script: tr("分镜"), character: tr("角色卡") } as Record<string, string>)[action.targetNodeType || ""] || "";
+        return tr("建立引用：{0}节点《{1}》 → {2}节点《{3}》", kind, action.title, targetKind, action.targetTitle);
     }
     // read 的动词必须是"存在式"：canvas_get_state 只读到清单，说成"读取了图片节点"会被读成看过画面。
-    const verb = ({ created: "创建了", updated: "更新了", referenced: "引用了", read: "画布上有", viewed: "查看了", reused: "复用观察：", generating: "已提交生成：", generated: "已生成", failed: "生成未完成：" } as Record<string, string>)[action.action] || "定位";
-    const fieldText = action.fields?.length ? `（修改：${action.fields.join("、")}）` : "";
-    const titleText = action.resultTitle ? `，名称改为《${action.resultTitle}》` : "";
-    return `${verb}${kind}节点《${action.title}》${fieldText}${titleText}`;
+    const verb = ({ created: tr("创建了"), updated: tr("更新了"), referenced: tr("引用了"), read: tr("画布上有"), viewed: tr("查看了"), reused: tr("复用观察："), generating: tr("已提交生成："), generated: tr("已生成"), failed: tr("生成未完成：") } as Record<string, string>)[action.action] || tr("定位");
+    const fieldText = action.fields?.length ? tr("（修改：{0}）", action.fields.join("、")) : "";
+    const titleText = action.resultTitle ? tr("，名称改为《{0}》", action.resultTitle) : "";
+    return tr("{0}{1}节点《{2}》{3}{4}", verb, kind, action.title, fieldText, titleText);
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { resolveModelRequestConfig, type AiConfig } from "@/stores/use-config-store";
 import { dataUrlToFile } from "@/lib/image-utils";
 import { buildImageReferencePromptText } from "@/lib/image-reference-prompt";
@@ -66,7 +67,7 @@ export async function requestGeneration(config: AiConfig, prompt: string, option
         try {
             return await requestGeminiImages(requestConfig, prompt, [], n, buildGeminiImageGenerationConfig(normalizedImage.size, normalizedImage.quality), options);
         } catch (error) {
-            throw new Error(readAxiosError(error, "请求失败"));
+            throw new Error(readAxiosError(error, tr("请求失败")));
         }
     }
     if (requestConfig.interfaceType === "grok-image") {
@@ -90,7 +91,7 @@ export async function requestGeneration(config: AiConfig, prompt: string, option
             );
             return parseImagePayload(responseData);
         } catch (error) {
-            throw new Error(readAxiosError(error, "Grok 图片生成失败"));
+            throw new Error(readAxiosError(error, tr("Grok 图片生成失败")));
         }
     }
     const quality = imageProfile.quality.supported && normalizedImage.quality !== "auto" ? normalizeQuality(normalizedImage.quality) || normalizedImage.quality : undefined;
@@ -122,7 +123,7 @@ export async function requestGeneration(config: AiConfig, prompt: string, option
         const images = parseImagePayload(responseData);
         return images;
     } catch (error) {
-        throw new Error(readAxiosError(error, "请求失败"));
+        throw new Error(readAxiosError(error, tr("请求失败")));
     }
 }
 
@@ -141,16 +142,16 @@ export async function requestEdit(config: AiConfig, prompt: string, references: 
     const n = Number(normalizedImage.count);
     const requestPrompt = buildImageReferencePromptText(prompt, references);
     if (requestConfig.interfaceType === "gemini-image") {
-        if (mask) throw new Error("Gemini 调用格式暂不支持蒙版编辑");
+        if (mask) throw new Error(tr("Gemini 调用格式暂不支持蒙版编辑"));
         try {
             return await requestGeminiImages(requestConfig, requestPrompt, references, n, buildGeminiImageGenerationConfig(normalizedImage.size, normalizedImage.quality), options);
         } catch (error) {
-            throw new Error(readAxiosError(error, "请求失败"));
+            throw new Error(readAxiosError(error, tr("请求失败")));
         }
     }
     if (requestConfig.interfaceType === "grok-image") {
-        if (mask) throw new Error("Grok 图片协议不支持蒙版编辑，请移除蒙版后重试");
-        if (references.length !== 1) throw new Error("Grok 图片编辑必须提供且仅支持 1 张参考图");
+        if (mask) throw new Error(tr("Grok 图片协议不支持蒙版编辑，请移除蒙版后重试"));
+        if (references.length !== 1) throw new Error(tr("Grok 图片编辑必须提供且仅支持 1 张参考图"));
         try {
             const imageUrl = await grokImageInputURL(references[0]);
             const size = normalizedImage.size && normalizedImage.size !== "auto" ? normalizedImage.size : undefined;
@@ -173,11 +174,11 @@ export async function requestEdit(config: AiConfig, prompt: string, references: 
             );
             return parseImagePayload(response);
         } catch (error) {
-            throw new Error(readAxiosError(error, "Grok 图片编辑失败"));
+            throw new Error(readAxiosError(error, tr("Grok 图片编辑失败")));
         }
     }
     if (isVolcengineArkImageProtocol(requestConfig.interfaceType)) {
-        if (mask) throw new Error("火山方舟图片协议不支持蒙版编辑，请移除蒙版后重试");
+        if (mask) throw new Error(tr("火山方舟图片协议不支持蒙版编辑，请移除蒙版后重试"));
         const quality = imageProfile.quality.supported && normalizedImage.quality !== "auto" ? normalizeQuality(normalizedImage.quality) || normalizedImage.quality : undefined;
         const sizeRequest = resolveImageRequestSize(imageProfile, imageProfile.resolution.supported ? normalizedImage.imageResolution : quality, normalizedImage.size);
         const requestSize = sizeRequest?.parameter === "size" ? { ...sizeRequest, value: normalizeVolcengineArkImageSize(sizeRequest.value)! } : sizeRequest;
@@ -198,7 +199,7 @@ export async function requestEdit(config: AiConfig, prompt: string, references: 
             );
             return parseImagePayload(response);
         } catch (error) {
-            throw new Error(readAxiosError(error, "火山方舟图片生成失败"));
+            throw new Error(readAxiosError(error, tr("火山方舟图片生成失败")));
         }
     }
     const quality = imageProfile.quality.supported && normalizedImage.quality !== "auto" ? normalizeQuality(normalizedImage.quality) || normalizedImage.quality : undefined;
@@ -227,7 +228,7 @@ export async function requestEdit(config: AiConfig, prompt: string, references: 
         const images = parseImagePayload(await imageChannelTransport(requestConfig).postForm<ImageApiResponse>(aiApiUrl(requestConfig, "/images/edits"), formData, { signal: options?.signal, headers: aiHeaders(requestConfig) }));
         return images;
     } catch (error) {
-        throw new Error(readAxiosError(error, "请求失败"));
+        throw new Error(readAxiosError(error, tr("请求失败")));
     }
 }
 
@@ -235,12 +236,12 @@ export async function requestImageQuestion(config: AiConfig, messages: AiTextMes
     const requestConfig = resolveModelRequestConfig(config, config.model || config.textModel);
     try {
         if (requestConfig.apiFormat === "gemini") {
-            const answer = (await requestGeminiStreamingResponse(requestConfig, toGeminiBody(requestConfig, messages), onDelta, options)).content || "没有返回内容";
+            const answer = (await requestGeminiStreamingResponse(requestConfig, toGeminiBody(requestConfig, messages), onDelta, options)).content || tr("没有返回内容");
             if (answer === "没有返回内容") onDelta(answer);
             return answer;
         }
         if (requestConfig.interfaceType === "claude-api") {
-            const answer = (await requestStreamingClaude(requestConfig, toClaudeBody(requestConfig, messages), onDelta, options)).content || "没有返回内容";
+            const answer = (await requestStreamingClaude(requestConfig, toClaudeBody(requestConfig, messages), onDelta, options)).content || tr("没有返回内容");
             if (answer === "没有返回内容") onDelta(answer);
             return answer;
         }
@@ -256,7 +257,7 @@ export async function requestImageQuestion(config: AiConfig, messages: AiTextMes
                         onDelta,
                         options,
                     )
-                ).content || "没有返回内容";
+                ).content || tr("没有返回内容");
             if (answer === "没有返回内容") onDelta(answer);
             return answer;
         }
@@ -271,11 +272,11 @@ export async function requestImageQuestion(config: AiConfig, messages: AiTextMes
                     onDelta,
                     options,
                 )
-            ).content || "没有返回内容";
+            ).content || tr("没有返回内容");
         if (answer === "没有返回内容") onDelta(answer);
         return answer;
     } catch (error) {
-        throw new Error(readAxiosError(error, "请求失败"));
+        throw new Error(readAxiosError(error, tr("请求失败")));
     }
 }
 
@@ -328,7 +329,7 @@ export async function requestToolResponse(config: AiConfig, messages: ResponseIn
             options,
         );
     } catch (error) {
-        throw new Error(readAxiosError(error, "请求失败"));
+        throw new Error(readAxiosError(error, tr("请求失败")));
     }
 }
 

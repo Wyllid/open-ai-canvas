@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Modal, Upload } from "antd";
 import { CloudUpload, FileText, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -65,7 +66,7 @@ export function UploadPluginModal({ open, onClose, onUpload }: UploadPluginModal
         try {
             await onUpload(file);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "安装插件失败");
+            message.error(error instanceof Error ? error.message : tr("安装插件失败"));
         } finally {
             uploadInFlight.current = false;
             setUploading(false);
@@ -74,14 +75,14 @@ export function UploadPluginModal({ open, onClose, onUpload }: UploadPluginModal
 
     const copySnippet = async () => {
         try {
-            if (!MANIFEST_EXAMPLE) throw new Error("开发规范中缺少清单示例");
-            if (!navigator.clipboard) throw new Error("当前环境不支持剪贴板，请从开发规范中手动复制");
+            if (!MANIFEST_EXAMPLE) throw new Error(tr("开发规范中缺少清单示例"));
+            if (!navigator.clipboard) throw new Error(tr("当前环境不支持剪贴板，请从开发规范中手动复制"));
             await navigator.clipboard.writeText(MANIFEST_EXAMPLE);
             setCopied(true);
             clearTimeout(copyTimer.current);
             copyTimer.current = setTimeout(() => setCopied(false), 2000);
         } catch (error) {
-            message.error(error instanceof Error ? error.message : "复制失败，请手动复制");
+            message.error(error instanceof Error ? error.message : tr("复制失败，请手动复制"));
         }
     };
 
@@ -90,7 +91,7 @@ export function UploadPluginModal({ open, onClose, onUpload }: UploadPluginModal
     return (
         <Modal
             className={`workspace-modal plugin-upload-modal ${isCompact ? "plugin-upload-modal-compact" : "workspace-modal-wide"}`}
-            title="上传插件"
+            title={tr("上传插件")}
             open={open}
             centered
             footer={null}
@@ -104,21 +105,21 @@ export function UploadPluginModal({ open, onClose, onUpload }: UploadPluginModal
                 <div className="plugin-upload-tabs-nav">
                     <button type="button" className={`plugin-upload-tab-btn ${activeTab === "install" ? "is-active" : ""}`} aria-pressed={activeTab === "install"} onClick={() => setActiveTab("install")}>
                         <CloudUpload className="size-4" />
-                        <span>安装插件包</span>
+                        <span>{tr("安装插件包")}</span>
                     </button>
                     <button type="button" className={`plugin-upload-tab-btn ${activeTab === "guide" ? "is-active" : ""}`} aria-pressed={activeTab === "guide"} onClick={() => setActiveTab("guide")}>
                         <FileText className="size-4" />
-                        <span>开发规范与示例</span>
+                        <span>{tr("开发规范与示例")}</span>
                     </button>
                 </div>
                 {activeTab === "guide" ? (
-                    <button type="button" className="plugin-upload-copy-btn" onClick={() => void copySnippet()} title="复制开发规范中的 manifest.json 配置示例">
-                        <span>{copied ? "已复制清单" : "复制清单示例"}</span>
+                    <button type="button" className="plugin-upload-copy-btn" onClick={() => void copySnippet()} title={tr("复制开发规范中的 manifest.json 配置示例")}>
+                        <span>{copied ? tr("已复制清单") : tr("复制清单示例")}</span>
                     </button>
                 ) : (
                     <div className="plugin-upload-badge">
                         <ShieldCheck className="size-3.5 text-status-success" />
-                        <span>沙箱受控隔离</span>
+                        <span>{tr("沙箱受控隔离")}</span>
                     </div>
                 )}
             </div>
@@ -130,8 +131,8 @@ export function UploadPluginModal({ open, onClose, onUpload }: UploadPluginModal
                             <CloudUpload className="size-5" />
                         </span>
                         <div>
-                            <h2>安装插件包</h2>
-                            <p>选择统一站点插件包，安装后会立即进入插件中心。</p>
+                            <h2>{tr("安装插件包")}</h2>
+                            <p>{tr("选择统一站点插件包，安装后会立即进入插件中心。")}</p>
                         </div>
                     </div>
 
@@ -156,14 +157,14 @@ export function UploadPluginModal({ open, onClose, onUpload }: UploadPluginModal
                             {uploading ? (
                                 <div className="py-6 flex flex-col items-center justify-center gap-3">
                                     <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                                    <p className="ant-upload-text">正在安装插件包，请稍候...</p>
-                                    <p className="ant-upload-hint">正在解压、校验清单合法性与版本声明</p>
+                                    <p className="ant-upload-text">{tr("正在安装插件包，请稍候...")}</p>
+                                    <p className="ant-upload-hint">{tr("正在解压、校验清单合法性与版本声明")}</p>
                                 </div>
                             ) : (
                                 <>
                                     <CloudUpload className="plugin-upload-dropzone-icon" />
-                                    <p className="ant-upload-text">{isDraggingPlugin ? "释放文件以上传插件" : "点击选择插件文件，也可拖拽到此处"}</p>
-                                    <p className="ant-upload-hint">支持 .yingce-plugin 包 · 大小不超过 48 MiB</p>
+                                    <p className="ant-upload-text">{isDraggingPlugin ? tr("释放文件以上传插件") : tr("点击选择插件文件，也可拖拽到此处")}</p>
+                                    <p className="ant-upload-hint">{tr("支持 .yingce-plugin 包 · 大小不超过 48 MiB")}</p>
                                 </>
                             )}
                         </Upload.Dragger>
@@ -171,13 +172,13 @@ export function UploadPluginModal({ open, onClose, onUpload }: UploadPluginModal
 
                     <div className="plugin-upload-notice">
                         <ShieldCheck className="size-4 shrink-0 text-status-success" />
-                        <span>上传前请确认插件来源可信。Web 入口只能进入声明的隔离运行时，不会获得主页面权限；密钥也不会从清单读取。</span>
+                        <span>{tr("上传前请确认插件来源可信。Web 入口只能进入声明的隔离运行时，不会获得主页面权限；密钥也不会从清单读取。")}</span>
                     </div>
 
                     <div className="plugin-upload-switch-guide-hint">
-                        <span>初次制作插件？</span>
+                        <span>{tr("初次制作插件？")}</span>
                         <button type="button" onClick={() => setActiveTab("guide")} className="plugin-upload-link-btn">
-                            查看《开发与打包规范说明》
+                            {tr("查看《开发与打包规范说明》")}
                         </button>
                     </div>
                 </div>
@@ -185,7 +186,7 @@ export function UploadPluginModal({ open, onClose, onUpload }: UploadPluginModal
                 <div className="plugin-upload-guide-view">
                     <div className="plugin-upload-guide-banner">
                         <ShieldCheck className="size-4 shrink-0 text-primary" />
-                        <span>以下为开发者技术规范与清单编写参考（只读文档）。安装插件请切换至「安装插件包」。</span>
+                        <span>{tr("以下为开发者技术规范与清单编写参考（只读文档）。安装插件请切换至「安装插件包」。")}</span>
                     </div>
                     <section className="plugin-upload-guide">
                         <PluginMarkdown source={pluginDevelopmentGuideMarkdown} />

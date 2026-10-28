@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import ffmpegCoreURL from "@ffmpeg/core?url";
 import ffmpegWasmURL from "@ffmpeg/core/wasm?url";
@@ -21,7 +22,7 @@ export async function loadFFmpeg(onProgress?: (progress: MergeVideoProgress) => 
                 await ffmpeg.load({ coreURL: ffmpegCoreURL, wasmURL: ffmpegWasmURL });
             } catch (cause) {
                 ffmpeg.terminate();
-                throw new Error("视频合并工具加载失败，请刷新页面后重试", { cause });
+                throw new Error(tr("视频合并工具加载失败，请刷新页面后重试"), { cause });
             }
             return ffmpeg;
         })();
@@ -54,7 +55,7 @@ export async function transcodeVideoToMp4(input: Blob, onProgress?: (progress: M
         }
         if (exitCode !== 0) {
             console.error("白膜视频转码失败", logs.slice(-12));
-            throw new Error("视频转码失败，请重试");
+            throw new Error(tr("视频转码失败，请重试"));
         }
         const output = await ffmpeg.readFile(outputName);
         onProgress?.({ phase: "encoding", progress: 100 });
@@ -65,7 +66,7 @@ export async function transcodeVideoToMp4(input: Blob, onProgress?: (progress: M
 }
 
 export async function mergeVideos(inputs: MergeVideoInput[], onProgress?: (progress: MergeVideoProgress) => void) {
-    if (inputs.length < 2) throw new Error("至少选择 2 个视频才能合并");
+    if (inputs.length < 2) throw new Error(tr("至少选择 2 个视频才能合并"));
     const ffmpeg = await loadFFmpeg(onProgress);
     const files: string[] = [];
     try {
@@ -73,11 +74,11 @@ export async function mergeVideos(inputs: MergeVideoInput[], onProgress?: (progr
             const input = inputs[index];
             const storedBlob = input.storageKey ? await getMediaBlob(input.storageKey) : null;
             const remoteBlob = !storedBlob && input.url ? await fetch(input.url).then((response) => {
-                if (!response.ok) throw new Error(`视频资源请求失败（${response.status}）`);
+                if (!response.ok) throw new Error(tr("视频资源请求失败（{0}）", response.status));
                 return response.blob();
             }) : null;
             const blob = storedBlob || remoteBlob;
-            if (!blob) throw new Error(`无法读取第 ${index + 1} 个视频`);
+            if (!blob) throw new Error(tr("无法读取第 {0} 个视频", index + 1));
             const name = `input-${index}.mp4`;
             await ffmpeg.writeFile(name, await fetchFile(blob));
             files.push(name);
@@ -91,7 +92,7 @@ export async function mergeVideos(inputs: MergeVideoInput[], onProgress?: (progr
         if (exitCode !== 0) {
             exitCode = await ffmpeg.exec(["-f", "concat", "-safe", "0", "-i", "concat.txt", "-c:v", "libx264", "-c:a", "aac", "-movflags", "+faststart", "merged.mp4"]);
         }
-        if (exitCode !== 0) throw new Error("视频编码失败，请确认视频编码格式兼容");
+        if (exitCode !== 0) throw new Error(tr("视频编码失败，请确认视频编码格式兼容"));
         const output = await ffmpeg.readFile("merged.mp4");
         onProgress?.({ phase: "encoding", progress: 100 });
         return new Blob([output as BlobPart], { type: "video/mp4" });

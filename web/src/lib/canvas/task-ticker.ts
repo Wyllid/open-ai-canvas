@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // One clock per canvas runtime, not one timer per loading node. No work while
 // hidden or when the final loading node unmounts.
 const listeners = new Set<() => void>();
@@ -38,14 +39,14 @@ export function subscribeTaskTicker(listener: () => void) {
 
 /** 终态（completedAt 有效）以完成时刻为终点冻结耗时，避免任务结束后数字继续增长。 */
 export function formatTaskElapsed(createdAt: string | undefined, now: number, completedAt?: string) {
-    if (!createdAt) return "刚刚";
+    if (!createdAt) return tr("刚刚");
     const started = new Date(createdAt).getTime();
-    if (!Number.isFinite(started)) return "刚刚";
+    if (!Number.isFinite(started)) return tr("刚刚");
     const completed = completedAt ? new Date(completedAt).getTime() : Number.NaN;
     // 时钟偏差或异常时间戳可能让 completedAt 早于 createdAt，夹紧避免显示负值。
     const end = Number.isFinite(completed) ? Math.max(completed, started) : now;
     const seconds = Math.max(0, Math.floor((end - started) / 1000));
-    if (seconds < 60) return `${seconds}秒`;
+    if (seconds < 60) return tr("{0}秒", seconds);
     const minutes = Math.floor(seconds / 60);
-    return minutes < 60 ? `${minutes}分${seconds % 60}秒` : `${Math.floor(minutes / 60)}时${minutes % 60}分`;
+    return minutes < 60 ? tr("{0}分{1}秒", minutes, seconds % 60) : tr("{0}时{1}分", Math.floor(minutes / 60), minutes % 60);
 }

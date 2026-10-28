@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useState } from "react";
 import { ChevronRight, FileUp } from "lucide-react";
 
@@ -74,7 +75,7 @@ export function PrevisPropLibraryPanel({ onAdd, onUpload }: { onAdd: (prop: Prev
         <section className="pv-entity-section pv-entity-section--prop-lib">
             <button type="button" className="pv-prop-lib__header" aria-expanded={open} onClick={() => setOpen(!open)}>
                 <ChevronRight className={`size-3 pv-prop-lib__chevron ${open ? "is-open" : ""}`} />
-                <span>道具库</span>
+                <span>{tr("道具库")}</span>
             </button>
             {open ? (
                 <>
@@ -91,7 +92,7 @@ export function PrevisPropLibraryPanel({ onAdd, onUpload }: { onAdd: (prop: Prev
                                     {expanded ? (
                                         <div className="pv-prop-grid">
                                             {category.items.map((prop) => (
-                                                <button key={prop.id} type="button" className="pv-prop-card" title={`添加 ${prop.name}（${formatPrevisPropSize(prop.size)}）`} onClick={() => onAdd(prop)}>
+                                                <button key={prop.id} type="button" className="pv-prop-card" title={tr("添加 {0}（{1}）", prop.name, formatPrevisPropSize(prop.size))} onClick={() => onAdd(prop)}>
                                                     <PrevisPropThumb prop={prop} />
                                                     <span className="pv-prop-card__name">{prop.name}</span>
                                                     <span className="pv-prop-card__size">{formatPrevisPropSize(prop.size)}</span>
@@ -106,7 +107,7 @@ export function PrevisPropLibraryPanel({ onAdd, onUpload }: { onAdd: (prop: Prev
                     <div className="pv-prop-upload-row">
                         <button type="button" className="pv-prop-upload-full" onClick={onUpload}>
                             <FileUp className="size-3.5" />
-                            上传本地模型 (.glb / .gltf)
+                            {tr("上传本地模型 (.glb / .gltf)")}
                         </button>
                     </div>
                 </>

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { CONTENT_MODERATION_ERROR_CODE, generationErrorMessage, isContentModerationError } from "@/lib/generation-error";
 import { mediaDeliverySummary } from "@/lib/generation-task-display";
 import type { GenerationTask, TaskStatus } from "@/services/api/task-center";
@@ -5,11 +6,11 @@ import { modelDisplayName, type AiConfig } from "@/stores/use-config-store";
 import { RelativeTime } from "@/components/ui/product/relative-time";
 
 export function getTaskCanvasContext(task: GenerationTask, canvasById: Map<string, { title: string; projectId?: string }>, projectNameById: Map<string, string>) {
-    if (!task.projectId) return { canvasName: "未绑定画布", projectName: "" };
+    if (!task.projectId) return { canvasName: tr("未绑定画布"), projectName: "" };
     const canvas = canvasById.get(task.projectId);
-    if (canvas) return { canvasName: canvas.title || "未命名画布", projectName: canvas.projectId ? projectNameById.get(canvas.projectId) || "" : "" };
+    if (canvas) return { canvasName: canvas.title || tr("未命名画布"), projectName: canvas.projectId ? projectNameById.get(canvas.projectId) || "" : "" };
     const projectName = projectNameById.get(task.projectId);
-    return projectName ? { canvasName: "项目级任务", projectName } : { canvasName: "画布已移除", projectName: "" };
+    return projectName ? { canvasName: tr("项目级任务"), projectName } : { canvasName: tr("画布已移除"), projectName: "" };
 }
 
 export function isTaskFailed(task: GenerationTask) {
@@ -19,16 +20,16 @@ export function isTaskFailed(task: GenerationTask) {
 export function taskAttentionReason(task: GenerationTask) {
     if (task.status === "cancelled") return providerCancelStatusLabel(task);
     if (task.mediaStage) return mediaDeliverySummary(task.status, task.mediaStage);
-    if (task.errorCode === CONTENT_MODERATION_ERROR_CODE || isContentModerationError(task.error)) return "内容审核未通过，请修改输入后新建任务";
+    if (task.errorCode === CONTENT_MODERATION_ERROR_CODE || isContentModerationError(task.error)) return tr("内容审核未通过，请修改输入后新建任务");
     if (task.error) return generationErrorMessage(task.error);
-    return task.stage || "生成失败，打开详情查看原因";
+    return task.stage || tr("生成失败，打开详情查看原因");
 }
 
 export function providerCancelStatusLabel(task: GenerationTask) {
-    if (task.providerCancelStatus === "requested") return "已请求上游取消，正在等待确认";
-    if (task.providerCancelStatus === "confirmed") return "上游已确认取消";
-    if (task.providerCancelStatus === "uncertain") return task.providerCancelError || "上游无法确认取消，请先核对上游任务，不要直接重试";
-    return "任务已取消，可按原输入重新提交";
+    if (task.providerCancelStatus === "requested") return tr("已请求上游取消，正在等待确认");
+    if (task.providerCancelStatus === "confirmed") return tr("上游已确认取消");
+    if (task.providerCancelStatus === "uncertain") return task.providerCancelError || tr("上游无法确认取消，请先核对上游任务，不要直接重试");
+    return tr("任务已取消，可按原输入重新提交");
 }
 
 export function statusDotClassName(status: TaskStatus) {
@@ -56,11 +57,11 @@ export function formatModelName(config: AiConfig, task: GenerationTask) {
     const model = raw.includes("::") ? raw.split("::").pop()?.trim() || raw : raw;
 
     // 工作流名称是任务快照，不属于模型渠道，不能交给模型展示名解析器再次映射成“系统模型”。
-    if (task.provider === "runninghub") return raw || "工作流";
-    if (!model) return "工作流";
-    if (model === "version-router") return "版本对比工作流";
-    if (model === "workflow-router") return "工作流路由";
-    if (model === "internal-agent") return "内置工作流";
-    if (model === "openai-compatible") return "OpenAI 兼容接口";
+    if (task.provider === "runninghub") return raw || tr("工作流");
+    if (!model) return tr("工作流");
+    if (model === "version-router") return tr("版本对比工作流");
+    if (model === "workflow-router") return tr("工作流路由");
+    if (model === "internal-agent") return tr("内置工作流");
+    if (model === "openai-compatible") return tr("OpenAI 兼容接口");
     return modelDisplayName(config, raw);
 }

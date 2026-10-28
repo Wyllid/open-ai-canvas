@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { createClientUUID } from "@/lib/client-id";
 import { changeCanvasEditLease, type CanvasEditProof, type CanvasSyncStatus } from "@/services/api/user-data";
 import { getActiveUserScope } from "@/lib/user-scope";
@@ -55,7 +56,7 @@ export function createCanvasEditLeaseClient(deps: Dependencies) {
     };
     const valid = (canvasId: string, nodeId: string, entry: OwnedEdit, startedScope: string) => scope === startedScope && scope === deps.scope() && own.get(canvasId)?.get(nodeId) === entry;
     const accept = (entry: OwnedEdit, result: LeaseResponse) => {
-        if (!result.lease || !result.token) throw new Error("服务端未授予编辑权限，草稿已保留");
+        if (!result.lease || !result.token) throw new Error(tr("服务端未授予编辑权限，草稿已保留"));
         entry.proof = { ...entry.proof, token: result.token };
         entry.expires = deps.now() + Math.max(0, Date.parse(result.lease.expiresAt) - Date.parse(result.serverTime));
         entry.lastRenew = deps.now();
@@ -71,7 +72,7 @@ export function createCanvasEditLeaseClient(deps: Dependencies) {
                 accept(entry, result);
             })
             .catch((error: unknown) => {
-                if (valid(canvasId, nodeId, entry, startedScope)) entry.error = error instanceof Error ? error : new Error("编辑权限申请失败，草稿已保留");
+                if (valid(canvasId, nodeId, entry, startedScope)) entry.error = error instanceof Error ? error : new Error(tr("编辑权限申请失败，草稿已保留"));
             })
             .finally(() => {
                 if (entry.pending === pending) entry.pending = undefined;
@@ -95,7 +96,7 @@ export function createCanvasEditLeaseClient(deps: Dependencies) {
         const remoteOwner = Boolean(other && other.sessionId !== sessionId && other.expires > now);
         const acquiring = Boolean(entry?.pending && entry.expires <= now);
         const expiredDraft = Boolean(entry && entry.version > entry.savedVersion && entry.expires <= now && !acquiring);
-        const error = entry?.error?.message || (expiredDraft ? "编辑权限已过期，草稿已保留" : undefined);
+        const error = entry?.error?.message || (expiredDraft ? tr("编辑权限已过期，草稿已保留") : undefined);
         // Pending input remains a local draft; proofs() waits for the server grant.
         return {
             // Leases serialize cloud writes, never local input. A competing
@@ -218,10 +219,10 @@ export function createCanvasEditLeaseClient(deps: Dependencies) {
             for (const [nodeId, entry] of own.get(canvasId) || []) {
                 if (!nodeIds.has(nodeId)) continue;
                 while (entry.pending) await entry.pending;
-                if (!valid(canvasId, nodeId, entry, startedScope)) throw new Error("账号已切换，已停止旧会话提交");
+                if (!valid(canvasId, nodeId, entry, startedScope)) throw new Error(tr("账号已切换，已停止旧会话提交"));
                 if (entry.version > entry.savedVersion && (entry.error || entry.expires <= deps.now())) {
                     await acquire(canvasId, nodeId, entry);
-                    if (!valid(canvasId, nodeId, entry, startedScope)) throw new Error("账号已切换，已停止旧会话提交");
+                    if (!valid(canvasId, nodeId, entry, startedScope)) throw new Error(tr("账号已切换，已停止旧会话提交"));
                 }
                 if (entry.error) throw entry.error;
                 if (!entry.proof.token) continue;
@@ -258,7 +259,7 @@ export function createCanvasEditLeaseClient(deps: Dependencies) {
                         if (remote.get(canvasId)?.get(nodeId)?.sessionId === sessionId) remote.get(canvasId)?.delete(nodeId);
                     })
                     .catch((error: unknown) => {
-                        if (valid(canvasId, nodeId, entry, startedScope)) entry.error = error instanceof Error ? error : new Error("编辑租约释放失败");
+                        if (valid(canvasId, nodeId, entry, startedScope)) entry.error = error instanceof Error ? error : new Error(tr("编辑租约释放失败"));
                     })
                     .finally(() => {
                         if (entry.pending === pending) entry.pending = undefined;
@@ -326,7 +327,7 @@ export function createCanvasEditLeaseClient(deps: Dependencies) {
                         } else accept(entry, result);
                     })
                     .catch((error: unknown) => {
-                        if (valid(canvasId, nodeId, entry, startedScope)) entry.error = error instanceof Error ? error : new Error("编辑权限失效，草稿已保留");
+                        if (valid(canvasId, nodeId, entry, startedScope)) entry.error = error instanceof Error ? error : new Error(tr("编辑权限失效，草稿已保留"));
                     })
                     .finally(() => {
                         if (entry.pending === pending) entry.pending = undefined;

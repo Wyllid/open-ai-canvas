@@ -81,11 +81,11 @@ test("channel model fetch requires explicit selection before import", async () =
 
     expect(apiSource).toContain("http.post<{ models: string[] }>(`/admin/channels/${encodeURIComponent(channelId)}/models/fetch`)");
     expect(apiSource).toContain("http.post<{ models: string[]; added: number }>(`/admin/channels/${encodeURIComponent(channelId)}/models/import`, { models })");
-    expect(component).toContain('title="选择要导入的模型"');
+    expect(component).toContain('title={tr("选择要导入的模型")}');
     expect(component).toContain("默认勾选已存在的模型，新模型默认不勾选");
     expect(component).toContain("setFetchPreviewOpen(true)");
     expect(component).toContain("setSelectedFetchModels(selectExistingImportModels(result.models,");
-    expect(component).toContain("已选择 {selectedFetchModels.length} / {fetchPreviewModels.length} 个模型");
+    expect(component).toContain('{tr("已选择")} {selectedFetchModels.length} / {fetchPreviewModels.length} {tr("个模型")}');
     expect(component).toContain("disabled={importing || !visibleFetchModels.length || allVisibleFetchModelsSelected}");
     expect(component).toContain("onClick={() => setSelectedFetchModels((current) => selectVisibleModels(current, visibleFetchModels))}");
     expect(component).toContain("disabled={importing || selectedVisibleFetchCount === 0}");
@@ -120,7 +120,7 @@ test("analytics keeps range presets without finance or pricing panels", async ()
     const source = compactSource(await Bun.file(new URL("../src/pages/admin/components/analytics-panel.tsx", import.meta.url)).text());
 
     expect(source).toContain('type RangePreset = "7d" | "30d" | "60d"');
-    expect(source).toContain('["60d", "60 天"]');
+    expect(source).toContain('["60d", tr("60 天")]');
     expect(source).toContain('next.set("rangePreset", rangePreset)');
     expect(source).toContain("setRangePreset(undefined)");
     expect(source).not.toContain("模型价格配置");
@@ -133,7 +133,7 @@ test("storage settings keep generic S3 controls and connection validation", asyn
     const source = await Promise.resolve(moduleGroupSource("pages/admin/settings/storage-settings-page.tsx"));
     const compacted = compactSource(source);
 
-    expect(compacted).toContain('{ mode: "s3", label: "S3 兼容存储"');
+    expect(compacted).toContain('{ mode: "s3", label: tr("S3 兼容存储")');
     expect(compacted).toContain("testAdminOSSConnection(connectionInput(values))");
     for (const field of ["s3Preset", "sessionToken", "pathStyle", "allowUserS3"]) {
         expect(compacted).toContain(`name="${field}"`);
@@ -156,7 +156,7 @@ test("nested admin pages return to their own parent entry", async () => {
 test("high impact feature shutdowns require confirmation", async () => {
     const source = await Bun.file(new URL("../src/pages/admin/components/feature-availability-panel.tsx", import.meta.url)).text();
     expect(source).not.toContain("creditsEnabled");
-    expect(source).toContain('title: "关闭前台模型功能？"');
+    expect(source).toContain('title: tr("关闭前台模型功能？")');
     expect(source).toContain("onChange={requestFeatureChange}");
 });
 
@@ -189,45 +189,45 @@ test("task-first settings reveal dependent configuration only after the primary 
         Bun.file(new URL("../src/styles/admin-ui.css", import.meta.url)).text(),
     ]);
 
-    expect(storageSource).toContain('title="1. 选择新资源存储位置"');
+    expect(storageSource).toContain('title={tr("1. 选择新资源存储位置")}');
     expect(storageSource).toContain("选择后继续完成第 2 步并保存");
     expect(sourceSection(storageSource, "const requestModeChange", "const save")).not.toContain("save(values)");
 
     expect(emailSource).toContain("{draftEnabled ? (");
     expect(emailSource).toContain('id="admin-email-smtp"');
-    expect(emailSource).toContain('title="1. 是否发送账户安全邮件"');
-    expect(emailSource).toContain('title="2. 配置 SMTP 连接与发件身份"');
+    expect(emailSource).toContain('title={tr("1. 是否发送账户安全邮件")}');
+    expect(emailSource).toContain('title={tr("2. 配置 SMTP 连接与发件身份")}');
 
     expect(accessSource).toContain("{draftLinuxDOEnabled ? (");
-    expect(accessSource).toContain('title="1. 是否允许创建新账号"');
-    expect(accessSource).toContain('title="2. 是否开放 Linux.do 登录"');
+    expect(accessSource).toContain('title={tr("1. 是否允许创建新账号")}');
+    expect(accessSource).toContain('title={tr("2. 是否开放 Linux.do 登录")}');
 
-    expect(featureSource).toContain('title="1. 用户工作台入口"');
-    expect(featureSource).toContain('title="2. 插件开放范围"');
-    expect(featureSource).toContain('title="3. 用户模型来源"');
+    expect(featureSource).toContain('title={tr("1. 用户工作台入口")}');
+    expect(featureSource).toContain('title={tr("2. 插件开放范围")}');
+    expect(featureSource).toContain('title={tr("3. 用户模型来源")}');
     expect(appearanceSource).toContain("<WelcomeSetting />");
-    expect(welcomeSource).toContain("<strong>启用欢迎页</strong>");
+    expect(welcomeSource).toContain('<strong>{tr("启用欢迎页")}</strong>');
     expect(welcomeSource).toContain("updateAdminFeatureAvailability({ welcomeEnabled: value })");
 
-    expect(drawingSource).toContain('title="1. 选择新建绘图默认编辑器"');
-    expect(drawingSource).toContain('title="2. 配置 tldraw 授权（按需）"');
+    expect(drawingSource).toContain('title={tr("1. 选择新建绘图默认编辑器")}');
+    expect(drawingSource).toContain('title={tr("2. 配置 tldraw 授权（按需）")}');
     expect(sourceSection(drawingSource, "const selectEngine", "async function save")).not.toContain("save(");
 
-    expect(arkSource).toContain('title="1. 配置方舟项目与 IAM 凭据"');
-    expect(arkSource).toContain('title="2. 是否启用可信素材同步"');
+    expect(arkSource).toContain('title={tr("1. 配置方舟项目与 IAM 凭据")}');
+    expect(arkSource).toContain('title={tr("2. 是否启用可信素材同步")}');
     expect(arkSource).toContain("{prerequisitesReady || draftEnabled ? (");
-    expect(arkSource).toContain('aria-label="启用可信素材同步，保存修改后生效"');
+    expect(arkSource).toContain('aria-label={tr("启用可信素材同步，保存修改后生效")}');
 
-    expect(interceptionSource).toContain('title="1. 是否替换用户可见的上游错误"');
-    expect(interceptionSource).toContain('title="2. 配置替换规则与优先级"');
-    expect(interceptionSource).toContain('title="3. 本地预览用户最终文案"');
+    expect(interceptionSource).toContain('title={tr("1. 是否替换用户可见的上游错误")}');
+    expect(interceptionSource).toContain('title={tr("2. 配置替换规则与优先级")}');
+    expect(interceptionSource).toContain('title={tr("3. 本地预览用户最终文案")}');
     expect(interceptionSource).toContain("{enabled ? (");
     expect(interceptionSource).not.toContain('className="admin-intercept-overview"');
     expect(sourceSection(interceptionSource, "const changeEnabled", "if (loading")).not.toContain("save(");
 
-    expect(thirdPartySource).toContain('title="1. 配置 LibTV 服务端访问凭据"');
-    expect(thirdPartySource).toContain('title="2. 是否开放用户导入 LibTV 画布"');
-    expect(thirdPartySource).toContain('title="3. 验证已保存的 LibTV 凭据"');
+    expect(thirdPartySource).toContain('title={tr("1. 配置 LibTV 服务端访问凭据")}');
+    expect(thirdPartySource).toContain('title={tr("2. 是否开放用户导入 LibTV 画布")}');
+    expect(thirdPartySource).toContain('title={tr("3. 验证已保存的 LibTV 凭据")}');
     expect(thirdPartySource).toContain("{draftHasToken ? (");
     expect(thirdPartySource).toContain("{setting.hasToken && !clearTokenDraft ? (");
     expect(thirdPartySource).not.toContain('className="admin-third-party-overview"');
@@ -241,13 +241,13 @@ test("admin tables keep requested filters and actions in the intended positions"
 
     const storageToolbar = sourceSection(storageSource, "toolbar={", "toolbarActiveFilters=");
     expect(storageToolbar).toContain('className="admin-storage-resource-filters"');
-    expect(storageToolbar).toContain('placeholder="资源 ID 或对象路径"');
-    expect(storageToolbar).toContain('placeholder="用户名 / 昵称 / 邮箱 / 用户 ID"');
+    expect(storageToolbar).toContain('placeholder={tr("资源 ID 或对象路径")}');
+    expect(storageToolbar).toContain('placeholder={tr("用户名 / 昵称 / 邮箱 / 用户 ID")}');
     expect(storageSource).toContain("user: debouncedUserQuery || undefined");
     expect(storageSource).toContain("userId: debouncedUserQuery || undefined");
-    expect(storageToolbar).toContain('aria-label="筛选资源类型"');
-    expect(storageToolbar).toContain('aria-label="筛选资源状态"');
-    expect(storageToolbar).toContain('aria-label="筛选存储类型"');
+    expect(storageToolbar).toContain('aria-label={tr("筛选资源类型")}');
+    expect(storageToolbar).toContain('aria-label={tr("筛选资源状态")}');
+    expect(storageToolbar).toContain('aria-label={tr("筛选存储类型")}');
 });
 
 test("request logs show request stages without credit billing", async () => {
@@ -257,14 +257,14 @@ test("request logs show request stages without credit billing", async () => {
         Bun.file(new URL("../src/services/api/auth.ts", import.meta.url)).text(),
     ]);
 
-    expect(listSource).toContain('title: "请求阶段 / 状态"');
-    expect(listSource).toContain('description="模型生成与结果下载记录"');
+    expect(listSource).toContain('title: tr("请求阶段 / 状态")');
+    expect(listSource).toContain('description={tr("模型生成与结果下载记录")}');
     expect(listSource).not.toContain("BillingSummary");
     expect(listSource).not.toContain("积分");
-    expect(detailSource).toContain('label="请求阶段" value={requestKindText(log.requestKind)}');
+    expect(detailSource).toContain('label={tr("请求阶段")} value={requestKindText(log.requestKind)}');
     expect(detailSource).not.toContain("billingText");
-    expect(detailSource).toContain('label="请求 ID" value={<CopyValue value={log.id} />}');
-    expect(detailSource).toContain('label="供应商任务 ID" value={log.providerRequestId ? <CopyValue value={log.providerRequestId} /> : "未记录"}');
+    expect(detailSource).toContain('label={tr("请求 ID")} value={<CopyValue value={log.id} />}');
+    expect(detailSource).toContain('label={tr("供应商任务 ID")} value={log.providerRequestId ? <CopyValue value={log.providerRequestId} /> : tr("未记录")}');
     expect(apiSource).not.toContain("billingAmountMicrocredits");
     expect(apiSource).not.toContain("billingAvailable");
 });

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 // 用户数据同步前的媒体上行：把本地存储键、内联 data URL 上传成资源引用，再写入远端。
 //
 // 同一份内联数据按内容摘要去重上传；上传失败时整批同步失败并进入重试，不写入半成品。
@@ -119,7 +120,7 @@ async function ensureRemoteResourceReferencesValue<T>(value: T, uploaded: Map<st
 export function applyResourceReference(payload: Record<string, unknown>, storageKey: string, preserveTextContent = false) {
     const resourceId = resourceIdFromStorageKey(storageKey);
     if (!resourceId) {
-        throw new Error(`远端资源引用无效：${storageKey}`);
+        throw new Error(tr("远端资源引用无效：{0}", storageKey));
     }
     const url = resourceFileUrl(resourceId);
     payload.storageKey = storageKey;
@@ -139,7 +140,7 @@ export function inlineMediaDataUrl(payload: Record<string, unknown>) {
 
 export async function uploadInlineDataUrl(dataUrl: string, identity: string) {
     const response = await fetch(dataUrl);
-    if (!response.ok) throw new Error("内嵌媒体读取失败");
+    if (!response.ok) throw new Error(tr("内嵌媒体读取失败"));
     const blob = await response.blob();
     const kind: "image" | "video" | "audio" | "file" = blob.type.startsWith("image/") ? "image" : blob.type.startsWith("video/") ? "video" : blob.type.startsWith("audio/") ? "audio" : "file";
     const resource = await uploadResourceFile(blob, kind, { idempotencyKey: identity });
@@ -153,7 +154,7 @@ export async function inlineMediaUploadIdentity(dataUrl: string) {
 
 export async function uploadLocalStorageKey(storageKey: string, payload: Record<string, unknown>) {
     const blob = storageKey.startsWith("image:") ? await getImageBlob(storageKey) : await getMediaBlob(storageKey);
-    if (!blob) throw new Error(`本地媒体不存在，无法同步：${storageKey}`);
+    if (!blob) throw new Error(tr("本地媒体不存在，无法同步：{0}", storageKey));
     const kind = blob.type.startsWith("image/") ? "image" : blob.type.startsWith("video/") ? "video" : blob.type.startsWith("audio/") ? "audio" : "file";
     const resource = await uploadResourceFile(blob, kind, {
         width: numberValue(payload.naturalWidth) || numberValue(payload.width),

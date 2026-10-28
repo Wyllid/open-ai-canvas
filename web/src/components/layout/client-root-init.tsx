@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 import { App } from "antd";
@@ -109,12 +110,12 @@ export function ClientRootInit({ children }: { children: ReactNode }) {
                             }
                           : channel,
                   )
-                : [createModelChannel({ id: "default", name: "默认渠道", baseUrl: baseUrl || undefined })],
+                : [createModelChannel({ id: "default", name: tr("默认渠道"), baseUrl: baseUrl || undefined })],
         );
         if (baseUrl) updateConfig("baseUrl", baseUrl);
         navigateToSettings({ section: "channels" });
-        if (ignoredApiKey) message.warning("出于安全考虑，链接中的 API Key 已忽略，请在配置中手动填写");
-        else message.success("已导入本地直连地址");
+        if (ignoredApiKey) message.warning(tr("出于安全考虑，链接中的 API Key 已忽略，请在配置中手动填写"));
+        else message.success(tr("已导入本地直连地址"));
     }, [config.channels, message, updateConfig]);
 
     return <>{children}</>;

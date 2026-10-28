@@ -14,7 +14,8 @@ writeFileSync(requestPath, 'export const apiBaseURL = "https://agent.invalid/api
 writeFileSync(join(dir, "agent.ts"), readFileSync(new URL("services/api/agent.ts", root), "utf8")
     .replace('"@/services/api/request"', JSON.stringify(requestPath))
     .replace('"@/lib/user-scope"', JSON.stringify(fileURLToPath(new URL("lib/user-scope.ts", root))))
-    .replace('"@/services/api/task-text-stream"', JSON.stringify(fileURLToPath(new URL("services/api/task-text-stream.ts", root)))));
+    .replace('"@/services/api/task-text-stream"', JSON.stringify(fileURLToPath(new URL("services/api/task-text-stream.ts", root))))
+    .replace('"@/i18n"', JSON.stringify(fileURLToPath(new URL("i18n/index.ts", root)))));
 const api: typeof import("../src/services/api/agent") = await import(join(dir, "agent.ts"));
 const transport = await import(requestPath);
 const storagePath = join(dir, "storage.ts");
@@ -23,7 +24,8 @@ writeFileSync(join(dir, "scope.ts"), 'export const getActiveUserScope = () => "t
 writeFileSync(join(dir, "conversations.ts"), readFileSync(new URL("services/cloud-agent-conversations.ts", root), "utf8")
     .replace('"@/lib/localforage-storage"', JSON.stringify(storagePath))
     .replace('"@/lib/user-scope"', JSON.stringify(join(dir, "scope.ts")))
-    .replace('"@/lib/markdown-plain-text"', JSON.stringify(fileURLToPath(new URL("lib/markdown-plain-text.ts", root)))));
+    .replace('"@/lib/markdown-plain-text"', JSON.stringify(fileURLToPath(new URL("lib/markdown-plain-text.ts", root))))
+    .replace('"@/i18n"', JSON.stringify(fileURLToPath(new URL("i18n/index.ts", root)))));
 const conversations: typeof import("../src/services/cloud-agent-conversations") = await import(join(dir, "conversations.ts"));
 const storage = await import(storagePath);
 const nativeFetch = globalThis.fetch;

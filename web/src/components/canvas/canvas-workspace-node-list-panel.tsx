@@ -1,3 +1,4 @@
+import { currentLocale, tr } from "@/i18n";
 import { memo, useState } from "react";
 import { AudioLines, Clock3, FileText, Image, Layers, Pencil, Search, X } from "lucide-react";
 
@@ -32,8 +33,8 @@ export function CanvasWorkspaceNodeListPanel({
         <>
             <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-2">
                 <Layers className="size-3.5 shrink-0" />
-                <span className="truncate text-xs font-semibold">画布节点</span>
-                <span className="tabular-nums text-foreground/32">{nodes.length.toLocaleString("zh-CN")}</span>
+                <span className="truncate text-xs font-semibold">{tr("画布节点")}</span>
+                <span className="tabular-nums text-foreground/32">{nodes.length.toLocaleString(currentLocale())}</span>
             </header>
             <div className="shrink-0 border-b border-border/70 p-2">
                 <label className="flex h-8 items-center gap-2 rounded-[var(--r-md)] bg-foreground/[.045] px-2 focus-within:ring-2 focus-within:ring-[var(--workspace-accent-soft)]">
@@ -42,22 +43,22 @@ export function CanvasWorkspaceNodeListPanel({
                         value={query}
                         onChange={(event) => onQueryChange(event.target.value)}
                         className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-foreground/28"
-                        placeholder="搜索节点、章节、镜头、模型或标签…"
-                        aria-label="搜索画布节点"
+                        placeholder={tr("搜索节点、章节、镜头、模型或标签…")}
+                        aria-label={tr("搜索画布节点")}
                     />
                     {query ? (
-                        <button type="button" onClick={() => onQueryChange("")} className="grid size-5 shrink-0 place-items-center rounded text-foreground/32 hover:bg-surface-hover hover:text-foreground" aria-label="清空搜索">
+                        <button type="button" onClick={() => onQueryChange("")} className="grid size-5 shrink-0 place-items-center rounded text-foreground/32 hover:bg-surface-hover hover:text-foreground" aria-label={tr("清空搜索")}>
                             <X className="size-3" />
                         </button>
                     ) : null}
                 </label>
-                {deferredQuery ? <div className="mt-1 px-0.5 text-[var(--fs-micro)] tabular-nums text-foreground/35">找到 {results.length.toLocaleString("zh-CN")} 个节点</div> : null}
+                {deferredQuery ? <div className="mt-1 px-0.5 text-[var(--fs-micro)] tabular-nums text-foreground/35">{tr("找到")} {results.length.toLocaleString(currentLocale())} {tr("个节点")}</div> : null}
             </div>
-            <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain py-1" role="listbox" aria-label="画布节点列表">
+            <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain py-1" role="listbox" aria-label={tr("画布节点列表")}>
                 {results.length ? (
                     results.map((node) => <CanvasNodeListItem key={node.id} node={node} config={config} active={selectedNodeIds.has(node.id)} onSelect={() => onFocus(node.id)} />)
                 ) : (
-                    <WorkspaceState icon="canvas" compact title="没有匹配节点" description="换一个关键词继续搜索。" />
+                    <WorkspaceState icon="canvas" compact title={tr("没有匹配节点")} description={tr("换一个关键词继续搜索。")} />
                 )}
             </div>
         </>
@@ -149,6 +150,6 @@ function CanvasNodeListThumbnail({ node }: { node: CanvasNodeData }) {
 }
 
 function fullTime(value?: string) {
-    if (!value) return "时间未记录";
-    return new Date(value).toLocaleString("zh-CN", { hour12: false });
+    if (!value) return tr("时间未记录");
+    return new Date(value).toLocaleString(currentLocale(), { hour12: false });
 }

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { nanoid } from "nanoid";
 
 import { getNodeSpec } from "@/constant/canvas";
@@ -95,7 +96,7 @@ export function verifyCanvasOperations(before: CanvasSnapshot, after: CanvasSnap
     const addNodeCount = ops.filter((op) => op.type === "add_node").length;
     if (createdNodeIds.length < addNodeCount) {
         failedPostconditions.add("add_node:count");
-        warnings.push(`预期新增 ${addNodeCount} 个节点，最终只观察到 ${createdNodeIds.length} 个`);
+        warnings.push(tr("预期新增 {0} 个节点，最终只观察到 {1} 个", addNodeCount, createdNodeIds.length));
     }
 
     const requireAfterNode = (nodeId: string) => {
@@ -121,13 +122,13 @@ export function verifyCanvasOperations(before: CanvasSnapshot, after: CanvasSnap
                 for (const key of ["title", "x", "y", "width", "height", "position", "parentId"]) {
                     if (!(key in patch) || JSON.stringify(afterNode[key as keyof typeof afterNode]) === JSON.stringify(patch[key])) continue;
                     failedPostconditions.add(`${op.id}:${key}`);
-                    warnings.push(`节点「${afterNode.title || op.id}」的 ${key} 未达到预期`);
+                    warnings.push(tr("节点「{0}」的 {1} 未达到预期", afterNode.title || op.id, key));
                 }
                 if ((patch.metadata && typeof patch.metadata === "object" && !Array.isArray(patch.metadata)) || op.metadata) {
                     const expectedMetadata = { ...beforeNode.metadata, ...(patch.metadata as Record<string, unknown> || {}), ...(op.metadata || {}) };
                     if (JSON.stringify(afterNode.metadata || {}) !== JSON.stringify(expectedMetadata)) {
                         failedPostconditions.add(`${op.id}:metadata`);
-                        warnings.push(`节点「${afterNode.title || op.id}」的 metadata 未达到预期`);
+                        warnings.push(tr("节点「{0}」的 metadata 未达到预期", afterNode.title || op.id));
                     }
                 }
             }
@@ -157,7 +158,7 @@ export function verifyCanvasOperations(before: CanvasSnapshot, after: CanvasSnap
         if (op.type === "select_nodes") {
             op.ids.forEach((id) => {
                 affectedNodeIds.add(id);
-                if (afterNodeIds.has(id) && !after.selectedNodeIds.includes(id)) warnings.push(`节点「${id}」未出现在最终选区`);
+                if (afterNodeIds.has(id) && !after.selectedNodeIds.includes(id)) warnings.push(tr("节点「{0}」未出现在最终选区", id));
             });
             continue;
         }
@@ -172,9 +173,9 @@ export function verifyCanvasOperations(before: CanvasSnapshot, after: CanvasSnap
             const outcome = generationOutcome(taskStatus, officialStatus, taskId);
             const message = generationVerificationMessage(outcome, resourceReady);
             generation.push({ nodeId: op.nodeId, ...(taskId ? { taskId } : {}), ...(taskStatus ? { taskStatus } : {}), ...(officialStatus ? { officialStatus } : {}), outcome, resourceReady, message });
-            if (outcome === "not_started") warnings.push(`节点「${node?.title || op.nodeId}」没有绑定生成任务，工具没有确认任务已提交`);
-            else if (outcome === "failed" || outcome === "cancelled") warnings.push(`节点「${node?.title || op.nodeId}」的生成任务未成功：${message}`);
-            else if (outcome === "succeeded" && !resourceReady) warnings.push(`节点「${node?.title || op.nodeId}」的 provider 任务已成功，但资源尚未物化`);
+            if (outcome === "not_started") warnings.push(tr("节点「{0}」没有绑定生成任务，工具没有确认任务已提交", node?.title || op.nodeId));
+            else if (outcome === "failed" || outcome === "cancelled") warnings.push(tr("节点「{0}」的生成任务未成功：{1}", node?.title || op.nodeId, message));
+            else if (outcome === "succeeded" && !resourceReady) warnings.push(tr("节点「{0}」的 provider 任务已成功，但资源尚未物化", node?.title || op.nodeId));
             continue;
         }
     }
@@ -212,27 +213,27 @@ export function findCanvasNodeOverlaps(nodes: CanvasNodeData[], onlyIds?: string
             const left = candidates[index];
             const right = candidates[next];
             if (left.position.x >= right.position.x + right.width || right.position.x >= left.position.x + left.width || left.position.y >= right.position.y + right.height || right.position.y >= left.position.y + left.height) continue;
-            overlaps.push(`节点「${left.title || left.id}」与「${right.title || right.id}」发生重叠`);
+            overlaps.push(tr("节点「{0}」与「{1}」发生重叠", left.title || left.id, right.title || right.id));
         }
     }
     return overlaps;
 }
 
 export function canvasOperationPostconditionMessage(result: CanvasOperationPostcondition) {
-    const nodeSummary = result.createdNodeIds.length ? `已创建 ${result.createdNodeIds.length} 个节点` : result.changed ? "画布已更新" : "画布状态未变化";
+    const nodeSummary = result.createdNodeIds.length ? tr("已创建 {0} 个节点", result.createdNodeIds.length) : result.changed ? tr("画布已更新") : tr("画布状态未变化");
     const connectionSummary = result.expectedConnectionCount
-        ? `预期 ${result.expectedConnectionCount} 条连线，实际新增 ${result.createdConnectionIds.length} 条（当前共 ${result.connectionCount} 条）`
-        : `当前共 ${result.connectionCount} 条连线`;
+        ? tr("预期 {0} 条连线，实际新增 {1} 条（当前共 {2} 条）", result.expectedConnectionCount, result.createdConnectionIds.length, result.connectionCount)
+        : tr("当前共 {0} 条连线", result.connectionCount);
     if (!result.ok) {
         if (result.generation.some((item) => item.outcome === "failed" || item.outcome === "cancelled")) return result.generation.map((item) => item.message).join("；");
-        if (result.generation.some((item) => item.outcome === "not_started")) return "画布写入完成，但生成任务没有成功提交，请检查当前生成执行器。";
+        if (result.generation.some((item) => item.outcome === "not_started")) return tr("画布写入完成，但生成任务没有成功提交，请检查当前生成执行器。");
         const details = [...result.overlapWarnings, ...result.warnings].filter(Boolean).slice(0, 2).join("；");
-        return `${nodeSummary}，但事实复核失败：${details || "目标节点或连线没有达到预期状态"}。${result.expectedConnectionCount ? ` ${connectionSummary}。` : ""}`;
+        return tr("{0}，但事实复核失败：{1}。{2}", nodeSummary, details || tr("目标节点或连线没有达到预期状态"), result.expectedConnectionCount ? ` ${connectionSummary}。` : "");
     }
-    if (result.generation.some((item) => item.outcome === "queued" || item.outcome === "running")) return `${nodeSummary}，${connectionSummary}；已提交生成任务，当前仍在${result.generation.map((item) => item.message).join("、")}，尚未完成。`;
-    if (result.generation.some((item) => item.outcome === "succeeded" && !item.resourceReady)) return `${nodeSummary}，${connectionSummary}；生成任务已成功，但资源尚未物化到画布，当前不能把它当作可复用素材。`;
-    if (result.generation.some((item) => item.outcome === "succeeded" && item.resourceReady)) return `${nodeSummary}，${connectionSummary}；生成已完成，且资源已在画布节点上就绪。`;
-    return `${nodeSummary}，${connectionSummary}，布局无重叠，已复核最终状态。`;
+    if (result.generation.some((item) => item.outcome === "queued" || item.outcome === "running")) return tr("{0}，{1}；已提交生成任务，当前仍在{2}，尚未完成。", nodeSummary, connectionSummary, result.generation.map((item) => item.message).join("、"));
+    if (result.generation.some((item) => item.outcome === "succeeded" && !item.resourceReady)) return tr("{0}，{1}；生成任务已成功，但资源尚未物化到画布，当前不能把它当作可复用素材。", nodeSummary, connectionSummary);
+    if (result.generation.some((item) => item.outcome === "succeeded" && item.resourceReady)) return tr("{0}，{1}；生成已完成，且资源已在画布节点上就绪。", nodeSummary, connectionSummary);
+    return tr("{0}，{1}，布局无重叠，已复核最终状态。", nodeSummary, connectionSummary);
 }
 
 export function summarizeCanvasOperations(ops?: CanvasOperation[]) {
@@ -258,12 +259,12 @@ export function previewCanvasOperations(ops?: CanvasOperation[], snapshot?: Canv
     safeOps.forEach((op) => {
         if (op.type === "add_node") {
             addedNodeCount += 1;
-            items.push(`新增${canvasNodeTypeLabel(op.nodeType)}${op.title ? `「${op.title}」` : ""}`);
+            items.push(tr("新增{0}{1}", canvasNodeTypeLabel(op.nodeType), op.title ? `「${op.title}」` : ""));
             return;
         }
         if (op.type === "update_node") {
             affectedNodeIds.add(op.id);
-            items.push(`修改「${nodeById.get(op.id)?.title || op.id}」`);
+            items.push(tr("修改「{0}」", nodeById.get(op.id)?.title || op.id));
             return;
         }
         if (op.type === "delete_node") {
@@ -271,38 +272,38 @@ export function previewCanvasOperations(ops?: CanvasOperation[], snapshot?: Canv
             ids.forEach((id) => affectedNodeIds.add(id));
             destructiveCount += Math.max(1, ids.length);
             const names = ids.slice(0, 3).map((id) => nodeById.get(id)?.title || id);
-            items.push(ids.length ? `删除 ${ids.length} 个节点${names.length ? `：${names.join("、")}${ids.length > names.length ? "等" : ""}` : ""}` : `删除全部${canvasNodeTypeLabel(op.nodeType)}`);
+            items.push(ids.length ? tr("删除 {0} 个节点{1}", ids.length, names.length ? `：${names.join("、")}${ids.length > names.length ? tr("等") : ""}` : "") : tr("删除全部{0}", canvasNodeTypeLabel(op.nodeType)));
             return;
         }
         if (op.type === "connect_nodes") {
             affectedNodeIds.add(op.fromNodeId);
             affectedNodeIds.add(op.toNodeId);
-            items.push(`连接「${nodeById.get(op.fromNodeId)?.title || op.fromNodeId}」到「${nodeById.get(op.toNodeId)?.title || op.toNodeId}」`);
+            items.push(tr("连接「{0}」到「{1}」", nodeById.get(op.fromNodeId)?.title || op.fromNodeId, nodeById.get(op.toNodeId)?.title || op.toNodeId));
             return;
         }
         if (op.type === "delete_connections") {
             const count = op.all ? snapshot?.connections.length || 0 : op.ids?.length || (op.id ? 1 : 0);
             destructiveCount += Math.max(1, count);
-            items.push(op.all ? `删除全部 ${count} 条连线` : `删除 ${count || 1} 条连线`);
+            items.push(op.all ? tr("删除全部 {0} 条连线", count) : tr("删除 {0} 条连线", count || 1));
             return;
         }
         if (op.type === "run_generation") {
             affectedNodeIds.add(op.nodeId);
             generationCount += 1;
-            items.push(`为「${nodeById.get(op.nodeId)?.title || op.nodeId}」触发${generationModeLabel(op.mode)}生成`);
+            items.push(tr("为「{0}」触发{1}生成", nodeById.get(op.nodeId)?.title || op.nodeId, generationModeLabel(op.mode)));
             return;
         }
         if (op.type === "select_nodes") {
             op.ids.forEach((id) => affectedNodeIds.add(id));
-            items.push(`选择 ${op.ids.length} 个节点`);
+            items.push(tr("选择 {0} 个节点", op.ids.length));
             return;
         }
-        if (op.type === "set_viewport") items.push("调整当前画布视图");
+        if (op.type === "set_viewport") items.push(tr("调整当前画布视图"));
     });
 
     const warnings = [];
-    if (destructiveCount) warnings.push("包含删除操作，批准后可从最近 Agent 批次逐步撤销。");
-    if (generationCount) warnings.push("生成任务可能产生模型费用，画布撤销不会取消已提交任务。");
+    if (destructiveCount) warnings.push(tr("包含删除操作，批准后可从最近 Agent 批次逐步撤销。"));
+    if (generationCount) warnings.push(tr("生成任务可能产生模型费用，画布撤销不会取消已提交任务。"));
     return {
         operationCount: safeOps.length,
         affectedNodeCount: affectedNodeIds.size + addedNodeCount,
@@ -324,7 +325,7 @@ export function applyCanvasOperations(snapshot: CanvasSnapshot, ops?: CanvasOper
         if (op.type === "add_node") {
             const nodeType = op.nodeType || CanvasNodeType.Text;
             const definition = getNodeDefinition(nodeType);
-            if (!definition || (definition.plugin && !isPluginEffectivelyEnabled(definition.plugin.pluginId))) throw new Error(`节点类型未注册或插件不可用：${nodeType}`);
+            if (!definition || (definition.plugin && !isPluginEffectivelyEnabled(definition.plugin.pluginId))) throw new Error(tr("节点类型未注册或插件不可用：{0}", nodeType));
             const spec = getNodeSpec(nodeType as CanvasNodeType) || { title: definition.defaultTitle, ...definition.defaultSize, metadata: definition.defaultMetadata };
             const node: CanvasNodeData = {
                 id: op.id || `${nodeType}-${Date.now()}-${index}`,
@@ -383,34 +384,34 @@ export function hashCanvasSnapshot(snapshot: CanvasSnapshot) {
 }
 
 function opLabel(type: string) {
-    if (type === "add_node") return "新增节点";
-    if (type === "update_node") return "更新节点";
-    if (type === "delete_node") return "删除节点";
-    if (type === "delete_connections") return "删除连线";
-    if (type === "connect_nodes") return "连接";
-    if (type === "set_viewport") return "调整视图";
-    if (type === "select_nodes") return "选择节点";
-    if (type === "run_generation") return "触发生成";
+    if (type === "add_node") return tr("新增节点");
+    if (type === "update_node") return tr("更新节点");
+    if (type === "delete_node") return tr("删除节点");
+    if (type === "delete_connections") return tr("删除连线");
+    if (type === "connect_nodes") return tr("连接");
+    if (type === "set_viewport") return tr("调整视图");
+    if (type === "select_nodes") return tr("选择节点");
+    if (type === "run_generation") return tr("触发生成");
     return type;
 }
 
 function canvasNodeTypeLabel(type?: CanvasNodeTypeId) {
-    if (type === CanvasNodeType.Image) return "图片节点";
-    if (type === CanvasNodeType.Video) return "视频节点";
-    if (type === CanvasNodeType.Audio) return "音频节点";
-    if (type === CanvasNodeType.Config) return "生成配置";
-    if (type === CanvasNodeType.Script) return "分镜脚本";
-    if (type === CanvasNodeType.Frame) return "背板";
-    if (type === CanvasNodeType.Drawing) return "绘图节点";
-    if (type === CanvasNodeType.Skill) return "技能节点";
-    return type ? `${getNodeDefinition(type)?.label || type}节点` : "文本节点";
+    if (type === CanvasNodeType.Image) return tr("图片节点");
+    if (type === CanvasNodeType.Video) return tr("视频节点");
+    if (type === CanvasNodeType.Audio) return tr("音频节点");
+    if (type === CanvasNodeType.Config) return tr("生成配置");
+    if (type === CanvasNodeType.Script) return tr("分镜脚本");
+    if (type === CanvasNodeType.Frame) return tr("背板");
+    if (type === CanvasNodeType.Drawing) return tr("绘图节点");
+    if (type === CanvasNodeType.Skill) return tr("技能节点");
+    return type ? tr("{0}节点", getNodeDefinition(type)?.label || type) : tr("文本节点");
 }
 
 function generationModeLabel(mode?: "text" | "image" | "video" | "audio") {
-    if (mode === "text") return "文本";
-    if (mode === "video") return "视频";
-    if (mode === "audio") return "音频";
-    return "图片";
+    if (mode === "text") return tr("文本");
+    if (mode === "video") return tr("视频");
+    if (mode === "audio") return tr("音频");
+    return tr("图片");
 }
 
 function generationOutcome(taskStatus?: string, officialStatus?: string, taskId?: string): CanvasGenerationVerification["outcome"] {
@@ -425,12 +426,12 @@ function generationOutcome(taskStatus?: string, officialStatus?: string, taskId?
 }
 
 function generationVerificationMessage(outcome: CanvasGenerationVerification["outcome"], resourceReady: boolean) {
-    if (outcome === "not_started") return "没有成功提交任务";
-    if (outcome === "queued") return "排队中";
-    if (outcome === "running") return "生成中";
-    if (outcome === "failed") return "生成失败";
-    if (outcome === "cancelled") return "已取消";
-    if (outcome === "succeeded" && resourceReady) return "已完成且资源就绪";
-    if (outcome === "succeeded") return "任务已成功但资源未就绪";
-    return "状态未知";
+    if (outcome === "not_started") return tr("没有成功提交任务");
+    if (outcome === "queued") return tr("排队中");
+    if (outcome === "running") return tr("生成中");
+    if (outcome === "failed") return tr("生成失败");
+    if (outcome === "cancelled") return tr("已取消");
+    if (outcome === "succeeded" && resourceReady) return tr("已完成且资源就绪");
+    if (outcome === "succeeded") return tr("任务已成功但资源未就绪");
+    return tr("状态未知");
 }

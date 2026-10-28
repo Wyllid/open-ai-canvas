@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { motion, useReducedMotion } from "motion/react";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -25,7 +26,7 @@ export function CanvasCreateMenu({ commands }: { commands: CanvasCreateCommand[]
     return (
         <div>
             <header className="flex min-h-7 items-center justify-between gap-2 border-b pb-2" style={{ borderColor: theme.toolbar.border }}>
-                <h2 className="font-semibold leading-none" style={{ fontSize: "var(--fs-caption)" }}>添加节点</h2>
+                <h2 className="font-semibold leading-none" style={{ fontSize: "var(--fs-caption)" }}>{tr("添加节点")}</h2>
                 {projectCommands.map((command) => (
                     <button
                         key={command.id}
@@ -42,17 +43,17 @@ export function CanvasCreateMenu({ commands }: { commands: CanvasCreateCommand[]
                 ))}
             </header>
 
-            <MenuSection title="创作节点" color={theme.node.muted} />
+            <MenuSection title={tr("创作节点")} color={theme.node.muted} />
             <CanvasCreateCommandGrid commands={nodeCommands} variant="node" />
 
             {workflowCommands.length ? (
                 <>
-                    <MenuSection title="工作流" color={theme.node.muted} spaced />
+                    <MenuSection title={tr("工作流")} color={theme.node.muted} spaced />
                     <CanvasCreateCommandGrid commands={workflowCommands} variant="workflow" />
                 </>
             ) : null}
 
-            <MenuSection title="导入资源" color={theme.node.muted} spaced />
+            <MenuSection title={tr("导入资源")} color={theme.node.muted} spaced />
             <CanvasCreateCommandGrid commands={resourceCommands} variant="compact" />
         </div>
     );

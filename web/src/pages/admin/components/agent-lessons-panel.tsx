@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { App, Button, Input, Space, Tag } from "antd";
 import { AntTooltip as Tooltip } from "@/components/ui/base/tooltip/ant-tooltip";
 import type { ColumnsType } from "antd/es/table";
@@ -12,7 +13,7 @@ import { Select } from "@/components/ui/base/select";
 
 function authorLabel(record: AdminAgentLesson) {
     if (record.authorDisplayName && record.authorUsername) return `${record.authorDisplayName}（${record.authorUsername}）`;
-    return record.authorDisplayName || record.authorUsername || record.authorUserId || "未知用户";
+    return record.authorDisplayName || record.authorUsername || record.authorUserId || tr("未知用户");
 }
 
 export default function AgentLessonsPanel() {
@@ -43,7 +44,7 @@ export default function AgentLessonsPanel() {
             if (seq !== seqRef.current) return;
             setItems(data.lessons || []);
         } catch (error) {
-            if (seq === seqRef.current) message.error(error instanceof Error ? error.message : "读取记忆失败");
+            if (seq === seqRef.current) message.error(error instanceof Error ? error.message : tr("读取记忆失败"));
         } finally {
             if (seq === seqRef.current) setLoading(false);
         }
@@ -66,7 +67,7 @@ export default function AgentLessonsPanel() {
                 });
             })
             .catch((error) => {
-                if (requestId === userSearchRef.current) message.error(error instanceof Error ? error.message : "搜索用户失败");
+                if (requestId === userSearchRef.current) message.error(error instanceof Error ? error.message : tr("搜索用户失败"));
             })
             .finally(() => {
                 if (requestId === userSearchRef.current) setSearchingUsers(false);
@@ -75,13 +76,13 @@ export default function AgentLessonsPanel() {
 
     const remove = (record: AdminAgentLesson) => {
         modal.confirm({
-            title: `删除「${record.topic}」`,
-            content: `这是 ${authorLabel(record)} 的个人记忆。删除后该用户的 Agent 也无法召回。确认删除？`,
-            okText: "删除",
+            title: tr("删除「{0}」", record.topic),
+            content: tr("这是 {0} 的个人记忆。删除后该用户的 Agent 也无法召回。确认删除？", authorLabel(record)),
+            okText: tr("删除"),
             okButtonProps: { danger: true },
             onOk: async () => {
                 await deleteAdminAgentLesson(record.id);
-                message.success("已删除");
+                message.success(tr("已删除"));
                 await load();
             },
         });
@@ -89,7 +90,7 @@ export default function AgentLessonsPanel() {
 
     const columns: ColumnsType<AdminAgentLesson> = [
         {
-            title: "用户",
+            title: tr("用户"),
             key: "author",
             width: 168,
             render: (_, record) => (
@@ -100,24 +101,24 @@ export default function AgentLessonsPanel() {
             ),
         },
         {
-            title: "分类",
+            title: tr("分类"),
             dataIndex: "category",
             width: 92,
             render: (value: string) => <Tag>{agentLessonCategoryLabel(value)}</Tag>,
         },
         {
-            title: "主题",
+            title: tr("主题"),
             dataIndex: "topic",
             width: 180,
             render: (value: string, record) => (
                 <div className="flex flex-col gap-0.5">
                     <span className="font-medium">{value}</span>
-                    {record.source ? <span className="text-[var(--fs-label)] opacity-60">来源：{record.source}</span> : null}
+                    {record.source ? <span className="text-[var(--fs-label)] opacity-60">{tr("来源：")}{record.source}</span> : null}
                 </div>
             ),
         },
         {
-            title: "适用场景 / 做法",
+            title: tr("适用场景 / 做法"),
             dataIndex: "situation",
             render: (_: string, record) => {
                 const steps = record.steps || [];
@@ -142,15 +143,15 @@ export default function AgentLessonsPanel() {
             },
         },
         {
-            title: "状态",
+            title: tr("状态"),
             dataIndex: "status",
             width: 96,
-            render: (value: string) => <AdminStatusBadge label={value === "approved" ? "已批准" : value === "rejected" ? "已拒绝" : "待审"} tone={value === "approved" ? "success" : value === "rejected" ? "error" : "warning"} />,
+            render: (value: string) => <AdminStatusBadge label={value === "approved" ? tr("已批准") : value === "rejected" ? tr("已拒绝") : tr("待审")} tone={value === "approved" ? "success" : value === "rejected" ? "error" : "warning"} />,
         },
         {
             title: (
-                <Tooltip title="被附进该用户 Agent 上下文的次数">
-                    <span>注入</span>
+                <Tooltip title={tr("被附进该用户 Agent 上下文的次数")}>
+                    <span>{tr("注入")}</span>
                 </Tooltip>
             ),
             dataIndex: "injected",
@@ -159,8 +160,8 @@ export default function AgentLessonsPanel() {
         },
         {
             title: (
-                <Tooltip title="该用户的 Agent 用 recall_lessons 取全文的次数">
-                    <span>查阅</span>
+                <Tooltip title={tr("该用户的 Agent 用 recall_lessons 取全文的次数")}>
+                    <span>{tr("查阅")}</span>
                 </Tooltip>
             ),
             dataIndex: "hits",
@@ -168,7 +169,7 @@ export default function AgentLessonsPanel() {
             render: (value: number) => <span className="tabular-nums opacity-80">{value ?? 0}</span>,
         },
         {
-            title: "操作",
+            title: tr("操作"),
             key: "actions",
             width: 72,
             render: (_, record) => (
@@ -181,7 +182,7 @@ export default function AgentLessonsPanel() {
 
     return (
         <div className="flex flex-col gap-3">
-            <p className="text-xs text-foreground/60">记忆归用户自己批准和管理。这里只做巡查：可按用户、状态、关键词筛选，必要时删除违规内容。批准入口在用户的「设置 → Agent 记忆」。</p>
+            <p className="text-xs text-foreground/60">{tr("记忆归用户自己批准和管理。这里只做巡查：可按用户、状态、关键词筛选，必要时删除违规内容。批准入口在用户的「设置 → Agent 记忆」。")}</p>
             <AdminDataTable
                 toolbar={
                     <div className="flex flex-wrap items-center gap-2">
@@ -190,10 +191,10 @@ export default function AgentLessonsPanel() {
                             onChange={setStatus}
                             className="w-[120px]"
                             options={[
-                                { label: "全部", value: "all" },
-                                { label: "待审", value: "pending" },
-                                { label: "已批准", value: "approved" },
-                                { label: "已拒绝", value: "rejected" },
+                                { label: tr("全部"), value: "all" },
+                                { label: tr("待审"), value: "pending" },
+                                { label: tr("已批准"), value: "approved" },
+                                { label: tr("已拒绝"), value: "rejected" },
                             ]}
                         />
                         <Select
@@ -201,7 +202,7 @@ export default function AgentLessonsPanel() {
                             showSearch
                             filterOption={false}
                             loading={searchingUsers}
-                            placeholder="筛选用户"
+                            placeholder={tr("筛选用户")}
                             className="w-[220px]"
                             value={userId}
                             onSearch={setUserSearch}
@@ -211,11 +212,11 @@ export default function AgentLessonsPanel() {
                                 label: user.displayName ? `${user.displayName}（${user.username}）` : user.username,
                             }))}
                         />
-                        <Input.Search allowClear placeholder="主题、内容或用户名" className="w-[220px]" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
+                        <Input.Search allowClear placeholder={tr("主题、内容或用户名")} className="w-[220px]" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
                         <Button icon={<RefreshCw className="size-4" />} onClick={() => void load()}>
-                            刷新
+                            {tr("刷新")}
                         </Button>
-                        <span className="text-xs opacity-60">共 {items.length} 条</span>
+                        <span className="text-xs opacity-60">{tr("共")} {items.length} {tr("条")}</span>
                     </div>
                 }
                 table={{
@@ -226,7 +227,7 @@ export default function AgentLessonsPanel() {
                     dataSource: items,
                     pagination: { defaultPageSize: 20, showSizeChanger: true },
                 }}
-                empty={<AdminTableEmpty title="没有匹配的记忆" description="换一个用户或关键词再查。用户自己在设置页批准后才会注入该用户的会话。" />}
+                empty={<AdminTableEmpty title={tr("没有匹配的记忆")} description={tr("换一个用户或关键词再查。用户自己在设置页批准后才会注入该用户的会话。")} />}
             />
         </div>
     );

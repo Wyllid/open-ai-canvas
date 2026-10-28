@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import {
     confirmProjectAssetCandidate,
     createProjectAssetVersion,
@@ -38,7 +39,7 @@ export function isProjectAgentReadTool(value: string) {
 
 export async function runProjectAgentTool(name: ProjectAgentToolName, rawInput: Record<string, unknown>, fallbackProjectId?: string) {
     const projectId = String(rawInput.projectId || fallbackProjectId || "").trim();
-    if (!projectId) throw new Error("当前画布没有关联短剧项目");
+    if (!projectId) throw new Error(tr("当前画布没有关联短剧项目"));
     if (name === "project_get_context") return getProject(projectId);
     if (name === "project_list_units") {
         const detail = await getProject(projectId);
@@ -77,7 +78,7 @@ export async function runProjectAgentTool(name: ProjectAgentToolName, rawInput: 
     if (name === "project_register_task_output") {
         return registerProjectTaskOutput(projectId, String(rawInput.stepId || ""), { taskId: String(rawInput.taskId || ""), assetVersionId: String(rawInput.assetVersionId || "") || undefined, resourceId: String(rawInput.resourceId || "") || undefined, mediaType: String(rawInput.mediaType || "") || undefined, role: String(rawInput.role || "output"), metadataJson: typeof rawInput.metadataJson === "string" ? rawInput.metadataJson : undefined, outputJson: typeof rawInput.outputJson === "string" ? rawInput.outputJson : undefined });
     }
-    throw new Error(`未知项目工具：${name}`);
+    throw new Error(tr("未知项目工具：{0}", name));
 }
 
 const agentCandidateCategories = new Set<AssetCategory>(["environment", "prop", "material", "other"]);

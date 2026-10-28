@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useMemo, useRef, useState } from "react";
 import { Button } from "antd";
 import { X } from "lucide-react";
@@ -59,12 +60,12 @@ export function CanvasConfigComposer({ nodeId, canvasId, value, inputs, skillRef
             onPointerDown={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()} onWheel={(event) => event.stopPropagation()}>
             <header className="mb-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <h3 className="text-xs font-semibold">{simple ? "快速生成" : "组装提示词"}</h3>
-                    <p className="mt-1 text-xs opacity-60">{workflow ? "工作流按字段顺序接收连接素材" : "输入 @ 选择已连接素材或技能"}</p>
+                    <h3 className="text-xs font-semibold">{simple ? tr("快速生成") : tr("组装提示词")}</h3>
+                    <p className="mt-1 text-xs opacity-60">{workflow ? tr("工作流按字段顺序接收连接素材") : tr("输入 @ 选择已连接素材或技能")}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                     {!simple ? <CanvasPresetPicker mode={generationMode} skillReferences={skillReferences} open={presetsOpen} onOpenChange={setPresetsOpen} onSelect={insertPreset} /> : null}
-                    <Button size="small" type="text" aria-label="关闭提示词编辑器" icon={<X className="size-4" />} onClick={onClose} />
+                    <Button size="small" type="text" aria-label={tr("关闭提示词编辑器")} icon={<X className="size-4" />} onClick={onClose} />
                 </div>
             </header>
             {generationMode === "video" && onMetadataChange && !simple ? <div className="mb-3">
@@ -72,8 +73,8 @@ export function CanvasConfigComposer({ nodeId, canvasId, value, inputs, skillRef
                     referenceSummary={{ imageCount: inputs.filter((input) => input.type === "image" || input.type === "character").length, videoCount: inputs.filter((input) => input.type === "video").length, audioCount: inputs.filter((input) => input.type === "audio").length }} onMetadataChange={onMetadataChange} />
             </div> : null}
             <div ref={container} className="canvas-config-composer-editor rounded-lg" style={{ background: theme.node.fill }} onBlurCapture={rememberCaret} onKeyUpCapture={rememberCaret} onPointerUpCapture={rememberCaret}>
-                <CanvasResourceMentionTextarea aria-label="组装生成提示词" value={prompt} references={references} readOnly={readOnly} onChange={updatePrompt} sendOnEnter={false}
-                    placeholder="输入提示词，按 @ 引用连接素材或技能" className="min-h-32 max-h-[min(42vh,360px)] w-full px-4 py-3 text-sm leading-7"
+                <CanvasResourceMentionTextarea aria-label={tr("组装生成提示词")} value={prompt} references={references} readOnly={readOnly} onChange={updatePrompt} sendOnEnter={false}
+                    placeholder={tr("输入提示词，按 @ 引用连接素材或技能")} className="min-h-32 max-h-[min(42vh,360px)] w-full px-4 py-3 text-sm leading-7"
                     onKeyDown={(event) => {
                         event.stopPropagation();
                         if (!readOnly && event.key === "/" && !simple && !event.nativeEvent.isComposing) requestAnimationFrame(() => { rememberCaret(); setPresetsOpen(true); });

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { App } from "antd";
 
@@ -45,7 +46,7 @@ export function useCanvasImageRotation({
             const scope = getActiveUserScope();
             const sourceKey = imageRotationSourceKey(node);
             const valid = () => lifetime === lifetimeRef.current && scope === getActiveUserScope() && writableRef.current;
-            const hide = message.loading({ content: "正在校正图片方向…", duration: 0 });
+            const hide = message.loading({ content: tr("正在校正图片方向…"), duration: 0 });
             try {
                 const needsCopy = !node.metadata?.imageEditSourceNodeId && direction !== 0;
                 // A new copy starts from the current visible orientation, including older rotated nodes.
@@ -54,7 +55,7 @@ export function useCanvasImageRotation({
                 if (!result || !valid()) return;
                 const latest = nodesRef.current.find((candidate) => candidate.id === nodeId);
                 if (!latest || !canRotateCanvasImage(latest) || imageRotationSourceKey(latest) !== sourceKey) {
-                    message.info("图片已发生变化，本次旋转未覆盖新的内容");
+                    message.info(tr("图片已发生变化，本次旋转未覆盖新的内容"));
                     return;
                 }
                 if (needsCopy) {
@@ -64,10 +65,10 @@ export function useCanvasImageRotation({
                     setConnections((current) => [...current, copy.connection]);
                     setSelectedNodeIds(new Set([copy.node.id]));
                 } else setNodes((current) => commitCanvasImageRotation(current, nodeId, sourceKey, result.rotation));
-                if (result.pendingRemoteUpload) message.warning("方向已校正，图片暂存本机；恢复网络后会继续同步");
-                else message.success(needsCopy ? "已创建旋转副本，原图保留" : direction === 0 ? "已恢复副本的初始方向" : "已调整编辑副本的方向");
+                if (result.pendingRemoteUpload) message.warning(tr("方向已校正，图片暂存本机；恢复网络后会继续同步"));
+                else message.success(needsCopy ? tr("已创建旋转副本，原图保留") : direction === 0 ? tr("已恢复副本的初始方向") : tr("已调整编辑副本的方向"));
             } catch (error) {
-                if (valid()) message.error(error instanceof Error ? error.message : "图片旋转失败");
+                if (valid()) message.error(error instanceof Error ? error.message : tr("图片旋转失败"));
             } finally {
                 hide();
                 busyRef.current = false;

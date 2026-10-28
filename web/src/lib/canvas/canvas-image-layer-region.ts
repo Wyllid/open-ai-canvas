@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { validateImageLayerRegion, type ImageLayerRegion } from "./canvas-image-layer-strategy";
 
 /** 仅在均匀外侧与对比明显的内侧一致时，建议附近的面板边界。 */
@@ -55,7 +56,7 @@ export function suggestImageLayerRegion(width: number, height: number, pixels: U
 
 /** alpha 有效区域包含柔和边缘，不推断或移除不透明背景。 */
 export function imageLayerAlphaBounds(width: number, height: number, pixels: Uint8ClampedArray) {
-    if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width < 1 || height < 1 || pixels.length !== width * height * 4) throw new Error("图层像素尺寸无效");
+    if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width < 1 || height < 1 || pixels.length !== width * height * 4) throw new Error(tr("图层像素尺寸无效"));
     let left = width,
         top = height,
         right = 0,
@@ -68,6 +69,6 @@ export function imageLayerAlphaBounds(width: number, height: number, pixels: Uin
             right = Math.max(right, x + 1);
             bottom = Math.max(bottom, y + 1);
         }
-    if (right <= left || bottom <= top) throw new Error("图层完全透明，无法制作独立素材");
+    if (right <= left || bottom <= top) throw new Error(tr("图层完全透明，无法制作独立素材"));
     return { left, top, width: right - left, height: bottom - top };
 }

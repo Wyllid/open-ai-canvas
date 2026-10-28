@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { motion, useReducedMotion } from "motion/react";
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { Clapperboard, Image as ImageIcon, List, Music2, Pencil, Table2, Video, WandSparkles, Workflow as WorkflowIcon } from "lucide-react";
@@ -91,7 +92,7 @@ export function CanvasSelectionToolbar({ anchorRef, containerRef, count, childre
                     className="aceternity-floating-panel shrink-0 rounded-full border px-2 py-2 text-[var(--fs-tiny)] font-semibold tabular-nums backdrop-blur-2xl"
                     style={{ background: theme.spatial.elevated, borderColor: theme.toolbar.border, color: theme.accent.primary }}
                 >
-                    已选 {count}
+                    {tr("已选")} {count}
                 </span>
                 <div className="max-w-[min(560px,calc(100vw-90px))]">{children}</div>
             </motion.div>
@@ -266,7 +267,7 @@ export function CanvasConnectionCreateMenu({
             className="thin-scrollbar absolute origin-top-left overflow-x-hidden overflow-y-auto rounded-[var(--r-2xl)] border p-2"
             data-canvas-no-zoom
             data-connection-create-menu
-            aria-label="创建下一步"
+            aria-label={tr("创建下一步")}
             onKeyDown={(event) => {
                 if (event.key === "Escape") {
                     event.stopPropagation();
@@ -303,8 +304,8 @@ export function CanvasConnectionCreateMenu({
                     expanded={activeOption === "文本生成"}
                     motionEnabled={!reducedMotion}
                     icon={<List className="size-4" />}
-                    title="文本生成"
-                    description="引用当前内容，生成或改写文本"
+                    title={tr("文本生成")}
+                    description={tr("引用当前内容，生成或改写文本")}
                     disabledReason={getDisabledReason(CanvasNodeType.Text)}
                     onClick={() => onCreate(CanvasNodeType.Text)}
                 />
@@ -312,8 +313,8 @@ export function CanvasConnectionCreateMenu({
                     expanded={activeOption === "分镜脚本"}
                     motionEnabled={!reducedMotion}
                     icon={<Clapperboard className="size-4" />}
-                    title="分镜脚本"
-                    description="根据剧情拆解镜头，编排分镜脚本"
+                    title={tr("分镜脚本")}
+                    description={tr("根据剧情拆解镜头，编排分镜脚本")}
                     disabledReason={getDisabledReason(CanvasNodeType.Script)}
                     onClick={() => onCreate(CanvasNodeType.Script)}
                 />
@@ -321,8 +322,8 @@ export function CanvasConnectionCreateMenu({
                     expanded={activeOption === "批量创作表"}
                     motionEnabled={!reducedMotion}
                     icon={<Table2 className="size-4" />}
-                    title="批量创作表"
-                    description="汇总多张图片，批量执行换装或创意生图"
+                    title={tr("批量创作表")}
+                    description={tr("汇总多张图片，批量执行换装或创意生图")}
                     disabledReason={getDisabledReason(CanvasNodeType.BatchTable)}
                     onClick={() => onCreate(CanvasNodeType.BatchTable)}
                 />
@@ -330,8 +331,8 @@ export function CanvasConnectionCreateMenu({
                     expanded={activeOption === "图片生成"}
                     motionEnabled={!reducedMotion}
                     icon={<ImageIcon className="size-4" />}
-                    title="图片生成"
-                    description="结合提示词和参考图，生成新的画面"
+                    title={tr("图片生成")}
+                    description={tr("结合提示词和参考图，生成新的画面")}
                     disabledReason={getDisabledReason(CanvasNodeType.Image)}
                     onClick={() => onCreate(CanvasNodeType.Image)}
                 />
@@ -339,8 +340,8 @@ export function CanvasConnectionCreateMenu({
                     expanded={activeOption === "生成配置"}
                     motionEnabled={!reducedMotion}
                     icon={<WorkflowIcon className="size-4" />}
-                    title="生成配置"
-                    description="选择模型，或使用已启用的工作流插件"
+                    title={tr("生成配置")}
+                    description={tr("选择模型，或使用已启用的工作流插件")}
                     disabledReason={getDisabledReason(CanvasNodeType.Config)}
                     onClick={() => onCreate(CanvasNodeType.Config)}
                 />
@@ -349,8 +350,8 @@ export function CanvasConnectionCreateMenu({
                         expanded={activeOption === "绘图"}
                         motionEnabled={!reducedMotion}
                         icon={<Pencil className="size-4" />}
-                        title="绘图"
-                        description="以参考图片为底图，自由绘制和标注"
+                        title={tr("绘图")}
+                        description={tr("以参考图片为底图，自由绘制和标注")}
                         disabledReason={getDisabledReason(CanvasNodeType.Drawing)}
                         onClick={() => onCreate(CanvasNodeType.Drawing)}
                     />
@@ -359,8 +360,8 @@ export function CanvasConnectionCreateMenu({
                     expanded={activeOption === "视频生成"}
                     motionEnabled={!reducedMotion}
                     icon={<Video className="size-4" />}
-                    title="视频生成"
-                    description="结合提示词与参考素材，生成动态视频"
+                    title={tr("视频生成")}
+                    description={tr("结合提示词与参考素材，生成动态视频")}
                     disabledReason={getDisabledReason(CanvasNodeType.Video)}
                     onClick={() => onCreate(CanvasNodeType.Video)}
                 />
@@ -368,8 +369,8 @@ export function CanvasConnectionCreateMenu({
                     expanded={activeOption === "音频参考"}
                     motionEnabled={!reducedMotion}
                     icon={<Music2 className="size-4" />}
-                    title="音频参考"
-                    description="连接文本或角色卡，创建音频生成节点"
+                    title={tr("音频参考")}
+                    description={tr("连接文本或角色卡，创建音频生成节点")}
                     disabledReason={getDisabledReason(CanvasNodeType.Audio)}
                     onClick={() => onCreate(CanvasNodeType.Audio)}
                 />
@@ -377,8 +378,8 @@ export function CanvasConnectionCreateMenu({
                     expanded={activeOption === "转换"}
                     motionEnabled={!reducedMotion}
                     icon={<WandSparkles className="size-4" />}
-                    title="转换"
-                    description="本地处理图片或视频"
+                    title={tr("转换")}
+                    description={tr("本地处理图片或视频")}
                     disabledReason={getDisabledReason(CanvasNodeType.MediaConversion)}
                     onClick={() => onCreate(CanvasNodeType.MediaConversion)}
                 />

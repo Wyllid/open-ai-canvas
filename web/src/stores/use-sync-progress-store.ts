@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { create } from "zustand";
 
 export type LocalCanvasPersistencePhase = "saved" | "pending" | "error";
@@ -89,8 +90,8 @@ if (typeof window !== "undefined" && typeof window.addEventListener === "functio
         // Only genuinely unpersisted local input warrants a leave-page warning.
         if (hasUnpersistedCanvasInput(Object.values(useSyncProgressStore.getState().syncingProjects))) {
             event.preventDefault();
-            event.returnValue = "画布正在同步至云端，请勿关闭页面。";
-            return "画布正在同步至云端，请勿关闭页面。";
+            event.returnValue = tr("画布正在同步至云端，请勿关闭页面。");
+            return tr("画布正在同步至云端，请勿关闭页面。");
         }
     });
 }

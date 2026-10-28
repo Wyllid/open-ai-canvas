@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { registerPlugin } from "@/lib/plugins/plugin-registry";
 import type { PluginManifestV2, RegisteredPlugin } from "@/lib/plugins/plugin-types";
 import { registerEditorSlot } from "@/lib/plugins/editor-slot-registry";
@@ -16,10 +17,10 @@ export const EDITOR_SHELL_PLUGIN_ID = "editor-shell";
 const manifest: PluginManifestV2 = {
     apiVersion: "yingce.plugin/v2",
     id: EDITOR_SHELL_PLUGIN_ID,
-    name: "剪辑工作台",
+    name: tr("剪辑工作台"),
     version: "0.1.0",
-    description: "注册时间线、预览、检查器、素材、字幕、转写、导出和 AI 编辑八个工作台插槽。",
-    author: "影策团队",
+    description: tr("注册时间线、预览、检查器、素材、字幕、转写、导出和 AI 编辑八个工作台插槽。"),
+    author: tr("影策团队"),
     surfaces: ["fullscreen"],
     permissions: ["timeline.read", "timeline.command", "export.run"],
     trusted: true,

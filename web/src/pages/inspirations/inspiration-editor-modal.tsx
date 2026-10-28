@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { Button, Form, Input, Select } from "antd";
 
 import { AppModal } from "@/components/ui/product/app-modal";
@@ -75,7 +76,7 @@ export function InspirationEditorModal({
     return (
         <AppModal
             open={open}
-            title={item ? "编辑灵感" : "新建灵感"}
+            title={item ? tr("编辑灵感") : tr("新建灵感")}
             width={720}
             onCancel={() => {
                 form.resetFields();
@@ -92,10 +93,10 @@ export function InspirationEditorModal({
                             onClose();
                         }}
                     >
-                        取消
+                        {tr("取消")}
                     </Button>
                     <Button type="primary" onClick={() => void handleOk()}>
-                        {item ? "保存" : "创建"}
+                        {item ? tr("保存") : tr("创建")}
                     </Button>
                 </div>
             }
@@ -103,40 +104,40 @@ export function InspirationEditorModal({
             <Form form={form} layout="vertical" initialValues={toFormValues(item)} preserve={false}>
                 {/* 字段较多，不限高的话底部按钮会被顶出视口，提交就点不到了。 */}
                 <div className="max-h-[64vh] overflow-y-auto pr-1">
-                    <Form.Item name="title" label="标题" rules={[{ required: true, message: "请填写标题" }]}>
-                        <Input placeholder="例如：护肤品质感广告主视觉" maxLength={80} />
+                    <Form.Item name="title" label={tr("标题")} rules={[{ required: true, message: tr("请填写标题") }]}>
+                        <Input placeholder={tr("例如：护肤品质感广告主视觉")} maxLength={80} />
                     </Form.Item>
-                    <Form.Item name="description" label="一句话描述">
-                        <Input placeholder="卡片上铺两行，说明这个提示词适合做什么" maxLength={120} />
+                    <Form.Item name="description" label={tr("一句话描述")}>
+                        <Input placeholder={tr("卡片上铺两行，说明这个提示词适合做什么")} maxLength={120} />
                     </Form.Item>
-                    <Form.Item name="image" label="封面地址" rules={[{ required: true, message: "请填写封面图片地址" }]}>
-                        <Input placeholder="https:// 开头的图片地址，或 /public 下的本地路径" />
+                    <Form.Item name="image" label={tr("封面地址")} rules={[{ required: true, message: tr("请填写封面图片地址") }]}>
+                        <Input placeholder={tr("https:// 开头的图片地址，或 /public 下的本地路径")} />
                     </Form.Item>
                     <div className="grid gap-x-4 sm:grid-cols-3">
-                        <Form.Item name="mode" label="创作类型" rules={[{ required: true }]}>
+                        <Form.Item name="mode" label={tr("创作类型")} rules={[{ required: true }]}>
                             <Select
                                 options={[
-                                    { label: "图片", value: "image" },
-                                    { label: "视频", value: "video" },
-                                    { label: "文本", value: "text" },
+                                    { label: tr("图片"), value: "image" },
+                                    { label: tr("视频"), value: "video" },
+                                    { label: tr("文本"), value: "text" },
                                 ]}
                             />
                         </Form.Item>
-                        <Form.Item name="category" label="分类">
-                            <Select allowClear showSearch placeholder="选一个或留空" options={categoryOptions} />
+                        <Form.Item name="category" label={tr("分类")}>
+                            <Select allowClear showSearch placeholder={tr("选一个或留空")} options={categoryOptions} />
                         </Form.Item>
-                        <Form.Item name="ratio" label="画面比例">
-                            <Input placeholder="例如 16:9" maxLength={12} />
+                        <Form.Item name="ratio" label={tr("画面比例")}>
+                            <Input placeholder={tr("例如 16:9")} maxLength={12} />
                         </Form.Item>
                     </div>
-                    <Form.Item name="tags" label="标签" extra="用逗号分隔，最多六个">
-                        <Input placeholder="电商产品，海报排版" maxLength={120} />
+                    <Form.Item name="tags" label={tr("标签")} extra={tr("用逗号分隔，最多六个")}>
+                        <Input placeholder={tr("电商产品，海报排版")} maxLength={120} />
                     </Form.Item>
-                    <Form.Item name="prompt" label="提示词正文" rules={[{ required: true, message: "请填写提示词正文" }]}>
-                        <Input.TextArea rows={6} placeholder="粘贴完整提示词；外部英文提示词也可以直接放这里" />
+                    <Form.Item name="prompt" label={tr("提示词正文")} rules={[{ required: true, message: tr("请填写提示词正文") }]}>
+                        <Input.TextArea rows={6} placeholder={tr("粘贴完整提示词；外部英文提示词也可以直接放这里")} />
                     </Form.Item>
-                    <Form.Item name="promptZh" label="中文正文（可选）" extra="填了以后，卡片和「用这个创意创作」会优先用中文这版">
-                        <Input.TextArea rows={4} placeholder="中文改写版，留空则只用上面的正文" />
+                    <Form.Item name="promptZh" label={tr("中文正文（可选）")} extra={tr("填了以后，卡片和「用这个创意创作」会优先用中文这版")}>
+                        <Input.TextArea rows={4} placeholder={tr("中文改写版，留空则只用上面的正文")} />
                     </Form.Item>
                 </div>
             </Form>
