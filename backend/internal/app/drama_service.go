@@ -348,6 +348,9 @@ func (s *Service) DramaEpisodeDetail(userID string, projectID string, episodeID 
 		return DramaEpisodeDetail{}, err
 	}
 	detail := DramaEpisodeDetail{Episode: *episode, Shots: shots, Chapters: refs, Jobs: views, MusicCues: decodeDramaMusicCues(episode.MusicCuesJSON), Review: decodeDramaReview(episode.ReviewJSON), Captions: dramaCaptionsView(episode, segmentRows, shots), Motion: decodeDramaMotion(episode.MotionJSON)}
+	if detail.Enhance, err = s.refreshDramaEnhance(episode); err != nil {
+		return DramaEpisodeDetail{}, err
+	}
 	if review := detail.Review; review != nil && review.Status == model.DramaMediaQueued && productionRow.Status != model.DramaStatusRunning {
 		review.Waiting = "the review waits for the production to run; resume it to start the review"
 	}
@@ -731,6 +734,7 @@ func buildDramaSegmentViews(settings DramaSettings, meta dramaBibleMeta, shots [
 			view.ID = row.ID
 			view.Generated, view.PromptError = strings.TrimSpace(row.VideoPrompt), row.PromptError
 			view.VideoStatus, view.VideoResourceID, view.TailFrameResourceID, view.VideoError = row.VideoStatus, row.VideoResourceID, row.TailFrameResourceID, row.VideoError
+			view.StartFrameResourceID = row.StartFrameResourceID
 			view.VideoModel = segmentVideoChoice(row, settings.Models.Video)
 			view.PromptStatus = firstNonEmpty(row.PromptStatus, "queued")
 			if override := strings.TrimSpace(row.VideoPromptOverride); override != "" {
@@ -789,7 +793,7 @@ func (s *Service) UpdateDramaSegment(userID string, projectID string, episodeID 
 	if err != nil {
 		return err
 	}
-	if req.VideoPromptOverride == nil && req.ReferenceCastIDs == nil && !req.AutoReferences {
+	if req.VideoPromptOverride == nil && req.ReferenceCastIDs == nil && !req.AutoReferences && req.StartFrameResourceID == nil {
 		return BadAuthRequest("没有要保存的修改")
 	}
 	shots, err := s.repo.DramaShots(episode.ID)
@@ -817,6 +821,18 @@ func (s *Service) UpdateDramaSegment(userID string, projectID string, episodeID 
 			encoded = encodeStringList(ids)
 		}
 		if err := s.repo.SaveDramaSegmentReferences(episode.ID, index, encoded); err != nil {
+			return err
+		}
+	}
+	if req.StartFrameResourceID != nil {
+		id := strings.TrimSpace(*req.StartFrameResourceID)
+		if id != "" {
+			resource, err := s.repo.ResourceForUser(project.UserID, id)
+			if err != nil || resource == nil || resource.Status != model.ResourceStatusReady || !strings.HasPrefix(resource.MimeType, "image/") {
+				return BadAuthRequest("startFrameResourceId must be a ready image resource")
+			}
+		}
+		if err := s.repo.SaveDramaSegmentStartFrame(episode.ID, index, id); err != nil {
 			return err
 		}
 	}

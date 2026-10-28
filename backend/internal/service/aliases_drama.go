@@ -20,6 +20,7 @@ type (
 	SetDramaMusicRequest             = app.SetDramaMusicRequest
 	SetDramaCaptionsRequest          = app.SetDramaCaptionsRequest
 	SetDramaMotionRequest            = app.SetDramaMotionRequest
+	DramaEnhanceRequest              = app.DramaEnhanceRequest
 	RunDramaReviewRequest            = app.RunDramaReviewRequest
 	ResolveDramaReviewFindingRequest = app.ResolveDramaReviewFindingRequest
 	DramaTakeReview                  = app.DramaTakeReview

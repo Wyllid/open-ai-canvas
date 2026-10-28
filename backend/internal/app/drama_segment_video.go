@@ -128,6 +128,16 @@ func (s *Service) prepareDramaSegment(settings DramaSettings, draft dramaSegment
 			refs = append(refs, ref)
 		}
 		header = append(header, "首帧图为上一段视频的最后一帧，不占参考图编号。")
+	} else if segment.StartFrameResourceID != "" {
+		// 用户指定的起幅画面（预演渲染或精修关键帧）作为首帧，参考图仍按设定发送。
+		request.Continuity, request.Operation = dramaContinuityStartFrame, "image_to_video"
+		request.FirstFrameResourceID = segment.StartFrameResourceID
+		ref, err := s.dramaResourceReference(segment.StartFrameResourceID, "first-frame", "first_frame")
+		if err != nil {
+			return request, nil, errors.New("the segment's start frame is no longer available; pick another image or clear it")
+		}
+		refs = append(refs, ref)
+		header = append(header, "首帧图为本段指定的起幅画面，构图、机位与人物站位以它为准，不占参考图编号。")
 	} else if profile.supports("reference_to_video") {
 		request.Operation = "reference_to_video"
 	} else {
@@ -137,7 +147,7 @@ func (s *Service) prepareDramaSegment(settings DramaSettings, draft dramaSegment
 		return request, nil, fmt.Errorf("所选模型不支持本段所需的 %s", request.Operation)
 	}
 	capacity := profile.MaxImages
-	if previous != nil {
+	if request.Operation == "image_to_video" {
 		capacity--
 	}
 	if request.Operation == "text_to_video" {
@@ -261,7 +271,7 @@ func (r *dramaRun) submitSegmentVideo(job *model.DramaJob) (*model.Task, bool, e
 			}
 		}
 		metadata := r.metadata(job)
-		if previous != nil {
+		if request.FirstFrameResourceID != "" {
 			metadata["videoStartFrameNodeId"] = "first-frame"
 		}
 		config := map[string]any{"videoSeconds": itoa(request.Seconds), "size": r.settings.AspectRatio, "videoGenerateAudio": "true"}

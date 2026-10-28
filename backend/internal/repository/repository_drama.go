@@ -660,6 +660,20 @@ func (r *Repository) SaveDramaSegmentOverride(segment model.DramaSegment) error 
 	})
 }
 
+// SaveDramaSegmentStartFrame 写入或清除段的起幅画面；起幅变了，已写好的提示词与视频都过期。
+func (r *Repository) SaveDramaSegmentStartFrame(episodeID string, index int, resourceID string) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var current model.DramaSegment
+		if err := tx.Where("episode_id = ? AND segment_index = ?", episodeID, index).First(&current).Error; err != nil {
+			return err
+		}
+		if current.StartFrameResourceID == resourceID {
+			return nil
+		}
+		return invalidateDramaSegment(tx, current, map[string]any{"start_frame_resource_id": resourceID, "prompt_status": promptStatusAfterInputChange(current.PromptStatus)}, true)
+	})
+}
+
 // SaveDramaSegmentReferences 写入或清除段级参考图指定；参考图编号写在提示词里，所以已写好的提示词标记过期、视频过期。
 func (r *Repository) SaveDramaSegmentReferences(episodeID string, index int, referenceIDsJSON string) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {

@@ -14,6 +14,8 @@ import (
 const (
 	dramaContinuityContinuous = "continuous"
 	dramaContinuityReanchor   = "reanchor"
+	// dramaContinuityStartFrame 表示本段从用户指定的起幅画面开始（例如预演渲染），不接上一段。
+	dramaContinuityStartFrame = "start_frame"
 )
 
 // dramaSegmentContinuity decides how segment segmentIndex joins the one before it.
@@ -68,9 +70,9 @@ func dramaSameScene(a, b model.DramaShot) bool {
 }
 
 // dramaChainedPrevious returns the segment whose last frame this segment starts
-// from, or nil when the boundary is reanchored.
+// from, or nil when the boundary is reanchored or the segment has its own start frame.
 func dramaChainedPrevious(settings DramaSettings, shots []model.DramaShot, segments []model.DramaSegment, index int) *model.DramaSegment {
-	if index <= 0 || index >= len(segments) {
+	if index <= 0 || index >= len(segments) || segments[index].StartFrameResourceID != "" {
 		return nil
 	}
 	if dramaSegmentContinuity(settings, shots, segments[index].SegmentIndex) != dramaContinuityContinuous {
