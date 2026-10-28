@@ -3,6 +3,8 @@ import { Command, Home, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { useNavigate } from "react-router";
 
+import { useOpenSettings } from "@/components/settings/settings-modal-host";
+
 import { navigationTools } from "@/constant/navigation-tools";
 import { Kbd } from "@/components/ui/base/kbd";
 import { cn } from "@/lib/utils";
@@ -19,6 +21,7 @@ type PaletteEntry = {
 /** 顶栏搜索 / ⌘K 命令面板：按功能开关过滤当前可用页面入口。 */
 export function WorkspaceCommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
     const navigate = useNavigate();
+    const openSettings = useOpenSettings();
     const features = useUserStore((state) => state.features);
     const [query, setQuery] = useState("");
     const [highlight, setHighlight] = useState(0);
@@ -36,9 +39,9 @@ export function WorkspaceCommandPalette({ open, onClose }: { open: boolean; onCl
             ...(features.taskCenterEnabled ? [toolEntry("tasks", "/tasks")] : []),
             toolEntry("assets", "/assets"),
             toolEntry("skills", "/skills"),
-            toolEntry("settings", "/settings"),
+            { ...toolEntry("settings"), run: () => openSettings("account") },
         ];
-    }, [features]);
+    }, [features, openSettings]);
 
     const filtered = useMemo(() => {
         const keyword = query.trim().toLowerCase();

@@ -353,12 +353,12 @@ export default function AnalyticsPanel({ users, channels }: Props) {
                                     {trendMetric === "volume" ? <Legend wrapperStyle={{ fontSize: 12 }} /> : null}
                                     {trendMetric === "volume" ? (
                                         <>
-                                            <Area yAxisId="primary" type="monotone" dataKey="tasks" name="生成任务" stroke="var(--admin-chart-primary)" fill="var(--admin-chart-primary)" fillOpacity={0.1} />
-                                            <Area yAxisId="primary" type="monotone" dataKey="requests" name="上游请求" stroke="var(--admin-chart-secondary)" fill="var(--admin-chart-secondary)" fillOpacity={0.08} />
+                                            <Area yAxisId="primary" type="monotone" dataKey="tasks" name={tr("生成任务")} stroke="var(--admin-chart-primary)" fill="var(--admin-chart-primary)" fillOpacity={0.1} />
+                                            <Area yAxisId="primary" type="monotone" dataKey="requests" name={tr("上游请求")} stroke="var(--admin-chart-secondary)" fill="var(--admin-chart-secondary)" fillOpacity={0.08} />
                                         </>
                                     ) : null}
-                                    {trendMetric === "quality" ? <Line yAxisId="primary" type="monotone" dataKey="requestSuccessRate" name="成功率" stroke="var(--admin-chart-warning)" dot={false} strokeWidth={2} /> : null}
-                                    {trendMetric === "activity" ? <Area yAxisId="primary" type="monotone" dataKey="activeUsers" name="活跃用户" stroke="var(--admin-chart-primary)" fill="var(--admin-chart-primary)" fillOpacity={0.1} /> : null}
+                                    {trendMetric === "quality" ? <Line yAxisId="primary" type="monotone" dataKey="requestSuccessRate" name={tr("成功率")} stroke="var(--admin-chart-warning)" dot={false} strokeWidth={2} /> : null}
+                                    {trendMetric === "activity" ? <Area yAxisId="primary" type="monotone" dataKey="activeUsers" name={tr("活跃用户")} stroke="var(--admin-chart-primary)" fill="var(--admin-chart-primary)" fillOpacity={0.1} /> : null}
                                 </ComposedChart>
                             </ResponsiveContainer>
                         </div>

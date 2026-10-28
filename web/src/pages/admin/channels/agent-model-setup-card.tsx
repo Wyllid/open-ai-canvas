@@ -58,7 +58,7 @@ export function AgentModelSetupCard({ onSaved }: { onSaved?: () => void | Promis
         >
             {loadError ? <p className="text-sm text-destructive">{loadError}</p> : null}
             <Form form={form} layout="vertical" requiredMark={false} disabled={!setup} onFinish={(values) => void submit(values)} initialValues={{ protocol: "chat-completion", vision: false }}>
-                <div className="grid gap-x-4 md:grid-cols-2">
+                <div className="grid grid-cols-[minmax(0,1fr)] gap-x-4 md:grid-cols-2">
                     <Form.Item name="protocol" label={tr("API format")} rules={[{ required: true, message: tr("Choose an API format") }]}>
                         <Select
                             options={agentModelProtocolOptions.map(({ label, value }) => ({ label, value }))}

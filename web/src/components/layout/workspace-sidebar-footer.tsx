@@ -1,11 +1,12 @@
 import { tr } from "@/i18n";
 import { App, Popover } from "antd";
 import { Switch } from "@/components/ui/base/switch";
-import { ChevronRight, LogIn, LogOut, Moon, ShieldCheck, Sun } from "lucide-react";
+import { ChevronRight, LogIn, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { AppChangelogButton } from "@/components/layout/app-changelog-modal";
+import { useOpenSettings } from "@/components/settings/settings-modal-host";
 import { IdentityProviderBadge } from "@/components/layout/identity-provider-badge";
 import { UserAvatar } from "@/components/layout/user-avatar";
 import { SystemAnnouncementCenter } from "@/components/layout/system-announcement-center";
@@ -30,6 +31,7 @@ export function WorkspaceSidebarFooter({ expandedClassName, collapsedClassName, 
     const navigate = useNavigate();
     const { message } = App.useApp();
     const [menuOpen, setMenuOpen] = useState(false);
+    const openSettings = useOpenSettings();
 
     const handleLogout = async () => {
         try {
@@ -71,11 +73,16 @@ export function WorkspaceSidebarFooter({ expandedClassName, collapsedClassName, 
                                 </div>
                             </div>
 
-                            {user.role === "admin" ? (
-                                <nav className="py-2" aria-label={tr("管理工具")}>
-                                    <MenuLink to="/admin" icon={<ShieldCheck />} label={tr("管理员后台")} onNavigate={() => setMenuOpen(false)} />
-                                </nav>
-                            ) : null}
+                            <nav className="py-2" aria-label={tr("设置")}>
+                                <MenuButton
+                                    icon={<Settings />}
+                                    label={tr("设置")}
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        openSettings("account");
+                                    }}
+                                />
+                            </nav>
 
                             <div className="border-y border-border/65 py-2">
                                 <AppChangelogButton className="flex h-8 w-full items-center gap-2 rounded px-2 text-[var(--fs-label)] text-foreground/58 hover:bg-surface-hover hover:text-foreground [&_svg]:size-3.5" showLabel showVersion versionClassName="ml-auto text-[var(--fs-micro)] tabular-nums text-foreground/32" />
@@ -107,8 +114,8 @@ export function WorkspaceSidebarFooter({ expandedClassName, collapsedClassName, 
     );
 }
 
-function MenuLink({ to, icon, label, onNavigate }: { to: string; icon: ReactNode; label: string; onNavigate: () => void }) {
-    return <Link to={to} onClick={onNavigate} className="flex h-9 items-center gap-2 rounded px-2 text-xs text-foreground/62 hover:bg-surface-hover hover:text-foreground [&_svg]:size-3.5 [&_svg]:shrink-0">{icon}<span className="flex-1">{label}</span><ChevronRight className="!size-3 text-foreground/25" /></Link>;
+function MenuButton({ icon, label, onClick }: { icon: ReactNode; label: string; onClick: () => void }) {
+    return <button type="button" onClick={onClick} className="flex h-9 w-full items-center gap-2 rounded px-2 text-left text-xs text-foreground/62 hover:bg-surface-hover hover:text-foreground [&_svg]:size-3.5 [&_svg]:shrink-0">{icon}<span className="flex-1">{label}</span><ChevronRight className="!size-3 text-foreground/25" /></button>;
 }
 
 function SidebarUserAvatar({ user, className }: { user: LocalUser; className: string }) {

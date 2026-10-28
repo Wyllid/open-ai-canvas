@@ -1,4 +1,4 @@
-import { currentLocale, tr } from "@/i18n";
+import { currentLocale, tr, trMessage } from "@/i18n";
 import { App, Button, Form, Input, Popconfirm, Tabs } from "antd";
 import { Callout } from "@/pages/admin/ui/controls";
 import type { ColumnsType } from "antd/es/table";
@@ -169,12 +169,12 @@ export default function StoryboardPromptsPage() {
     };
 
     const columns: ColumnsType<PromptTemplate> = [
-        { title: "模板类型", dataIndex: "operation", width: 180, render: (operation: string) => { const definition = definitionByOperation.get(operation); return <div><div className="font-medium">{definition?.label || operation}</div><div className="mt-1 text-xs text-foreground/45">{definition?.category || "--"}</div></div>; } },
-        { title: "版本", dataIndex: "name", render: (_, template) => <div><div className="font-medium">{template.name}</div><div className="mt-1 text-xs text-foreground/45">v{template.version} · {tr("{0} 字符", template.content.length)}</div></div> },
-        { title: "输出", dataIndex: "outputType", width: 120, align: "center", render: (outputType: string, template) => <span className="inline-flex items-center gap-2 text-xs text-foreground/65">{outputType === "json" ? <FileJson className="size-3.5" /> : <FileText className="size-3.5" />}{outputType === "json" ? definitionByOperation.get(template.operation)?.schemaKey || "JSON" : tr("文本")}</span> },
-        { title: "状态", dataIndex: "enabled", width: 100, align: "center", render: (enabled) => <AdminStatusBadge label={enabled ? tr("启用中") : tr("历史版")} tone={enabled ? "success" : "neutral"} /> },
-        { title: "更新时间", dataIndex: "updatedAt", width: 180, align: "center", render: formatTime },
-        { title: "操作", width: 310, align: "center", render: (_, template) => <AdminRowActions visibleActionCount={2} primary={{ label: tr("基于此版本新建"), icon: <Copy className="size-3.5" />, onClick: () => openDrawer(template) }} actions={[{ key: "activate", label: tr("启用版本"), icon: <Power className="size-3.5" />, disabled: template.enabled, confirm: { title: tr("启用这个提示词版本？"), description: tr("只会替换同类型的当前版本，其他模板类型不受影响。"), okText: tr("确认启用") }, onClick: () => activate(template) }, { key: "delete", label: tr("删除版本"), icon: <Trash2 className="size-3.5" />, danger: true, disabled: template.enabled, confirm: { title: tr("删除这个历史版本？"), description: tr("删除后不可恢复，启用中的版本不能删除。"), okText: tr("确认删除") }, onClick: () => remove(template) }]} /> },
+        { title: tr("模板类型"), dataIndex: "operation", width: 180, render: (operation: string) => { const definition = definitionByOperation.get(operation); return <div><div className="font-medium">{trMessage(definition?.label || operation)}</div><div className="mt-1 text-xs text-foreground/45">{trMessage(definition?.category || "--")}</div></div>; } },
+        { title: tr("版本"), dataIndex: "name", render: (_, template) => <div><div className="font-medium">{template.name}</div><div className="mt-1 text-xs text-foreground/45">v{template.version} · {tr("{0} 字符", template.content.length)}</div></div> },
+        { title: tr("输出"), dataIndex: "outputType", width: 120, align: "center", render: (outputType: string, template) => <span className="inline-flex items-center gap-2 text-xs text-foreground/65">{outputType === "json" ? <FileJson className="size-3.5" /> : <FileText className="size-3.5" />}{outputType === "json" ? definitionByOperation.get(template.operation)?.schemaKey || "JSON" : tr("文本")}</span> },
+        { title: tr("状态"), dataIndex: "enabled", width: 100, align: "center", render: (enabled) => <AdminStatusBadge label={enabled ? tr("启用中") : tr("历史版")} tone={enabled ? "success" : "neutral"} /> },
+        { title: tr("更新时间"), dataIndex: "updatedAt", width: 180, align: "center", render: formatTime },
+        { title: tr("操作"), width: 310, align: "center", render: (_, template) => <AdminRowActions visibleActionCount={2} primary={{ label: tr("基于此版本新建"), icon: <Copy className="size-3.5" />, onClick: () => openDrawer(template) }} actions={[{ key: "activate", label: tr("启用版本"), icon: <Power className="size-3.5" />, disabled: template.enabled, confirm: { title: tr("启用这个提示词版本？"), description: tr("只会替换同类型的当前版本，其他模板类型不受影响。"), okText: tr("确认启用") }, onClick: () => activate(template) }, { key: "delete", label: tr("删除版本"), icon: <Trash2 className="size-3.5" />, danger: true, disabled: template.enabled, confirm: { title: tr("删除这个历史版本？"), description: tr("删除后不可恢复，启用中的版本不能删除。"), okText: tr("确认删除") }, onClick: () => remove(template) }]} /> },
     ];
 
     return (
@@ -204,7 +204,7 @@ export default function StoryboardPromptsPage() {
                 <Form form={form} layout="vertical" requiredMark={false} className="flex min-h-full flex-col">
                     <div className="grid shrink-0 gap-4 border-b border-border p-4 md:grid-cols-3">
                         <Form.Item label={tr("模板类型")} className="mb-0">
-                            <Select value={draftOperation} disabled={Boolean(baseTemplate)} options={definitions.map((item) => ({ label: `${item.category} · ${item.label}`, value: item.operation }))} onChange={switchOperation} />
+                            <Select value={draftOperation} disabled={Boolean(baseTemplate)} options={definitions.map((item) => ({ label: `${trMessage(item.category)} · ${trMessage(item.label)}`, value: item.operation }))} onChange={switchOperation} />
                         </Form.Item>
                         <Form.Item name="name" label={tr("版本名称")} className="mb-0" rules={[{ required: true, whitespace: true, message: tr("请填写版本名称") }]}>
                             <Input placeholder={tr("例如：轻喜剧分镜策略 v2")} />

@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 export type GeneratedShortDramaChapter = {
     title: string;
     content: string;
@@ -31,7 +32,7 @@ export function parseGeneratedStory(answer: string): GeneratedShortDramaOutline 
 
 export function storyTitleFromAnswer(answer: string) {
     const line = answer.split(/\r?\n/).find((item) => item.trim());
-    return line ? line.trim().slice(0, 24) : "AI 生成短剧";
+    return line ? line.trim().slice(0, 24) : tr("AI 生成短剧");
 }
 
 export function shortDramaOutlineVariables(input: {

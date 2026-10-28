@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, trMessage } from "@/i18n";
 export type CanvasAppearance = {
     agentName: string;
     launcherLabel: string;
@@ -106,6 +106,7 @@ export const DEFAULT_CANVAS_APPEARANCE: CanvasAppearance = {
     avatarHeight: 220,
 };
 
+/** Fills {agentName}; texts saved as the Chinese defaults are shown in the interface language. */
 export function agentCopy(template: string, name: string) {
-    return template.replaceAll("{agentName}", () => name);
+    return trMessage(template).replaceAll("{agentName}", () => name);
 }

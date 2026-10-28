@@ -8,14 +8,6 @@ export function profileAvatarError(file: Pick<File, "type" | "size">): string | 
 }
 
 export function profilePasswordError(password: string): string | undefined {
-    if ([...password].length < 8) return tr("密码至少需要 8 个字符");
+    if ([...password].length < 12) return tr("密码至少需要 12 个字符");
     if (new TextEncoder().encode(password).length > 72) return tr("密码不能超过 72 字节，请缩短密码");
-}
-
-export function profileSecondsRemaining(until: number, now: number): number {
-    return Math.max(0, Math.ceil((until - now) / 1000));
-}
-
-export function profileReauthReady(until: string | undefined, now: number): boolean {
-    return !!until && Date.parse(until) > now;
 }

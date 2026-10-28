@@ -64,7 +64,7 @@ export function CanvasVideoPromptTools({ metadata, frameOptions, onMetadataChang
             >
                 <ImageIcon className="size-3.5 shrink-0 opacity-80" />
                 <span className="shrink-0 text-[var(--fs-tiny)] font-medium">{tr("工作流参考")}</span>
-                <span className="min-w-0 truncate text-[var(--fs-micro)] opacity-65">{summary || "尚未连接媒体"}</span>
+                <span className="min-w-0 truncate text-[var(--fs-micro)] opacity-65">{summary || tr("尚未连接媒体")}</span>
             </div>
         );
     }

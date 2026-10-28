@@ -180,7 +180,7 @@ export function modelPromptLengthError(config: AiConfig, model: string, capabili
     if (!maxChars || maxChars <= 0) return "";
     const actualChars = Array.from(prompt).length;
     if (actualChars <= maxChars) return "";
-    const label = capability === "text" ? "文本" : capability === "image" ? "图片" : "视频";
+    const label = capability === "text" ? tr("文本") : capability === "image" ? tr("图片") : tr("视频");
     return `当前${label}模型提示词最多 ${maxChars} 个字符，完整提示词为 ${actualChars} 个字符。系统不会自动截断，请精简当前输入、连线内容或技能上下文后重试`;
 }
 

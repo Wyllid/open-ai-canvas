@@ -86,7 +86,7 @@ export function normalizeDraft(input: unknown): InspirationDraft {
         description: typeof raw.description === "string" ? raw.description.trim() : "",
         image: nonEmpty(raw.image, tr("封面地址")),
         mode: raw.mode,
-        prompt: nonEmpty(raw.prompt, "提示词正文"),
+        prompt: nonEmpty(raw.prompt, tr("提示词正文")),
         ...(typeof raw.promptZh === "string" && raw.promptZh.trim() ? { promptZh: raw.promptZh.trim() } : {}),
         ...(typeof raw.category === "string" && raw.category.trim() ? { category: raw.category.trim() } : {}),
         ...(asStringArray(raw.tags) ? { tags: asStringArray(raw.tags) } : {}),

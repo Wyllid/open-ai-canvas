@@ -156,7 +156,7 @@ export function CreationHistoryDrawer({
                                             <input
                                                 ref={renameInputRef}
                                                 className="creation-history-rename-input"
-                                                defaultValue={conversation.title.trim() || "新创作"}
+                                                defaultValue={conversation.title.trim() || tr("新创作")}
                                                 aria-label={tr("重命名对话标题")}
                                                 autoFocus
                                                 onFocus={(event) => event.currentTarget.select()}

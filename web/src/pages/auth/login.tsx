@@ -97,8 +97,8 @@ function signInErrorMessage(error: unknown) {
             return tr("用户名、邮箱或密码不正确");
         case "该账号已被禁用":
             return tr("该账号已被禁用");
-        case "管理员密码过于简单，只能从本机或内网登录。请在服务器 .env 中设置至少 12 位的 CANVAS_ADMIN_PASSWORD 并重启服务。":
-            return tr("管理员密码过于简单，只能从本机或内网登录。请在服务器 .env 中设置至少 12 位的 CANVAS_ADMIN_PASSWORD 并重启服务。");
+        case "管理员密码过于简单，只能从本机或内网登录。请从本机登录后在“账号”中设置至少 12 位的密码，或修改服务器 .env 中的 CANVAS_ADMIN_PASSWORD 并重启服务。":
+            return tr("管理员密码过于简单，只能从本机或内网登录。请从本机登录后在“账号”中设置至少 12 位的密码，或修改服务器 .env 中的 CANVAS_ADMIN_PASSWORD 并重启服务。");
         default:
             return text || tr("Sign-in failed");
     }

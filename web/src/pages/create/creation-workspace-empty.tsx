@@ -36,10 +36,10 @@ export function CreationEmptyBanner() {
 }
 
 export const creationEmptySuggestions: Array<{ mode: CreationMode; icon: typeof Clapperboard; title: string; hint: string; prompt: string; openLibrary?: boolean }> = [
-    { mode: "video", icon: Clapperboard, title: tr("生成第一个镜头"), hint: tr("描述画面、镜头运动与光线"), prompt: "雨夜天台，镜头缓缓推近霓虹灯牌下的主角，她回眸看向镜头，强对比电影感布光" },
+    { mode: "video", icon: Clapperboard, title: tr("生成第一个镜头"), hint: tr("描述画面、镜头运动与光线"), prompt: tr("雨夜天台，镜头缓缓推近霓虹灯牌下的主角，她回眸看向镜头，强对比电影感布光") },
     { mode: "image", icon: ImageIcon, title: tr("从参考图开始"), hint: tr("上传风格图，生成同风格画面"), prompt: "", openLibrary: true },
-    { mode: "text", icon: FileText, title: tr("续写故事"), hint: tr("和 AI 讨论剧情、角色与对白"), prompt: "帮我续写一个短剧故事，先聊聊剧情走向：" },
-    { mode: "video", icon: Sparkles, title: tr("引用技能增强"), hint: tr("@技能 调用分镜、配音等专业能力"), prompt: "调用分镜技能，帮我规划这个镜头的拍摄方案：" },
+    { mode: "text", icon: FileText, title: tr("续写故事"), hint: tr("和 AI 讨论剧情、角色与对白"), prompt: tr("帮我续写一个短剧故事，先聊聊剧情走向：") },
+    { mode: "video", icon: Sparkles, title: tr("引用技能增强"), hint: tr("@技能 调用分镜、配音等专业能力"), prompt: tr("调用分镜技能，帮我规划这个镜头的拍摄方案：") },
 ];
 
 export function CreationEmptySuggest({ onStartPrompt, onOpenLibrary }: { onStartPrompt: (mode: CreationMode, prompt: string) => void; onOpenLibrary: () => void }) {

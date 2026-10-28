@@ -332,7 +332,7 @@ export default function ChannelsPage() {
     );
 
     return (
-        <AdminPageFrame title={tr("系统模型")} description={tr("左侧选择渠道，右侧直接管理模型、协议与售价。")}>
+        <AdminPageFrame title={tr("系统模型")} description={tr("左侧选择渠道，右侧直接管理模型与协议。")}>
             <AgentModelSetupCard
                 onSaved={async () => {
                     await reload();

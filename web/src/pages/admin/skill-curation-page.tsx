@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, trMessage } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, App, Button, Input, InputNumber } from "antd";
 import { Check, CheckCircle2, ChevronRight, FolderTree, Plus, RefreshCw, Search, Shapes, SlidersHorizontal } from "lucide-react";
@@ -301,7 +301,7 @@ export default function SkillCurationPage() {
                                                                 >
                                                                     <span className="admin-skill-curation-tree-node-marker" aria-hidden="true" />
                                                                     <span className="admin-skill-curation-tree-node-copy">
-                                                                        <span className="admin-skill-curation-tree-node-name">{item.name}</span>
+                                                                        <span className="admin-skill-curation-tree-node-name">{trMessage(item.name)}</span>
                                                                         <span className="admin-skill-curation-tree-node-meta">{item.enabled ? tr("启用中") : tr("已停用")}</span>
                                                                     </span>
                                                                     <ChevronRight className="admin-skill-curation-tree-node-chevron size-3.5" aria-hidden="true" />
@@ -320,7 +320,7 @@ export default function SkillCurationPage() {
                                                 <button key={item.id} type="button" role="treeitem" aria-selected={target?.kind === "category" && target.id === item.id} className={`admin-skill-curation-tree-node admin-skill-curation-tree-node-child${target?.kind === "category" && target.id === item.id ? " is-active" : ""}`} onClick={() => selectCategory(item)}>
                                                     <span className="admin-skill-curation-tree-node-marker" aria-hidden="true" />
                                                     <span className="admin-skill-curation-tree-node-copy">
-                                                        <span className="admin-skill-curation-tree-node-name">{item.name}</span>
+                                                        <span className="admin-skill-curation-tree-node-name">{trMessage(item.name)}</span>
                                                         <span className="admin-skill-curation-tree-node-meta">{item.enabled ? tr("启用中") : tr("已停用")}</span>
                                                     </span>
                                                     <ChevronRight className="admin-skill-curation-tree-node-chevron size-3.5" aria-hidden="true" />
@@ -436,7 +436,7 @@ export default function SkillCurationPage() {
                                                                     <Icon className="size-3.5" aria-hidden="true" />
                                                                 </span>
                                                                 <span className="admin-skill-curation-direct-choice-copy">
-                                                                    <strong>{item.name}</strong>
+                                                                    <strong>{trMessage(item.name)}</strong>
                                                                     <small>{item.enabled ? tr("可用于新建子分类") : tr("已停用")}</small>
                                                                 </span>
                                                                 {selected ? <CheckCircle2 className="admin-skill-curation-choice-check size-3.5" aria-hidden="true" /> : null}
@@ -562,7 +562,7 @@ export default function SkillCurationPage() {
                                                     }}
                                                 >
                                                     <Icon className="size-4" aria-hidden="true" />
-                                                    <span>{item.name}</span>
+                                                    <span>{trMessage(item.name)}</span>
                                                 </button>
                                             );
                                         })}
@@ -579,7 +579,7 @@ export default function SkillCurationPage() {
                                                 const selected = categoryIds.includes(item.id);
                                                 return (
                                                     <button key={item.id} type="button" role="option" aria-selected={selected} aria-pressed={selected} className={`admin-skill-curation-assign-chip${selected ? " is-selected" : ""}`} disabled={!selectedSkill} onClick={() => setCategoryIds((current) => (selected ? current.filter((id) => id !== item.id) : [...current, item.id]))}>
-                                                        <span>{item.name}</span>
+                                                        <span>{trMessage(item.name)}</span>
                                                     </button>
                                                 );
                                             })

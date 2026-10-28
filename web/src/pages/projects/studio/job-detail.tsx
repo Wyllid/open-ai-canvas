@@ -14,7 +14,7 @@ export const JOB_KIND_LABEL: Record<DramaJob["kind"], string> = {
     plan: tr("分集规划"),
     cast_image: tr("参考图"),
     script: tr("剧本与分镜"),
-    segment_prompt: "段视频提示词",
+    segment_prompt: tr("段视频提示词"),
     segment_video: tr("段视频"),
     render: tr("合成成片"),
 };

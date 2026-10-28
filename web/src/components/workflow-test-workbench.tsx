@@ -362,7 +362,7 @@ function WorkflowParameter({ field, value, onChange }: { field: WorkflowFieldMap
                         {field.nodeId}.{field.fieldName}
                     </small>
                 </span>
-                <Input value="每次运行随机生成" disabled />
+                <Input value={tr("每次运行随机生成")} disabled />
             </label>
         );
     return (

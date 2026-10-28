@@ -149,9 +149,9 @@ export function PromptPreferencesPane() {
     }
     if (!selected) return <EmptyState title={tr("暂无可配置的提示词模板")} />;
 
-    const templateContent = selected.template?.content || "当前没有启用的平台模板";
+    const templateContent = selected.template?.content || tr("当前没有启用的平台模板");
     const previewCreative = mode === "inherit" ? templateContent : mode === "append" ? `${templateContent}\n\n【用户个性化创作要求】\n${appendContent}` : rewriteContent;
-    const outputLabel = selected.definition.outputType === "json" ? selected.definition.schemaKey || "JSON" : "文本";
+    const outputLabel = selected.definition.outputType === "json" ? selected.definition.schemaKey || "JSON" : tr("文本");
 
     return (
         <div className="flex min-h-full flex-col">
@@ -196,9 +196,9 @@ export function PromptPreferencesPane() {
             <div className="grid min-h-0 flex-1 gap-4 pt-4 lg:grid-cols-3">
                 <section className="flex min-h-0 flex-col lg:col-span-2">
                     <div className="mb-3 shrink-0">
-                        <h3 className="text-sm font-semibold">{mode === "inherit" ? "当前平台模板" : mode === "append" ? "追加个人要求" : "改写创作策略"}</h3>
+                        <h3 className="text-sm font-semibold">{mode === "inherit" ? tr("当前平台模板") : mode === "append" ? tr("追加个人要求") : tr("改写创作策略")}</h3>
                         <p className="mt-1 text-xs leading-5 text-foreground/50">
-                            {mode === "inherit" ? "平台升级后自动使用新版本。" : mode === "append" ? "内容追加在平台策略之后，仍会自动继承平台升级。" : "只替换创作策略；动态项目数据和输出契约仍由服务端强制注入。"}
+                            {mode === "inherit" ? tr("平台升级后自动使用新版本。") : mode === "append" ? tr("内容追加在平台策略之后，仍会自动继承平台升级。") : tr("只替换创作策略；动态项目数据和输出契约仍由服务端强制注入。")}
                         </p>
                     </div>
                     {mode === "append" ? (

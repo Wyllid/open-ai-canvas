@@ -1,9 +1,9 @@
 import { tr } from "@/i18n";
 import { App, Button, InputNumber } from "antd";
 import { SettingsRow } from "@/components/ui/product/settings-row";
-import { ArrowLeft, Boxes, Brain, Bug, Cloud, MessageSquareText, RadioTower, SlidersHorizontal, UserRound, Workflow } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { ArrowLeft } from "lucide-react";
+import { useEffect, type ReactNode } from "react";
+import { useSearchParams } from "react-router";
 
 import { UserOSSSettingsForm } from "@/components/layout/user-oss-settings-form";
 import { refreshSystemChannels } from "@/lib/user-session";
@@ -19,55 +19,24 @@ import { RUNNINGHUB_PLUGIN_ID } from "@/lib/plugins/builtin/workflows";
 import { usePluginStore } from "@/stores/use-plugin-store";
 import { ProfilePane } from "./profile-pane";
 
-type ConfigSectionKey = "profile" | "channels" | "models" | "runninghub" | "preferences" | "prompts" | "agent-memory" | "storage" | "diagnostics";
+export type PersonalSettingsSection = "profile" | "channels" | "models" | "runninghub" | "preferences" | "prompts" | "agent-memory" | "storage" | "diagnostics";
 
-const configSections: Array<{ key: ConfigSectionKey; label: string; description: string; icon: ReactNode }> = [
-    { key: "profile", label: tr("个人信息"), description: tr("头像、密码与邮箱"), icon: <UserRound className="size-4" /> },
-    { key: "channels", label: tr("个人渠道"), description: tr("模型服务与个人工作流"), icon: <RadioTower className="size-4" /> },
-    { key: "runninghub", label: tr("RunningHub 工作流"), description: tr("个人渠道的云端工作流配置"), icon: <Workflow className="size-4" /> },
-    { key: "models", label: tr("模型选择"), description: tr("按领域选择默认模型"), icon: <Boxes className="size-4" /> },
-    { key: "preferences", label: tr("生成偏好"), description: tr("画布生成默认值"), icon: <SlidersHorizontal className="size-4" /> },
-    { key: "prompts", label: tr("提示词偏好"), description: tr("按任务定制平台模板"), icon: <MessageSquareText className="size-4" /> },
-    { key: "agent-memory", label: tr("Agent 记忆"), description: tr("批准、添加、导出导入、压缩"), icon: <Brain className="size-4" /> },
-    { key: "storage", label: tr("我的对象存储"), description: tr("管理个人媒体存储"), icon: <Cloud className="size-4" /> },
-    { key: "diagnostics", label: tr("问题诊断"), description: tr("导出日志协助排查"), icon: <Bug className="size-4" /> },
-];
-
-export function isConfigSection(value: string | null): value is ConfigSectionKey {
-    return configSections.some((section) => section.key === value);
-}
-
-export default function SettingsPage() {
+/**
+ * Account and creation preferences shown inside the settings modal. `section` is chosen by the modal;
+ * `onSelect` switches to another personal section and `onClose` leaves the modal.
+ */
+export default function PersonalSettingsContent({ section, onSelect, onClose }: { section: PersonalSettingsSection; onSelect: (section: PersonalSettingsSection) => void; onClose: () => void }) {
     const { message } = App.useApp();
-    const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const requestedSection = searchParams.get("section");
+    const [searchParams] = useSearchParams();
     const customChannelsEnabled = useUserStore((state) => state.features.customChannelsEnabled);
     const runtimeStatuses = usePluginStore((state) => state.runtimeStatuses);
     const runningHubPluginEnabled = runtimeStatuses[RUNNINGHUB_PLUGIN_ID] === "enabled";
-    const requestedSectionEnabled = requestedSection !== "runninghub" || runningHubPluginEnabled;
-    const initialSection = isConfigSection(requestedSection) && requestedSectionEnabled ? requestedSection : "profile";
-    const [activeTab, setActiveTab] = useState<ConfigSectionKey>(initialSection === "channels" && !customChannelsEnabled ? "models" : initialSection);
     const config = useConfigStore((state) => state.config);
     const effectiveConfig = useEffectiveConfig();
     const updateConfig = useConfigStore((state) => state.updateConfig);
     const shouldPromptContinue = searchParams.get("continue") === "1";
     const userId = useUserStore((state) => state.user?.id);
     const userChannels = config.channels.filter((channel) => channel.scope !== "system");
-    const visibleConfigSections = useMemo(
-        () => (customChannelsEnabled ? configSections : configSections.filter((section) => section.key !== "channels")).filter((section) => section.key !== "runninghub" || runningHubPluginEnabled),
-        [customChannelsEnabled, runningHubPluginEnabled],
-    );
-
-    const isVisibleConfigSection = (value: string | null): value is ConfigSectionKey => isConfigSection(value) && visibleConfigSections.some((section) => section.key === value);
-
-    useEffect(() => {
-        if (isVisibleConfigSection(requestedSection)) {
-            setActiveTab(requestedSection);
-            return;
-        }
-        setActiveTab(requestedSection === "channels" && !customChannelsEnabled ? "models" : "profile");
-    }, [customChannelsEnabled, requestedSection, visibleConfigSections]);
 
     useEffect(() => {
         if (!userId) return;
@@ -80,12 +49,9 @@ export default function SettingsPage() {
         };
     }, [message, userId]);
 
-    const selectSection = (section: ConfigSectionKey) => {
-        if (section === "runninghub" && !runningHubPluginEnabled) return;
-        setActiveTab(section);
-        const next = new URLSearchParams(searchParams);
-        next.set("section", section);
-        setSearchParams(next, { replace: true });
+    const selectSection = (next: PersonalSettingsSection) => {
+        if (next === "runninghub" && !runningHubPluginEnabled) return;
+        onSelect(next);
     };
 
     const finishConfig = () => {
@@ -103,10 +69,10 @@ export default function SettingsPage() {
             return;
         }
         message.success(tr("配置已保存，正在返回创作页面"));
-        navigate(-1);
+        onClose();
     };
 
-    const panes: Record<ConfigSectionKey, ReactNode> = {
+    const panes: Record<PersonalSettingsSection, ReactNode> = {
         profile: (
             <SettingsPane>
                 <ProfilePane key={userId} />
@@ -200,49 +166,19 @@ export default function SettingsPage() {
     };
 
     return (
-        <main className="settings-page app-workspace-page app-user-workspace flex h-full min-h-0 flex-col text-foreground">
+        <div className={`app-user-workspace settings-page settings-pane-root ${section === "prompts" ? "h-full w-full" : "w-full"}`}>
+            {panes[section]}
             {shouldPromptContinue ? (
-                <div className="settings-topbar shrink-0">
-                    <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-                        <Button icon={<ArrowLeft className="size-4" />} onClick={() => navigate(-1)}>
-                            {tr("返回创作")}
-                        </Button>
-                        <Button type="primary" onClick={finishConfig}>
-                            {tr("保存并返回")}
-                        </Button>
-                    </div>
+                <div className="settings-continue-bar">
+                    <Button icon={<ArrowLeft className="size-4" />} onClick={onClose}>
+                        {tr("返回创作")}
+                    </Button>
+                    <Button type="primary" onClick={finishConfig}>
+                        {tr("保存并返回")}
+                    </Button>
                 </div>
             ) : null}
-            <div className="settings-library-frame flex min-h-0 flex-1 flex-col md:flex-row">
-                <aside className="settings-nav-panel w-full shrink-0 md:w-[200px]">
-                    <nav className="thin-scrollbar flex gap-1 overflow-x-auto p-2 md:block md:space-y-1 md:p-2" aria-label={tr("配置分类")}>
-                        {visibleConfigSections.map((item) => {
-                            const selected = item.key === activeTab;
-                            return (
-                                <button
-                                    key={item.key}
-                                    type="button"
-                                    className={`settings-nav-item flex h-9 shrink-0 items-center gap-2 rounded-md px-3 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:h-auto md:w-full md:items-start md:gap-3 md:py-2 ${selected ? "is-active" : "text-foreground/58 hover:bg-muted/55 hover:text-foreground"}`}
-                                    onClick={() => selectSection(item.key)}
-                                    aria-current={selected ? "page" : undefined}
-                                >
-                                    <span className={`shrink-0 md:mt-0.5 ${selected ? "text-[var(--workspace-accent)]" : ""}`}>{item.icon}</span>
-                                    <span className="min-w-0">
-                                        <span className="block whitespace-nowrap text-sm font-medium">{item.label}</span>
-                                        <span className="mt-1 hidden text-[var(--fs-label)] leading-4 text-current opacity-65 md:block">{item.description}</span>
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </nav>
-                </aside>
-                <section className="settings-content flex min-h-0 min-w-0 flex-1 flex-col">
-                    <div className="app-workspace-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 md:px-6 md:py-5">
-                        <div className={`settings-pane-root ${activeTab === "prompts" ? "h-full w-full" : "mx-auto w-full max-w-none"}`}>{panes[activeTab]}</div>
-                    </div>
-                </section>
-            </div>
-        </main>
+        </div>
     );
 }
 

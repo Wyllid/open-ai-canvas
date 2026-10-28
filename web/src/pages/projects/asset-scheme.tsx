@@ -307,7 +307,7 @@ function SkillPromptImportModal({ open, onClose, onImport }: { open: boolean; on
                         </div>
                     </aside>
                     <aside>
-                        <div className="drama-skill-import-caption">{skill ? `${skill.skillName} · ${files.length} 份文本` : "文件"}</div>
+                        <div className="drama-skill-import-caption">{skill ? `${skill.skillName} · ${files.length} 份文本` : tr("文件")}</div>
                         <div className="drama-skill-import-list thin-scrollbar">
                             {files.map((file) => (
                                 <button key={file.path} type="button" className="is-file" aria-pressed={file.path === path} onClick={() => setPath(file.path)}>
@@ -321,11 +321,11 @@ function SkillPromptImportModal({ open, onClose, onImport }: { open: boolean; on
                     </aside>
                     <section>
                         <div className="drama-skill-import-caption">
-                            {path || "原文"}
+                            {path || tr("原文")}
                             {content ? <span>{tr("{0} 字", content.length.toLocaleString(currentLocale()))}</span> : null}
                         </div>
                         <pre ref={contentRef} className="drama-skill-import-content thin-scrollbar">
-                            {fileQuery.isLoading ? "正在读取…" : content || "选择文件后在这里查看原文，用鼠标选中需要的段落。"}
+                            {fileQuery.isLoading ? tr("正在读取…") : content || tr("选择文件后在这里查看原文，用鼠标选中需要的段落。")}
                         </pre>
                     </section>
                 </div>

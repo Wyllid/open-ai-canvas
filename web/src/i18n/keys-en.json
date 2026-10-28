@@ -88,5 +88,6 @@
     "transition",
     "{0} open findings will be replaced by the new review.",
     "{0} open · {1} resolved",
-    "{0} takes · picking one re-renders the episode, nothing is generated"
+    "{0} takes · picking one re-renders the episode, nothing is generated",
+    "，"
 ]

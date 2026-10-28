@@ -34,7 +34,7 @@ export function canCancelGenerationTask(task: GenerationTaskDisplayTarget) {
 export function mediaDeliverySummary(status: TaskStatus | undefined, stage: GenerationTask["mediaStage"]) {
     if (!stage) return "";
     if (stage === "completed") return tr("生成成功 · 文件保存成功 · 素材登记成功");
-    const prefix = stage === "download" || stage === "checkpoint" ? "生成成功" : stage === "register" ? "生成成功 · 文件保存成功" : "生成成功 · 下载成功";
+    const prefix = stage === "download" || stage === "checkpoint" ? tr("生成成功") : stage === "register" ? tr("生成成功 · 文件保存成功") : tr("生成成功 · 下载成功");
     const action = { download: tr("下载"), upload: tr("上传 OSS"), local_save: tr("保存文件"), register: tr("登记素材"), checkpoint: tr("记录恢复信息") }[stage];
     return `${prefix} · ${action}${status === "failed" ? tr("失败") : status === "cancelled" ? tr("已停止") : tr("待完成")}`;
 }

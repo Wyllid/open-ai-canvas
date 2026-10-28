@@ -37,6 +37,8 @@ for (const file of walk(srcDir, [])) {
         },
     });
 }
+// Messages written by the backend and shown through trMessage(); listed so the catalogs keep them.
+for (const message of JSON.parse(fs.readFileSync(path.join(srcDir, "i18n", "server-messages.json"), "utf8"))) keys.add(message);
 const chinese = [...keys].filter((key) => HAN.test(key)).sort();
 const english = [...keys].filter((key) => !HAN.test(key)).sort();
 

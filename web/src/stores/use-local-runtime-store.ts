@@ -78,7 +78,7 @@ export function createLocalRuntimeStore(dependencies: LocalRuntimeStoreDependenc
                         connecting: false,
                         runtime: null,
                         modules: [],
-                        error: "本机连接需要重新建立",
+                        error: tr("本机连接需要重新建立"),
                     });
                     return;
                 }

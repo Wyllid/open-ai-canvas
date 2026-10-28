@@ -130,6 +130,8 @@ export class AgentStreamError extends Error {
 
 export type CreateAgentRunInput = {
     reasoningMode?: AgentReasoningMode;
+    /** Interface language; the agent replies and writes canvas text in it. */
+    locale?: "en" | "pt-BR" | "zh-CN";
     profileRevision?: string;
     /** 空字符串 = 平台级对话（未进入画布），后端不开放画布工具。 */
     canvasId: string;

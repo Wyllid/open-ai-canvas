@@ -27,7 +27,7 @@ export function AgentWelcome({ appearance, nodeCount, onChooseSkill, onDraftProm
                     </span>
                     <ArrowUpRight className="agent-welcome-arrow" aria-hidden="true" />
                 </button>
-                <button type="button" onClick={() => onDraftPrompt("我想创作一段短片，请先和我一起梳理故事方向。先询问我的想法，不要直接生成。")}>
+                <button type="button" onClick={() => onDraftPrompt(tr("我想创作一段短片，请先和我一起梳理故事方向。先询问我的想法，不要直接生成。"))}>
                     <Clapperboard aria-hidden="true" />
                     <span>
                         <strong>{tr("从灵感构思故事")}</strong>
@@ -35,7 +35,7 @@ export function AgentWelcome({ appearance, nodeCount, onChooseSkill, onDraftProm
                     </span>
                     <ArrowUpRight className="agent-welcome-arrow" aria-hidden="true" />
                 </button>
-                <button type="button" disabled={!nodeCount} onClick={() => onDraftPrompt("请先阅读当前画布，梳理素材与节点之间的关系，给出接下来的创作建议。先不要修改节点或提交生成任务。")}>
+                <button type="button" disabled={!nodeCount} onClick={() => onDraftPrompt(tr("请先阅读当前画布，梳理素材与节点之间的关系，给出接下来的创作建议。先不要修改节点或提交生成任务。"))}>
                     <Layers3 aria-hidden="true" />
                     <span>
                         <strong>{tr("一起梳理当前画布")}</strong>

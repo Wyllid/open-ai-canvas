@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, trMessage } from "@/i18n";
 import { Alert, Button, DatePicker } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
@@ -124,8 +124,8 @@ export default function LoginLogsPage() {
             width: 250,
             render: (_, log) =>
                 log.result === "failed" ? (
-                    <div className="line-clamp-2" title={log.message}>
-                        {log.message}
+                    <div className="line-clamp-2" title={trMessage(log.message)}>
+                        {trMessage(log.message)}
                     </div>
                 ) : (
                     <span className="text-foreground/35">—</span>

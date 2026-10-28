@@ -54,10 +54,8 @@ export function RequireFeature({ feature, children }: { feature: FeatureKey; chi
             </WorkspacePage>
         );
     if (!features[feature]) {
-        // 管理员页面返回到管理后台首页，用户页面返回到创作台
-        const isAdminFeature = feature === "frontendModelsEnabled";
-        const backPath = isAdminFeature ? "/admin" : "/";
-        const backLabel = isAdminFeature ? tr("返回管理后台") : tr("返回创作台");
+        const backPath = "/";
+        const backLabel = tr("返回创作台");
 
         return (
             <WorkspacePage>

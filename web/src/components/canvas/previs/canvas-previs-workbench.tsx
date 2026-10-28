@@ -648,9 +648,9 @@ export function CanvasPrevisWorkbench({
         if (!compiledPrompt) return;
         try {
             await navigator.clipboard.writeText(compiledPrompt);
-            message.success("已复制可直接交给视频模型的提示词");
+            message.success(tr("已复制可直接交给视频模型的提示词"));
         } catch {
-            message.warning("当前浏览器不允许自动复制，请从提示词预览中手动复制");
+            message.warning(tr("当前浏览器不允许自动复制，请从提示词预览中手动复制"));
         }
     };
 

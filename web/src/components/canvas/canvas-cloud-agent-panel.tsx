@@ -1,4 +1,5 @@
-import { tr } from "@/i18n";
+import { currentLocale, tr } from "@/i18n";
+import { openSettingsSection } from "@/lib/settings-navigation";
 import { createClientUUID } from "@/lib/client-id";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { App, Button } from "antd";
@@ -906,6 +907,7 @@ export const CanvasCloudAgentPanel = memo(function CanvasCloudAgentPanel() {
                     canvasId,
                     prompt: value,
                     reasoningMode,
+                    locale: currentLocale(),
                     profileRevision: profileView.revision,
                     model: modelOptionName(effectiveModel) || undefined,
                     ...(logicalModelId ? { logicalModelId } : requestConfig.channelId ? { channelId: requestConfig.channelId, channelModelKey: modelOptionName(effectiveModel) || undefined } : {}),
@@ -1473,9 +1475,17 @@ export const CanvasCloudAgentPanel = memo(function CanvasCloudAgentPanel() {
                                     {pendingQuestion ? <AgentQuestionBar question={pendingQuestion} theme={theme} disabled={otherAgentRunning || approvalSubmitting || connectionStatus !== "connected"} onAnswer={(label) => void submit(label)} /> : null}
                                     {historyHydrated && !pendingHydrated ? <div className="flex items-center gap-2 px-5 py-2 text-xs" role="status"><span>{tr("提交记录尚未确认，输入保留；画布可继续编辑。")}</span><Button size="small" onClick={() => setHistoryRestoreAttempt((attempt) => attempt + 1)}>{tr("重新读取记录")}</Button></div> : null}
                                     {modelRestoreError ? <div className="px-5 py-2 text-xs" role="status" style={{ color: theme.node.muted }}>{modelRestoreError}</div> : null}
+                                    {!selectedModel && !restoredModel ? (
+                                        <div className="flex items-center gap-3 px-5 py-2 text-xs" role="status" style={{ color: theme.node.muted }}>
+                                            <span className="min-w-0 flex-1">{tr("还没有可用的文本模型。设置 Agent 模型后即可开始对话。")}</span>
+                                            <Button size="small" type="primary" onClick={() => openSettingsSection("model-channels")}>
+                                                {tr("设置 Agent 模型")}
+                                            </Button>
+                                        </div>
+                                    ) : null}
                                     <AgentChatComposer
                                         prompt={prompt}
-                                        submitDisabled={otherAgentRunning && !pendingSubmission.current?.request || Boolean(run && connectionStatus !== "connected" && !pendingSubmission.current?.request) || !historyHydrated || !pendingHydrated || Boolean(canvasId && !cloudHistoryReady && !pendingSubmission.current?.request) || Boolean(cloudOpeningId) || Boolean(modelRestoreError && !pendingSubmission.current?.request)}
+                                        submitDisabled={otherAgentRunning && !pendingSubmission.current?.request || Boolean(run && connectionStatus !== "connected" && !pendingSubmission.current?.request) || !historyHydrated || !pendingHydrated || Boolean(canvasId && !cloudHistoryReady && !pendingSubmission.current?.request) || Boolean(cloudOpeningId) || Boolean(modelRestoreError && !pendingSubmission.current?.request) || (!selectedModel && !restoredModel && !pendingSubmission.current?.request)}
                                         sending={busy}
                                         running={running}
                                         placeholder={running ? tr("运行中可直接插话，会在它下一步生效") : tr("输入操作指导；用 @ 引用画布节点，用 / 或 、 引用 Skills")}

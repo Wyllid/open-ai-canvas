@@ -14,7 +14,7 @@ export function CanvasWorkspaceHistoryPanel({ tasks, refreshing, onRefresh, onCa
                 <span className="truncate text-xs font-semibold">{tr("历史 · 最近 30 条（含 Agent）")}</span>
                 <span className="tabular-nums text-foreground/32">{tasks.length.toLocaleString(currentLocale())}</span>
                 <span className="ml-auto">
-                    <button type="button" className="icon-btn tip-down" data-tip="刷新" aria-label={tr("刷新")} onClick={onRefresh}>
+                    <button type="button" className="icon-btn tip-down" data-tip={tr("刷新")} aria-label={tr("刷新")} onClick={onRefresh}>
                         <RefreshCw className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} />
                     </button>
                 </span>

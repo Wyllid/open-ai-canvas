@@ -165,5 +165,5 @@ export class ApprovedToolExecution {
 }
 
 function stageLabel(key: string) {
-    return ({ analyze_art_scene: tr("理解画面"), review_art_composition: tr("分析构图"), review_art_color: tr("分析色彩"), review_art_lighting: tr("分析光线"), review_art_structure: tr("分析结构"), aggregate_art_critique: tr("整理问题"), ground_art_critique_issues: tr("定位问题"), verify_art_critique: tr("复核结论"), generate_art_edit_prompts: "编写修改建议" } as Record<string, string>)[key.replace(/^stage:/, "")] || tr("分析阶段");
+    return ({ analyze_art_scene: tr("理解画面"), review_art_composition: tr("分析构图"), review_art_color: tr("分析色彩"), review_art_lighting: tr("分析光线"), review_art_structure: tr("分析结构"), aggregate_art_critique: tr("整理问题"), ground_art_critique_issues: tr("定位问题"), verify_art_critique: tr("复核结论"), generate_art_edit_prompts: tr("编写修改建议") } as Record<string, string>)[key.replace(/^stage:/, "")] || tr("分析阶段");
 }

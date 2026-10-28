@@ -970,7 +970,7 @@ export function useCanvasMediaTools({
         const generationMetadata = buildImageGenerationMetadata("edit", generationConfig, 1, [source, annotatedReference]);
         setAnnotationEditNodeId(null);
         setRunningNodeId(childId);
-        setNodes((current) => [...current, { id: childId, type: CanvasNodeType.Image, title: tr("{0} · 标注编辑", node.title || tr("图片")), position: { x: node.position.x + node.width + 96, y: node.position.y }, width: node.width, height: node.height, metadata: { ...canvasGenerationPromptMetadata("标注编辑", prompt), status: NODE_STATUS_LOADING, pluginId: "image-tools", pluginNodeId: "annotation-edit", ...generationMetadata } }]);
+        setNodes((current) => [...current, { id: childId, type: CanvasNodeType.Image, title: tr("{0} · 标注编辑", node.title || tr("图片")), position: { x: node.position.x + node.width + 96, y: node.position.y }, width: node.width, height: node.height, metadata: { ...canvasGenerationPromptMetadata(tr("标注编辑"), prompt), status: NODE_STATUS_LOADING, pluginId: "image-tools", pluginNodeId: "annotation-edit", ...generationMetadata } }]);
         setConnections((current) => [...current, { id: nanoid(), fromNodeId: node.id, toNodeId: childId }]);
         setSelectedNodeIds(new Set([childId]));
         setSelectedConnectionId(null);

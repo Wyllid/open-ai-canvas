@@ -5,6 +5,15 @@ description: 当前项目已实现功能的手工验证清单与未确认边界
 
 # 待测试
 
+## Local Studio：设置弹窗、本地管理员账号与 Agent 回复语言
+
+- 已实现（设置）：原 `/settings` 与 `/admin/*` 合并为当前页面上的设置弹窗（URL 参数 `?settings=<分区>`），左侧分组导航可搜索，正文区独立滚动；旧链接重定向到对应分区。删除用户管理、系统公告、常驻通知、管理端 Agent 记忆、登录与注册、邮件服务、外观里的页尾备案 / 兑换码 / 更新公告。
+- 已实现（账号）：设置 → 账号可修改用户名和密码（`POST /api/auth/profile/account`，需当前密码，新密码至少 12 位，成功后撤销全部会话）。`.env` 的 `CANVAS_ADMIN_USERNAME` / `CANVAS_ADMIN_PASSWORD` 只在首次启动或其值变化时生效（用于找回），界面修改在重启后保留；改名时原账号原地改名，项目归属不变。
+- 已实现（Agent）：运行请求携带界面语言 `locale`，服务端上下文投影 `replyLanguage`，策略 v19 要求按该语言回复并书写画布内容；审批卡片按结构化条目在前端本地化；没有文本模型时面板提示并打开“系统渠道 → Agent 模型”。
+- 已验证：后端 `go test ./cmd/... ./internal/auth ./internal/handler ./internal/app ./internal/prompts ./internal/repository` 通过；前端 typecheck、lint、2759 项测试通过。浏览器验证（深色、桌面与手机）：设置弹窗各分区、旧链接重定向、OpenRouter `nvidia/nemotron-3-ultra-550b-a55b:free` 下 Agent 新建画布 → 审批 → 写入文本节点，回复为葡萄牙语。
+- [ ] 在设置 → 账号修改用户名和密码，重新登录后重启服务，确认新凭据仍有效；再修改 `.env` 并重启，确认 `.env` 凭据恢复访问且项目仍在。
+- [ ] 英文界面下与 Agent 对话，确认回复和写入画布的内容为英文。
+
 ## 画布同步：已应用目标值幂等收敛与瞬时并发重放
 
 - 已实现（后端）：`applyCanvasOperations` 对当前值已等于目标值的写入按已应用处理，不再因旧基线整笔返回 `canvas_field_conflict`。覆盖 `patch_node` 各补丁路径（不再限于任务围栏请求）、`set_field`、`update_connection`，以及同内容重复的 `create_node` / `create_connection`。`remove_node`、`update_connection`、`remove_connection` 的整对象基线忽略节点 `updatedAt`。只在 `before` 中的断言、第三值和内容不同的同 ID 对象仍冲突。

@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, trMessage } from "@/i18n";
 import { CollectionToolbar } from "@/components/layout/collection-toolbar";
 import { AppModal } from "@/components/ui/product/app-modal";
 import { App, Button, Dropdown, Input } from "antd";
@@ -176,7 +176,7 @@ export default function SkillsPage() {
     }, [libraryCategoryScope, reloadKey]);
 
     const curationRoots = curation?.enabled ? (curation.roots || []).filter((root) => root.enabled !== false) : [];
-    const browseCategories: (SkillCategory & { iconKey?: string })[] = curation?.enabled ? curationRoots.map((root) => ({ value: root.id, label: root.name, iconKey: root.iconKey })) : categories;
+    const browseCategories: (SkillCategory & { iconKey?: string })[] = curation?.enabled ? curationRoots.map((root) => ({ value: root.id, label: trMessage(root.name), iconKey: root.iconKey })) : categories;
     const activeCurationCategory = curation?.enabled && platformCategory && !platformCategory.startsWith("root:") && platformCategory !== "__uncategorized__" ? curation.categories.find((item) => item.id === platformCategory) : undefined;
     const activeCurationRootId = platformCategory.startsWith("root:") ? platformCategory.slice(5) : activeCurationCategory?.rootTag || "";
     const libraryCategories = libraryCategoryList?.categories ?? [];
@@ -405,7 +405,8 @@ export default function SkillsPage() {
     const railItem = ({ key, label, icon: Icon, count, active, nested = false, onClick }: { key: string; label: string; icon?: LucideIcon; count?: number; active: boolean; nested?: boolean; onClick: () => void }) => (
         <button key={key} type="button" className={cn("skills-rail-item", nested && "is-nested")} aria-pressed={active} onClick={onClick}>
             {Icon ? <Icon aria-hidden="true" /> : null}
-            <span className="skills-rail-item-label">{label}</span>
+            {/* Category names come from the server in Chinese; built-in ones are translated. */}
+            <span className="skills-rail-item-label">{trMessage(label)}</span>
             {count !== undefined ? <span className="skills-rail-count">{formatSkillCount(count)}</span> : null}
         </button>
     );
@@ -609,7 +610,7 @@ function SkillCard({ skill, accentKey, categoryLabel, libraryCategories, canCate
                                 </button>
                             </Dropdown>
                         ) : categoryLabel ? (
-                            <span className="skill-tile-chip">{categoryLabel}</span>
+                            <span className="skill-tile-chip">{trMessage(categoryLabel)}</span>
                         ) : null}
                         {skill.isPrivate ? (
                             <Tooltip title={tr("仅自己可见")}>

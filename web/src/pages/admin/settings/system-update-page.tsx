@@ -1,4 +1,4 @@
-import { currentLocale, tr } from "@/i18n";
+import { currentLocale, tr, trMessage } from "@/i18n";
 import { App, Button, Input, Skeleton } from "antd";
 import { AlertTriangle, Archive, BadgeCheck, Circle, ExternalLink, History, RefreshCw, RotateCcw, ServerCog, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -238,7 +238,7 @@ export default function SystemUpdatePage() {
                         {(status?.operation.logs || []).length ? (
                             <ol>
                                 {status?.operation.logs.map((entry, index) => (
-                                    <li key={`${entry.at}-${index}`}><span className="admin-system-update-dot" data-active={index === status.operation.logs.length - 1} /><div><strong>{phaseLabels[entry.phase]}</strong><p>{entry.message}</p></div><time>{formatTime(entry.at)}</time></li>
+                                    <li key={`${entry.at}-${index}`}><span className="admin-system-update-dot" data-active={index === status.operation.logs.length - 1} /><div><strong>{phaseLabels[entry.phase]}</strong><p>{trMessage(entry.message)}</p></div><time>{formatTime(entry.at)}</time></li>
                                 ))}
                             </ol>
                         ) : <p className="admin-system-update-empty">{tr("检查更新后，这里会显示完整操作记录。")}</p>}
@@ -274,7 +274,7 @@ function PhaseBadge({ phase }: { phase: UpdatePhase }) {
 
 function UpdateCheckRow({ check }: { check: SystemUpdateStatus["checks"][number] }) {
     const Icon = check.status === "passed" ? BadgeCheck : check.status === "failed" ? AlertTriangle : Circle;
-    return <div className="admin-system-update-check-row" data-status={check.status}><Icon className="size-4" /><div><strong>{check.label}</strong><p>{check.detail || tr("等待执行")}</p></div><span>{check.status === "passed" ? tr("通过") : check.status === "failed" ? tr("失败") : tr("待执行")}</span></div>;
+    return <div className="admin-system-update-check-row" data-status={check.status}><Icon className="size-4" /><div><strong>{trMessage(check.label)}</strong><p>{trMessage(check.detail || "") || tr("等待执行")}</p></div><span>{check.status === "passed" ? tr("通过") : check.status === "failed" ? tr("失败") : tr("待执行")}</span></div>;
 }
 
 function UpdateAlert({ tone, title, detail, compact = false }: { tone: "warning" | "error"; title: string; detail: string; compact?: boolean }) {

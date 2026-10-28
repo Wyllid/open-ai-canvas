@@ -57,7 +57,7 @@ function buildPanoramaPrompt(sourceMode: PanoramaSourceMode, projection: Panoram
 
     const ratio = projection === "spherical" ? "2:1" : "4:1";
 
-    const fallbackText = `生成一张可用于全景查看器的完整沉浸式全景图，画面必须是比例${ratio}的等距柱状投影结构，宽度是高度的${projection === "spherical" ? "2倍" : "4倍"}，结合导入图片的主体、材质、色彩和风格，并根据文字描述补全四周环境、天空或天花板、地面或地板，让左右边缘自然衔接。${common}`;
+    const fallbackText = `生成一张可用于全景查看器的完整沉浸式全景图，画面必须是比例${ratio}的等距柱状投影结构，宽度是高度的${projection === "spherical" ? tr("2倍") : tr("4倍")}，结合导入图片的主体、材质、色彩和风格，并根据文字描述补全四周环境、天空或天花板、地面或地板，让左右边缘自然衔接。${common}`;
 
     if (!base) {
         return fallbackText;

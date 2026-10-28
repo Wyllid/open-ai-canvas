@@ -1,9 +1,9 @@
 import { tr } from "@/i18n";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Avatar, Button, Form, Input, Skeleton } from "antd";
-import { BadgeCheck, Crop, ImagePlus, KeyRound, Mail, RefreshCw, ShieldCheck } from "lucide-react";
+import { Crop, ImagePlus, KeyRound } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useNavigate } from "react-router";
 
 import { UserAvatar } from "@/components/layout/user-avatar";
 import { ImageCropDialog, type ImageCropRect } from "@/components/image-crop-dialog";
@@ -15,34 +15,30 @@ import { cropProfileAvatar } from "@/services/profile-avatar";
 import { loadProfileSession } from "@/services/profile-session";
 import { applyUserSession } from "@/lib/user-session";
 import { invalidateAuthSessionCache, type LocalUser } from "@/services/api/auth";
-import { changeProfileEmail, changeProfilePassword, profileLinuxDOReauthURL, requestProfileEmailCode, selectDefaultProfileAvatar, uploadProfileAvatar, type UserProfile } from "@/services/api/profile";
-import { ApiError } from "@/services/api/request";
+import { changeLocalAccount, selectDefaultProfileAvatar, uploadProfileAvatar, type UserProfile } from "@/services/api/profile";
 import { useUserStore } from "@/stores/use-user-store";
-import { profileAvatarError, profilePasswordError, profileReauthReady, profileSecondsRemaining } from "./profile-validation";
+import { profileAvatarError, profilePasswordError } from "./profile-validation";
 import "./profile-pane.css";
 
-type PasswordFields = { currentPassword: string; newPassword: string; confirmPassword: string };
-type EmailFields = { currentPassword: string; email: string; emailCode: string };
-type PendingAction = "crop-avatar" | "avatar" | "reset-avatar" | "password" | "email-code" | "email";
+type AccountFields = { username: string; newPassword?: string; confirmPassword?: string; currentPassword: string };
+type PendingAction = "crop-avatar" | "avatar" | "reset-avatar" | "account";
 type AvatarTab = "upload" | "preset";
-type EmailTicket = { value: string; expiresAt: number };
 
 const errorMessage = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
 
+/** The signed-in account: avatar, plus the username and password of the local administrator. */
 export function ProfilePane() {
     const { message } = App.useApp();
     const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
     const queryClient = useQueryClient();
     const userId = useUserStore((state) => state.user?.id);
     const queryKey = ["user-profile", userId];
     const profileQuery = useQuery({ queryKey, queryFn: ({ signal }) => loadProfileSession(userId, signal), enabled: !!userId, retry: false, refetchOnWindowFocus: false, staleTime: 0 });
     const profile = profileQuery.data;
-    const [passwordForm] = Form.useForm<PasswordFields>();
-    const [emailForm] = Form.useForm<EmailFields>();
+    const [accountForm] = Form.useForm<AccountFields>();
     const [pending, setPending] = useState<PendingAction | null>(null);
     const pendingRef = useRef(false);
-    const [errors, setErrors] = useState({ avatar: "", password: "", email: "" });
+    const [errors, setErrors] = useState({ avatar: "", account: "" });
     const [draftAvatar, setDraftAvatar] = useState<{ file: File; url: string; sourceFile: File } | null>(null);
     const [cropSource, setCropSource] = useState<{ file: File; url: string } | null>(null);
     const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
@@ -50,27 +46,6 @@ export function ProfilePane() {
     const [defaultAvatarDraft, setDefaultAvatarDraft] = useState("person");
     const cropGeneration = useRef(0);
     const fileInput = useRef<HTMLInputElement>(null);
-    const [emailTicket, setEmailTicket] = useState<EmailTicket | null>(null);
-    const [retryAt, setRetryAt] = useState(0);
-    const [now, setNow] = useState(Date.now());
-    const oauthResult = searchParams.get("reauth");
-    const [reauthResult] = useState(oauthResult);
-    const reauthReady = profileReauthReady(profile?.reauthenticatedUntil, now);
-    const identityReady = !!profile?.hasPassword || reauthReady;
-    const retrySeconds = profileSecondsRemaining(retryAt, now);
-    const ticketSeconds = emailTicket ? profileSecondsRemaining(emailTicket.expiresAt, now) : 0;
-
-    useEffect(() => {
-        if (!oauthResult) return;
-        const next = new URLSearchParams(searchParams);
-        next.delete("reauth");
-        setSearchParams(next, { replace: true });
-    }, [oauthResult, searchParams, setSearchParams]);
-
-    useEffect(() => {
-        const timer = window.setInterval(() => setNow(Date.now()), 1000);
-        return () => window.clearInterval(timer);
-    }, []);
 
     useEffect(
         () => () => {
@@ -195,16 +170,13 @@ export function ProfilePane() {
         }
     };
 
-    const finishSecurityChange = async (notice: string, notificationFailed = false) => {
+    const finishAccountChange = async (notice: string) => {
         if (useUserStore.getState().user?.id !== userId) return;
         invalidateAuthSessionCache();
-        passwordForm.resetFields();
-        emailForm.resetFields();
-        setEmailTicket(null);
+        accountForm.resetFields();
         try {
             await applyUserSession({ user: null });
-            if (notificationFailed) message.warning({ content: notice, duration: 8 });
-            else message.success({ content: notice, duration: 6 });
+            message.success({ content: notice, duration: 6 });
         } catch (error) {
             useUserStore.getState().clearSession();
             useUserStore.getState().setHydrated(true);
@@ -214,64 +186,16 @@ export function ProfilePane() {
         }
     };
 
-    const savePassword = async (values: PasswordFields) => {
-        if (!(profile?.hasPassword || profileReauthReady(profile?.reauthenticatedUntil, Date.now())) || !begin("password")) return;
-        setError("password", "");
+    const saveAccount = async (values: AccountFields) => {
+        if (!begin("account")) return;
+        setError("account", "");
         try {
-            await changeProfilePassword({ currentPassword: profile?.hasPassword ? values.currentPassword : "", newPassword: values.newPassword });
-            await finishSecurityChange(tr("密码已更新，所有登录会话已退出，请重新登录"));
+            await changeLocalAccount({ currentPassword: values.currentPassword, username: values.username.trim(), newPassword: values.newPassword || "" });
+            await finishAccountChange(tr("账号已更新，所有登录会话已退出，请使用新的用户名和密码登录"));
         } catch (error) {
-            setError("password", errorMessage(error, tr("修改密码失败，请重试")));
+            setError("account", errorMessage(error, tr("保存账号失败，请重试")));
         } finally {
             end();
-        }
-    };
-
-    const sendEmailCode = async () => {
-        if (!profile?.emailEnabled || !(profile.hasPassword || profileReauthReady(profile.reauthenticatedUntil, Date.now())) || profileSecondsRemaining(retryAt, Date.now()) || pendingRef.current) return;
-        let values: EmailFields;
-        try {
-            values = await emailForm.validateFields(profile.hasPassword ? ["email", "currentPassword"] : ["email"]);
-        } catch {
-            return;
-        }
-        if (!begin("email-code")) return;
-        setError("email", "");
-        setEmailTicket(null);
-        emailForm.setFieldValue("emailCode", "");
-        try {
-            const result = await requestProfileEmailCode({ email: values.email.trim(), currentPassword: profile.hasPassword ? values.currentPassword : "" });
-            const receivedAt = Date.now();
-            setEmailTicket({ value: result.ticket, expiresAt: receivedAt + result.expiresIn * 1000 });
-            setRetryAt(receivedAt + result.retryAfter * 1000);
-            setNow(receivedAt);
-            message.success(tr("验证码已发送到新邮箱"));
-        } catch (error) {
-            if (error instanceof ApiError && error.retryAfterMs) setRetryAt(Date.now() + error.retryAfterMs);
-            setError("email", errorMessage(error, tr("发送验证码失败，请重试")));
-        } finally {
-            end();
-        }
-    };
-
-    const saveEmail = async (values: EmailFields) => {
-        if (!profile?.emailEnabled || !(profile.hasPassword || profileReauthReady(profile.reauthenticatedUntil, Date.now())) || !emailTicket || !profileSecondsRemaining(emailTicket.expiresAt, Date.now()) || !begin("email")) return;
-        setError("email", "");
-        try {
-            const result = await changeProfileEmail({ ticket: emailTicket.value, emailCode: values.emailCode, currentPassword: profile.hasPassword ? values.currentPassword : "" });
-            await finishSecurityChange(result.notificationStatus === "failed" ? tr("邮箱已更新，但旧邮箱通知发送失败。所有登录会话已退出，请重新登录") : tr("邮箱已更新，所有登录会话已退出，请重新登录"), result.notificationStatus === "failed");
-        } catch (error) {
-            setError("email", errorMessage(error, tr("修改邮箱失败，请重试")));
-        } finally {
-            end();
-        }
-    };
-
-    const resetEmailTicket = (changed: Partial<EmailFields>) => {
-        setError("email", "");
-        if ("email" in changed || "currentPassword" in changed) {
-            setEmailTicket(null);
-            emailForm.setFieldValue("emailCode", "");
         }
     };
 
@@ -279,12 +203,9 @@ export function ProfilePane() {
         <div className="profile-pane">
             <div className="settings-pane-header">
                 <div className="min-w-0">
-                    <h2>{tr("个人信息")}</h2>
-                    <p>{tr("管理你的头像、登录密码与邮箱。")}</p>
+                    <h2>{tr("账号")}</h2>
+                    <p>{tr("管理头像、用户名和登录密码。")}</p>
                 </div>
-                <Button icon={<RefreshCw className="size-4" />} loading={profileQuery.isFetching} disabled={!!pending} onClick={() => void profileQuery.refetch()}>
-                    {tr("刷新资料")}
-                </Button>
             </div>
             {profileQuery.isPending ? (
                 <Skeleton active paragraph={{ rows: 7 }} />
@@ -305,7 +226,7 @@ export function ProfilePane() {
                 <div className="profile-sections">
                     <section className="profile-overview" aria-labelledby="profile-avatar-title">
                         <div className="profile-overview-heading">
-                            <h3 id="profile-avatar-title">{tr("头像与账号")}</h3>
+                            <h3 id="profile-avatar-title">{tr("头像")}</h3>
                             <p>{tr("头像会同步显示在工作区和创作消息中。")}</p>
                         </div>
                         <div className="profile-overview-main">
@@ -322,189 +243,81 @@ export function ProfilePane() {
                         </div>
                     </section>
 
-                    {!profile.hasPassword ? (
-                        <Callout
-                            tone={reauthReady ? "success" : "info"}
-                            title={tr("验证当前身份")}
-                            icon={ShieldCheck}
-                            action={
-                                profile.linuxdoEnabled ? (
-                                    <Button disabled={!!pending} onClick={() => window.location.assign(profileLinuxDOReauthURL())}>
-                                        {reauthReady ? tr("重新验证") : tr("使用 Linux.do 验证")}
-                                    </Button>
-                                ) : undefined
-                            }
-                        >
-                            {reauthReady
-                                ? tr("身份验证已通过，有效期剩余 {0} 秒。", profileSecondsRemaining(Date.parse(profile.reauthenticatedUntil!), now))
-                                : profile.linuxdoEnabled
-                                  ? tr("设置密码或更换邮箱前，请使用已绑定的 Linux.do 账号重新验证。验证有效期为 5 分钟。")
-                                  : tr("当前账号未设置密码，且 Linux.do 验证未启用，请联系管理员。")}
-                            {reauthResult === "error" && !reauthReady ? (
-                                <p className="profile-reauth-error" role="alert">
-                                    {tr("Linux.do 身份验证失败，请重新验证。")}
-                                </p>
-                            ) : null}
+                    <section className="profile-security-card" aria-labelledby="profile-account-title">
+                        <div className="profile-card-heading">
+                            <span className="profile-card-icon">
+                                <KeyRound className="size-5" />
+                            </span>
+                            <div>
+                                <h4 id="profile-account-title">{tr("用户名与密码")}</h4>
+                                <p>{tr("保存后所有设备上的登录会话都会退出。")}</p>
+                            </div>
+                        </div>
+                        <Callout tone="info" className="profile-feedback">
+                            {tr("首次登录使用服务器 .env 中的 CANVAS_ADMIN_USERNAME 和 CANVAS_ADMIN_PASSWORD。在这里修改后，重启服务也会保留；忘记密码时，修改 .env 中这两个值并重启即可恢复访问。")}
                         </Callout>
-                    ) : null}
-
-                    <div className="profile-security-heading">
-                        <h3>{tr("账户安全")}</h3>
-                        <p>{tr("密码与邮箱分别验证，修改成功后需要重新登录。")}</p>
-                    </div>
-                    <div className="profile-security-grid">
-                        <section className="profile-security-card" aria-labelledby="profile-password-title">
-                            <div className="profile-card-heading">
-                                <span className="profile-card-icon">
-                                    <KeyRound className="size-5" />
-                                </span>
-                                <div>
-                                    <h4 id="profile-password-title">{profile.hasPassword ? tr("修改密码") : tr("设置登录密码")}</h4>
-                                    <p>{tr("更新后，所有设备上的登录会话都会退出。")}</p>
-                                </div>
-                            </div>
-                            <Form
-                                form={passwordForm}
-                                name="profile-password"
-                                layout="vertical"
-                                requiredMark={false}
-                                className="profile-form"
-                                disabled={!!pending || !identityReady}
-                                onFinish={(values) => void savePassword(values)}
-                                onValuesChange={() => setError("password", "")}
+                        <Form
+                            form={accountForm}
+                            name="profile-account"
+                            layout="vertical"
+                            requiredMark={false}
+                            className="profile-form"
+                            disabled={!!pending}
+                            initialValues={{ username: profile.user.username }}
+                            onFinish={(values) => void saveAccount(values)}
+                            onValuesChange={() => setError("account", "")}
+                        >
+                            <Form.Item
+                                name="username"
+                                label={tr("用户名")}
+                                rules={[
+                                    { required: true, whitespace: true, message: tr("请输入用户名") },
+                                    { pattern: /^[A-Za-z0-9_-]{3,32}$/, message: tr("3-32 位字母、数字、下划线或连字符") },
+                                ]}
                             >
-                                {profile.hasPassword ? (
-                                    <Form.Item name="currentPassword" label={tr("当前密码")} rules={[{ required: true, message: tr("请输入当前密码") }]}>
-                                        <Input.Password autoComplete="current-password" />
-                                    </Form.Item>
-                                ) : null}
-                                <Form.Item
-                                    name="newPassword"
-                                    label={tr("新密码")}
-                                    rules={[
-                                        {
-                                            validator: async (_, value: string = "") => {
-                                                const error = profilePasswordError(value);
-                                                if (error) throw new Error(error);
-                                            },
+                                <Input autoComplete="username" />
+                            </Form.Item>
+                            <Form.Item
+                                name="newPassword"
+                                label={tr("新密码（不修改请留空）")}
+                                rules={[
+                                    {
+                                        validator: async (_, value: string = "") => {
+                                            const error = value ? profilePasswordError(value) : undefined;
+                                            if (error) throw new Error(error);
                                         },
-                                    ]}
-                                >
-                                    <Input.Password autoComplete="new-password" placeholder={tr("至少 8 个字符")} />
-                                </Form.Item>
-                                <Form.Item
-                                    name="confirmPassword"
-                                    label={tr("确认新密码")}
-                                    dependencies={["newPassword"]}
-                                    rules={[
-                                        { required: true, message: tr("请再次输入新密码") },
-                                        {
-                                            validator: async (_, value) => {
-                                                if (value && value !== passwordForm.getFieldValue("newPassword")) throw new Error(tr("两次输入的密码不一致"));
-                                            },
+                                    },
+                                ]}
+                            >
+                                <Input.Password autoComplete="new-password" placeholder={tr("至少 12 个字符")} />
+                            </Form.Item>
+                            <Form.Item
+                                name="confirmPassword"
+                                label={tr("确认新密码")}
+                                dependencies={["newPassword"]}
+                                rules={[
+                                    {
+                                        validator: async (_, value) => {
+                                            if ((value || "") !== (accountForm.getFieldValue("newPassword") || "")) throw new Error(tr("两次输入的密码不一致"));
                                         },
-                                    ]}
-                                >
-                                    <Input.Password autoComplete="new-password" />
-                                </Form.Item>
-                                {errors.password ? (
-                                    <Callout tone="error" role="alert" className="profile-feedback">
-                                        {errors.password}
-                                    </Callout>
-                                ) : null}
-                                <Button type="primary" htmlType="submit" loading={pending === "password"} disabled={!!pending || !identityReady}>
-                                    {profile.hasPassword ? tr("更新密码") : tr("设置密码")}
-                                </Button>
-                            </Form>
-                        </section>
-
-                        <section className="profile-security-card" aria-labelledby="profile-email-title">
-                            <div className="profile-card-heading">
-                                <span className="profile-card-icon">
-                                    <Mail className="size-5" />
-                                </span>
-                                <div>
-                                    <h4 id="profile-email-title">{tr("更换邮箱")}</h4>
-                                    <p>{tr("验证新邮箱后生效，并退出所有登录会话。")}</p>
-                                </div>
-                            </div>
-                            <div className="profile-current-email">
-                                <span>{tr("当前邮箱")}</span>
-                                <strong>{profile.user.email || tr("尚未绑定")}</strong>
-                                {profile.user.email ? (
-                                    <span className={`profile-email-status${profile.user.emailVerifiedAt ? " is-verified" : ""}`}>
-                                        {profile.user.emailVerifiedAt ? <BadgeCheck className="size-3.5" /> : null}
-                                        {profile.user.emailVerifiedAt ? tr("已验证") : tr("未验证")}
-                                    </span>
-                                ) : null}
-                            </div>
-                            {!profile.emailEnabled ? (
-                                <Callout tone="warning" title={tr("邮件服务未启用")}>
-                                    {tr("管理员尚未配置可用的邮件服务，暂时无法更换邮箱。")}
+                                    },
+                                ]}
+                            >
+                                <Input.Password autoComplete="new-password" />
+                            </Form.Item>
+                            <Form.Item name="currentPassword" label={tr("当前密码")} rules={[{ required: true, message: tr("请输入当前密码") }]}>
+                                <Input.Password autoComplete="current-password" />
+                            </Form.Item>
+                            {errors.account ? (
+                                <Callout tone="error" role="alert" className="profile-feedback">
+                                    {errors.account}
                                 </Callout>
-                            ) : (
-                                <Form
-                                    form={emailForm}
-                                    name="profile-email"
-                                    layout="vertical"
-                                    requiredMark={false}
-                                    className="profile-form"
-                                    disabled={!!pending || !identityReady}
-                                    onValuesChange={resetEmailTicket}
-                                    onFinish={(values) => void saveEmail(values)}
-                                >
-                                    {profile.hasPassword ? (
-                                        <Form.Item name="currentPassword" label={tr("当前密码")} rules={[{ required: true, message: tr("请输入当前密码以验证身份") }]}>
-                                            <Input.Password autoComplete="current-password" />
-                                        </Form.Item>
-                                    ) : null}
-                                    <Form.Item
-                                        name="email"
-                                        label={tr("新邮箱")}
-                                        rules={[
-                                            { required: true, whitespace: true, message: tr("请输入新邮箱") },
-                                            { type: "email", transform: (value: string) => value?.trim(), message: tr("请输入有效的邮箱地址") },
-                                            {
-                                                validator: async (_, value: string = "") => {
-                                                    if (value.trim().toLowerCase() === profile.user.email?.toLowerCase()) throw new Error(tr("新邮箱不能与当前邮箱相同"));
-                                                },
-                                            },
-                                        ]}
-                                    >
-                                        <Input type="email" autoComplete="email" />
-                                    </Form.Item>
-                                    <div className="profile-code-row">
-                                        <Form.Item
-                                            name="emailCode"
-                                            label={tr("邮箱验证码")}
-                                            rules={[
-                                                { required: true, message: tr("请输入邮箱验证码") },
-                                                { pattern: /^\d{6}$/, message: tr("请输入 6 位数字验证码") },
-                                            ]}
-                                        >
-                                            <Input inputMode="numeric" autoComplete="one-time-code" maxLength={6} />
-                                        </Form.Item>
-                                        <Button loading={pending === "email-code"} disabled={!!pending || !identityReady || retrySeconds > 0} onClick={() => void sendEmailCode()}>
-                                            {retrySeconds ? tr("{0} 秒后重发", retrySeconds) : emailTicket ? tr("重新发送") : tr("发送验证码")}
-                                        </Button>
-                                    </div>
-                                    {emailTicket ? (
-                                        <p className="profile-hint" role="status">
-                                            {ticketSeconds ? tr("验证码已发送，{0} 分钟内有效。", Math.ceil(ticketSeconds / 60)) : tr("验证码已过期，请重新发送。")}
-                                        </p>
-                                    ) : null}
-                                    {errors.email ? (
-                                        <Callout tone="error" role="alert" className="profile-feedback">
-                                            {errors.email}
-                                        </Callout>
-                                    ) : null}
-                                    <Button type="primary" htmlType="submit" loading={pending === "email"} disabled={!!pending || !identityReady || !ticketSeconds}>
-                                        {tr("更换邮箱")}
-                                    </Button>
-                                </Form>
-                            )}
-                        </section>
-                    </div>
+                            ) : null}
+                            <Button type="primary" htmlType="submit" loading={pending === "account"} disabled={!!pending}>
+                                {tr("保存账号")}
+                            </Button>
+                        </Form>
+                    </section>
                 </div>
             ) : null}
             {profile ? (

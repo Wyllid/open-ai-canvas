@@ -1,5 +1,5 @@
 import type { LocalUser } from "./auth";
-import { apiBaseURL, http } from "./request";
+import { http } from "./request";
 
 export type UserProfile = {
     user: LocalUser;
@@ -8,9 +8,6 @@ export type UserProfile = {
     linuxdoEnabled: boolean;
     reauthenticatedUntil?: string;
 };
-
-export type ProfileEmailTicket = { ticket: string; expiresIn: number; retryAfter: number };
-export type ProfileEmailResult = { changed: true; notificationStatus: "sent" | "failed" | "not_needed" };
 
 export const getUserProfile = (signal?: AbortSignal) => http.get<UserProfile>("/auth/profile", { signal });
 
@@ -22,8 +19,5 @@ export function uploadProfileAvatar(file: File) {
 
 export const resetProfileAvatar = () => http.delete<{ user: LocalUser }>("/auth/profile/avatar");
 export const selectDefaultProfileAvatar = (preset: string) => http.post<{ user: LocalUser }>("/auth/profile/avatar/default", { preset });
-export const changeProfilePassword = (input: { currentPassword: string; newPassword: string }) => http.post<{ changed: true }>("/auth/profile/password", input);
-export const requestProfileEmailCode = (input: { email: string; currentPassword: string }) => http.post<ProfileEmailTicket>("/auth/profile/email-code", input);
-export const changeProfileEmail = (input: { ticket: string; emailCode: string; currentPassword: string }) => http.post<ProfileEmailResult>("/auth/profile/email", input);
-
-export const profileLinuxDOReauthURL = () => `${apiBaseURL.replace(/\/$/, "")}/auth/profile/linuxdo/start`;
+/** Renames the account and/or sets a new password; the server then signs out every session. */
+export const changeLocalAccount = (input: { currentPassword: string; username: string; newPassword: string }) => http.post<{ changed: true }>("/auth/profile/account", input);

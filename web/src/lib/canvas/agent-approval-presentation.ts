@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, trMessage } from "@/i18n";
 import type { AgentApprovalPreview, AgentApprovalPreviewItem, AgentApprovalPreviewOperation } from "@/services/api/agent";
 
 type RecordValue = Record<string, unknown>;
@@ -73,7 +73,39 @@ function normalizeServerPreview(value: unknown): AgentApprovalPresentation | nul
     const title = text(source.title, 120);
     const description = text(source.description, 500);
     if (!title || !description || !items.length) return null;
-    return { kind: text(source.kind, 64) || "agent_approval", title, description, items, source: "server" };
+    return localizeServerPreview({ kind: text(source.kind, 64) || "agent_approval", title, description, items, source: "server" });
+}
+
+function countParts(items: AgentApprovalPreviewItem[]) {
+    const counts = items.reduce<Record<string, number>>((out, item) => {
+        out[item.operation] = (out[item.operation] || 0) + 1;
+        return out;
+    }, {});
+    return [counts.add_node ? tr("新增 {0} 个节点", counts.add_node) : "", counts.update_node ? tr("修改 {0} 个节点", counts.update_node) : "", counts.connect_nodes ? tr("建立 {0} 条引用连线", counts.connect_nodes) : ""].filter(Boolean);
+}
+
+/**
+ * The server writes previews in Chinese. Canvas edits are rebuilt from their structured items in the
+ * interface language; other texts are translated when they match a catalog entry and otherwise kept.
+ */
+function localizeServerPreview(preview: AgentApprovalPresentation): AgentApprovalPresentation {
+    const items = preview.items.map((item) => {
+        const label = item.nodeType ? nodeTypeLabel(item.nodeType) : item.nodeTypeLabel ? trMessage(item.nodeTypeLabel) : "";
+        const node = label || tr("节点");
+        let summary = trMessage(item.summary);
+        if (item.operation === "add_node" && item.nodeTitle) summary = tr("新增{0}《{1}》", node, item.nodeTitle);
+        else if (item.operation === "update_node" && item.nodeTitle) summary = tr("修改{0}《{1}》", node, item.nodeTitle) + (item.resultTitle ? tr("，名称改为《{0}》", item.resultTitle) : "");
+        else if (item.operation === "connect_nodes" && item.nodeTitle && item.targetNodeTitle) summary = tr("建立《{0}》→《{1}》的引用连线", item.nodeTitle, item.targetNodeTitle);
+        return { ...item, nodeTypeLabel: label || item.nodeTypeLabel, fields: item.fields?.map(trMessage), details: item.details?.map(trMessage), summary };
+    });
+    const parts = countParts(items);
+    if (preview.kind === "canvas_mutation" && parts.length && preview.title === "确认画布修改") {
+        return { ...preview, items, title: tr("确认画布修改"), description: tr("Agent 准备{0}。请确认目标节点和修改字段；批准后才会写入画布。", parts.join(tr("，"))) };
+    }
+    if (preview.kind === "canvas_mutation" && parts.length && preview.title === "画布修改已写入") {
+        return { ...preview, items, title: tr("画布修改已写入"), description: tr("画布修改已写入：{0}。", parts.join(tr("，"))) };
+    }
+    return { ...preview, items, title: trMessage(preview.title), description: trMessage(preview.description) };
 }
 
 function canvasFallback(args: RecordValue | null): AgentApprovalPresentation {

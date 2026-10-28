@@ -3,13 +3,12 @@ import { commitPublicAppearance, DEFAULT_PUBLIC_APPEARANCE } from "@/stores/use-
 import { deleteAdminResources } from "@/services/api/admin-storage";
 import { AdminStatusBadge, SettingsSectionCard } from "@/pages/admin/components/admin-ui";
 import { AdminPageFrame } from "@/pages/admin/components/admin-shell";
-import { Palette, RefreshCw, Undo2, RotateCcw, Save, Sun, Moon, Globe2, Search, Copyright, Type } from "lucide-react";
+import { Palette, RefreshCw, Undo2, RotateCcw, Save, Sun, Moon, Globe2, Search, Type } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/pages/admin/ui/controls";
 import { WelcomeSetting } from "@/pages/admin/settings/components/welcome-setting";
 import { SkinThemeEditor } from "@/pages/admin/settings/components/skin-theme-editor";
 import { CanvasAppearanceEditor } from "./components/canvas-appearance-editor";
-import { UpdateAnnouncementEditor } from "./components/update-announcement-editor";
 import { DEFAULT_UPDATE_ANNOUNCEMENT, normalizeUpdateAnnouncement, validateUpdateAnnouncement, type UpdateAnnouncement } from "@/lib/update-announcement";
 import { App, Button, Tabs, Form, Input } from "antd";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -309,27 +308,10 @@ export default function AppearanceSettingsPage() {
             [nextSeoTitle, tr("SEO 标题"), 70, "seo"],
             [nextSeoDescription, tr("SEO 描述"), 200, "seo"],
             [nextSeoKeywords, tr("SEO 关键词"), 300, "seo"],
-            [nextFooterCopyright, tr("版权信息"), 160, "footer"],
-            [nextIcpFilingNumber, tr("备案号"), 64, "footer"],
         ] as const) {
             if (Array.from(value).length > max || hasUnsupportedControlCharacter(value)) {
                 setActiveTab(tab);
                 message.error(tr("{0}不能超过 {1} 个字符，且不能包含控制字符", label, max));
-                return;
-            }
-        }
-        if (icpFilingEnabled && !nextIcpFilingNumber) {
-            setActiveTab("footer");
-            message.error(tr("显示备案号前请先填写备案号"));
-            return;
-        }
-        if (nextRedeemPurchaseUrl) {
-            try {
-                const parsed = new URL(nextRedeemPurchaseUrl);
-                if (parsed.protocol !== "https:" || !parsed.host) throw new Error("invalid");
-            } catch {
-                setActiveTab("footer");
-                message.error(tr("兑换码购买链接必须是有效的 HTTPS 地址"));
                 return;
             }
         }
@@ -440,7 +422,7 @@ export default function AppearanceSettingsPage() {
     };
 
     return (
-        <AdminPageFrame title={tr("站点及外观")} description={tr("统一管理品牌身份、登录页、搜索信息、备案展示与全站皮肤主题")} scroll>
+        <AdminPageFrame title={tr("外观与品牌")} description={tr("统一管理品牌名称、Logo、欢迎页、搜索信息、界面皮肤与画布外观")} scroll>
             {loading ? (
                 <AppearanceSkeleton />
             ) : loadError || !setting ? (
@@ -520,9 +502,6 @@ export default function AppearanceSettingsPage() {
                                                         placeholder={tr("例如：hima-studio")}
                                                         onChange={(event) => setBrandSlug(event.target.value.toLocaleLowerCase().replace(/[^a-z0-9-]/g, ""))}
                                                     />
-                                                </Form.Item>
-                                                <Form.Item label={tr("兑换码购买链接")} extra={tr("填写 HTTPS 购买页面地址；留空则不显示“获取兑换码”入口。")}>
-                                                    <Input value={redeemPurchaseUrl} maxLength={500} showCount placeholder={tr("例如：https://wzyp.cn/shop/xxx")} onChange={(event) => setRedeemPurchaseUrl(event.target.value)} />
                                                 </Form.Item>
                                             </Form>
                                             <div className="admin-appearance-brand-logo admin-appearance-logo-stack">
@@ -621,47 +600,6 @@ export default function AppearanceSettingsPage() {
                                 ),
                             },
                             {
-                                key: "footer",
-                                label: tr("页尾与备案"),
-                                children: (
-                                    <SettingsSectionCard
-                                        className="admin-appearance-section"
-                                        icon={<Globe2 className="size-4" aria-hidden="true" />}
-                                        title={tr("首页页尾与备案")}
-                                        description={tr("配置公开登录首页底部的版权和备案信息；备案号启用后固定链接工信部备案管理系统。")}
-                                        status={<AdminStatusBadge label={icpFilingEnabled ? tr("展示备案号") : tr("未展示备案号")} tone={icpFilingEnabled ? "success" : "neutral"} />}
-                                    >
-                                        <div className="admin-appearance-section-form admin-appearance-footer-settings">
-                                            <Form className="admin-appearance-form" layout="vertical" requiredMark={false} disabled={saving || refreshing || restoring}>
-                                                <Form.Item label={tr("版权信息")} extra={tr("留空时自动使用当前年份和站点名称。")}>
-                                                    <Input
-                                                        prefix={<Copyright className="size-3.5" aria-hidden="true" />}
-                                                        value={footerCopyright}
-                                                        maxLength={160}
-                                                        showCount
-                                                        placeholder={`© ${new Date().getFullYear()} ${draftBrandName}. All rights reserved.`}
-                                                        onChange={(event) => setFooterCopyright(event.target.value)}
-                                                    />
-                                                </Form.Item>
-                                                <Form.Item label={tr("备案号")} extra={tr("请填写真实备案号，例如“蜀ICP备XXXXXXXX号”；系统不会替你申请或核验备案。")}>
-                                                    <Input value={icpFilingNumber} maxLength={64} showCount placeholder={tr("例如：蜀ICP备XXXXXXXX号")} onChange={(event) => setIcpFilingNumber(event.target.value)} />
-                                                </Form.Item>
-                                            </Form>
-                                            <div className="admin-appearance-logo-frame-option">
-                                                <div className="admin-appearance-logo-frame-copy">
-                                                    <strong>{tr("在首页底部显示备案号")}</strong>
-                                                    <p id="appearance-icp-help">{tr("启用后，备案号会显示在登录、注册和找回密码页底部，并链接至 https://beian.miit.gov.cn/ 供公众查询。")}</p>
-                                                </div>
-                                                <div className="admin-appearance-logo-frame-control">
-                                                    <span>{icpFilingEnabled ? tr("已显示") : tr("未显示")}</span>
-                                                    <Switch checked={icpFilingEnabled} disabled={saving || refreshing || restoring} aria-label={tr("在首页底部显示备案号")} aria-describedby="appearance-icp-help" onChange={setIcpFilingEnabled} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </SettingsSectionCard>
-                                ),
-                            },
-                            {
                                 key: "skins",
                                 label: tr("皮肤主题"),
                                 children: (
@@ -686,7 +624,6 @@ export default function AppearanceSettingsPage() {
                                 ),
                             },
                             { key: "canvas", label: tr("画布配置"), children: <CanvasAppearanceEditor value={canvas} onChange={setCanvas} disabled={saving || refreshing || restoring || canvasUploading} onUploading={setCanvasUploading} /> },
-                            { key: "updates", label: tr("更新公告"), children: <UpdateAnnouncementEditor value={updates} onChange={setUpdates} disabled={saving || refreshing || restoring || canvasUploading} onUploading={setCanvasUploading} /> },
                         ]}
                     />
                 </div>

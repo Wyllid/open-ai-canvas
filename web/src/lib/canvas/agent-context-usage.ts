@@ -120,7 +120,7 @@ export function contextInputTokens(reading: Record<string, unknown> | null): num
 }
 
 const BREAKDOWN_LABELS: Record<string, string> = {
-    system: "系统提示（含画布摘要）",
+    system: tr("系统提示（含画布摘要）"),
     tools: tr("工具 schema"),
     messages: tr("会话消息（含工具结果）"),
 };

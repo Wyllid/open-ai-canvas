@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, trParts } from "@/i18n";
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { Popover } from "antd";
 import { AlignLeft, ArrowUp, Check, ChevronUp, Clapperboard, FolderKanban, Images, LayoutGrid, Palette, Pencil, Plus, Sparkles, Type, Upload, Workflow, X } from "lucide-react";
@@ -66,7 +66,11 @@ export function CanvasShortDramaEmptyState({ onCreatePipeline, onSubmitPrompt, o
             <CanvasEntryAmbientRipple />
             <div className="canvas-entry-shell" data-canvas-no-zoom data-canvas-wheel-scroll>
                 <span className="canvas-entry-eyebrow"><Sparkles aria-hidden="true" />{tr("AI 短剧工作台")}</span>
-                <h2 className="canvas-entry-title">{tr("让灵感，")}<strong>{tr("开始成片。")}</strong></h2>
+                <h2 className="canvas-entry-title">
+                    {trParts("让灵感，{0}", <strong key="cut">{tr("开始成片。")}</strong>).map((part, index) => (
+                        <Fragment key={index}>{part}</Fragment>
+                    ))}
+                </h2>
                 <p className="canvas-entry-subtitle">{tr("写下一句故事，Agent 帮你拆剧本、定角色、出分镜和视频。")}</p>
                 <form
                     className="canvas-entry-composer"

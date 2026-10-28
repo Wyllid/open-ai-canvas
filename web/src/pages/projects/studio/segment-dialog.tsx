@@ -19,12 +19,12 @@ const SHOT_SIZES = [tr("特写"), tr("近景"), tr("中景"), tr("全景"), tr("
 const CAMERAS = [tr("固定"), tr("推"), tr("拉"), tr("摇"), tr("跟"), tr("环绕"), tr("升降"), tr("手持")];
 
 const PROMPT_NOTICE: Record<DramaSegment["promptStatus"], string> = {
-    none: "还没有撰写本段视频提示词",
-    queued: "排队撰写中…",
-    running: "正在撰写本段视频提示词…",
+    none: tr("还没有撰写本段视频提示词"),
+    queued: tr("排队撰写中…"),
+    running: tr("正在撰写本段视频提示词…"),
     ready: "",
-    stale: "本段镜头或设定改过，提示词已过期，请重新撰写",
-    failed: "撰写失败",
+    stale: tr("本段镜头或设定改过，提示词已过期，请重新撰写"),
+    failed: tr("撰写失败"),
 };
 
 type Props = {
@@ -358,7 +358,7 @@ function SegmentPrompt({ segment, writing, onSave, onWrite }: { segment: DramaSe
                         {segment.promptStatus === "failed" && segment.promptError ? `：${segment.promptError}` : ""}
                     </span>
                     <Button size="small" type="primary" icon={<Sparkles className="size-3.5" />} loading={writing} onClick={onWrite}>
-                        {segment.promptStatus === "none" ? "让模型撰写" : "重新撰写"}
+                        {segment.promptStatus === "none" ? tr("让模型撰写") : tr("重新撰写")}
                     </Button>
                 </div>
             ) : null}

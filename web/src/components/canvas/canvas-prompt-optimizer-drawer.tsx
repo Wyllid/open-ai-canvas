@@ -468,7 +468,7 @@ export function CanvasPromptOptimizerDrawer({ open, children, prompt, generation
         if (!value) return;
         onApply(value);
         onClose();
-        message.success("提示词已采用并回填到当前输入框");
+        message.success(tr("提示词已采用并回填到当前输入框"));
     };
 
     const modeMenuItems = modeOptions.map((option) => ({
@@ -539,7 +539,7 @@ export function CanvasPromptOptimizerDrawer({ open, children, prompt, generation
             content: (
                 <div className="canvas-prompt-optimizer-bubble is-assistant-bubble is-working" role="status">
                     <LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" />
-                    <span>{streaming ? "正在接收优化结果…" : "正在整理你的想法…"}</span>
+                    <span>{streaming ? tr("正在接收优化结果…") : tr("正在整理你的想法…")}</span>
                 </div>
             ),
         });
@@ -648,9 +648,9 @@ export function CanvasPromptOptimizerDrawer({ open, children, prompt, generation
                     <div className="canvas-prompt-optimizer-header-title">
                         <div className="canvas-prompt-optimizer-header-title-row">
                             <Typography.Text strong>{tr("AI 提示词优化")}</Typography.Text>
-                            <span className="canvas-prompt-optimizer-mode-badge">{generationMode === "image" ? "图片" : "视频"}</span>
+                            <span className="canvas-prompt-optimizer-mode-badge">{generationMode === "image" ? tr("图片") : tr("视频")}</span>
                             <span className="canvas-prompt-optimizer-context" title={targetModel || tr("未配置模型")}>
-                                · {targetModel || "未配置模型"}
+                                · {targetModel || tr("未配置模型")}
                                 {referenceCount ? ` · 参考 ${referenceCount}` : ""}
                             </span>
                         </div>

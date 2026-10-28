@@ -125,7 +125,7 @@ export function useCanvasPrevis({
             if (!scene) {
                 // 孤儿节点修复路径：节点存在但场景丢了。这不是「新建」，不弹模板选择，
                 // 用空场景兜底 —— 绝不在用户没选过的情况下塞演员进去。
-                scene = createPrevisSceneFromTemplate("empty", node.metadata?.workflowTitle || node.title || "镜头场景");
+                scene = createPrevisSceneFromTemplate("empty", node.metadata?.workflowTitle || node.title || tr("镜头场景"));
                 const shot = scene.shots[0];
                 scene = { ...scene, shots: [{ ...shot, name: node.metadata?.workflowTitle || node.title || shot.name, prompt: node.metadata?.workflowDescription || "" }] };
                 const previsSceneId = scene.id;

@@ -270,7 +270,7 @@ export default function SkillWorkbenchPage() {
                 })
                 .catch((error) => {
                     if (generation !== generationRef.current) return;
-                    setFileStates((current) => new Map(current).set(origin, { status: "error", message: errorMessage(error, "文件读取失败") }));
+                    setFileStates((current) => new Map(current).set(origin, { status: "error", message: errorMessage(error, tr("文件读取失败")) }));
                 });
         },
         [baseContents, baseFiles, entryByPath, fileStates, skill],

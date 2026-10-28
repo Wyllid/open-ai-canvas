@@ -272,10 +272,10 @@ export function CanvasNodeToolbar({
     const copyImagePrompt = (target: CanvasNodeData) => {
         const prompt = nodeGenerationPrompt(target).trim();
         if (!prompt) {
-            message.warning("暂无可复制的提示词");
+            message.warning(tr("暂无可复制的提示词"));
             return;
         }
-        copyText(prompt, "提示词已复制");
+        copyText(prompt, tr("提示词已复制"));
     };
     const imageTools = buildImageToolbarTools(node, { onUpload, onToggleFreeResize, onAnnotate, onAnnotationEdit, onTextEdit, onRegionEdit, onRemoveBackground, onLayerDecomposition, onEmotion, onPortraitTexture, onCrop, onUpscale, onSuperResolve, onAngle, onLighting, onPanorama, onPrevis, onViewImage, onCopyPrompt: copyImagePrompt, onReversePrompt, onNineGrid });
 

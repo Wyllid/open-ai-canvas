@@ -6,6 +6,7 @@ import { SegmentedControl } from "@/components/ui/base/segmented-control";
 import { Bug, LayoutGrid, List, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { useOpenSettings } from "@/components/settings/settings-modal-host";
 
 import { MediaPreview } from "@/components/media-preview";
 import { PageHeader, PaginationBar, WorkspacePage } from "@/components/layout/workspace-page";
@@ -60,6 +61,7 @@ function taskStatusFilter(value: string | null): TaskStatusFilter {
 export default function TasksPage() {
     const { message, modal } = App.useApp();
     const navigate = useNavigate();
+    const openSettings = useOpenSettings();
     const [searchParams, setSearchParams] = useSearchParams();
     const effectiveConfig = useEffectiveConfig();
     const isAiConfigReady = useConfigStore((state) => state.isAiConfigReady);
@@ -362,7 +364,7 @@ export default function TasksPage() {
                     input: {
                         source: "tasks-page",
                         mode: values.operation === "compare_versions" ? "workflow" : "video",
-                        prompt: buildVideoOperationPrompt(values.operation, values.prompt, operationOptions.find((item) => item.value === values.operation)?.label || "其他视频操作"),
+                        prompt: buildVideoOperationPrompt(values.operation, values.prompt, operationOptions.find((item) => item.value === values.operation)?.label || tr("其他视频操作")),
                         config: values.operation === "compare_versions" ? undefined : backendProviderConfig(requestConfig),
                         metadata: { videoEditOperation: values.operation },
                     },
@@ -499,7 +501,7 @@ export default function TasksPage() {
                         <div className="flex flex-wrap justify-end gap-2">
                             {detailTask.canRecoverMedia ? <Button icon={<RefreshCw className="size-4" />} loading={actingId === detailTask.id} onClick={() => void runAction(detailTask.id)}>{tr("重试保存")}</Button> : null}
                             {canQueryProviderTask(detailTask) ? <Button icon={<RefreshCw className="size-4" />} loading={actingId === detailTask.id} onClick={() => void queryProviderTask(detailTask)}>{tr("手动查询任务")}</Button> : null}
-                            {isTaskFailed(detailTask) ? <Button icon={<Bug className="size-4" />} onClick={() => navigate(`/settings?section=diagnostics&taskId=${encodeURIComponent(detailTask.id)}${detailTask.projectId ? `&projectId=${encodeURIComponent(detailTask.projectId)}` : ""}`)}>{tr("导出诊断包")}</Button> : null}
+                            {isTaskFailed(detailTask) ? <Button icon={<Bug className="size-4" />} onClick={() => openSettings("diagnostics", { taskId: detailTask.id, ...(detailTask.projectId ? { projectId: detailTask.projectId } : {}) })}>{tr("导出诊断包")}</Button> : null}
                         </div>
                         {detailTask.error ? <pre className="task-detail-error max-h-28 overflow-auto whitespace-pre-wrap px-3 py-2 text-xs">{generationErrorMessage(detailTask.error)}</pre> : null}
                         <TaskResultMedia value={detailTask.resultJson} taskType={detailTask.type} />

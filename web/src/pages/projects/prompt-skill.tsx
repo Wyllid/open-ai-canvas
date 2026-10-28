@@ -101,7 +101,7 @@ function PromptSkillModal({ open, initial, onClose, onPick }: { open: boolean; i
                         </div>
                     </aside>
                     <aside>
-                        <div className="drama-skill-import-caption">{skill ? `${skill.skillName} · ${files.length} 份文本` : "文件"}</div>
+                        <div className="drama-skill-import-caption">{skill ? `${skill.skillName} · ${files.length} 份文本` : tr("文件")}</div>
                         <div className="drama-skill-import-list thin-scrollbar">
                             {files.map((file) => (
                                 <button key={file.path} type="button" className="is-file" aria-pressed={file.path === path} onClick={() => setPath(file.path)}>
@@ -115,15 +115,15 @@ function PromptSkillModal({ open, initial, onClose, onPick }: { open: boolean; i
                     </aside>
                     <section>
                         <div className="drama-skill-import-caption">
-                            {path || "原文"}
+                            {path || tr("原文")}
                             {content ? (
                                 <span>
                                     {tr("{0} 字", content.length.toLocaleString(currentLocale()))}
-                                    {content.length > 16000 ? " · 超过 16000 字的部分不会发送" : ""}
+                                    {content.length > 16000 ? tr(" · 超过 16000 字的部分不会发送") : ""}
                                 </span>
                             ) : null}
                         </div>
-                        <pre className="drama-skill-import-content thin-scrollbar">{fileQuery.isLoading ? "正在读取…" : content || "选择文件后在这里查看全文。"}</pre>
+                        <pre className="drama-skill-import-content thin-scrollbar">{fileQuery.isLoading ? tr("正在读取…") : content || tr("选择文件后在这里查看全文。")}</pre>
                     </section>
                 </div>
                 <footer className="drama-skill-import-foot">

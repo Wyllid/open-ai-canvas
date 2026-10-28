@@ -3,6 +3,7 @@ import { useLocation } from "react-router";
 import { ConfigProvider } from "antd";
 
 import { AppWorkspaceShell } from "@/components/layout/app-top-nav";
+import { SettingsModalHost } from "@/components/settings/settings-modal-host";
 import { cn } from "@/lib/utils";
 import { isSpatialWorkbenchPath } from "@/lib/workspace-routes";
 import { getWorkspaceAntThemeConfig } from "@/lib/app-theme";
@@ -16,15 +17,14 @@ const GlobalAgentPanel = lazy(() => import("@/components/canvas/canvas-cloud-age
 
 export default function UserLayout({ children }: { children: ReactNode }) {
     const { pathname } = useLocation();
-    const adminWorkspace = pathname === "/admin" || pathname.startsWith("/admin/");
     const spatialWorkbench = isSpatialWorkbenchPath(pathname);
     const canvasEditor = /^\/canvas\/[^/]+(?:\/|$)/.test(pathname);
-    const productWorkspace = !adminWorkspace && !canvasEditor;
+    const productWorkspace = !canvasEditor;
     const userId = useUserStore((state) => state.user?.id);
 
     useLayoutEffect(() => {
-        // Ant Design 浮层挂载在 body，必须用路由级标记隔离用户工作台与画布编辑器、运营后台。
-        document.body.classList.toggle("app-user-overlays", !adminWorkspace);
+        // Ant Design 浮层挂载在 body，必须用路由级标记隔离用户工作台与画布编辑器。
+        document.body.classList.add("app-user-overlays");
         document.body.classList.toggle("app-spatial-overlays", spatialWorkbench);
         document.body.classList.toggle("app-product-overlays", productWorkspace);
         return () => {
@@ -32,7 +32,7 @@ export default function UserLayout({ children }: { children: ReactNode }) {
             document.body.classList.remove("app-spatial-overlays");
             document.body.classList.remove("app-product-overlays");
         };
-    }, [adminWorkspace, spatialWorkbench, productWorkspace]);
+    }, [spatialWorkbench, productWorkspace]);
 
     // 所有登录页面共用同一个面板实例：跨路由不卸载，对话、运行和事件流都不中断。
     const globalAgent = userId ? (
@@ -40,14 +40,6 @@ export default function UserLayout({ children }: { children: ReactNode }) {
             <GlobalAgentPanel key={userId} />
         </Suspense>
     ) : null;
-
-    if (adminWorkspace)
-        return (
-            <>
-                {children}
-                {globalAgent}
-            </>
-        );
 
     return (
         <ConfigProvider
@@ -60,6 +52,7 @@ export default function UserLayout({ children }: { children: ReactNode }) {
                 <AppWorkspaceShell>{children}</AppWorkspaceShell>
             </div>
             {globalAgent}
+            <SettingsModalHost />
         </ConfigProvider>
     );
 }

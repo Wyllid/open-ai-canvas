@@ -370,7 +370,7 @@ type InboxGroup = {
 };
 
 const KIND_ORDER: DramaInboxItem["kind"][] = ["paused", "media_ready", "review", "episode_error", "cast_failed", "segment_failed"];
-const MEDIA_LABEL: Record<NonNullable<DramaInboxItem["media"]>, string> = { prompt: "提示词", video: tr("视频") };
+const MEDIA_LABEL: Record<NonNullable<DramaInboxItem["media"]>, string> = { prompt: tr("提示词"), video: tr("视频") };
 
 /** 同类、同原因的问题折叠成一组：12 个角色同样的失败只占一张卡。 */
 function groupInbox(items: DramaInboxItem[]): InboxGroup[] {

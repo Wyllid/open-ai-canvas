@@ -1,4 +1,5 @@
 import { tr } from "@/i18n";
+import { pluginDescriptionText } from "@/lib/plugins/plugin-text";
 import { App, Button, Input } from "antd";
 import { Switch } from "@/pages/admin/ui/controls";
 import type { ColumnsType } from "antd/es/table";
@@ -145,8 +146,8 @@ export default function AdminPluginsPage() {
                             <span className="text-foreground/20" aria-hidden="true">
                                 ·
                             </span>
-                            <span className={`truncate ${item.error ? "text-status-error" : "text-foreground/52"}`} title={item.error || item.manifest.description || tr("未提供插件说明")}>
-                                {item.error || item.manifest.description || tr("未提供插件说明")}
+                            <span className={`truncate ${item.error ? "text-status-error" : "text-foreground/52"}`} title={item.error || pluginDescriptionText(item.manifest.description) || tr("未提供插件说明")}>
+                                {item.error || pluginDescriptionText(item.manifest.description) || tr("未提供插件说明")}
                             </span>
                         </div>
                     </div>

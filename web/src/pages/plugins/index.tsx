@@ -1,10 +1,12 @@
 import { currentLocale, tr } from "@/i18n";
+import { pluginDescriptionText } from "@/lib/plugins/plugin-text";
 import { CollectionToolbar } from "@/components/layout/collection-toolbar";
 import { App, Button, Input, Modal, Typography } from "antd";
 import { Switch } from "@/components/ui/base/switch";
 import { AudioLines, CalendarDays, CheckCircle2, Clock3, CreditCard, ExternalLink, Film, FolderOpen, Image as ImageIcon, MessageSquareText, PlugZap, RefreshCw, Search, Settings2, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import { useOpenSettings } from "@/components/settings/settings-modal-host";
 
 import { EmptyState } from "@/components/ui/product/empty-state";
 import { PageHeader } from "@/components/layout/workspace-page";
@@ -71,6 +73,7 @@ const protocolSectionMeta = [
 export default function PluginsPage() {
     const { message } = App.useApp();
     const navigate = useNavigate();
+    const openSettings = useOpenSettings();
     const brandName = useAppearanceStore((state) => state.appearance.brandName);
     const user = useUserStore((state) => state.user);
     const features = useUserStore((state) => state.features);
@@ -286,7 +289,7 @@ export default function PluginsPage() {
                                     {tr("刷新插件")}
                                 </Button>
                                 {user?.role === "admin" ? (
-                                    <Button type="primary" onClick={() => navigate("/admin/plugins")}>
+                                    <Button type="primary" onClick={() => openSettings("plugins")}>
                                         {tr("管理员插件管理")}
                                     </Button>
                                 ) : null}
@@ -392,7 +395,7 @@ export default function PluginsPage() {
                                                                         </div>
                                                                     </div>
 
-                                                                    <p className="plugin-card-description">{plugin.manifest.description}</p>
+                                                                    <p className="plugin-card-description">{pluginDescriptionText(plugin.manifest.description)}</p>
 
                                                                     <div className="plugin-card-meta">
                                                                         <span>
@@ -569,7 +572,7 @@ export default function PluginsPage() {
                                                 icon={<ExternalLink className="size-4" />}
                                                 onClick={() => {
                                                     setSettingsPluginId(null);
-                                                    navigate("/settings?section=runninghub");
+                                                    openSettings("runninghub");
                                                 }}
                                             >
                                                 {tr("打开工作流设置")}

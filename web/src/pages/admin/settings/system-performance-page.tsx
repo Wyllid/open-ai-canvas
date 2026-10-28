@@ -1,4 +1,4 @@
-import { currentLocale, tr } from "@/i18n";
+import { currentLocale, tr, trMessage } from "@/i18n";
 import { App, Button, InputNumber, Progress, Skeleton, Switch } from "antd";
 import { Activity, AlertTriangle, Bot, Cpu, Database, Gauge, HardDrive, MemoryStick, RefreshCw, Server, ShieldCheck, Trash2, Wifi } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -167,7 +167,7 @@ export default function SystemPerformancePage() {
                     <PerformanceKpi icon={<MemoryStick className="size-4" />} label={memoryPercent !== undefined ? tr("系统内存") : tr("进程堆内存")} value={memoryPercent !== undefined ? `${memoryPercent.toFixed(1)}%` : formatBytes(data?.memory.heapAllocBytes)} detail={memoryPercent !== undefined ? `${formatBytes(data?.memory.usedBytes)} / ${formatBytes(data?.memory.totalBytes)}` : tr("Go 已保留 {0}", formatBytes(data?.memory.heapSysBytes))} percent={memoryPercent} />
                     <PerformanceKpi icon={<HardDrive className="size-4" />} label={tr("数据磁盘")} value={data?.disk.available ? `${data.disk.usagePercent.toFixed(1)}%` : tr("不可用")} detail={data?.disk.available ? `${formatBytes(data.disk.usedBytes)} / ${formatBytes(data.disk.totalBytes)}` : tr("无法读取文件系统指标")} percent={data?.disk.available ? data.disk.usagePercent : undefined} />
                     <PerformanceKpi icon={<Database className="size-4" />} label={data?.database.driver === "postgres" ? tr("PostgreSQL 连接") : tr("数据库连接")} value={`${databaseConnections}${databaseLimit ? ` / ${databaseLimit}` : ""}`} detail={`${data?.database.driver || "--"} · ${data?.database.latencyMs || 0} ms`} percent={databasePercent} />
-                    <PerformanceKpi icon={<Wifi className="size-4" />} label="Redis" value={data?.redis.connected ? formatBytes(data.redis.usedMemoryBytes) : data?.redis.mode === "local" ? tr("本地模式") : tr("连接异常")} detail={data?.redis.connected ? `${formatNumber(data.redis.keys)} keys · ${formatNumber(data.redis.opsPerSecond)} ops/s` : data?.redis.statusMessage || tr("未连接")} />
+                    <PerformanceKpi icon={<Wifi className="size-4" />} label="Redis" value={data?.redis.connected ? formatBytes(data.redis.usedMemoryBytes) : data?.redis.mode === "local" ? tr("本地模式") : tr("连接异常")} detail={data?.redis.connected ? `${formatNumber(data.redis.keys)} keys · ${formatNumber(data.redis.opsPerSecond)} ops/s` : trMessage(data?.redis.statusMessage || "") || tr("未连接")} />
                 </section>
 
                 <div className="admin-performance-grid">
@@ -197,13 +197,13 @@ export default function SystemPerformancePage() {
                                 <Fact label={tr("结构版本")} value={`${data?.database.schema.current || 0} / ${data?.database.schema.expected || 0} ${data?.database.schema.ready ? tr("（已就绪）") : tr("（待检查）")}`} />
                                 <Fact label={tr("数据库大小")} value={formatBytes(data?.database.databaseBytes)} />
                                 <Fact label={tr("连接池")} value={tr("{0} 使用中 · {1} 空闲 · {2} 次等待", data?.database.pool.inUse || 0, data?.database.pool.idle || 0, data?.database.pool.waitCount || 0)} />
-                                {data?.database.postgres ? <><Fact label={tr("版本")} value={data.database.postgres.serverVersion || tr("未知")} mono /><Fact label={tr("缓存命中")} value={`${(data.database.postgres.cacheHitRate || 0).toFixed(2)}%`} /><Fact label={tr("事务 / 回滚")} value={`${formatNumber(data.database.postgres.transactions)} / ${formatNumber(data.database.postgres.rollbacks)}`} /><Fact label={tr("临时文件 / 死锁")} value={`${formatNumber(data.database.postgres.tempFiles)} / ${formatNumber(data.database.postgres.deadlocks)}`} /></> : <Fact label={tr("PostgreSQL 指标")} value="当前使用 SQLite，不适用" />}
+                                {data?.database.postgres ? <><Fact label={tr("版本")} value={data.database.postgres.serverVersion || tr("未知")} mono /><Fact label={tr("缓存命中")} value={`${(data.database.postgres.cacheHitRate || 0).toFixed(2)}%`} /><Fact label={tr("事务 / 回滚")} value={`${formatNumber(data.database.postgres.transactions)} / ${formatNumber(data.database.postgres.rollbacks)}`} /><Fact label={tr("临时文件 / 死锁")} value={`${formatNumber(data.database.postgres.tempFiles)} / ${formatNumber(data.database.postgres.deadlocks)}`} /></> : <Fact label={tr("PostgreSQL 指标")} value={tr("当前使用 SQLite，不适用")} />}
                             </FactGrid>
                         </SettingsSectionCard>
 
                         <SettingsSectionCard layout="stacked" icon={<Activity className="size-4" />} title="Redis" description={tr("内存、客户端、命中率与连接池。")} status={{ label: data?.redis.connected ? tr("连接正常") : data?.redis.mode === "local" ? tr("本地降级") : tr("连接异常"), color: data?.redis.connected ? "success" : data?.redis.mode === "local" ? "warning" : "error" }}>
                             <FactGrid>
-                                <Fact label={tr("模式 / 版本")} value={data?.redis.connected ? `Redis ${data.redis.version || tr("未知")}` : data?.redis.statusMessage || tr("未配置")} />
+                                <Fact label={tr("模式 / 版本")} value={data?.redis.connected ? `Redis ${data.redis.version || tr("未知")}` : trMessage(data?.redis.statusMessage || "") || tr("未配置")} />
                                 <Fact label={tr("运行时间")} value={data?.redis.connected ? formatDuration(data.redis.uptimeSeconds) : "--"} />
                                 <Fact label={tr("内存峰值")} value={data?.redis.connected ? formatBytes(data.redis.peakMemoryBytes) : "--"} />
                                 <Fact label={tr("淘汰策略")} value={data?.redis.maxMemoryPolicy || tr("未配置")} mono />
@@ -229,20 +229,20 @@ export default function SystemPerformancePage() {
                         }).finally(() => setSavingAgentLimit(false));
                     }}>{tr("保存上限")}</Button></span></>}>
                         <FactGrid>
-                            <Fact label={tr("服务")} value={agent.name} />
+                            <Fact label={tr("服务")} value={trMessage(agent.name)} />
                             <Fact label={tr("运行位置")} value={agent.mode === "remote" ? tr("独立服务") : tr("后端进程")} />
-                            <Fact label={tr("地址")} value={agent.endpoint} mono />
+                            <Fact label={tr("地址")} value={trMessage(agent.endpoint)} mono />
                             <Fact label={tr("进行中 / 上限")} value={`${formatNumber(agent.active)} / ${formatNumber(agent.limit)}`} />
                             <Fact label={tr("排队")} value={formatNumber(agent.queued)} />
                             <Fact label={tr("已保存上限")} value={formatNumber(agent.configuredLimit)} />
-                            <Fact label={tr("说明")} value={agent.statusMessage || tr("同一台机器提高上限即可，不需要再启动容器。")} />
+                            <Fact label={tr("说明")} value={trMessage(agent.statusMessage || "") || tr("同一台机器提高上限即可，不需要再启动容器。")} />
                         </FactGrid>
                     </SettingsSectionCard>;
                 })}
 
                 <SettingsSectionCard layout="stacked" icon={<ShieldCheck className="size-4" />} title={tr("缓存维护")} description={tr("只清理可安全重建的运行时状态，保留业务数据与活动并发租约。")} status={<AdminStatusBadge label={tr("白名单清理")} tone="success" />} footer={<><span className="admin-performance-cache-note"><Gauge className="size-3.5" />{tr("清理后频控与线路健康状态会重新计算")}</span><Button danger icon={<Trash2 className="size-4" />} loading={clearing} onClick={requestClear}>{tr("清理运行时缓存")}</Button></>}>
                     <div className="admin-performance-cache-groups">
-                        {(data?.redis.cacheGroups || []).map((group) => <div key={group.id}><span>{group.label}</span><strong>{formatNumber(group.keys)}</strong><small>keys</small></div>)}
+                        {(data?.redis.cacheGroups || []).map((group) => <div key={group.id}><span>{trMessage(group.label)}</span><strong>{formatNumber(group.keys)}</strong><small>keys</small></div>)}
                     </div>
                     <div className="admin-performance-safety"><strong>{tr("始终保留")}</strong><span>{tr("用户与任务数据")}</span><span>{tr("素材和模型配置")}</span><span>{tr("活动并发租约")}</span><span>{tr("跨实例目录版本")}</span></div>
                 </SettingsSectionCard>

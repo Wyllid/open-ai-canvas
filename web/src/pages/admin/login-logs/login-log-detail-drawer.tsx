@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, trMessage } from "@/i18n";
 import { Alert, Button, Skeleton } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -39,7 +39,7 @@ export function LoginLogDetailDrawer({ id, onClose }: { id: string | null; onClo
               [tr("浏览器"), device?.browser || tr("未记录")],
               [tr("操作系统"), device?.os || tr("未记录")],
               [tr("客户端自报信息"), detail.userAgent || tr("未记录")],
-              [tr("失败原因"), detail.message || tr("无")],
+              [tr("失败原因"), trMessage(detail.message || "") || tr("无")],
               [tr("原因码"), detail.reason || tr("无")],
               [tr("关联会话标识"), detail.sessionRef || tr("未关联会话")],
               [tr("日志 ID"), detail.id],
