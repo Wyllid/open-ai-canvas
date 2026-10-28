@@ -331,6 +331,8 @@ type DramaEpisodeDetail struct {
 	DialogueCheck *DramaDialogueCheck `json:"dialogueCheck,omitempty"`
 	// MusicCues 是本集配乐，合成成片时放到音乐轨上并在人声下压低。
 	MusicCues []DramaMusicCue `json:"musicCues"`
+	// Review 是最近一次审阅工序的进度与意见；从未审阅时为空。
+	Review *DramaReviewState `json:"review,omitempty"`
 }
 
 // DramaSegmentView 是一个剧情段：视频提示词、参考图、生成方式与视频结果。

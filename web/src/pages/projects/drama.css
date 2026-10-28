@@ -5441,3 +5441,68 @@
     display: grid;
     gap: 8px;
 }
+
+/* Review roles: findings from one text call, applied only when accepted. */
+.drama-review {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--drama-line);
+}
+.drama-review-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+}
+.drama-review-passes {
+    flex: 1;
+    min-width: 0;
+}
+.drama-review-list {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.drama-review-item {
+    display: grid;
+    gap: 4px;
+    padding: 8px 10px;
+    border: 1px solid var(--drama-line);
+    border-radius: 8px;
+}
+.drama-review-item.is-high .drama-review-severity {
+    color: var(--drama-err);
+}
+.drama-review-item.is-medium .drama-review-severity {
+    color: var(--drama-warn);
+}
+.drama-review-item p {
+    margin: 0;
+}
+.drama-review-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--drama-muted);
+    font-size: var(--fs-micro);
+}
+.drama-review-shot {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--workspace-accent);
+    cursor: pointer;
+}
+.drama-review-fix {
+    color: var(--drama-muted);
+    font-size: var(--fs-tiny);
+    white-space: pre-wrap;
+}
+.drama-review-actions {
+    display: flex;
+    gap: 6px;
+}

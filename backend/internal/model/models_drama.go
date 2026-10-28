@@ -49,6 +49,8 @@ const (
 	DramaJobCastImage = "cast_image"
 	DramaJobScript    = "script"
 	DramaJobRender    = "render"
+	// DramaJobReview 是一集剧本的审阅工序：一次文本调用，只产出意见。
+	DramaJobReview = "review"
 	// DramaJobSegmentPrompt 为一个剧情段撰写完整视频提示词；ShotID 存放 drama_segments.id。
 	DramaJobSegmentPrompt = "segment_prompt"
 	// DramaJobSegmentVideo 为一个剧情段生成整段视频；ShotID 存放 drama_segments.id。
@@ -121,10 +123,12 @@ type DramaEpisode struct {
 	FinalStale      bool   `json:"finalStale"`
 	SubtitleSRT     string `json:"subtitleSrt" gorm:"type:text"`
 	// MusicCuesJSON 是本集配乐（DramaMusicCue 列表），合成成片时放到音乐轨上。
-	MusicCuesJSON string    `json:"-" gorm:"type:text"`
-	Revision      int64     `json:"revision"`
-	CreatedAt     time.Time `json:"createdAt"`
-	UpdatedAt     time.Time `json:"updatedAt"`
+	MusicCuesJSON string `json:"-" gorm:"type:text"`
+	// ReviewJSON 是最近一次审阅工序（DramaReviewState）：请求的岗位、进度与逐条意见。
+	ReviewJSON string    `json:"-" gorm:"type:text"`
+	Revision   int64     `json:"revision"`
+	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
 }
 
 // DramaShot 保存镜头脚本，作为剧情段视频提示词的素材。
