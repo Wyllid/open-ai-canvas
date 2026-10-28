@@ -70,6 +70,9 @@ func TestDramaMusicCuesRenderOnADuckedMusicTrack(t *testing.T) {
 	if music[0].Volume != dramaMusicVolume || music[1].Volume != 0.6 || music[1].StartMs+music[1].DurationMs != timeline.DurationMs {
 		t.Fatalf("cue volume and trimming: %+v (total %d)", music, timeline.DurationMs)
 	}
+	if music[0].FadeInMs != dramaMusicFadeInMs || music[0].FadeOutMs != dramaMusicFadeOutMs {
+		t.Fatalf("music cues fade in and out instead of starting and stopping hard: %+v", music[0])
+	}
 	if _, err := svc.SetDramaMusic("usr-drama", project, episode.ID, SetDramaMusicRequest{}); err != nil {
 		t.Fatal(err)
 	}
@@ -113,5 +116,29 @@ func TestRenderMixDucksMusicUnderVoiceAndNormalizes(t *testing.T) {
 	joined = strings.Join(buildRenderFFmpegArgs(plain, "out.mp4"), " ")
 	if strings.Contains(joined, "loudnorm") || strings.Contains(joined, "sidechaincompress") || !strings.Contains(joined, "[abase]anull[aout]") {
 		t.Fatalf("a plain timeline keeps its loudness and has no ducking: %s", joined)
+	}
+}
+
+func TestRenderFadesCarryToTheAudio(t *testing.T) {
+	video := renderClipFixture("a", "video", "v", 0, 4000, "resource:v")
+	video.FadeOutMs, video.FadeOutColor = 600, "black"
+	music := renderClipFixture("m1", "audio", "m", 500, 2000, "resource:m")
+	music.FadeInMs, music.FadeOutMs = 250, 5000
+	plan := buildRenderPlan(renderProject{Version: 2,
+		Tracks: []renderTrack{{ID: "v", Kind: "video"}, {ID: "m", Kind: "audio", Role: renderTrackRoleMusic}},
+		Clips:  []renderClip{video, music}})
+	plan.Segments[0].Source = &renderSource{Path: "v.mp4", HasAudio: true}
+	for i := range plan.AudioOverlays {
+		plan.AudioOverlays[i].Source = &renderSource{Path: "a.m4a"}
+	}
+	joined := strings.Join(buildRenderFFmpegArgs(plan, "out.mp4"), " ")
+	for _, want := range []string{
+		"fade=t=out:st=3.400:d=0.600:color=black",
+		"asetpts=N/SR/TB,afade=t=out:st=3.400:d=0.600[a0]",
+		"asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.250,afade=t=out:st=1.000:d=1.000,adelay=500|500[o0]",
+	} {
+		if !strings.Contains(joined, want) {
+			t.Fatalf("missing %q: %s", want, joined)
+		}
 	}
 }

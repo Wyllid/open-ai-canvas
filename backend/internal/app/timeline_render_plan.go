@@ -274,8 +274,8 @@ func buildRenderFFmpegArgs(plan renderPlan, target string) []string {
 			if seg.Clip.Volume > 0 {
 				volume = seg.Clip.Volume
 			}
-			filters = append(filters, fmt.Sprintf("[%d:a]aformat=sample_fmts=fltp:sample_rates=%d:channel_layouts=stereo,volume=%.3f,apad,atrim=0:%.3f,asetpts=N/SR/TB[%s]",
-				audioIn, renderSampleRate, volume, duration, audioLabel))
+			filters = append(filters, fmt.Sprintf("[%d:a]aformat=sample_fmts=fltp:sample_rates=%d:channel_layouts=stereo,volume=%.3f,apad,atrim=0:%.3f,asetpts=N/SR/TB%s[%s]",
+				audioIn, renderSampleRate, volume, duration, renderAudioFadeFilters(seg.Clip, duration), audioLabel))
 		}
 		labels = append(labels, videoLabel, audioLabel)
 	}
@@ -315,8 +315,13 @@ func renderAudioMixFilters(plan renderPlan, overlays []renderSegment, overlayBas
 		}
 		delay := max(overlay.Clip.StartMs, 0)
 		label := fmt.Sprintf("o%d", i)
-		filters = append(filters, fmt.Sprintf("[%d:a]aformat=sample_fmts=fltp:sample_rates=%d:channel_layouts=stereo,volume=%.3f,adelay=%d|%d[%s]",
-			overlayBase+i, renderSampleRate, volume, delay, delay, label))
+		fades := renderAudioFadeFilters(overlay.Clip, float64(overlay.DurationMs)/1000)
+		if fades != "" {
+			// 淡入淡出按片段自身时间计算，先把时间戳归零再在 adelay 之前处理。
+			fades = ",asetpts=PTS-STARTPTS" + fades
+		}
+		filters = append(filters, fmt.Sprintf("[%d:a]aformat=sample_fmts=fltp:sample_rates=%d:channel_layouts=stereo,volume=%.3f%s,adelay=%d|%d[%s]",
+			overlayBase+i, renderSampleRate, volume, fades, delay, delay, label))
 		if overlay.Music {
 			music = append(music, label)
 		} else {
@@ -365,6 +370,22 @@ func planTotalSeconds(plan renderPlan) float64 {
 		total += seg.DurationMs
 	}
 	return float64(total) / 1000
+}
+
+// renderAudioFadeFilters 让片段声音随画面一起淡入淡出（时长与画面一致，最多各占一半）。
+func renderAudioFadeFilters(clip renderClip, duration float64) string {
+	if duration <= 0 {
+		return ""
+	}
+	var b strings.Builder
+	if clip.FadeInMs > 0 {
+		fmt.Fprintf(&b, ",afade=t=in:st=0:d=%.3f", min(float64(clip.FadeInMs)/1000, duration/2))
+	}
+	if clip.FadeOutMs > 0 {
+		fade := min(float64(clip.FadeOutMs)/1000, duration/2)
+		fmt.Fprintf(&b, ",afade=t=out:st=%.3f:d=%.3f", duration-fade, fade)
+	}
+	return b.String()
 }
 
 // renderFadeFilters 生成片段首尾的纯色淡入淡出；颜色只接受白名单，避免拼进滤镜表达式。
