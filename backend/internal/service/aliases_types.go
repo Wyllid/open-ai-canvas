@@ -112,6 +112,8 @@ type (
 	ChannelOrderItem                       = app.ChannelOrderItem
 	ChannelOrderRequest                    = app.ChannelOrderRequest
 	ChannelRequest                         = app.ChannelRequest
+	AgentModelSetup                        = app.AgentModelSetup
+	AgentModelSetupRequest                 = app.AgentModelSetupRequest
 	SystemChannelExport                    = app.SystemChannelExport
 	SystemChannelImportResult              = app.SystemChannelImportResult
 	ProviderCatalogVerifyRequest           = app.ProviderCatalogVerifyRequest
