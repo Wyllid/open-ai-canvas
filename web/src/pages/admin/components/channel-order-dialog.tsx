@@ -152,7 +152,13 @@ export function ChannelOrderDialog({ channelId, onSaved }: { channelId?: string;
                                         {item.name}
                                         {!item.enabled && <span className="ml-2 text-xs text-foreground/45">{tr("已停用")}</span>}
                                     </span>
-                                    <Button aria-label={tr("上移{0}", item.name)} title={tr("上移")} icon={<ArrowUp className="size-4" />} disabled={saving || index === 0} onClick={() => setItems((current) => moveOrderItem(current, item.id, index - 1))} />
+                                    <Button
+                                        aria-label={tr("上移{0}", item.name)}
+                                        title={tr("上移")}
+                                        icon={<ArrowUp className="size-4" />}
+                                        disabled={saving || index === 0}
+                                        onClick={() => setItems((current) => moveOrderItem(current, item.id, index - 1))}
+                                    />
                                     <Button
                                         aria-label={tr("下移{0}", item.name)}
                                         title={tr("下移")}

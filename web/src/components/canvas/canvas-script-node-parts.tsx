@@ -66,15 +66,22 @@ export function GenerationBatchDetails({ batch, rows, onRetryItem }: { batch: Ca
     return (
         <div className="w-80" onMouseDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
             <div className="mb-2 flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold">{generationBatchModeLabel(batch)}{tr("详情")}</span>
-                <span className="text-xs text-foreground/50">{batch.items.length} {tr("项")}</span>
+                <span className="text-sm font-semibold">
+                    {generationBatchModeLabel(batch)}
+                    {tr("详情")}
+                </span>
+                <span className="text-xs text-foreground/50">
+                    {batch.items.length} {tr("项")}
+                </span>
             </div>
             <div className="thin-scrollbar max-h-72 overflow-y-auto">
                 {batch.items.map((item) => {
                     const requiresPromptChange = isContentModerationError(item.errorDetails);
                     return (
                         <div key={item.id} className="flex min-h-9 items-center gap-2 border-t border-foreground/10 py-2 first:border-t-0">
-                            <span className="w-14 shrink-0 text-xs font-medium">{tr("镜头")} {shotByRowId.get(item.rowId) || "--"}</span>
+                            <span className="w-14 shrink-0 text-xs font-medium">
+                                {tr("镜头")} {shotByRowId.get(item.rowId) || "--"}
+                            </span>
                             <span className="min-w-0 flex-1 truncate text-xs text-foreground/60" title={item.errorDetails ? generationErrorMessage(item.errorDetails) : undefined}>
                                 {generationBatchItemLabel(item)}
                                 {item.retryCount ? tr(" · 重试 {0}", item.retryCount) : ""}
@@ -107,7 +114,17 @@ export function generationBatchSummary(batch: CanvasGenerationBatch) {
     const count = (status: CanvasGenerationBatchItemStatus) => batch.items.filter((item) => item.status === status).length;
     const generating = count("submitting") + count("queued") + count("running");
     const stopped = count("cancelled");
-    return tr("{0}{1} · 完成 {2}/{3} / 失败 {4} / 生成中 {5} / 等待 {6}{7}", generationBatchModeLabel(batch), batch.status === "completed" ? tr("完成") : batch.status === "cancelled" ? tr("已停止") : tr("中"), count("succeeded"), batch.items.length, count("failed"), generating, count("waiting"), stopped ? tr(" / 已停止 {0}", stopped) : "");
+    return tr(
+        "{0}{1} · 完成 {2}/{3} / 失败 {4} / 生成中 {5} / 等待 {6}{7}",
+        generationBatchModeLabel(batch),
+        batch.status === "completed" ? tr("完成") : batch.status === "cancelled" ? tr("已停止") : tr("中"),
+        count("succeeded"),
+        batch.items.length,
+        count("failed"),
+        generating,
+        count("waiting"),
+        stopped ? tr(" / 已停止 {0}", stopped) : "",
+    );
 }
 
 export function generationBatchItemLabel(item: CanvasGenerationBatchItem) {

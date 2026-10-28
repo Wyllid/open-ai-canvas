@@ -17,7 +17,13 @@ import { ReviewPanel } from "./review-panel";
 
 function storyboardSummary(value: DramaStoryboardSettings) {
     const rules = normalizeStoryboard(value);
-    const duration = tr("{0}（平均 {1} 秒/镜）· 对白{2} · 剧情段{3}", { fast: tr("快节奏"), standard: tr("标准节奏"), slow: tr("舒缓节奏") }[rules.pacing], averageShotSeconds(rules), { dense: tr("密集"), standard: tr("标准"), sparse: tr("克制") }[rules.dialogue], { auto: tr("智能切分"), fixed: tr("固定 {0} 秒", rules.segmentSeconds), range: tr("{0}–{1} 秒", rules.segmentMinSeconds, rules.segmentMaxSeconds) }[rules.segmentMode]);
+    const duration = tr(
+        "{0}（平均 {1} 秒/镜）· 对白{2} · 剧情段{3}",
+        { fast: tr("快节奏"), standard: tr("标准节奏"), slow: tr("舒缓节奏") }[rules.pacing],
+        averageShotSeconds(rules),
+        { dense: tr("密集"), standard: tr("标准"), sparse: tr("克制") }[rules.dialogue],
+        { auto: tr("智能切分"), fixed: tr("固定 {0} 秒", rules.segmentSeconds), range: tr("{0}–{1} 秒", rules.segmentMinSeconds, rules.segmentMaxSeconds) }[rules.segmentMode],
+    );
     const transition = rules.transition === "auto" ? tr("转场智能") : tr("转场统一{0}", TRANSITION_LABEL[rules.transition]);
     return `${duration} · ${transition}`;
 }
@@ -111,7 +117,8 @@ export function ScriptView({
                     <div className="drama-scriptv-brief-head">
                         <span className="drama-eyebrow">{tr("本集梗概")}</span>
                         <span className="drama-scriptv-format" title={SOURCE_FORMAT_LABEL[format].detail}>
-                            {tr("素材：")}{SOURCE_FORMAT_LABEL[format].title}
+                            {tr("素材：")}
+                            {SOURCE_FORMAT_LABEL[format].title}
                         </span>
                         <div className="ml-auto flex items-center gap-2">
                             {detail.scriptJob ? (
@@ -161,7 +168,9 @@ export function ScriptView({
                         {scenes.map((group, sceneIndex) => (
                             <section key={group.key} className="drama-screenplay-scene">
                                 <header>
-                                    <span className="drama-screenplay-scene-no">{tr("场")} {sceneIndex + 1}</span>
+                                    <span className="drama-screenplay-scene-no">
+                                        {tr("场")} {sceneIndex + 1}
+                                    </span>
                                     <strong>{group.scene || tr("未命名场景")}</strong>
                                     <span className="drama-screenplay-scene-meta">
                                         {group.shots.length} {tr("镜 ·")} {(group.shots.reduce((sum, shot) => sum + shot.durationMs, 0) / 1000).toFixed(0)} {tr("秒")}
@@ -192,7 +201,12 @@ export function ScriptView({
                                                 {shot.shotSize ? <span>{shot.shotSize}</span> : null}
                                                 {shot.camera && shot.camera !== "固定" ? <span>{shot.camera}</span> : null}
                                                 <span>{(shot.durationMs / 1000).toFixed(1)}s</span>
-                                                {shot.transition && shot.transition !== "cut" ? <span className="is-transition">{TRANSITION_LABEL[shot.transition as keyof typeof TRANSITION_LABEL]}{tr("进入")}</span> : null}
+                                                {shot.transition && shot.transition !== "cut" ? (
+                                                    <span className="is-transition">
+                                                        {TRANSITION_LABEL[shot.transition as keyof typeof TRANSITION_LABEL]}
+                                                        {tr("进入")}
+                                                    </span>
+                                                ) : null}
                                                 {shot.sourceQuote ? (
                                                     <span className="is-source">
                                                         <Quote className="size-3" />
@@ -241,7 +255,9 @@ export function ScriptView({
                     <div className="drama-scriptv-pending">
                         <Clapperboard className="size-7" />
                         <strong>{empty.title}</strong>
-                        <span>{empty.text} {tr("右侧可以先读本集对应的小说原文。")}</span>
+                        <span>
+                            {empty.text} {tr("右侧可以先读本集对应的小说原文。")}
+                        </span>
                         {empty.action}
                     </div>
                 )}
@@ -345,7 +361,9 @@ function SourcePane({ projectId, chapters, quote, onEdit }: { projectId: string;
                     {chapters.map((chapter) => (
                         <button key={chapter.id} type="button" role="tab" aria-selected={chapter.id === activeId} onClick={() => setChapterId(chapter.id)}>
                             {chapter.title}
-                            <span>{formatCount(chapter.wordCount)} {tr("字")}</span>
+                            <span>
+                                {formatCount(chapter.wordCount)} {tr("字")}
+                            </span>
                         </button>
                     ))}
                 </div>

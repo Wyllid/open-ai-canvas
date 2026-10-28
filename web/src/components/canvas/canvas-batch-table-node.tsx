@@ -540,7 +540,7 @@ function batchRowMentionReferences(row: CanvasBatchRow, columns: ReturnType<type
     return columns.flatMap((column, index) => {
         const source = nodeById.get(row.inputNodeIds[index]);
         if (!source) return [];
-        return [{ id: `${row.id}:${column.id}:${source.id}`, nodeId: source.id, kind: "image" as const, label: tr("参考图{0}", index + 1), title: `${column.label} · ${source.title || tr("图片")}`, previewUrl: source.metadata?.previewContent || source.metadata?.content, storageKey: source.metadata?.storageKey, active: true, sourceType: source.type, mentionToken: batchReferenceMentionToken(index) }];
+        return [{ id: `${row.id}:${column.id}:${source.id}`, nodeId: source.id, kind: "image" as const, label: `参考图${index + 1}`, title: `${column.label} · ${source.title || tr("图片")}`, previewUrl: source.metadata?.previewContent || source.metadata?.content, storageKey: source.metadata?.storageKey, active: true, sourceType: source.type, mentionToken: batchReferenceMentionToken(index) }];
     });
 }
 

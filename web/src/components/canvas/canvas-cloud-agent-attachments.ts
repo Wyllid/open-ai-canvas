@@ -1,4 +1,3 @@
-import { tr } from "@/i18n";
 // 画布 Agent 对话附件：类型定义与「附件 → @ 引用」转换。
 //
 // 输入区（composer）与消息渲染（chat-ui）都依赖它，单独成模块以避免两者互相 import。
@@ -13,8 +12,8 @@ export function agentAttachmentReferences(attachments: CloudAgentChatAttachment[
         id: `attachment:${item.id}`,
         nodeId: "",
         kind: "image",
-        label: tr("图片{0}", index + 1),
-        title: item.name || tr("图片{0}", index + 1),
+        label: `图片${index + 1}`,
+        title: item.name || `图片${index + 1}`,
         previewUrl: item.url,
         active: true,
         mentionToken: `@[attachment:${item.id}]`,

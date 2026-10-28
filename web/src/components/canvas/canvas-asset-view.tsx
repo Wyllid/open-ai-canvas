@@ -344,7 +344,10 @@ function AssetDetail({ entry, version, nodeById, onSelectVersion, onBack, onLoca
                     ) : null}
                     {entry.versions.length > 1 ? (
                         <section className="mt-4">
-                            <h3 className="m-0 mb-2 text-xs font-medium text-muted-foreground">{tr("全部版本（")}{entry.versions.length}）</h3>
+                            <h3 className="m-0 mb-2 text-xs font-medium text-muted-foreground">
+                                {tr("全部版本（")}
+                                {entry.versions.length}）
+                            </h3>
                             <ul className="m-0 flex list-none flex-col gap-1 p-0">
                                 {entry.versions.map((item) => (
                                     <li key={item.key}>

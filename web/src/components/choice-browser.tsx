@@ -48,7 +48,17 @@ export function ChoiceBrowser({
 
     return (
         <div className="choice-browser">
-            <Input id={id} {...aria} allowClear aria-label={tr("搜索{0}", label)} disabled={unavailable} prefix={<Search className="size-3.5" aria-hidden="true" />} placeholder={placeholder} value={query} onChange={(event) => setQuery(event.target.value)} />
+            <Input
+                id={id}
+                {...aria}
+                allowClear
+                aria-label={tr("搜索{0}", label)}
+                disabled={unavailable}
+                prefix={<Search className="size-3.5" aria-hidden="true" />}
+                placeholder={placeholder}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+            />
             {loading || error || !options.length ? (
                 <div className="choice-browser-state" role={error ? "alert" : "status"}>
                     {loading ? tr("正在读取可选项…") : error || tr("暂无可用选项")}

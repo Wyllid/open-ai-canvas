@@ -51,17 +51,27 @@ export function CreationMessageView({
     const heading =
         mode !== "text" ? (
             <>
-                {shotNumber > 0 ? <span className="creation-shot-badge">{tr("镜")} {shotNumber}</span> : null}
+                {shotNumber > 0 ? (
+                    <span className="creation-shot-badge">
+                        {tr("镜")} {shotNumber}
+                    </span>
+                ) : null}
                 <span className="creation-message-mark">
                     <Sparkles />
                 </span>
                 <strong>{mode === "image" ? tr("图像生成") : tr("视频生成")}</strong>
                 {item.status === "pending" ? (
                     <span className="creation-message-progress-copy">
-                        {brandName}{tr("正在生成")}{mode === "video" ? tr("视频") : tr("图像")}……
+                        {brandName}
+                        {tr("正在生成")}
+                        {mode === "video" ? tr("视频") : tr("图像")}……
                     </span>
                 ) : item.status === "done" ? (
-                    <span className="creation-message-progress-copy">{tr("你的")}{mode === "video" ? tr("视频") : tr("图像")}{tr("已创建")}</span>
+                    <span className="creation-message-progress-copy">
+                        {tr("你的")}
+                        {mode === "video" ? tr("视频") : tr("图像")}
+                        {tr("已创建")}
+                    </span>
                 ) : null}
                 {item.status === "done" ? (
                     <button type="button" className="creation-message-variant-action" onClick={onCreateVariant}>
@@ -74,7 +84,11 @@ export function CreationMessageView({
             </>
         ) : (
             <>
-                {shotNumber > 0 ? <span className="creation-shot-badge">{tr("镜")} {shotNumber}</span> : null}
+                {shotNumber > 0 ? (
+                    <span className="creation-shot-badge">
+                        {tr("镜")} {shotNumber}
+                    </span>
+                ) : null}
                 <span className="creation-message-mark">
                     <Sparkles />
                 </span>
@@ -132,7 +146,11 @@ export function CreationUserMessage({ item, shotNumber, onEditUserMessage }: { i
     return (
         <article className="creation-user-message">
             <div className="creation-user-message-meta">
-                {shotNumber > 0 ? <span className="creation-shot-badge">{tr("镜")} {shotNumber}</span> : null}
+                {shotNumber > 0 ? (
+                    <span className="creation-shot-badge">
+                        {tr("镜")} {shotNumber}
+                    </span>
+                ) : null}
                 {item.createdAt ? <time dateTime={item.createdAt}>{formatMessageTime(item.createdAt)}</time> : null}
                 <strong>{user?.displayName || tr("你")}</strong>
                 {user ? (
@@ -373,7 +391,9 @@ export function CreationMediaPending({ mode, ratio }: { mode: CreationMode; rati
                 <WorkingDots dotSize={7} gap={3} minOpacity={0.3} />
             </span>
             <span className="sr-only">
-                {brandName}{tr("正在生成")}{mode === "video" ? tr("视频") : tr("图像")}
+                {brandName}
+                {tr("正在生成")}
+                {mode === "video" ? tr("视频") : tr("图像")}
             </span>
         </div>
     );

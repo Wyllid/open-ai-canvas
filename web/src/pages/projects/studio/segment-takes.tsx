@@ -67,7 +67,9 @@ function TakeRow({ take, open, aspectRatio, busy, onToggle, onSelect, onReview }
         <div className="drama-sd-take" data-selected={take.selected || undefined}>
             <div className="drama-sd-take-head">
                 <button type="button" className="drama-sd-take-name" aria-expanded={open} onClick={onToggle}>
-                    <b>{tr("Take")} {take.version}</b>
+                    <b>
+                        {tr("Take")} {take.version}
+                    </b>
                     <small>
                         {Number.isNaN(created.getTime()) ? "" : created.toLocaleString()}
                         {take.durationMs ? ` · ${secondsLabel(take.durationMs)}` : ""}
@@ -91,7 +93,11 @@ function TakeRow({ take, open, aspectRatio, busy, onToggle, onSelect, onReview }
                             <video key={url} src={url} controls playsInline preload="metadata" />
                         </div>
                     ) : null}
-                    {take.review?.promptFix ? <p className="drama-sg-note">{tr("Suggested prompt change:")} {take.review.promptFix}</p> : null}
+                    {take.review?.promptFix ? (
+                        <p className="drama-sg-note">
+                            {tr("Suggested prompt change:")} {take.review.promptFix}
+                        </p>
+                    ) : null}
                     <Select size="small" value={verdict || undefined} placeholder={tr("Verdict")} allowClear options={VERDICT_OPTIONS} onChange={(value) => setVerdict(value || "")} aria-label={tr("Verdict")} />
                     <Input.TextArea size="small" value={notes} autoSize={{ minRows: 2, maxRows: 6 }} placeholder={verdict === "approve" ? tr("Notes (optional)") : tr("What is wrong, shot by shot")} onChange={(event) => setNotes(event.target.value)} />
                     <div className="drama-sd-error-actions">

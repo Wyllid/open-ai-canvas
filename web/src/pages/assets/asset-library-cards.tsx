@@ -69,7 +69,11 @@ export function AssetCard({
 }) {
     const summary = assetSummary(asset);
     const menuItems: MenuProps["items"] = isTrash
-        ? [{ key: "restore", icon: <RotateCcw className="size-3.5" />, label: tr("还原到素材库"), onClick: onRestore }, { type: "divider" as const }, { key: "delete", danger: true, icon: <Trash2 className="size-3.5" />, label: tr("彻底删除"), onClick: onDelete }]
+        ? [
+              { key: "restore", icon: <RotateCcw className="size-3.5" />, label: tr("还原到素材库"), onClick: onRestore },
+              { type: "divider" as const },
+              { key: "delete", danger: true, icon: <Trash2 className="size-3.5" />, label: tr("彻底删除"), onClick: onDelete },
+          ]
         : [
               ...(asset.kind === "text" || asset.kind === "image" ? [{ key: "edit", icon: <PencilLine className="size-3.5" />, label: tr("编辑"), onClick: onEdit }] : []),
               ...(asset.kind === "text" ? [{ key: "copy", icon: <Copy className="size-3.5" />, label: tr("复制文本"), onClick: () => void onCopy(asset) }] : []),
@@ -147,7 +151,9 @@ export function AssetCover({
                     <AudioWaveCover asset={asset} />
                 ) : asset.kind === "entity" && (asset.category === "environment" || asset.category === "prop") ? (
                     <div className="assets-cover-fallback">
-                        <span>{assetCategoryLabel(asset.category)} {tr("· 待生成图片")}</span>
+                        <span>
+                            {assetCategoryLabel(asset.category)} {tr("· 待生成图片")}
+                        </span>
                     </div>
                 ) : asset.kind === "entity" ? (
                     <CharacterAssetCover asset={asset} />

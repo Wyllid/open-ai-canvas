@@ -25,11 +25,23 @@ export function TaskGroupHeader({ group, retrying = false, onRetryFailed }: { gr
                     </span>
                 </div>
                 <span className="task-group-sub">
-                    {active ? <span>{active} {tr("运行中")}</span> : null}
+                    {active ? (
+                        <span>
+                            {active} {tr("运行中")}
+                        </span>
+                    ) : null}
                     {active && failed ? <span aria-hidden="true"> · </span> : null}
-                    {failed ? <b className="is-bad">{failed} {tr("失败")}</b> : null}
+                    {failed ? (
+                        <b className="is-bad">
+                            {failed} {tr("失败")}
+                        </b>
+                    ) : null}
                     {(active || failed) && succeeded ? <span aria-hidden="true"> · </span> : null}
-                    {succeeded ? <span>{succeeded} {tr("已完成")}</span> : null}
+                    {succeeded ? (
+                        <span>
+                            {succeeded} {tr("已完成")}
+                        </span>
+                    ) : null}
                     {!active && !failed && !succeeded ? tr("暂无进行中的任务") : null}
                 </span>
             </div>

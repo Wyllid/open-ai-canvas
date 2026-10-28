@@ -56,7 +56,9 @@ export function EpisodeDurationInput({ value, onChange }: { value: number; onCha
                         label: (
                             <span className="drama-duration-option">
                                 <span>{formatEpisodeSeconds(seconds)}</span>
-                                <small>{seconds} {tr("秒")}</small>
+                                <small>
+                                    {seconds} {tr("秒")}
+                                </small>
                             </span>
                         ),
                     })),
@@ -84,7 +86,13 @@ export function EpisodeDurationInput({ value, onChange }: { value: number; onCha
                     suffix={<ChevronDown className={`size-3.5 opacity-50 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />}
                 />
             </Dropdown>
-            {error ? <small className="drama-field-error">{error}</small> : <small className="drama-field-hint">{tr("约")} {Math.round((value / 60) * 10) / 10} {tr("分钟 · 也可直接输入")}</small>}
+            {error ? (
+                <small className="drama-field-error">{error}</small>
+            ) : (
+                <small className="drama-field-hint">
+                    {tr("约")} {Math.round((value / 60) * 10) / 10} {tr("分钟 · 也可直接输入")}
+                </small>
+            )}
         </div>
     );
 }
@@ -241,7 +249,8 @@ export function StoryboardRules({
                     {target ? (
                         <>
                             {" "}
-                            · {segmentRuleLabel(limits)}，{limits.mode === "auto" ? tr("至少") : tr("约")} <b>{Math.max(1, Math.ceil(episodeSeconds / target))}</b> {tr("段 · 每段约")} <b>{Math.max(1, Math.round(target / averageShotSeconds(rules)))}</b> {tr("镜")}
+                            · {segmentRuleLabel(limits)}，{limits.mode === "auto" ? tr("至少") : tr("约")} <b>{Math.max(1, Math.ceil(episodeSeconds / target))}</b> {tr("段 · 每段约")} <b>{Math.max(1, Math.round(target / averageShotSeconds(rules)))}</b>{" "}
+                            {tr("镜")}
                         </>
                     ) : null}
                 </span>
@@ -249,7 +258,9 @@ export function StoryboardRules({
             {capped ? (
                 <p className="drama-sbrules-warn">
                     <TriangleAlert className="size-3.5 shrink-0" />
-                    {modelName}{tr("单次最长")} {maxVideoSeconds} {tr("秒，")}{rules.segmentMode === "fixed" ? tr("剧情段按 {0} 秒切分", maxVideoSeconds) : tr("剧情段上限按 {0} 秒执行", maxVideoSeconds)}。
+                    {modelName}
+                    {tr("单次最长")} {maxVideoSeconds} {tr("秒，")}
+                    {rules.segmentMode === "fixed" ? tr("剧情段按 {0} 秒切分", maxVideoSeconds) : tr("剧情段上限按 {0} 秒执行", maxVideoSeconds)}。
                 </p>
             ) : null}
         </div>

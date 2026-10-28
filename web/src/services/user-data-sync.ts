@@ -336,7 +336,9 @@ export async function loadCanvasProjectForEditing(id: string, options: { onLoad?
         await flushCanvasStorePersistence();
         await persistConfirmedCanvasBaselines();
         const pending = pendingCanvasMutations.has(id) || !sameCanvasContent(remote, project);
-        useSyncProgressStore.getState().setProjectProgress(id, { phase: pending ? "pending" : "done", cloudRevision: project.revision, pendingChanges: pending ? 1 : 0, message: pending ? tr("云端更新已合并，保留本地未确认操作") : tr("已确认云端画布基线") });
+        useSyncProgressStore
+            .getState()
+            .setProjectProgress(id, { phase: pending ? "pending" : "done", cloudRevision: project.revision, pendingChanges: pending ? 1 : 0, message: pending ? tr("云端更新已合并，保留本地未确认操作") : tr("已确认云端画布基线") });
         if (pending) scheduleRemoteUserDataSync();
         return project;
     });

@@ -69,7 +69,8 @@ export function ListToolbar({
                     <>
                         {!filtersAlwaysVisible ? (
                             <Button type="default" className="admin-filter-toggle" aria-expanded={filtersOpen} icon={<ListFilter className="size-3.5" />} onClick={() => setFiltersOpen((open) => !open)}>
-                                {tr("筛选")}{active ? <span className="admin-filter-active-dot" aria-label={tr("有已应用筛选")} /> : null}
+                                {tr("筛选")}
+                                {active ? <span className="admin-filter-active-dot" aria-label={tr("有已应用筛选")} /> : null}
                             </Button>
                         ) : null}
                         <div className={cn("admin-list-toolbar-filters", (filtersAlwaysVisible || filtersOpen) && "is-open")}>{filters}</div>
@@ -121,7 +122,14 @@ export function PaginationBar({
     return (
         <div className="admin-pagination-bar">
             <span className="admin-pagination-total">{total === 0 ? tr("共 0 {0}", itemLabel) : tr("{0}-{1} / 共 {2} {3}", start, end, total, itemLabel)}</span>
-            <Select size="small" value={pageSize} className="admin-pagination-size" options={pageSizeOptions.map((size) => ({ value: size, label: tr("{0} {1}/页", size, itemLabel) }))} onChange={(value) => onChange(1, Number(value))} aria-label={tr("每页条数")} />
+            <Select
+                size="small"
+                value={pageSize}
+                className="admin-pagination-size"
+                options={pageSizeOptions.map((size) => ({ value: size, label: tr("{0} {1}/页", size, itemLabel) }))}
+                onChange={(value) => onChange(1, Number(value))}
+                aria-label={tr("每页条数")}
+            />
             <div className="admin-pagination-pages" role="navigation" aria-label={tr("分页")}>
                 <button type="button" className="admin-pagination-btn" disabled={current <= 1} aria-label={tr("上一页")} onClick={() => onChange(current - 1, pageSize)}>
                     <ChevronLeft className="size-4" />

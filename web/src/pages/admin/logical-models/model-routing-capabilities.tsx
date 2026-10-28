@@ -299,7 +299,11 @@ export function CapabilityScopeEditor({ capability, sourceSpecs, value, onChange
                 </Button>
             </div>
 
-            {sourceError ? <Callout tone="warning" title={tr("当前选择需要调整")}>{tr("{0}。可重新选择，或采用全部可用范围。", sourceError)}</Callout> : null}
+            {sourceError ? (
+                <Callout tone="warning" title={tr("当前选择需要调整")}>
+                    {tr("{0}。可重新选择，或采用全部可用范围。", sourceError)}
+                </Callout>
+            ) : null}
 
             {source.operations?.length ? (
                 <CapabilityBlock title={tr("生成方式")}>

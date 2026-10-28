@@ -90,7 +90,10 @@ export function CharacterImageLibrary({ currentResourceId, busyKey, canvasTitles
                             disabled={Boolean(busyKey)}
                             className="grid aspect-[3/4] place-items-center rounded-lg border border-dashed border-foreground/15 text-foreground/45 outline-none transition-colors hover:border-foreground/35 hover:text-foreground/75 focus-visible:ring-2 focus-visible:ring-[var(--workspace-accent)] disabled:cursor-wait"
                         >
-                            <span className="flex flex-col items-center gap-2 text-xs">{busyKey === "upload" ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5 stroke-[1.5]" />}{tr("上传本地图片")}</span>
+                            <span className="flex flex-col items-center gap-2 text-xs">
+                                {busyKey === "upload" ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5 stroke-[1.5]" />}
+                                {tr("上传本地图片")}
+                            </span>
                         </button>
                     )}
                 </FilePicker>

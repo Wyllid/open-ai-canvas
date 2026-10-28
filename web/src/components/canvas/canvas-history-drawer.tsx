@@ -117,7 +117,8 @@ export function CanvasHistoryDrawer({ open, onClose }: { open: boolean; onClose:
                             )}
                             onClick={() => setFilter("all")}
                         >
-                            {tr("全部 (")}{timelineItems.length})
+                            {tr("全部 (")}
+                            {timelineItems.length})
                         </button>
                         <button
                             type="button"
@@ -129,7 +130,8 @@ export function CanvasHistoryDrawer({ open, onClose }: { open: boolean; onClose:
                             )}
                             onClick={() => setFilter("active")}
                         >
-                            {tr("活跃中 (")}{activeProjects.length})
+                            {tr("活跃中 (")}
+                            {activeProjects.length})
                         </button>
                         <button
                             type="button"
@@ -139,7 +141,8 @@ export function CanvasHistoryDrawer({ open, onClose }: { open: boolean; onClose:
                             )}
                             onClick={() => setFilter("deleted")}
                         >
-                            {tr("已删除 (")}{deletedProjects.length})
+                            {tr("已删除 (")}
+                            {deletedProjects.length})
                         </button>
                     </div>
                 </div>
@@ -184,20 +187,31 @@ export function CanvasHistoryDrawer({ open, onClose }: { open: boolean; onClose:
                                                 <div className="space-y-1 text-xs text-stone-600 dark:text-stone-300">
                                                     <div className="flex items-center gap-2">
                                                         <Clock3 className="size-3.5 text-stone-400 shrink-0" />
-                                                        <span>{tr("创建时间：")}{formatTimelineDate(item.createdAt)}</span>
+                                                        <span>
+                                                            {tr("创建时间：")}
+                                                            {formatTimelineDate(item.createdAt)}
+                                                        </span>
                                                     </div>
                                                     {isDeleted && item.deletedAt ? (
                                                         <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-medium">
                                                             <Trash2 className="size-3.5 text-rose-500 shrink-0" />
-                                                            <span>{tr("删除时间：")}{formatTimelineDate(item.deletedAt)}</span>
+                                                            <span>
+                                                                {tr("删除时间：")}
+                                                                {formatTimelineDate(item.deletedAt)}
+                                                            </span>
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400">
                                                             <Clock className="size-3.5 text-stone-400 shrink-0" />
-                                                            <span>{tr("最近更新：")}{formatTimelineDate(item.updatedAt)}</span>
+                                                            <span>
+                                                                {tr("最近更新：")}
+                                                                {formatTimelineDate(item.updatedAt)}
+                                                            </span>
                                                         </div>
                                                     )}
-                                                    <div className="text-[var(--fs-label)] text-stone-500 dark:text-stone-400 pt-0.5">{tr("包含")} {item.nodeCount} {tr("个节点")}</div>
+                                                    <div className="text-[var(--fs-label)] text-stone-500 dark:text-stone-400 pt-0.5">
+                                                        {tr("包含")} {item.nodeCount} {tr("个节点")}
+                                                    </div>
                                                 </div>
                                             </div>
 

@@ -326,7 +326,9 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
                             <>
                                 <strong>{used}</strong>
                                 <span>/ {budget} Token</span>
-                                <em>{tr("剩余")} {remaining}</em>
+                                <em>
+                                    {tr("剩余")} {remaining}
+                                </em>
                             </>
                         ) : (
                             <>
@@ -374,7 +376,11 @@ export function AgentContextRing({ view, theme }: { view: AgentContextUsageView;
                             {sourceLabel}
                             {view.tokenSource === "pi" ? tr(" · 本地估算 Token") : ""}
                         </span>
-                        {view.compactAtTokens ? <span>{tr("压缩线")} {formatContextCount(view.compactAtTokens)}</span> : null}
+                        {view.compactAtTokens ? (
+                            <span>
+                                {tr("压缩线")} {formatContextCount(view.compactAtTokens)}
+                            </span>
+                        ) : null}
                     </div>
                     {view.compactionError ? (
                         <p className="agent-context-note" role="status">
@@ -762,7 +768,9 @@ export function ApprovalCard({
             ) : null}
             {targetGenerating ? (
                 <p className="canvas-agent-approval-description" role="status" style={{ color: theme.node.muted }}>
-                    {tr("你已在节点《")}{targetGenerating.title || tr("未命名节点")}{tr("》上直接提交了生成，Agent 不会重复提交；本次审批会自动关闭。")}
+                    {tr("你已在节点《")}
+                    {targetGenerating.title || tr("未命名节点")}
+                    {tr("》上直接提交了生成，Agent 不会重复提交；本次审批会自动关闭。")}
                 </p>
             ) : null}
             <div className="canvas-agent-approval-actions">

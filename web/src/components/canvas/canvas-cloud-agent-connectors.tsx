@@ -125,7 +125,12 @@ export function AgentConnectorsBar({ onClose }: { onClose: () => void }) {
             <div className="agent-connectors-list">
                 {AGENT_CONNECTORS.map((connector) => (
                     <Tooltip key={connector.id} title={tr("{0} · 研发中", connector.name)} placement="top">
-                        <button type="button" className="agent-connector-item" aria-label={tr("{0}（研发中）", connector.name)} onClick={() => message.info({ content: tr("{0}连接器研发中，敬请期待", connector.name), key: `agent-connector-${connector.id}` })}>
+                        <button
+                            type="button"
+                            className="agent-connector-item"
+                            aria-label={tr("{0}（研发中）", connector.name)}
+                            onClick={() => message.info({ content: tr("{0}连接器研发中，敬请期待", connector.name), key: `agent-connector-${connector.id}` })}
+                        >
                             {connector.icon}
                         </button>
                     </Tooltip>

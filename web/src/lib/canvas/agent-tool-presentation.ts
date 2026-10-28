@@ -53,7 +53,10 @@ export const AGENT_TOOL_METADATA: Record<string, AgentToolMetadataEntry> = {
     canvas_apply_ops: { summary: ({ pending }) => (pending ? tr("准备更新画布内容") : tr("画布内容已保存至服务端")), failureMessage: tr("更新画布内容失败") },
     model_list: { summary: tr("已获取可用模型"), failureMessage: tr("获取可用模型失败") },
     canvas_create_character: { summary: ({ pending }) => (pending ? tr("准备创建角色卡") : tr("角色卡已创建并放到画布")), failureMessage: tr("创建角色卡失败") },
-    generate_media: { summary: ({ pending, detail }) => (pending ? tr("准备创建媒体节点并生成") : field(detail, "eventType") === "tool_completed" ? tr("生成结果已回写画布节点") : tr("媒体节点已创建，生成任务已提交")), failureMessage: tr("媒体生成未完成") },
+    generate_media: {
+        summary: ({ pending, detail }) => (pending ? tr("准备创建媒体节点并生成") : field(detail, "eventType") === "tool_completed" ? tr("生成结果已回写画布节点") : tr("媒体节点已创建，生成任务已提交")),
+        failureMessage: tr("媒体生成未完成"),
+    },
     // 看图：只有这个工具会把图片字节真的交给模型，所以只有它可以说"画面/看图"。
     // 回执字段来源：`backend/internal/app/cloud_agent_runtime.go`（payload["result"] = 回执）。
     canvas_inspect_image: {

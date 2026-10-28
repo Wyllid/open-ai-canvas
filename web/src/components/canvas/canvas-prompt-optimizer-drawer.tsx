@@ -489,7 +489,10 @@ export function CanvasPromptOptimizerDrawer({ open, children, prompt, generation
                 <div className="canvas-prompt-optimizer-bubble is-assistant-bubble">
                     <div className="canvas-prompt-optimizer-message-meta">
                         <span>{tr("提示词助手")}</span>
-                        <span>{tr("当前模式：")}{modeOptions.find((option) => option.value === mode)?.label}</span>
+                        <span>
+                            {tr("当前模式：")}
+                            {modeOptions.find((option) => option.value === mode)?.label}
+                        </span>
                     </div>
                     <p>{modeDescriptions[mode]}</p>
                     {mode === "reference" ? (
@@ -521,7 +524,9 @@ export function CanvasPromptOptimizerDrawer({ open, children, prompt, generation
                 <div className="canvas-prompt-optimizer-user-content">
                     <div className="canvas-prompt-optimizer-message-meta">
                         <span>{tr("你")}</span>
-                        <span>{submittedPrompt.length} {tr("字")}</span>
+                        <span>
+                            {submittedPrompt.length} {tr("字")}
+                        </span>
                     </div>
                     <div className="canvas-prompt-optimizer-bubble is-user-bubble">{submittedPrompt}</div>
                 </div>

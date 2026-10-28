@@ -343,7 +343,13 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                                                 <span className="rgn-badge">{region.index}</span>
                                                 {active ? (
                                                     <>
-                                                        <button type="button" aria-label={tr("删除{0}", regionMentionLabel(region.index))} className="rgn-box-delete" onPointerDown={(event) => event.stopPropagation()} onClick={() => removeRegion(region.index)}>
+                                                        <button
+                                                            type="button"
+                                                            aria-label={tr("删除{0}", regionMentionLabel(region.index))}
+                                                            className="rgn-box-delete"
+                                                            onPointerDown={(event) => event.stopPropagation()}
+                                                            onClick={() => removeRegion(region.index)}
+                                                        >
                                                             <X className="size-3.5" strokeWidth={2.4} />
                                                         </button>
                                                         {CORNERS.map((corner) => (
@@ -414,7 +420,10 @@ function RegionEditor({ image, config, onClose, onConfirm }: RegionEditorProps) 
                     </header>
 
                     <div className="rgn-body">
-                        <div className="rgn-label">{tr("区域")}{regions.length ? <span className="rgn-label-count">{regions.length}</span> : null}</div>
+                        <div className="rgn-label">
+                            {tr("区域")}
+                            {regions.length ? <span className="rgn-label-count">{regions.length}</span> : null}
+                        </div>
                         {orderedRegions.length ? (
                             <div className="rgn-tiles">
                                 {orderedRegions.map((region) => {

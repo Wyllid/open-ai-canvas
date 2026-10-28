@@ -892,7 +892,9 @@ export function CanvasPrevisWorkbench({
                 objects: current.objects.map((item) => {
                     if (item.id !== id) return item;
                     const existing = item.motionClips || [];
-                    const motionClips = existing.length ? existing : animations.map((clip) => ({ id: nanoid(), name: clip.name || tr("动作片段"), sourceAnimation: clip.name, start: 0, duration: Math.max(0.1, clip.duration), playbackRate: 1, loop: true }));
+                    const motionClips = existing.length
+                        ? existing
+                        : animations.map((clip) => ({ id: nanoid(), name: clip.name || tr("动作片段"), sourceAnimation: clip.name, start: 0, duration: Math.max(0.1, clip.duration), playbackRate: 1, loop: true }));
                     return { ...item, rig, motionClips };
                 }),
             }));
@@ -1334,7 +1336,15 @@ export function CanvasPrevisWorkbench({
                 </div>
                 <div className="previs-desk-context-summary" aria-label={tr("当前工作上下文")}>
                     <span className="previs-desk-context-dot" />
-                    <span>{selectedActor ? tr("角色 · {0}", selectedActor.name) : selectedLight ? tr("灯光 · {0}", selectedLight.name) : selectedCameraId ? tr("机位 · {0}", selectedCamera?.name || activeCamera?.name || tr("摄影机")) : tr("镜头 · {0}", activeShot.name)}</span>
+                    <span>
+                        {selectedActor
+                            ? tr("角色 · {0}", selectedActor.name)
+                            : selectedLight
+                              ? tr("灯光 · {0}", selectedLight.name)
+                              : selectedCameraId
+                                ? tr("机位 · {0}", selectedCamera?.name || activeCamera?.name || tr("摄影机"))
+                                : tr("镜头 · {0}", activeShot.name)}
+                    </span>
                 </div>
                 <nav className="previs-mode-switch" aria-label={tr("预演台模式")}>
                     {PREVIS_MODES.map((item) => (
@@ -1545,8 +1555,18 @@ export function CanvasPrevisWorkbench({
                                         <span className="pv-entity-row__info">
                                             <span className="pv-entity-row__name">{obj.name}</span>
                                             <span className="pv-entity-row__meta">
-                                                {obj.kind === "billboard" ? tr("背板") : obj.kind === "model" ? tr("模型") : obj.primitive === "plane" ? tr("平面") : obj.primitive === "sphere" ? tr("球体") : obj.primitive === "cylinder" ? tr("圆柱") : tr("几何体")} ·{" "}
-                                                {obj.transform.scale.map((v) => v.toFixed(1)).join("×")}m
+                                                {obj.kind === "billboard"
+                                                    ? tr("背板")
+                                                    : obj.kind === "model"
+                                                      ? tr("模型")
+                                                      : obj.primitive === "plane"
+                                                        ? tr("平面")
+                                                        : obj.primitive === "sphere"
+                                                          ? tr("球体")
+                                                          : obj.primitive === "cylinder"
+                                                            ? tr("圆柱")
+                                                            : tr("几何体")}{" "}
+                                                · {obj.transform.scale.map((v) => v.toFixed(1)).join("×")}m
                                             </span>
                                         </span>
                                     </button>
@@ -1689,7 +1709,10 @@ export function CanvasPrevisWorkbench({
                             {trajectoryTarget ? (
                                 <>
                                     <span>
-                                        {tr("正在为「")}{trajectoryTarget.name}{tr("」绘制")}{trajectoryTarget.kind === "camera" ? tr("运镜路径") : tr("走位")}
+                                        {tr("正在为「")}
+                                        {trajectoryTarget.name}
+                                        {tr("」绘制")}
+                                        {trajectoryTarget.kind === "camera" ? tr("运镜路径") : tr("走位")}
                                     </span>
                                     <small>{tr("按住地面拖动，松开完成 · 再点按钮取消")}</small>
                                 </>

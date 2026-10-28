@@ -834,7 +834,8 @@ export function AgentToolCard({
                 <ol className="mt-2 space-y-1 pl-4" aria-label={tr("自动纠正详情")}>
                     {(attempts as AgentToolRetryAttempt[]).map((attempt, index) => (
                         <li key={attempt.id} className="whitespace-pre-wrap break-words">
-                            {tr("第")} {index + 1} {tr("次：")}{attempt.text}
+                            {tr("第")} {index + 1} {tr("次：")}
+                            {attempt.text}
                         </li>
                     ))}
                 </ol>
@@ -894,12 +895,14 @@ export function AgentToolCard({
                 ) : null}
                 {state.isError && objectField(objectField(detail, "result"), "taskId") ? (
                     <span className="mt-1 block break-all" style={{ color: theme.node.muted }}>
-                        {tr("任务 ID：")}{String(objectField(objectField(detail, "result"), "taskId"))}
+                        {tr("任务 ID：")}
+                        {String(objectField(objectField(detail, "result"), "taskId"))}
                     </span>
                 ) : null}
                 {undoState?.status === "error" ? (
                     <span className="mt-1 block text-[var(--fs-label)] text-[var(--status-danger)]" role="alert">
-                        {tr("撤销失败：")}{undoState.error || tr("请检查画布状态后重试")}
+                        {tr("撤销失败：")}
+                        {undoState.error || tr("请检查画布状态后重试")}
                     </span>
                 ) : null}
                 {undoState?.status === "done" ? (
@@ -998,7 +1001,11 @@ export function AgentOperationFeed({
                         {label}
                     </motion.span>
                 </AnimatePresence>
-                {items.length > 1 ? <span className="agent-operation-count">{items.length} {tr("步")}</span> : null}
+                {items.length > 1 ? (
+                    <span className="agent-operation-count">
+                        {items.length} {tr("步")}
+                    </span>
+                ) : null}
                 <ChevronDown className="agent-operation-chevron" aria-hidden="true" />
             </button>
             {expanded ? (

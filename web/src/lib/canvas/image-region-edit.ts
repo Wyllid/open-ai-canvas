@@ -10,7 +10,7 @@ export const IMAGE_REGION_COLOR = "#2f7cf6";
 const REGION_MENTION_PATTERN = /@区域(\d+)/g;
 
 export function regionMentionLabel(index: number) {
-    return tr("区域{0}", index);
+    return `区域${index}`;
 }
 
 export function nextRegionIndex(regions: readonly ImageEditRegion[]) {

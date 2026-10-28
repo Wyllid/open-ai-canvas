@@ -640,7 +640,8 @@ function readSkillInput(node: CanvasNodeData) {
     return [
         tr("【技能：{0}】", skill.name),
         skill.description ? tr("用途：{0}", skill.description) : "",
-        tr("执行模板：\n{0}", skill.template),
+        `执行模板：
+${skill.template}`,
         skill.outputContract ? tr("输出约束：\n{0}", skill.outputContract) : "",
         tr("请严格执行该技能，只输出结果，不要输出解释性套话。"),
     ]
@@ -649,12 +650,12 @@ function readSkillInput(node: CanvasNodeData) {
 }
 
 function generationLabel(type: NodeGenerationInput["type"] | "drawing", index: number) {
-    if (type === "character") return tr("角色{0}", index + 1);
-    if (type === "drawing") return tr("绘图{0}", index + 1);
+    if (type === "character") return `角色${index + 1}`;
+    if (type === "drawing") return `绘图${index + 1}`;
     if (type === "image") return imageReferenceLabel(index);
     if (type === "video") return seedanceReferenceLabel("video", index);
     if (type === "audio") return seedanceReferenceLabel("audio", index);
-    return tr("文本{0}", index + 1);
+    return `文本${index + 1}`;
 }
 
 function readReferenceImage(node: CanvasNodeData, nodes: CanvasNodeData[], connections: CanvasConnection[]): ReferenceImage | null {

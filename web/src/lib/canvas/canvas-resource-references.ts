@@ -221,13 +221,13 @@ export function findCanvasResourceAutoLinkMatch(prompt: string, cursor: number, 
 function canvasResourceMentionNames(reference: CanvasResourceReference, index: number, includeBareNumber: boolean) {
     const names = new Set([reference.label.trim(), reference.title.trim()].filter(Boolean));
     const order = index + 1;
-    names.add(tr("图片{0}", order));
-    names.add(tr("图{0}", order));
+    names.add(`图片${order}`);
+    names.add(`图${order}`);
     names.add(`image${order}`);
     names.add(`image ${order}`);
     const imageLabelMatch = /^图片(\d+)$/u.exec(reference.label.trim());
     if (imageLabelMatch) {
-        names.add(tr("图{0}", imageLabelMatch[1]));
+        names.add(`图${imageLabelMatch[1]}`);
         names.add(`image${imageLabelMatch[1]}`);
         names.add(`image ${imageLabelMatch[1]}`);
     }

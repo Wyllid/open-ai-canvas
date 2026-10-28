@@ -42,7 +42,16 @@ export function CreationLoginDialog({ open, onClose }: { open: boolean; onClose:
             <div className="space-y-4">
                 <p className="text-sm text-foreground/60">{tr("Your work is kept. After you sign in you can continue or create a canvas.")}</p>
                 <form className="space-y-3" onSubmit={(event) => void submit(event)}>
-                    <Input size="large" aria-label={tr("Username")} prefix={<UserRound className="size-4 text-foreground/40" />} value={username} onChange={(event) => setUsername(event.target.value)} placeholder={tr("Username")} autoComplete="username" required />
+                    <Input
+                        size="large"
+                        aria-label={tr("Username")}
+                        prefix={<UserRound className="size-4 text-foreground/40" />}
+                        value={username}
+                        onChange={(event) => setUsername(event.target.value)}
+                        placeholder={tr("Username")}
+                        autoComplete="username"
+                        required
+                    />
                     <Input.Password
                         size="large"
                         aria-label={tr("Password")}

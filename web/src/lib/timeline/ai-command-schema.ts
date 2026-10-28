@@ -132,22 +132,22 @@ export const AI_EDITING_OP_CATALOG: ReadonlyArray<{
     {
         op: "addClip",
         desc: tr("新增媒体/文本片段到已存在轨道"),
-        payload: tr("{ clip: { id(新唯一), kind: video|audio|image|text, trackId(必须存在), nodeId(源素材), startMs≥0, durationMs>0, title?, volume?, fadeInMs?, fadeOutMs? } }"),
+        payload: "{ clip: { id(新唯一), kind: video|audio|image|text, trackId(必须存在), nodeId(源素材), startMs≥0, durationMs>0, title?, volume?, fadeInMs?, fadeOutMs? } }",
     },
     {
         op: "moveClip",
         desc: tr("移动片段（时间点/跨轨）"),
-        payload: tr("{ id, startMs≥0, trackId?(可选, 必须存在) }"),
+        payload: "{ id, startMs≥0, trackId?(可选, 必须存在) }",
     },
     {
         op: "trimClip",
         desc: tr("裁剪片段（时间线位置/时长/源内起点）"),
-        payload: tr("{ id, startMs?(≥0), durationMs?(>0 且≤sourceDurationMs), sourceStartMs?(≥0, 与 durationMs 之和≤sourceDurationMs) }"),
+        payload: "{ id, startMs?(≥0), durationMs?(>0 且≤sourceDurationMs), sourceStartMs?(≥0, 与 durationMs 之和≤sourceDurationMs) }",
     },
     {
         op: "splitClip",
         desc: tr("在片段内部切一刀成两段"),
-        payload: tr("{ id, splitAtMs(严格大于 startMs 且小于 startMs+durationMs) }"),
+        payload: "{ id, splitAtMs(严格大于 startMs 且小于 startMs+durationMs) }",
     },
     {
         op: "removeClip",
@@ -157,12 +157,12 @@ export const AI_EDITING_OP_CATALOG: ReadonlyArray<{
     {
         op: "setClipProperty",
         desc: tr("修改片段属性（白名单）"),
-        payload: tr("{ id, patch: { title? | text? | volume? | fadeInMs? | fadeOutMs? | subtitleEntryIndex? }（至少一项） }"),
+        payload: "{ id, patch: { title? | text? | volume? | fadeInMs? | fadeOutMs? | subtitleEntryIndex? }（至少一项） }",
     },
     {
         op: "addSubtitle",
         desc: tr("新增字幕片段"),
-        payload: tr("{ clip: { kind: subtitle, trackId(字幕轨), id/nodeId/startMs/durationMs/text } }"),
+        payload: "{ clip: { kind: subtitle, trackId(字幕轨), id/nodeId/startMs/durationMs/text } }",
     },
     {
         op: "removeSubtitle",
@@ -172,7 +172,7 @@ export const AI_EDITING_OP_CATALOG: ReadonlyArray<{
     {
         op: "rebuildSubtitleClips",
         desc: tr("按节点字幕条目重建字幕片段"),
-        payload: tr("{ nodeId, entries: [{ index≥0(唯一), startMs≥0, endMs>startMs, text }], trackId?(字幕轨) }"),
+        payload: "{ nodeId, entries: [{ index≥0(唯一), startMs≥0, endMs>startMs, text }], trackId?(字幕轨) }",
     },
     {
         op: "addTrack",

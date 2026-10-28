@@ -113,7 +113,12 @@ export default function AgentLessonsPanel() {
             render: (value: string, record) => (
                 <div className="flex flex-col gap-0.5">
                     <span className="font-medium">{value}</span>
-                    {record.source ? <span className="text-[var(--fs-label)] opacity-60">{tr("来源：")}{record.source}</span> : null}
+                    {record.source ? (
+                        <span className="text-[var(--fs-label)] opacity-60">
+                            {tr("来源：")}
+                            {record.source}
+                        </span>
+                    ) : null}
                 </div>
             ),
         },
@@ -216,7 +221,9 @@ export default function AgentLessonsPanel() {
                         <Button icon={<RefreshCw className="size-4" />} onClick={() => void load()}>
                             {tr("刷新")}
                         </Button>
-                        <span className="text-xs opacity-60">{tr("共")} {items.length} {tr("条")}</span>
+                        <span className="text-xs opacity-60">
+                            {tr("共")} {items.length} {tr("条")}
+                        </span>
                     </div>
                 }
                 table={{

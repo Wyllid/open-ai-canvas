@@ -49,7 +49,10 @@ export function ChannelHeadersEditor({ value = [], onChange, disabled }: Props) 
             <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                     <div className="text-sm font-medium text-foreground">{tr("自定义请求头")}</div>
-                    <div className="mt-0.5 break-all text-xs leading-5 text-foreground/50">{tr("默认发送")} {DEFAULT_USER_AGENT}{tr("；添加 User-Agent 后会覆盖默认值。")}</div>
+                    <div className="mt-0.5 break-all text-xs leading-5 text-foreground/50">
+                        {tr("默认发送")} {DEFAULT_USER_AGENT}
+                        {tr("；添加 User-Agent 后会覆盖默认值。")}
+                    </div>
                 </div>
                 {!hasUserAgent ? (
                     <Button size="small" disabled={disabled || headers.length >= MAX_HEADER_COUNT} onClick={() => onChange?.([...headers, { name: "User-Agent", value: DEFAULT_USER_AGENT }])}>

@@ -204,8 +204,20 @@ function SlotEditor({
                 </Button>
             </div>
             <div className="admin-workbench-resource-grid">
-                <ResourceUpload label={tr("{0}封面", slot.name || tr("输入"))} value={{ id: slot.coverResourceId, url: slot.coverUrl }} disabled={disabled} upload={upload} onChange={(value) => onChange({ coverResourceId: value.id, coverUrl: value.url })} />
-                <ResourceUpload label={tr("{0}示例", slot.name || tr("输入"))} value={{ id: slot.sampleResourceId, url: slot.sampleUrl }} disabled={disabled} upload={upload} onChange={(value) => onChange({ sampleResourceId: value.id, sampleUrl: value.url })} />
+                <ResourceUpload
+                    label={tr("{0}封面", slot.name || tr("输入"))}
+                    value={{ id: slot.coverResourceId, url: slot.coverUrl }}
+                    disabled={disabled}
+                    upload={upload}
+                    onChange={(value) => onChange({ coverResourceId: value.id, coverUrl: value.url })}
+                />
+                <ResourceUpload
+                    label={tr("{0}示例", slot.name || tr("输入"))}
+                    value={{ id: slot.sampleResourceId, url: slot.sampleUrl }}
+                    disabled={disabled}
+                    upload={upload}
+                    onChange={(value) => onChange({ sampleResourceId: value.id, sampleUrl: value.url })}
+                />
             </div>
         </div>
     );

@@ -39,7 +39,9 @@ export function HtmlNodeContent({ node, theme }: HtmlNodeContentProps) {
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center" style={{ color: theme.node.muted }}>
                 <Code className="size-5 opacity-60" />
                 <span style={{ fontSize: "var(--fs-label)" }}>{tr("连接输出 HTML 的文本节点")}</span>
-                <span style={{ fontSize: "var(--fs-tiny)" }}>{tr("源码里的")} {"{{input}}"} {tr("会替换为上游文本")}</span>
+                <span style={{ fontSize: "var(--fs-tiny)" }}>
+                    {tr("源码里的")} {"{{input}}"} {tr("会替换为上游文本")}
+                </span>
             </div>
         );
     }

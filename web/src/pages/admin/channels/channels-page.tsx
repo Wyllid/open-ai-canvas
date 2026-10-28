@@ -413,7 +413,9 @@ export default function ChannelsPage() {
                                     <ChevronRight className="admin-channel-item-arrow size-3.5" aria-hidden="true" />
                                 </span>
                                 <span className="admin-channel-item-meta">
-                                    <span>{channel.models?.length || 0} {tr("个模型")}</span>
+                                    <span>
+                                        {channel.models?.length || 0} {tr("个模型")}
+                                    </span>
                                     <span className="admin-channel-item-status" data-enabled={channel.enabled !== false}>
                                         {channel.enabled !== false ? tr("已启用") : tr("已停用")}
                                     </span>
@@ -447,8 +449,15 @@ export default function ChannelsPage() {
                                     </p>
                                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-foreground/50">
                                         <span>{selectedChannel.hasApiKey ? (selectedChannel.hasSecretKey ? tr("AK/SK 已配置") : tr("API Key 已配置")) : tr("凭证未配置")}</span>
-                                        <span>{tr("最大并发：")}{selectedChannel.concurrencyLimit || tr("跟随系统")}</span>
-                                        {selectedChannel.catalogProviderId ? <span>{tr("来源：服务商目录 ·")} {selectedChannel.catalogProviderId}</span> : null}
+                                        <span>
+                                            {tr("最大并发：")}
+                                            {selectedChannel.concurrencyLimit || tr("跟随系统")}
+                                        </span>
+                                        {selectedChannel.catalogProviderId ? (
+                                            <span>
+                                                {tr("来源：服务商目录 ·")} {selectedChannel.catalogProviderId}
+                                            </span>
+                                        ) : null}
                                     </div>
                                 </div>
                                 {channelActions(selectedChannel)}

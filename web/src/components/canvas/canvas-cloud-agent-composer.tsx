@@ -163,7 +163,9 @@ export function AgentSceneCapsules({
                             >
                                 <Icon aria-hidden="true" />
                                 <span className="agent-scene-capsule-label">{bucket.label}</span>
-                                <span className="agent-scene-capsule-meta">{count} {tr("项")}</span>
+                                <span className="agent-scene-capsule-meta">
+                                    {count} {tr("项")}
+                                </span>
                             </button>
                         );
                     })
@@ -364,7 +366,7 @@ export function AgentChatComposer({
                                         type="button"
                                         className="relative block size-20 overflow-hidden rounded-lg"
                                         title={tr("点击放大预览")}
-                                        aria-label={tr("预览 {0}", item.name || tr("图片{0}", index + 1))}
+                                        aria-label={tr("预览 {0}", item.name || `图片${index + 1}`)}
                                         onClick={() => setPreviewAttachment(item)}
                                         onDoubleClick={() => setPreviewAttachment(item)}
                                     >
@@ -373,7 +375,10 @@ export function AgentChatComposer({
                                     <div className="mt-1 flex min-w-0 items-center justify-between gap-1">
                                         <button type="button" className="flex min-w-0 items-center gap-0.5 truncate text-[var(--fs-tiny)] opacity-80 hover:opacity-100" title={tr("插入 @图片{0}", index + 1)} onClick={() => insertAttachmentMention(item)}>
                                             <AtSign className="size-2.5 shrink-0" />
-                                            <span className="truncate">{tr("图片")}{index + 1}</span>
+                                            <span className="truncate">
+                                                {tr("图片")}
+                                                {index + 1}
+                                            </span>
                                         </button>
                                         {onRemoveAttachment ? (
                                             <button

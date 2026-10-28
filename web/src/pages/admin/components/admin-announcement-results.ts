@@ -147,7 +147,13 @@ export async function inspectPendingReview(review: AnnouncementPendingReview) {
             (review.imageResourceId === undefined || (target.imageResourceId || "") === review.imageResourceId);
         const expectedStatus: AnnouncementStatus = review.operation === "close" ? "closed" : "active";
         const statusMatches = target.status === expectedStatus;
-        return tr("已定位目标 ID {0}：当前为{1}，标题、正文与类型{2}，{3}。", target.id, target.status === "active" ? tr("发布中") : tr("已关闭"), contentMatches ? tr("与请求一致") : tr("与请求不一致"), statusMatches ? tr("状态符合预期") : tr("状态不符合预期"));
+        return tr(
+            "已定位目标 ID {0}：当前为{1}，标题、正文与类型{2}，{3}。",
+            target.id,
+            target.status === "active" ? tr("发布中") : tr("已关闭"),
+            contentMatches ? tr("与请求一致") : tr("与请求不一致"),
+            statusMatches ? tr("状态符合预期") : tr("状态不符合预期"),
+        );
     }
 
     const requestedAt = new Date(review.requestedAt).getTime();

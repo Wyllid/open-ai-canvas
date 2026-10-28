@@ -168,7 +168,12 @@ export default function LoginLogsPage() {
                             aria-label={tr("搜索登录日志用户")}
                             onValueChange={(value) => update({ keyword: value, page: 1 }, true)}
                         />
-                        <Select ariaLabel={tr("事件类型")} value={event} options={[{ value: "", label: tr("全部事件") }, ...Object.entries(loginEventLabels).map(([value, label]) => ({ value, label }))]} onChange={(value) => update({ event: value, page: 1 })} />
+                        <Select
+                            ariaLabel={tr("事件类型")}
+                            value={event}
+                            options={[{ value: "", label: tr("全部事件") }, ...Object.entries(loginEventLabels).map(([value, label]) => ({ value, label }))]}
+                            onChange={(value) => update({ event: value, page: 1 })}
+                        />
                         <Select
                             ariaLabel={tr("登录方式")}
                             value={method}

@@ -377,7 +377,12 @@ export function useCanvasGeneration({ projectId, domainProjectId, projectLoaded,
                             const applied = generationTaskOutputsApplied(node, task, current);
                             return {
                                 ...node,
-                                metadata: { ...node.metadata, status: applied ? node.metadata.status : NODE_STATUS_ERROR, resourceReloadAvailable: true, errorDetails: tr("结果已生成，应用结果失败：{0}", error instanceof Error ? error.message : tr("未知错误")) },
+                                metadata: {
+                                    ...node.metadata,
+                                    status: applied ? node.metadata.status : NODE_STATUS_ERROR,
+                                    resourceReloadAvailable: true,
+                                    errorDetails: tr("结果已生成，应用结果失败：{0}", error instanceof Error ? error.message : tr("未知错误")),
+                                },
                             };
                         }),
                     );

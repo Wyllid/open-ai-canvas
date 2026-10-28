@@ -140,7 +140,15 @@ export default function DiagnosticsPanel({ taskId, projectId }: DiagnosticsPanel
                         </div>
                         <label className="mt-4 block" htmlFor="diagnostic-description">
                             <span className="sr-only">{tr("遇到了什么问题？")}</span>
-                            <Input.TextArea id="diagnostic-description" rows={4} maxLength={1000} showCount value={description} onChange={(event) => setDescription(event.target.value)} placeholder={tr("例如：点击生成后一直显示处理中，刷新页面也没有结果。")} />
+                            <Input.TextArea
+                                id="diagnostic-description"
+                                rows={4}
+                                maxLength={1000}
+                                showCount
+                                value={description}
+                                onChange={(event) => setDescription(event.target.value)}
+                                placeholder={tr("例如：点击生成后一直显示处理中，刷新页面也没有结果。")}
+                            />
                         </label>
                     </section>
                 </div>
@@ -151,7 +159,8 @@ export default function DiagnosticsPanel({ taskId, projectId }: DiagnosticsPanel
                         {bundleId ? (
                             <span className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/25 bg-emerald-500/[.06] px-2 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-300" role="status">
                                 <CheckCircle2 className="size-3.5" strokeWidth={2} aria-hidden="true" />
-                                {tr("诊断编号：")}{bundleId}
+                                {tr("诊断编号：")}
+                                {bundleId}
                             </span>
                         ) : null}
                         <Button size="large" type="primary" icon={<Download className="size-4" strokeWidth={2} />} loading={exporting} onClick={() => void handleExport()}>

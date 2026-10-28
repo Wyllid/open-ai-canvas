@@ -32,7 +32,10 @@ export function CanvasImageLayerControls({ node }: { node: CanvasNodeData }) {
             <div className="text-sm font-medium">{tr("图层顺序（上方在前）")}</div>
             {group.incomplete ? (
                 <p role="status" className="text-xs text-amber-600 dark:text-amber-400">
-                    {tr("已收纳")} {group.incomplete.completed}/{group.incomplete.total} {tr("层，")}{group.incomplete.failed} {tr("层尚未通过。")}{group.incomplete.missingBackground ? tr("当前预览缺少完整背景。") : tr("当前显示部分合成。")}{tr("展开查看失败层并单独重试。")}
+                    {tr("已收纳")} {group.incomplete.completed}/{group.incomplete.total} {tr("层，")}
+                    {group.incomplete.failed} {tr("层尚未通过。")}
+                    {group.incomplete.missingBackground ? tr("当前预览缺少完整背景。") : tr("当前显示部分合成。")}
+                    {tr("展开查看失败层并单独重试。")}
                 </p>
             ) : null}
             <div className="max-h-64 space-y-1 overflow-y-auto">
@@ -43,7 +46,9 @@ export function CanvasImageLayerControls({ node }: { node: CanvasNodeData }) {
                             <button type="button" aria-label={tr("切换第 {0} 层可见性", index + 1)} aria-pressed={layer.visible} className="p-1" onClick={() => change(layer.nodeId)}>
                                 {layer.visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
                             </button>
-                            <span className="flex-1 text-xs">{tr("第")} {index + 1} {tr("层")}</span>
+                            <span className="flex-1 text-xs">
+                                {tr("第")} {index + 1} {tr("层")}
+                            </span>
                             <button type="button" aria-label={tr("第 {0} 层上移", index + 1)} disabled={index === group.layers.length - 1} className="p-1 disabled:opacity-30" onClick={() => change(layer.nodeId, 1)}>
                                 <ArrowUp className="size-4" />
                             </button>

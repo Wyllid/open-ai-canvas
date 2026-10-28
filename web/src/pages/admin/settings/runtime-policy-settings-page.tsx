@@ -323,7 +323,11 @@ export default function RuntimePolicySettingsPage() {
             content: (
                 <div className="admin-runtime-policy-confirm-copy">
                     <p>{tr("确认后会删除管理员保存的自定义策略，全部 42 项立即恢复系统默认值。")}</p>
-                    {dirty ? <p>{tr("当前")} {dirtyFields.length} {tr("项未保存调整也会一并丢弃。")}</p> : null}
+                    {dirty ? (
+                        <p>
+                            {tr("当前")} {dirtyFields.length} {tr("项未保存调整也会一并丢弃。")}
+                        </p>
+                    ) : null}
                 </div>
             ),
             okText: tr("恢复系统默认"),

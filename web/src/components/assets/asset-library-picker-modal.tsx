@@ -572,7 +572,15 @@ export function AssetLibraryPickerModal({
                             )}
                         </div>
                         {effectivePagination ? (
-                            <PaginationBar alwaysShow current={effectivePagination.current} pageSize={effectivePagination.pageSize} total={effectivePagination.total} itemLabel={tr("项")} pageSizeOptions={[20, 40, 80]} onChange={effectivePagination.onChange} />
+                            <PaginationBar
+                                alwaysShow
+                                current={effectivePagination.current}
+                                pageSize={effectivePagination.pageSize}
+                                total={effectivePagination.total}
+                                itemLabel={tr("项")}
+                                pageSizeOptions={[20, 40, 80]}
+                                onChange={effectivePagination.onChange}
+                            />
                         ) : null}
                     </div>
                 </div>
@@ -622,7 +630,8 @@ export function AssetLibraryPickerModal({
                                     {tr("关闭")}
                                 </Button>
                                 <Button type="primary" icon={<RotateCcw className="size-3.5" />} disabled={working || !archivedSelectedIds.length} loading={working} onClick={handleRestoreSelected}>
-                                    {tr("还原已选素材")}{archivedSelectedIds.length ? `（${archivedSelectedIds.length}）` : ""}
+                                    {tr("还原已选素材")}
+                                    {archivedSelectedIds.length ? `（${archivedSelectedIds.length}）` : ""}
                                 </Button>
                             </>
                         ) : (

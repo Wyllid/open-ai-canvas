@@ -312,7 +312,9 @@ export function ProfilePane() {
                             <UserAvatar user={profile.user} className="profile-avatar-preview" />
                             <div className="profile-overview-identity">
                                 <strong>{profile.user.displayName || profile.user.username}</strong>
-                                <span>{tr("账号 ·")} {profile.user.username}</span>
+                                <span>
+                                    {tr("账号 ·")} {profile.user.username}
+                                </span>
                             </div>
                             <Button type="primary" icon={<ImagePlus className="size-4" />} disabled={!!pending} onClick={openAvatarDialog}>
                                 {tr("更换头像")}

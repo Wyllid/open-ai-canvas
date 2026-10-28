@@ -664,7 +664,14 @@ export default function SkillWorkbenchPage() {
                         {tr("技能库")}
                     </Button>
                     <span className="skill-wb-header-divider" aria-hidden="true" />
-                    <button type="button" className="skill-wb-icon-button" aria-label={explorerOpen ? tr("隐藏资源管理器") : tr("显示资源管理器")} aria-pressed={explorerOpen} title={tr("资源管理器 ({0}+B)", modKey)} onClick={() => setExplorerOpen((value) => !value)}>
+                    <button
+                        type="button"
+                        className="skill-wb-icon-button"
+                        aria-label={explorerOpen ? tr("隐藏资源管理器") : tr("显示资源管理器")}
+                        aria-pressed={explorerOpen}
+                        title={tr("资源管理器 ({0}+B)", modKey)}
+                        onClick={() => setExplorerOpen((value) => !value)}
+                    >
                         <PanelLeft className="size-4" />
                     </button>
                     <div className="skill-wb-title">
@@ -695,7 +702,8 @@ export default function SkillWorkbenchPage() {
                         ) : null}
                         {!readOnly ? (
                             <Button type="primary" loading={saving} disabled={!pendingCount} icon={<Save className="size-4" />} onClick={() => void save()}>
-                                {tr("保存")}{pendingCount ? `（${pendingCount}）` : ""}
+                                {tr("保存")}
+                                {pendingCount ? `（${pendingCount}）` : ""}
                             </Button>
                         ) : null}
                     </div>
@@ -714,7 +722,11 @@ export default function SkillWorkbenchPage() {
                         ) : (
                             <>
                                 <span>
-                                    {tr("只读模式：这是")}{skill.effectiveUser.name ? `“${skill.effectiveUser.name}”` : tr("其他作者")}{tr("的")}{skill.sourceType === "builtin" ? tr("内置") : ""}{tr("技能，可以浏览全部文件，但不能修改。")}
+                                    {tr("只读模式：这是")}
+                                    {skill.effectiveUser.name ? `“${skill.effectiveUser.name}”` : tr("其他作者")}
+                                    {tr("的")}
+                                    {skill.sourceType === "builtin" ? tr("内置") : ""}
+                                    {tr("技能，可以浏览全部文件，但不能修改。")}
                                 </span>
                                 {!skill.isAdded ? (
                                     <Button size="small" loading={adding} icon={<Plus className="size-3.5" />} onClick={() => void joinSkill()}>
@@ -897,15 +909,18 @@ export default function SkillWorkbenchPage() {
                                         action={
                                             <div className="skill-wb-shortcuts">
                                                 <span>
-                                                    <Kbd>{modKey} P</Kbd>{tr("快速打开")}
+                                                    <Kbd>{modKey} P</Kbd>
+                                                    {tr("快速打开")}
                                                 </span>
                                                 {!readOnly ? (
                                                     <span>
-                                                        <Kbd>{modKey} S</Kbd>{tr("保存")}
+                                                        <Kbd>{modKey} S</Kbd>
+                                                        {tr("保存")}
                                                     </span>
                                                 ) : null}
                                                 <span>
-                                                    <Kbd>{modKey} B</Kbd>{tr("资源管理器")}
+                                                    <Kbd>{modKey} B</Kbd>
+                                                    {tr("资源管理器")}
                                                 </span>
                                             </div>
                                         }
@@ -942,7 +957,9 @@ export default function SkillWorkbenchPage() {
                                     ) : (
                                         <div className="skill-wb-center" role="status">
                                             <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                                            <span>{tr("正在读取")} {baseName(activePath)}…</span>
+                                            <span>
+                                                {tr("正在读取")} {baseName(activePath)}…
+                                            </span>
                                         </div>
                                     )}
                                 </div>
@@ -955,7 +972,8 @@ export default function SkillWorkbenchPage() {
                                 {statusText}
                             </span>
                             <span className="skill-wb-status-item" title={skill.versionId}>
-                                {tr("版本 v")}{skill.version || "1"}
+                                {tr("版本 v")}
+                                {skill.version || "1"}
                             </span>
                             {loading ? (
                                 <span className="skill-wb-status-item">
@@ -966,7 +984,8 @@ export default function SkillWorkbenchPage() {
                             <span className="skill-wb-status-spacer" />
                             {activeIsText ? (
                                 <span className="skill-wb-status-item">
-                                    {tr("行")} {cursor.line}{tr("，列")} {cursor.column}
+                                    {tr("行")} {cursor.line}
+                                    {tr("，列")} {cursor.column}
                                 </span>
                             ) : null}
                             {activeEntry ? <span className="skill-wb-status-item">{formatSkillBytes(activeSize)}</span> : null}

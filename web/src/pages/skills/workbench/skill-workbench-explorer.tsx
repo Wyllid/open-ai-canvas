@@ -136,7 +136,8 @@ export function SkillWorkbenchExplorer(props: ExplorerProps) {
         if (!readOnly) {
             items.push({ key: "new-file", label: tr("新建文件"), icon: <FilePlus className="size-3.5" /> }, { key: "new-folder", label: tr("新建文件夹"), icon: <FolderPlus className="size-3.5" /> });
             if (row.type === "file" && dirtyPaths.has(row.path)) items.push({ key: "revert", label: tr("撤销修改"), icon: <Undo2 className="size-3.5" /> });
-            if (!entry) items.push({ type: "divider" }, { key: "rename", label: tr("重命名"), icon: <PencilLine className="size-3.5" />, extra: "F2" }, { key: "delete", label: tr("删除"), danger: true, icon: <Trash2 className="size-3.5" />, extra: "Del" });
+            if (!entry)
+                items.push({ type: "divider" }, { key: "rename", label: tr("重命名"), icon: <PencilLine className="size-3.5" />, extra: "F2" }, { key: "delete", label: tr("删除"), danger: true, icon: <Trash2 className="size-3.5" />, extra: "Del" });
         }
         return {
             items,
@@ -185,7 +186,9 @@ export function SkillWorkbenchExplorer(props: ExplorerProps) {
         <div className="skill-wb-explorer" aria-label={tr("资源管理器")}>
             <div className="skill-wb-explorer-head">
                 <span className="skill-wb-explorer-title">{tr("资源管理器")}</span>
-                <span className="skill-wb-explorer-count">{fileCount} {tr("个文件")}</span>
+                <span className="skill-wb-explorer-count">
+                    {fileCount} {tr("个文件")}
+                </span>
                 <div className="skill-wb-explorer-tools">
                     {!readOnly ? (
                         <>

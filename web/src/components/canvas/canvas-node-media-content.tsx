@@ -570,7 +570,10 @@ export function ImageContent({
                 />
                 {node.metadata?.imageLayerGroup?.incomplete ? (
                     <div role="status" className="absolute bottom-2 left-2 right-2 rounded bg-black/75 px-2 py-1 text-xs text-amber-300">
-                        {tr("部分合成：")}{node.metadata.imageLayerGroup.incomplete.completed}/{node.metadata.imageLayerGroup.incomplete.total} {tr("层已通过")}{node.metadata.imageLayerGroup.incomplete.missingBackground ? tr("，缺少完整背景") : ""}{tr("，展开可查看并重试失败层")}
+                        {tr("部分合成：")}
+                        {node.metadata.imageLayerGroup.incomplete.completed}/{node.metadata.imageLayerGroup.incomplete.total} {tr("层已通过")}
+                        {node.metadata.imageLayerGroup.incomplete.missingBackground ? tr("，缺少完整背景") : ""}
+                        {tr("，展开可查看并重试失败层")}
                     </div>
                 ) : null}
                 {node.metadata?.imageLayerGroup?.compositeStatus === "updating" || node.metadata?.imageLayerGroup?.compositeStatus === "error" ? (

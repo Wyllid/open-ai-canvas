@@ -82,7 +82,9 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
                     {value.releases.map((release, index) => (
                         <section className="admin-update-announcement-release" key={release.id}>
                             <div className="admin-update-announcement-toolbar">
-                                <strong>{tr("公告版本")} {index + 1}</strong>
+                                <strong>
+                                    {tr("公告版本")} {index + 1}
+                                </strong>
                                 <div>
                                     <Button aria-label={tr("上移公告版本 {0}", index + 1)} icon={<ArrowUp className="size-4" />} disabled={locked || index === 0} onClick={() => change({ releases: moveUpdateItem(value.releases, index, -1) })} />
                                     <Button
@@ -214,7 +216,9 @@ export function UpdateAnnouncementEditor({ value, onChange, disabled, onUploadin
                 </div>
                 <aside className="admin-update-announcement-preview" aria-label={tr("更新公告实时预览")}>
                     <div className="admin-update-announcement-preview-heading">
-                        <strong>{tr("更新公告 ·")} {value.currentVersion || tr("待填写版本")}</strong>
+                        <strong>
+                            {tr("更新公告 ·")} {value.currentVersion || tr("待填写版本")}
+                        </strong>
                         <span>{tr("实时预览 · 保存后生效")}</span>
                     </div>
                     <UpdateAnnouncementContent value={value} mediaURL={(block) => (block.resourceId ? updateAnnouncementPreviewURL(block.resourceId) : "")} />

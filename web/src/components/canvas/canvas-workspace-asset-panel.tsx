@@ -89,7 +89,8 @@ export function CanvasWorkspaceAssetPanel({ onInsert, onManage, onProjectAssets 
                 ) : null}
                 {query.isError ? (
                     <div role="alert" className="p-3 text-sm">
-                        {tr("资产读取失败，已加载的内容仍保留。")}<Button onClick={() => void query.refetch()}>{tr("重试")}</Button>
+                        {tr("资产读取失败，已加载的内容仍保留。")}
+                        <Button onClick={() => void query.refetch()}>{tr("重试")}</Button>
                     </div>
                 ) : null}
                 {assets.map((asset) => {

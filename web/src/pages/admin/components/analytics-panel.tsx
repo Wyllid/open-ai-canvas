@@ -312,7 +312,13 @@ export default function AnalyticsPanel({ users, channels }: Props) {
                     tone={!data || !data.kpi.upstreamRequests ? "neutral" : data.kpi.successRate < 90 ? "warning" : "success"}
                 />
                 <AnalyticsHealthCard icon={<Clock3 className="size-4" />} label={tr("P95 请求耗时")} value={data && data.kpi.upstreamRequests > 0 ? formatDuration(data.kpi.p95DurationMs) : "--"} detail={tr("筛选范围内的上游请求")} />
-                <AnalyticsHealthCard icon={<Workflow className="size-4" />} label={tr("当前排队")} value={data ? formatNumber(data.kpi.currentQueuedTasks) : "--"} detail={tr("实时快照 · 非历史累计")} tone={data?.kpi.currentQueuedTasks ? "warning" : "neutral"} />
+                <AnalyticsHealthCard
+                    icon={<Workflow className="size-4" />}
+                    label={tr("当前排队")}
+                    value={data ? formatNumber(data.kpi.currentQueuedTasks) : "--"}
+                    detail={tr("实时快照 · 非历史累计")}
+                    tone={data?.kpi.currentQueuedTasks ? "warning" : "neutral"}
+                />
             </section>
 
             <div className="admin-analytics-overview-grid">
@@ -513,7 +519,20 @@ function FilterSelect({
     return (
         <div>
             <div className="mb-1 text-xs text-foreground/55">{label}</div>
-            <Select aria-label={tr("{0}筛选", label)} allowClear showSearch optionFilterProp="label" filterOption={filterOption} loading={loading} placeholder={tr("全部")} value={value} onChange={onChange} onSearch={onSearch} options={options} style={{ width }} />
+            <Select
+                aria-label={tr("{0}筛选", label)}
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                filterOption={filterOption}
+                loading={loading}
+                placeholder={tr("全部")}
+                value={value}
+                onChange={onChange}
+                onSearch={onSearch}
+                options={options}
+                style={{ width }}
+            />
         </div>
     );
 }

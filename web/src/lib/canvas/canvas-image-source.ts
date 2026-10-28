@@ -23,7 +23,7 @@ export function createPortraitTextureNode(source: CanvasNodeData, id: string): C
         height: source.height,
         metadata: {
             prompt: "@图片1",
-            composerContent: tr("@图片1"),
+            composerContent: "@图片1",
             generationType: "edit",
             portraitTexture: source.metadata?.portraitTexture,
         },

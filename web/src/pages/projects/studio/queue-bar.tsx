@@ -26,7 +26,8 @@ export function QueueBar({ projectId, summary, retrying, onRetry, onJump }: { pr
         <div className="drama-queue">
             <div className="drama-queue-bar">
                 <span className={`drama-queue-stat ${(jobCounts.running || 0) > 0 ? "is-run" : ""}`}>
-                    {(jobCounts.running || 0) > 0 ? <Loader2 className="size-3.5 animate-spin" /> : <span className="drama-dot opacity-40" />}{tr("运行中")} <b>{jobCounts.running || 0}</b>
+                    {(jobCounts.running || 0) > 0 ? <Loader2 className="size-3.5 animate-spin" /> : <span className="drama-dot opacity-40" />}
+                    {tr("运行中")} <b>{jobCounts.running || 0}</b>
                 </span>
                 <span className="drama-queue-stat">
                     {tr("排队")} <b>{jobCounts.queued || 0}</b>

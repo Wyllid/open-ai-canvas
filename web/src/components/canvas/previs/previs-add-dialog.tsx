@@ -104,7 +104,8 @@ export function PrevisAddDialog({
         else onConfirm({ kind, camera: previewCamera });
     };
 
-    const confirmLabel = kind === "actor" ? (crowd ? tr("加入 9 个角色") : tr("加入「{0}」", actorTemplate.label)) : kind === "prop" ? tr("加入「{0}」", prop.name) : kind === "light" ? tr("加入「{0}」", lightPreset.label) : tr("加入「{0}」机位", cameraPreset.label);
+    const confirmLabel =
+        kind === "actor" ? (crowd ? tr("加入 9 个角色") : tr("加入「{0}」", actorTemplate.label)) : kind === "prop" ? tr("加入「{0}」", prop.name) : kind === "light" ? tr("加入「{0}」", lightPreset.label) : tr("加入「{0}」机位", cameraPreset.label);
     const category = PREVIS_PROP_LIBRARY.find((item) => item.id === propCategory) ?? PREVIS_PROP_LIBRARY[0];
 
     return (
@@ -249,7 +250,15 @@ function Swatches({ colors, value, onChange }: { colors: string[]; value: string
     return (
         <div className="previs-add-dialog__swatches">
             {colors.map((color) => (
-                <button key={color} type="button" aria-label={tr("颜色 {0}", color)} aria-pressed={value === color} className={`previs-add-dialog__swatch ${value === color ? "is-active" : ""}`} style={{ background: color }} onClick={() => onChange(color)} />
+                <button
+                    key={color}
+                    type="button"
+                    aria-label={tr("颜色 {0}", color)}
+                    aria-pressed={value === color}
+                    className={`previs-add-dialog__swatch ${value === color ? "is-active" : ""}`}
+                    style={{ background: color }}
+                    onClick={() => onChange(color)}
+                />
             ))}
             <ColorPicker size="small" value={value} disabledAlpha getPopupContainer={(node) => node.parentElement ?? document.body} onChange={(color) => onChange(color.toHexString())}>
                 <button type="button" aria-label={tr("自定义颜色")} aria-pressed={custom} className={`previs-add-dialog__swatch previs-add-dialog__swatch--custom ${custom ? "is-active" : ""}`} style={custom ? { background: value } : undefined} />

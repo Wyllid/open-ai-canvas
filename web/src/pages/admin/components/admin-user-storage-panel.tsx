@@ -124,7 +124,8 @@ export function AdminUserStoragePanel({ userId }: { userId: string }) {
                             title: tr("状态"),
                             key: "status",
                             width: 90,
-                            render: (_, item) => (item.revokedAt ? <AdminStatusBadge label={tr("已撤销")} tone="neutral" /> : storageGrantActive(item) ? <AdminStatusBadge label={tr("生效中")} tone="success" /> : <AdminStatusBadge label={tr("已到期")} tone="neutral" />),
+                            render: (_, item) =>
+                                item.revokedAt ? <AdminStatusBadge label={tr("已撤销")} tone="neutral" /> : storageGrantActive(item) ? <AdminStatusBadge label={tr("生效中")} tone="success" /> : <AdminStatusBadge label={tr("已到期")} tone="neutral" />,
                         },
                         { title: tr("备注"), key: "note", ellipsis: true, render: (_, item) => (item.revokeReason ? tr("撤销：{0}", item.revokeReason) : item.note || "--") },
                         {

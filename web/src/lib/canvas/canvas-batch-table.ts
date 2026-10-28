@@ -48,7 +48,7 @@ export function batchTextInputColumns(node: CanvasNodeData, connections: CanvasC
 }
 
 export function batchReferenceMentionToken(index: number) {
-    return tr("@参考图{0}", index + 1);
+    return `@参考图${index + 1}`;
 }
 
 export function batchReferenceColumnId(handleId?: string) {

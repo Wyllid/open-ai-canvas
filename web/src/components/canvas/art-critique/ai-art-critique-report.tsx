@@ -205,7 +205,10 @@ export function IssueDetailView({
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" style={{ color: theme.node.muted }}>
                     <span style={{ color: ART_CRITIQUE_CATEGORY_COLORS[issue.category] }}>{artCritiqueCategoryLabel(issue.category)}</span>
                     <span className="size-1 rounded-full bg-current opacity-40" aria-hidden="true" />
-                    <span>{Math.round(issue.confidence * 100)}{tr("% 把握")}</span>
+                    <span>
+                        {Math.round(issue.confidence * 100)}
+                        {tr("% 把握")}
+                    </span>
                     {issue.verification && issue.verification.verdict !== "confirmed" ? (
                         <span className="rounded-full px-2 py-0.5" style={{ background: "color-mix(in oklch, var(--status-warning) 12%, transparent)", color: "var(--status-warning)" }}>
                             {tr("待复核")}
@@ -316,7 +319,8 @@ export function OptionCard({ option, theme }: { option: ArtCritiqueOption; theme
                 <Sparkles className="size-4" style={{ color: ART_CRITIQUE_CATEGORY_COLORS[option.category] }} aria-hidden="true" />
                 <span className="min-w-0 flex-1">{option.title}</span>
                 <span className="shrink-0 text-[var(--fs-label)] font-normal" style={{ color: theme.node.muted }}>
-                    {Math.round(option.confidence * 100)}{tr("% 参考把握")}
+                    {Math.round(option.confidence * 100)}
+                    {tr("% 参考把握")}
                 </span>
             </div>
             <p className="mt-2 mb-0 text-xs leading-5" style={{ color: theme.node.muted }}>

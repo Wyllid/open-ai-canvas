@@ -205,7 +205,11 @@ export default function DramaCreatePage() {
                                     autoFocus
                                     value={pasteText}
                                     onChange={(event) => setPasteText(event.target.value)}
-                                    placeholder={tr("{0}\n\n包含“第一章 / 第1集 / Chapter 1”这类标题时会自动拆分；{1}也可以只放第 1 集，之后在制作台逐集追加。", SOURCE_FORMAT_LABEL[sourceFormat].placeholder, sourceFormat === "novel" ? "" : tr("每个标题就是一集，"))}
+                                    placeholder={tr(
+                                        "{0}\n\n包含“第一章 / 第1集 / Chapter 1”这类标题时会自动拆分；{1}也可以只放第 1 集，之后在制作台逐集追加。",
+                                        SOURCE_FORMAT_LABEL[sourceFormat].placeholder,
+                                        sourceFormat === "novel" ? "" : tr("每个标题就是一集，"),
+                                    )}
                                     autoSize={{ minRows: 14, maxRows: 24 }}
                                 />
                                 <div className="flex justify-end gap-2">
@@ -220,25 +224,33 @@ export default function DramaCreatePage() {
                                 <span className="drama-drop-icon">
                                     <BookOpenText className="size-7" />
                                 </span>
-                                <h2>{tr("拖入")}{SOURCE_FORMAT_LABEL[sourceFormat].title}{tr("文件，剩下的交给流水线")}</h2>
+                                <h2>
+                                    {tr("拖入")}
+                                    {SOURCE_FORMAT_LABEL[sourceFormat].title}
+                                    {tr("文件，剩下的交给流水线")}
+                                </h2>
                                 <p>
                                     {tr("TXT 或 Markdown，自动识别 GBK / UTF-8 编码与“第 N 章 / 第 N 集”标题。可以只放第 1 集，做完再在制作台追加下一集；")}
                                     {sourceFormat === "novel" ? tr("引号里的对白会逐字保留为台词。") : tr("台词逐字保留，不会被改写。")}
                                 </p>
                                 <Button type="primary" size="large" icon={<FileUp className="size-4" />} onClick={() => fileInputRef.current?.click()}>
-                                    {tr("选择")}{SOURCE_FORMAT_LABEL[sourceFormat].title}{tr("文件")}
+                                    {tr("选择")}
+                                    {SOURCE_FORMAT_LABEL[sourceFormat].title}
+                                    {tr("文件")}
                                 </Button>
                                 <button type="button" className="drama-link inline-flex items-center gap-1" onClick={() => setPasteMode(true)}>
                                     <ClipboardPaste className="size-3.5" />
                                     {tr("没有文件？直接粘贴")}
                                 </button>
                                 <div className="drama-drop-steps">
-                                    {[sourceFormat === "storyboard" ? tr("导入分镜") : tr("解析分集"), tr("建立角色、道具与场景"), sourceFormat === "novel" ? tr("改编剧本与段提示词") : tr("拆镜与段提示词"), tr("按剧情段生成视频"), tr("合成成片")].map((step, index) => (
-                                        <span key={step}>
-                                            <b>{index + 1}</b>
-                                            {step}
-                                        </span>
-                                    ))}
+                                    {[sourceFormat === "storyboard" ? tr("导入分镜") : tr("解析分集"), tr("建立角色、道具与场景"), sourceFormat === "novel" ? tr("改编剧本与段提示词") : tr("拆镜与段提示词"), tr("按剧情段生成视频"), tr("合成成片")].map(
+                                        (step, index) => (
+                                            <span key={step}>
+                                                <b>{index + 1}</b>
+                                                {step}
+                                            </span>
+                                        ),
+                                    )}
                                 </div>
                                 <input
                                     ref={fileInputRef}
@@ -390,7 +402,9 @@ export default function DramaCreatePage() {
                         <section className="drama-compose-preview">
                             <div className="drama-section-title">
                                 <h2>{previewChapter.title}</h2>
-                                <span>{tr("原文预览 ·")} {formatCount(previewChapter.words)} {tr("字")}</span>
+                                <span>
+                                    {tr("原文预览 ·")} {formatCount(previewChapter.words)} {tr("字")}
+                                </span>
                             </div>
                             <div className="drama-compose-text thin-scrollbar">
                                 {previewChapter.text.slice(0, 6000)}
@@ -467,7 +481,9 @@ export default function DramaCreatePage() {
                         {missingCapabilities.length ? (
                             <p className="flex items-start gap-2 text-[var(--fs-tiny)] leading-5 text-[var(--status-error)]">
                                 <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-                                {tr("还没有可用的")}{missingCapabilities.map((capability) => CAPABILITY_LABEL[capability]).join("、")}{tr("模型，请联系管理员在后台开通。")}
+                                {tr("还没有可用的")}
+                                {missingCapabilities.map((capability) => CAPABILITY_LABEL[capability]).join("、")}
+                                {tr("模型，请联系管理员在后台开通。")}
                             </p>
                         ) : null}
                     </div>
@@ -475,7 +491,9 @@ export default function DramaCreatePage() {
                         <div className="drama-compose-estimate">
                             <div>
                                 <b>{estimate ? tr("{0} 集", estimate.episodes) : "—"}</b>
-                                <span>{tr("约")} {estimate?.durationMinutes ?? "—"} {tr("分钟")}</span>
+                                <span>
+                                    {tr("约")} {estimate?.durationMinutes ?? "—"} {tr("分钟")}
+                                </span>
                             </div>
                             <div>
                                 <b>{estimate ? formatCount(estimate.shots) : "—"}</b>

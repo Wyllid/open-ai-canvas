@@ -454,7 +454,8 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                             <Input.TextArea value={entry.text} autoSize={{ minRows: 1, maxRows: 3 }} placeholder={tr("字幕文本")} className="mt-2" onChange={(event) => updateEntry(idx, { text: event.target.value })} />
                             {highlight ? (
                                 <div className="mt-2 text-xs" style={{ color: theme.accent.primary }}>
-                                    {tr("重点：")}{highlight.highlightText}
+                                    {tr("重点：")}
+                                    {highlight.highlightText}
                                 </div>
                             ) : null}
                         </div>

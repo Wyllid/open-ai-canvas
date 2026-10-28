@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Wraps user-visible Chinese text in src/ with the i18n translate function `tr`.
 //
-//   node scripts/i18n-codemod.mjs --dry-run   list the keys it would create (src/i18n/keys.json)
-//   node scripts/i18n-codemod.mjs             rewrite the files and refresh src/i18n/keys.json
+//   node scripts/i18n-codemod.mjs --dry-run   count what it would wrap
+//   node scripts/i18n-codemod.mjs             rewrite the files (then run scripts/i18n-keys.mjs)
 //
 // The Chinese source text is the catalog key; template literals become "{0}" placeholders.
 // Text that reaches a model (prompts, instructions, templates), comparisons, object keys,
@@ -35,12 +35,53 @@ const looksLikeEnglishText = (value) => {
     return /\s/.test(text) || /^[A-Z][a-z]+[.!?…]?$/.test(text);
 };
 const isText = (value) => (english ? looksLikeEnglishText(value) : HAN.test(value));
-const PROMPT_NAME = /prompt|instruction|template|system(Message|Text)?$|negative|suffix|prefix/i;
+const PROMPT_NAME = /prompt|instruction|template|alias|system(Message|Text)?$|negative|suffix|prefix/i;
 const LABEL_KEY = /^(label|labels|name|title|description|desc|hint|placeholder|tooltip|summary|subtitle|caption|tag|tags|category|group|groupLabel|empty|message|helper|note|shortLabel|display|displayName|text)$/i;
-const SKIP_CALLEES = new Set(["includes", "startsWith", "endsWith", "indexOf", "lastIndexOf", "replace", "replaceAll", "split", "match", "matchAll", "search", "test", "RegExp", "localeCompare", "has", "get", "set", "delete", "querySelector", "querySelectorAll", "getItem", "setItem", "removeItem", "require", "t", "translate"]);
+const SKIP_CALLEES = new Set([
+    "includes",
+    "startsWith",
+    "endsWith",
+    "indexOf",
+    "lastIndexOf",
+    "replace",
+    "replaceAll",
+    "split",
+    "match",
+    "matchAll",
+    "search",
+    "test",
+    "RegExp",
+    "localeCompare",
+    "has",
+    "get",
+    "set",
+    "delete",
+    "querySelector",
+    "querySelectorAll",
+    "getItem",
+    "setItem",
+    "removeItem",
+    "require",
+    "t",
+    "translate",
+    "containsAny",
+    "matches",
+]);
 const TRANSLATE_FNS = new Set(["tr", "trI18n"]);
 const NON_TEXT_ATTRS = /^(className|key|id|href|src|type|name|value|role|data-|style|defaultValue|htmlFor|accept|pattern|rel|target)/;
 const SKIP_DIRS = [path.join(srcDir, "i18n")];
+// Text sent to models (system prompts, output contracts): never wrapped, so the model sees it unchanged.
+const SKIP_FILES = new Set(["lib/art-critique/pipeline-messages.ts", "lib/art-critique/review.ts"].map((file) => path.join(srcDir, file)));
+// 提及标签（@图片1、区域1 等）会被解析，必须保持原文。
+const MENTION_LABEL = /^@?(图片?|视频|音频|文本|区域|参考图|角色|绘图)(\d+|\{0\})$/;
+const MODEL_TEXT = new Map([
+    [path.join(srcDir, "lib/canvas/canvas-project-domain.ts"), /^(【|- |  |\d+\. )/],
+    [path.join(srcDir, "components/canvas/canvas-node-generation.ts"), /^执行模板/],
+    [path.join(srcDir, "lib/timeline/ai-command-schema.ts"), /^\{ /],
+    // Data that only looks like text: a chapter-number regex and a README anchor link.
+    [path.join(srcDir, "lib/canvas/canvas-document.ts"), /^\[零/],
+    [path.join(srcDir, "pages/welcome/contributors-card.tsx"), /^https:\/\/github/],
+]);
 // Files whose strings are mostly prompts sent to models: only label-like values are wrapped.
 const LABEL_ONLY_FILES = new Set(
     [
@@ -71,7 +112,7 @@ function walk(dir, out) {
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) {
             if (!SKIP_DIRS.includes(full)) walk(full, out);
-        } else if (/\.(ts|tsx)$/.test(entry.name) && !/\.(test|spec)\.tsx?$/.test(entry.name) && !entry.name.endsWith(".d.ts")) {
+        } else if (!SKIP_FILES.has(full) && /\.(ts|tsx)$/.test(entry.name) && !/\.(test|spec)\.tsx?$/.test(entry.name) && !entry.name.endsWith(".d.ts")) {
             out.push(full);
         }
     }
@@ -193,7 +234,7 @@ function transformFile(file, keys) {
     traverse(ast, {
         StringLiteral(p) {
             const value = p.node.value;
-            if (!isText(value) || !translatable(p, labelOnly)) return;
+            if (!isText(value) || MENTION_LABEL.test(value) || MODEL_TEXT.get(file)?.test(value) || !translatable(p, labelOnly)) return;
             const text = p.parentPath.node.type === "JSXAttribute" ? `{${call(value)}}` : call(value);
             record(value, p.node.start, p.node.end, text);
             p.skip();
@@ -202,6 +243,7 @@ function transformFile(file, keys) {
             const quasis = p.node.quasis.map((quasi) => quasi.value.cooked ?? quasi.value.raw);
             if (!(english ? looksLikeEnglishText(quasis.join(" x ")) : quasis.some((q) => HAN.test(q))) || quasis.some((q) => /[{}]/.test(q)) || !translatable(p, labelOnly)) return;
             const key = quasis.map((q, i) => (i < quasis.length - 1 ? `${q}{${i}}` : q)).join("");
+            if (MENTION_LABEL.test(key) || MODEL_TEXT.get(file)?.test(key)) return;
             const args = p.node.expressions.map((expression) => source.slice(expression.start, expression.end));
             record(key, p.node.start, p.node.end, call(key, args));
             p.skip();
@@ -243,9 +285,4 @@ for (const file of files) {
     replacements += result.changed;
     if (!dryRun) fs.writeFileSync(file, result.output);
 }
-const keysFile = path.join(srcDir, "i18n", english ? "keys-en.json" : "keys.json");
-fs.mkdirSync(path.dirname(keysFile), { recursive: true });
-const existing = fs.existsSync(keysFile) ? JSON.parse(fs.readFileSync(keysFile, "utf8")) : [];
-const merged = [...new Set([...existing, ...keys.keys()])].sort();
-fs.writeFileSync(keysFile, JSON.stringify(merged, null, 2) + "\n");
-console.log(`${dryRun ? "[dry-run] " : ""}${filesChanged} files, ${replacements} replacements, ${keys.size} unique keys (${merged.length} in keys.json)`);
+console.log(`${dryRun ? "[dry-run] " : ""}${filesChanged} files, ${replacements} replacements, ${keys.size} unique keys. Run scripts/i18n-keys.mjs to refresh src/i18n/keys*.json.`);

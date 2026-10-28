@@ -27,7 +27,9 @@ export function AppChangelogDialog({ open, onClose }: { open: boolean; onClose: 
                         <div className="app-changelog-heading-title">{custom ? tr("更新公告") : tr("更新日志")}</div>
                         <div className="app-changelog-heading-description">{custom ? tr("按版本查看本站发布的更新与功能介绍") : tr("按版本查看产品能力、交互与稳定性变化")}</div>
                     </div>
-                    <span className="app-changelog-current-version">{tr("当前版本")} {version}</span>
+                    <span className="app-changelog-current-version">
+                        {tr("当前版本")} {version}
+                    </span>
                 </div>
             }
             open={open}

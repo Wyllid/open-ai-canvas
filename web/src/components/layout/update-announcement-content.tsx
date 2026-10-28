@@ -33,7 +33,10 @@ export function UpdateAnnouncementContent({ value, mediaURL }: { value: UpdateAn
                                                         <video src={url} controls playsInline preload="metadata" aria-label={block.caption || tr("更新公告视频")} />
                                                     )
                                                 ) : (
-                                                    <div className="update-announcement-media-empty">{tr("待上传")}{block.type === "image" ? tr("图片") : tr("视频")}</div>
+                                                    <div className="update-announcement-media-empty">
+                                                        {tr("待上传")}
+                                                        {block.type === "image" ? tr("图片") : tr("视频")}
+                                                    </div>
                                                 )}
                                                 {block.caption ? <figcaption>{block.caption}</figcaption> : null}
                                             </figure>

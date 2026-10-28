@@ -115,12 +115,18 @@ export function JobDetailModal({ projectId, job, onClose, onLocate }: { projectI
                             <dt>{tr("结束")}</dt>
                             <dd>
                                 {formatJobTime(current.finishedAt)}
-                                {elapsed(current.startedAt, current.finishedAt) ? <small>{tr("用时")} {elapsed(current.startedAt, current.finishedAt)}</small> : null}
+                                {elapsed(current.startedAt, current.finishedAt) ? (
+                                    <small>
+                                        {tr("用时")} {elapsed(current.startedAt, current.finishedAt)}
+                                    </small>
+                                ) : null}
                             </dd>
                         </div>
                         <div>
                             <dt>{tr("重试")}</dt>
-                            <dd>{current.attempt} {tr("次")}</dd>
+                            <dd>
+                                {current.attempt} {tr("次")}
+                            </dd>
                         </div>
                     </dl>
                     <div className="drama-jobd-body thin-scrollbar">
@@ -147,7 +153,9 @@ function AttemptCard({ attempt, index, latest }: { attempt: DramaJobAttempt; ind
     return (
         <article className={`drama-jobd-attempt ${latest ? "is-latest" : ""}`}>
             <header>
-                <span className="drama-jobd-attempt-index">{tr("第")} {index} {tr("次")}</span>
+                <span className="drama-jobd-attempt-index">
+                    {tr("第")} {index} {tr("次")}
+                </span>
                 <JobStatusIcon status={attempt.status} />
                 <strong>{JOB_STATUS_LABEL[attempt.status] || attempt.status}</strong>
                 {task?.stage && attempt.status !== "succeeded" ? <span className="drama-jobd-muted">{task.stage}</span> : null}
@@ -182,7 +190,10 @@ function AttemptCard({ attempt, index, latest }: { attempt: DramaJobAttempt; ind
             {task?.prompt ? (
                 <details className="drama-disclosure">
                     <summary>
-                        {tr("提示词")}<span className="drama-jobd-muted">{task.prompt.length} {tr("字")}</span>
+                        {tr("提示词")}
+                        <span className="drama-jobd-muted">
+                            {task.prompt.length} {tr("字")}
+                        </span>
                         <Button
                             size="small"
                             type="text"
@@ -209,13 +220,22 @@ function AttemptResult({ task }: { task: DramaJobTask }) {
         return (
             <details className="drama-disclosure">
                 <summary>
-                    {tr("返回结果")}<span className="drama-jobd-muted">{task.resultText.length} {tr("字")}</span>
+                    {tr("返回结果")}
+                    <span className="drama-jobd-muted">
+                        {task.resultText.length} {tr("字")}
+                    </span>
                 </summary>
                 <pre className="drama-jobd-pre thin-scrollbar">{task.resultText}</pre>
             </details>
         );
     }
-    if (!ids.length) return task.mediaStage ? <p className="drama-jobd-muted">{tr("结果保存阶段：")}{task.mediaStage}</p> : null;
+    if (!ids.length)
+        return task.mediaStage ? (
+            <p className="drama-jobd-muted">
+                {tr("结果保存阶段：")}
+                {task.mediaStage}
+            </p>
+        ) : null;
     return (
         <div className="drama-jobd-results">
             {ids.map((id) =>

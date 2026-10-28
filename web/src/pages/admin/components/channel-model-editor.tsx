@@ -344,7 +344,12 @@ export function ChannelModelEditor({
                                                     ]}
                                                 />
                                             </Form.Item>
-                                            <Form.Item className="admin-model-protocol-field" name="protocol" label={tr("调用协议")} rules={[{ validator: async (_, value) => validateChannelModelProtocol(form.getFieldValue("capability"), value, protocols) }]}>
+                                            <Form.Item
+                                                className="admin-model-protocol-field"
+                                                name="protocol"
+                                                label={tr("调用协议")}
+                                                rules={[{ validator: async (_, value) => validateChannelModelProtocol(form.getFieldValue("capability"), value, protocols) }]}
+                                            >
                                                 <ModelProtocolBrowser disabled={busy} capability={modelCapability} protocols={protocols} loading={protocolLoading} error={protocolError} />
                                             </Form.Item>
                                             {protocolError && (

@@ -589,12 +589,12 @@ function mergeAggregateIssues(left: AggregateIssueDraft, right: AggregateIssueDr
 
 function issueTopicKey(issue: Pick<AggregateIssueDraft, "title" | "explanation" | "targetDescription">) {
     const text = `${issue.title} ${issue.explanation} ${issue.targetDescription}`.toLowerCase();
-    const subject = containsAny(text, [tr("主体"), tr("人物"), tr("女性"), tr("脸"), tr("面部"), tr("人像"), "subject", "person", "face"]);
-    const lighting = containsAny(text, [tr("受光"), tr("暗部"), tr("阴影"), tr("亮度"), tr("曝光"), tr("轮廓光"), tr("分离"), tr("融入背景"), tr("冷影"), "lighting", "shadow"]);
-    const foreground = containsAny(text, [tr("前景"), tr("近景"), tr("背影"), "foreground"]);
-    const focus = containsAny(text, [tr("焦点"), tr("动线"), tr("注意力"), tr("视觉阅读"), tr("视觉重量"), tr("压过"), tr("抢走"), "focus", "attention"]);
-    const saturated = containsAny(text, [tr("高饱和"), tr("饱和度"), tr("亮点"), tr("光点"), tr("霓虹"), tr("色彩焦点"), "saturation", "highlight", "hotspot"]);
-    const space = containsAny(text, [tr("留白"), tr("拥挤"), tr("切线"), tr("裁切"), tr("边缘"), tr("间距"), tr("轮廓贴近"), "negative space", "crop"]);
+    const subject = containsAny(text, ["主体", "人物", "女性", "脸", "面部", "人像", "subject", "person", "face"]);
+    const lighting = containsAny(text, ["受光", "暗部", "阴影", "亮度", "曝光", "轮廓光", "分离", "融入背景", "冷影", "lighting", "shadow"]);
+    const foreground = containsAny(text, ["前景", "近景", "背影", "foreground"]);
+    const focus = containsAny(text, ["焦点", "动线", "注意力", "视觉阅读", "视觉重量", "压过", "抢走", "focus", "attention"]);
+    const saturated = containsAny(text, ["高饱和", "饱和度", "亮点", "光点", "霓虹", "色彩焦点", "saturation", "highlight", "hotspot"]);
+    const space = containsAny(text, ["留白", "拥挤", "切线", "裁切", "边缘", "间距", "轮廓贴近", "negative space", "crop"]);
 
     if (subject && lighting) return "subject-lighting";
     if (foreground && focus) return "foreground-focus";

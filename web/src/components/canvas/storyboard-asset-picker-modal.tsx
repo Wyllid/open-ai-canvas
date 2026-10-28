@@ -57,7 +57,13 @@ export function StoryboardAssetPickerModal({
                     <p className="mb-4 text-sm text-foreground/55">{tr("选择当前镜头使用的角色、场景、道具或参考媒体。尚未引入的资产可从项目资产中选择。")}</p>
                     <div className="mb-4 flex flex-wrap gap-2">
                         <Input className="min-w-40 flex-1" prefix={<Search className="size-4 text-foreground/40" />} allowClear placeholder={tr("搜索资产名称或标签")} value={query} onChange={(event) => setQuery(event.target.value)} />
-                        <Select className="w-32" aria-label={tr("筛选资产类型")} value={role} onChange={setRole} options={[{ value: "all", label: tr("全部类型") }, ...Object.entries(STORYBOARD_ASSET_ROLE_LABELS).map(([value, label]) => ({ value, label }))]} />
+                        <Select
+                            className="w-32"
+                            aria-label={tr("筛选资产类型")}
+                            value={role}
+                            onChange={setRole}
+                            options={[{ value: "all", label: tr("全部类型") }, ...Object.entries(STORYBOARD_ASSET_ROLE_LABELS).map(([value, label]) => ({ value, label }))]}
+                        />
                         <Button icon={<Library className="size-4" />} onClick={() => setLibraryOpen(true)}>
                             {tr("引用项目资产")}
                         </Button>
@@ -85,12 +91,16 @@ export function StoryboardAssetPickerModal({
                             </button>
                         ))}
                         {!filtered.length ? (
-                            <div className="col-span-full grid place-items-center px-4 py-8 text-center text-sm text-foreground/45">{keyword || role !== "all" ? tr("没有匹配的资产，试试其他搜索条件") : tr("当前画布还没有可选资产，点击“引用项目资产”添加")}</div>
+                            <div className="col-span-full grid place-items-center px-4 py-8 text-center text-sm text-foreground/45">
+                                {keyword || role !== "all" ? tr("没有匹配的资产，试试其他搜索条件") : tr("当前画布还没有可选资产，点击“引用项目资产”添加")}
+                            </div>
                         ) : null}
                     </div>
                     <div className="mt-4 border-t border-foreground/10 pt-3">
                         <div className="mb-2 flex items-center justify-between text-xs text-foreground/55">
-                            <span>{tr("已选")} {draft.length} {tr("项")}</span>
+                            <span>
+                                {tr("已选")} {draft.length} {tr("项")}
+                            </span>
                             <Button type="text" size="small" disabled={!draft.length} onClick={() => setDraft([])}>
                                 {tr("清空选择")}
                             </Button>

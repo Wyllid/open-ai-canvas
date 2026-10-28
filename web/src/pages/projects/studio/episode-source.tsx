@@ -50,7 +50,8 @@ function CharCounter({ chars, limit }: { chars: number; limit: number }) {
     const over = chars > limit;
     return (
         <span className={`drama-composer-count ${over ? "is-over" : ""}`}>
-            {formatCount(chars)} / {formatCount(limit)} {tr("字")}{over ? tr(" · 超出部分会丢台词，请拆成多集") : ""}
+            {formatCount(chars)} / {formatCount(limit)} {tr("字")}
+            {over ? tr(" · 超出部分会丢台词，请拆成多集") : ""}
         </span>
     );
 }
@@ -109,7 +110,10 @@ function SourceComposer({
                             <SourceFormatPicker value={format} onChange={onFormat} />
                         </div>
                         <div className="drama-composer-guide">
-                            <span className="drama-composer-label">{SOURCE_FORMAT_LABEL[format].title}{tr("怎么写")}</span>
+                            <span className="drama-composer-label">
+                                {SOURCE_FORMAT_LABEL[format].title}
+                                {tr("怎么写")}
+                            </span>
                             <ul>
                                 {SOURCE_FORMAT_LABEL[format].guide.map((line) => (
                                     <li key={line}>{line}</li>

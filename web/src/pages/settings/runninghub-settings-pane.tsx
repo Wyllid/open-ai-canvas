@@ -141,7 +141,9 @@ export function RunningHubSettingsPane() {
             setWorkflowText(item.workflowJson ? JSON.stringify(item.workflowJson, null, 2) : "");
             setTitle(item.title || "");
             message.success(
-                workflowNeedsMediaUpload(item.fields || []) ? tr("{0}参数已保存；生成时会调用 RunningHub 素材上传接口", kind === "app" ? "RunningHub App" : tr("RunningHub 工作流")) : tr("{0}参数已重新拉取并保存", kind === "app" ? "RunningHub App" : tr("RunningHub 工作流")),
+                workflowNeedsMediaUpload(item.fields || [])
+                    ? tr("{0}参数已保存；生成时会调用 RunningHub 素材上传接口", kind === "app" ? "RunningHub App" : tr("RunningHub 工作流"))
+                    : tr("{0}参数已重新拉取并保存", kind === "app" ? "RunningHub App" : tr("RunningHub 工作流")),
             );
         } catch (error) {
             message.error(error instanceof Error ? tr("拉取失败：{0}", error.message) : tr("拉取 RunningHub 参数失败"));

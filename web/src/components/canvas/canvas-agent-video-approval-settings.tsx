@@ -98,7 +98,8 @@ export function CanvasAgentVideoApprovalSettings({ initial, value, theme, disabl
                 </p>
             )}
             <p className="text-xs" style={{ color: theme.node.text }}>
-                {tr("本次规格：")}{settings.size}
+                {tr("本次规格：")}
+                {settings.size}
                 {settings.quality ? ` · ${settings.quality}` : ""}
                 {settings.durationSeconds ? tr(" · {0} 秒", settings.durationSeconds) : ""}
             </p>

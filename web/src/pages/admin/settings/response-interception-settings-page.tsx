@@ -421,7 +421,13 @@ export default function ResponseInterceptionSettingsPage() {
                                                         <small>{tr("命中后整条替换，不是局部替换。")}</small>
                                                     </div>
                                                     <div className="admin-intercept-rule-actions">
-                                                        <Button type="text" icon={<ArrowUp className="size-4" />} aria-label={tr("上移第 {0} 条规则", index + 1)} disabled={loading || refreshing || saving || index === 0} onClick={() => moveRule(index, -1)} />
+                                                        <Button
+                                                            type="text"
+                                                            icon={<ArrowUp className="size-4" />}
+                                                            aria-label={tr("上移第 {0} 条规则", index + 1)}
+                                                            disabled={loading || refreshing || saving || index === 0}
+                                                            onClick={() => moveRule(index, -1)}
+                                                        />
                                                         <Button
                                                             type="text"
                                                             icon={<ArrowDown className="size-4" />}
@@ -463,7 +469,13 @@ export default function ResponseInterceptionSettingsPage() {
                                 <div className="admin-intercept-preview-grid">
                                     <div className="admin-intercept-preview-input">
                                         <label htmlFor="admin-intercept-preview-input">{tr("模拟上游错误文案")}</label>
-                                        <Input.TextArea id="admin-intercept-preview-input" value={previewInput} autoSize={{ minRows: 4, maxRows: 8 }} placeholder={tr("粘贴一段用于本地预览的错误文案")} onChange={(event) => setPreviewInput(event.target.value)} />
+                                        <Input.TextArea
+                                            id="admin-intercept-preview-input"
+                                            value={previewInput}
+                                            autoSize={{ minRows: 4, maxRows: 8 }}
+                                            placeholder={tr("粘贴一段用于本地预览的错误文案")}
+                                            onChange={(event) => setPreviewInput(event.target.value)}
+                                        />
                                         <p>{tr("只在内存中计算，不进入保存请求、审计或请求明细。")}</p>
                                     </div>
                                     <div className="admin-intercept-preview-result" aria-live="polite">

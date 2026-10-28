@@ -88,7 +88,11 @@ export function ReviewPanel({ projectId, episodeId, review, busy, onJump }: Prop
                 </Button>
             </div>
             {review?.waiting ? <p className="drama-sg-note is-warn">{review.waiting}</p> : null}
-            {review?.status === "failed" ? <p className="drama-sg-note is-warn">{tr("Review failed:")} {review.error || tr("no result")}</p> : null}
+            {review?.status === "failed" ? (
+                <p className="drama-sg-note is-warn">
+                    {tr("Review failed:")} {review.error || tr("no result")}
+                </p>
+            ) : null}
             {review?.status === "ready" ? <p className="drama-sg-note">{review.findings.length === 0 ? tr("No problems found.") : tr("{0} open · {1} resolved", open.length, closed)}</p> : null}
             {open.length ? (
                 <ul className="drama-review-list">

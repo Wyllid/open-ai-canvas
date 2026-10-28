@@ -32,7 +32,9 @@ export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title
                     ) : (
                         <div className="drama-finalv-empty">
                             <Film className="size-6" aria-hidden />
-                            <span>{STAGE_LABEL[episode.stage]} {tr("· 全部段视频生成后自动合成")}</span>
+                            <span>
+                                {STAGE_LABEL[episode.stage]} {tr("· 全部段视频生成后自动合成")}
+                            </span>
                         </div>
                     )}
                 </div>

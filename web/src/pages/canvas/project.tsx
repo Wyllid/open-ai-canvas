@@ -2178,7 +2178,7 @@ function CanvasViewportPage() {
                 },
                 {
                     prompt: "@文本1",
-                    composerContent: tr("@文本1"),
+                    composerContent: "@文本1",
                     model: effectiveConfig.imageModel || effectiveConfig.model,
                     size: effectiveConfig.size,
                     quality: effectiveConfig.quality,

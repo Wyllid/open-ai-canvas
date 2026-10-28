@@ -156,7 +156,10 @@ export function TapNowImportDialog({ open, projectId, viewport, viewportSize, on
                                         {tr("可导入")} {result.importedNodeCount} {tr("个节点 ·")} {result.importedConnectionCount} {tr("条连线")}
                                     </div>
                                 </div>
-                                <Tag color="blue">{tr("批次：")}{formatTapNowBatchTime(result.batchCreatedAt)}</Tag>
+                                <Tag color="blue">
+                                    {tr("批次：")}
+                                    {formatTapNowBatchTime(result.batchCreatedAt)}
+                                </Tag>
                             </div>
                             <div className="mt-3 text-xs leading-5 text-foreground/50">{tr("支持图片、视频、音频和文本节点；节点会保留相对位置，并整体放到当前可视区域中心。")}</div>
                         </div>
@@ -164,11 +167,31 @@ export function TapNowImportDialog({ open, projectId, viewport, viewportSize, on
                             <div className="flex items-start gap-2 rounded-lg px-3 py-2 text-xs leading-5 text-foreground/60" style={{ background: "var(--surface-hover)" }}>
                                 <CircleAlert className="mt-0.5 size-4 shrink-0" />
                                 <div>
-                                    {result.skippedNodes.length ? <div>{result.skippedNodes.length} {tr("个暂不支持的节点未导入，相关连线已自动忽略。")}</div> : null}
-                                    {!result.skippedNodes.length && result.skippedConnections.length ? <div>{result.skippedConnections.length} {tr("条无效连线已自动忽略。")}</div> : null}
-                                    {result.reusedFailedNodeCount ? <div>{result.reusedFailedNodeCount} {tr("个最近任务失败但仍有历史结果的节点已保留。")}</div> : null}
-                                    {result.placeholderNodeCount ? <div>{result.placeholderNodeCount} {tr("个尚未生成结果的节点已作为占位节点保留。")}</div> : null}
-                                    {result.multiResultNodeCount ? <div>{result.multiResultNodeCount} {tr("个多结果节点已使用首个结果。")}</div> : null}
+                                    {result.skippedNodes.length ? (
+                                        <div>
+                                            {result.skippedNodes.length} {tr("个暂不支持的节点未导入，相关连线已自动忽略。")}
+                                        </div>
+                                    ) : null}
+                                    {!result.skippedNodes.length && result.skippedConnections.length ? (
+                                        <div>
+                                            {result.skippedConnections.length} {tr("条无效连线已自动忽略。")}
+                                        </div>
+                                    ) : null}
+                                    {result.reusedFailedNodeCount ? (
+                                        <div>
+                                            {result.reusedFailedNodeCount} {tr("个最近任务失败但仍有历史结果的节点已保留。")}
+                                        </div>
+                                    ) : null}
+                                    {result.placeholderNodeCount ? (
+                                        <div>
+                                            {result.placeholderNodeCount} {tr("个尚未生成结果的节点已作为占位节点保留。")}
+                                        </div>
+                                    ) : null}
+                                    {result.multiResultNodeCount ? (
+                                        <div>
+                                            {result.multiResultNodeCount} {tr("个多结果节点已使用首个结果。")}
+                                        </div>
+                                    ) : null}
                                     {result.warnings.map((warning, index) => (
                                         <div key={`${warning.id || "warning"}-${index}`}>{warning.message}</div>
                                     ))}

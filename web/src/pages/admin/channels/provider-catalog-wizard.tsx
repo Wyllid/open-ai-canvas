@@ -236,7 +236,9 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                                     ))}
                                 </span>
                                 <span className="pcw-card-meta">
-                                    <span>{item.models.length} {tr("个推荐模型")}</span>
+                                    <span>
+                                        {item.models.length} {tr("个推荐模型")}
+                                    </span>
                                     {item.installedCount ? (
                                         <span className="pcw-installed">
                                             <Check className="size-3" /> {tr("已接入")} {item.installedCount}
@@ -244,7 +246,8 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                                     ) : null}
                                 </span>
                                 <span className="pcw-card-summary" title={item.models.map((model) => model.providerModelKey).join("、")}>
-                                    {tr("推荐：")}{item.models.map((model) => (model.displayName === model.providerModelKey ? model.displayName : `${model.displayName} / ${model.providerModelKey}`)).join("、")}
+                                    {tr("推荐：")}
+                                    {item.models.map((model) => (model.displayName === model.providerModelKey ? model.displayName : `${model.displayName} / ${model.providerModelKey}`)).join("、")}
                                 </span>
                                 <span className="pcw-card-window">
                                     <span>{item.permanent ? formatWindow(item) : tr("推广期 · {0}", formatWindow(item))}</span>

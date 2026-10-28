@@ -253,8 +253,12 @@ export default function LogicalModelsPage() {
             width: 110,
             render: (_, item) => (
                 <div className="text-xs">
-                    <div>{(item.routes || []).filter((route) => route.enabled && route.available).length} {tr("条可用")}</div>
-                    <div className="text-foreground/45">{tr("共")} {(item.routes || []).length} {tr("条")}</div>
+                    <div>
+                        {(item.routes || []).filter((route) => route.enabled && route.available).length} {tr("条可用")}
+                    </div>
+                    <div className="text-foreground/45">
+                        {tr("共")} {(item.routes || []).length} {tr("条")}
+                    </div>
                 </div>
             ),
         },
@@ -585,7 +589,9 @@ function RouteFields({
                 return (
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs text-foreground/50">{tr("共")} {fields.length} {tr("条供应线路")}</span>
+                            <span className="text-xs text-foreground/50">
+                                {tr("共")} {fields.length} {tr("条供应线路")}
+                            </span>
                             <Button size="small" icon={<Plus className="size-3.5" />} disabled={!canAdd} onClick={() => add({ channelModelId: "", enabled: true, priority: 100, weight: 100 })}>
                                 {tr("添加供应线路")}
                             </Button>
@@ -601,7 +607,9 @@ function RouteFields({
                                         <div key={field.key} className="rounded-lg border border-border bg-muted/5 p-4">
                                             <div className="mb-2 flex items-center justify-between gap-2">
                                                 <div className="min-w-0">
-                                                    <div className="text-xs font-semibold">{tr("供应线路")} {fields.indexOf(field) + 1}</div>
+                                                    <div className="text-xs font-semibold">
+                                                        {tr("供应线路")} {fields.indexOf(field) + 1}
+                                                    </div>
                                                     <div className="mt-0.5 truncate text-xs text-foreground/50">{selected ? `${channelNames[selected.channelId]} / ${selected.displayName || selected.modelKey}` : tr("选择一个可承接请求的渠道模型")}</div>
                                                 </div>
                                                 <Button type="text" size="small" danger onClick={() => remove(field.name)}>
@@ -671,7 +679,11 @@ function PricingFields() {
 function logicalSpecLabel(item: AdminLogicalModel) {
     const priceTiers = item.priceTiers || [];
     if (!priceTiers.length) return <span className="text-xs text-foreground/45">{tr("待配置系统规格")}</span>;
-    return <span className="text-xs">{priceTiers.length} {tr("个系统规格档")}</span>;
+    return (
+        <span className="text-xs">
+            {priceTiers.length} {tr("个系统规格档")}
+        </span>
+    );
 }
 
 function logicalModelToForm(item: AdminLogicalModel): LogicalModelFormValues {

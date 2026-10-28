@@ -33,7 +33,12 @@ function MemorySnapshot({ memory }: { memory: AgentMemory }) {
                     ))}
                 </ol>
             ) : null}
-            {memory.source ? <p className="mt-2 text-muted-foreground">{tr("来源：")}{memory.source}</p> : null}
+            {memory.source ? (
+                <p className="mt-2 text-muted-foreground">
+                    {tr("来源：")}
+                    {memory.source}
+                </p>
+            ) : null}
         </article>
     );
 }

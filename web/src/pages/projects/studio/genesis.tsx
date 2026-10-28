@@ -21,7 +21,11 @@ export function StudioGenesis({ summary }: { summary: DramaSummary }) {
             <div className="drama-genesis-card">
                 {paused ? <PauseCircle className="mx-auto mb-5 size-16 text-[var(--status-warning)]" /> : <div className="drama-genesis-orb" aria-hidden />}
                 <h2>{paused ? (production.status === "draft" ? tr("准备好就可以开始") : tr("制作已暂停")) : tr("正在把小说改编成短剧")}</h2>
-                <p>{paused ? tr("{0}点击右上角“{1}”。", production.pauseReason || tr("系统会自动完成改编、建档、分镜与成片。"), production.status === "draft" ? tr("开始制作") : tr("继续制作")) : tr("这一步通常需要一两分钟。你可以离开页面，进度会在服务端继续。")}</p>
+                <p>
+                    {paused
+                        ? tr("{0}点击右上角“{1}”。", production.pauseReason || tr("系统会自动完成改编、建档、分镜与成片。"), production.status === "draft" ? tr("开始制作") : tr("继续制作"))
+                        : tr("这一步通常需要一两分钟。你可以离开页面，进度会在服务端继续。")}
+                </p>
                 <div className="drama-genesis-steps">
                     {steps.map((step) => (
                         <div key={step.label} className={`drama-genesis-step ${step.done ? "is-done" : step.active && !paused ? "is-active" : ""}`}>

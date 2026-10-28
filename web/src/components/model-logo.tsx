@@ -227,7 +227,11 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                             ) : (
                                 <div className="flex flex-col items-center gap-3 px-2 py-10 text-center text-xs text-muted-foreground [overflow-wrap:anywhere]">
                                     <Search size={20} aria-hidden />
-                                    <span>{tr("未找到与“")}{keyword.trim()}{tr("”相关的 Logo")}</span>
+                                    <span>
+                                        {tr("未找到与“")}
+                                        {keyword.trim()}
+                                        {tr("”相关的 Logo")}
+                                    </span>
                                     <Button type="text" size="small" onClick={() => setKeyword("")}>
                                         {tr("清空搜索")}
                                     </Button>

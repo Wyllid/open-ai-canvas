@@ -31,7 +31,13 @@ export const PREVIS_PROP_LIBRARY: PrevisPropCategory[] = [
     {
         id: "structure",
         label: tr("空间结构"),
-        items: [item("wall", tr("墙板"), "box", [3, 2.8, 0.2]), item("door", tr("门"), "box", [0.9, 2.1, 0.1]), item("window", tr("窗框"), "box", [1.2, 1.4, 0.1]), item("floor", tr("地面板"), "box", [4, 0.1, 4]), item("step", tr("台阶"), "box", [1, 0.2, 0.3])],
+        items: [
+            item("wall", tr("墙板"), "box", [3, 2.8, 0.2]),
+            item("door", tr("门"), "box", [0.9, 2.1, 0.1]),
+            item("window", tr("窗框"), "box", [1.2, 1.4, 0.1]),
+            item("floor", tr("地面板"), "box", [4, 0.1, 4]),
+            item("step", tr("台阶"), "box", [1, 0.2, 0.3]),
+        ],
     },
     {
         id: "nature",

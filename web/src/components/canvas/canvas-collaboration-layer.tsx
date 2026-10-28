@@ -206,7 +206,9 @@ export const CanvasCollaborationLayer = memo(function CanvasCollaborationLayer({
                                     <i key={member.id} className={`canvas-collaboration-device--${((member.number - 1) % 6) + 1}`} />
                                 ))}
                         </span>
-                        <span>{members.length} {tr("设备在线")}</span>
+                        <span>
+                            {members.length} {tr("设备在线")}
+                        </span>
                         <ChevronDown size={12} aria-hidden="true" />
                     </summary>
                     <div className="canvas-collaboration-member-panel">

@@ -61,7 +61,11 @@ export function BannerNoticeEmojiPanel({ onPick }: { onPick: (emoji: string) => 
                         </div>
                     ))
                 ) : (
-                    <p className="admin-banner-icon-picker-empty">{tr("没有匹配「")}{keyword.trim()}{tr("」的素材")}</p>
+                    <p className="admin-banner-icon-picker-empty">
+                        {tr("没有匹配「")}
+                        {keyword.trim()}
+                        {tr("」的素材")}
+                    </p>
                 )}
             </div>
         </div>

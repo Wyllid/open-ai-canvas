@@ -152,7 +152,8 @@ const SegmentCard = memo(function SegmentCard({ segment, segmentShots, aspectRat
                     <div className="drama-sg-meta">
                         <SegmentStatus segment={segment} />
                         <span>
-                            {segmentShots.length} {tr("镜")}{segment.request.maxVideoSeconds ? tr(" · 上限 {0}s", segment.request.maxVideoSeconds) : ""}
+                            {segmentShots.length} {tr("镜")}
+                            {segment.request.maxVideoSeconds ? tr(" · 上限 {0}s", segment.request.maxVideoSeconds) : ""}
                         </span>
                     </div>
                     <SegmentInputs segment={segment} castById={castById} compact />
@@ -185,7 +186,11 @@ const SegmentCard = memo(function SegmentCard({ segment, segmentShots, aspectRat
                                     </button>
                                 </li>
                             ))}
-                            {segmentShots.length > SHOT_PREVIEW ? <li className="drama-sg-more">{tr("还有")} {segmentShots.length - SHOT_PREVIEW} {tr("镜")}</li> : null}
+                            {segmentShots.length > SHOT_PREVIEW ? (
+                                <li className="drama-sg-more">
+                                    {tr("还有")} {segmentShots.length - SHOT_PREVIEW} {tr("镜")}
+                                </li>
+                            ) : null}
                         </ol>
                     )}
                 </div>
@@ -359,7 +364,9 @@ export function Storyboard({ shots, segments, aspectRatio, castById, defaultVide
             <div className={`drama-board-toolbar ${selected.size ? "is-selecting" : ""}`}>
                 {selected.size ? (
                     <>
-                        <b className="text-[var(--fs-label)]">{tr("已选")} {selected.size} {tr("段")}</b>
+                        <b className="text-[var(--fs-label)]">
+                            {tr("已选")} {selected.size} {tr("段")}
+                        </b>
                         <div className="drama-board-model">
                             <DramaModelPicker capability="video" size="sm" value={batchModel || defaultVideoModel} onChange={setBatchModel} placeholder={tr("视频模型")} />
                         </div>
@@ -398,13 +405,16 @@ export function Storyboard({ shots, segments, aspectRatio, castById, defaultVide
                 ) : (
                     <>
                         <span className="drama-board-stat">
-                            <b>{segments.length}</b>{tr("段")}
+                            <b>{segments.length}</b>
+                            {tr("段")}
                         </span>
                         <span className="drama-board-stat">
-                            <b>{shots.length}</b>{tr("镜")}
+                            <b>{shots.length}</b>
+                            {tr("镜")}
                         </span>
                         <span className="drama-board-stat">
-                            <b>{formatClock(totals.durationMs)}</b>{tr("时长")}
+                            <b>{formatClock(totals.durationMs)}</b>
+                            {tr("时长")}
                         </span>
                         <span className="drama-board-meter" aria-label={tr("提示词 {0}/{1}", totals.prompts, segments.length)}>
                             {tr("提示词")}
@@ -448,28 +458,35 @@ export function Storyboard({ shots, segments, aspectRatio, castById, defaultVide
             <div className="drama-kbd-hint" aria-label={tr("键盘快捷键")}>
                 <span>
                     <kbd>⌘</kbd>
-                    <kbd>A</kbd>{tr("全选")}
+                    <kbd>A</kbd>
+                    {tr("全选")}
                 </span>
                 <span>
-                    <kbd>⌘</kbd>{tr("单击 多选")}
+                    <kbd>⌘</kbd>
+                    {tr("单击 多选")}
                 </span>
                 <span>
-                    <kbd>⇧</kbd>{tr("单击 /")} <kbd>⇧</kbd>
+                    <kbd>⇧</kbd>
+                    {tr("单击 /")} <kbd>⇧</kbd>
                     <kbd>←</kbd>
                     <kbd>→</kbd> {tr("连选")}
                 </span>
                 <span>
-                    <kbd>X</kbd>/<kbd>{tr("空格")}</kbd>{tr("选中当前")}
+                    <kbd>X</kbd>/<kbd>{tr("空格")}</kbd>
+                    {tr("选中当前")}
                 </span>
                 <span>
                     <kbd>J</kbd>
-                    <kbd>K</kbd>{tr("/方向键 切换")}
+                    <kbd>K</kbd>
+                    {tr("/方向键 切换")}
                 </span>
                 <span>
-                    <kbd>Enter</kbd>{tr("打开")}
+                    <kbd>Enter</kbd>
+                    {tr("打开")}
                 </span>
                 <span>
-                    <kbd>Esc</kbd>{tr("取消选择")}
+                    <kbd>Esc</kbd>
+                    {tr("取消选择")}
                 </span>
             </div>
         </div>

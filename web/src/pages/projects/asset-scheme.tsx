@@ -28,7 +28,14 @@ export function defaultAssetSettings(catalog?: DramaAssetSchemeCatalog): DramaAs
 
 export type AssetPreviewSample = { characterName: string; characterAppearance: string; sceneName: string; sceneAppearance: string; style: string; rules: string };
 
-const FALLBACK_SAMPLE: AssetPreviewSample = { characterName: tr("主角"), characterAppearance: tr("（作品圣经建立后自动填入角色外貌）"), sceneName: tr("主场景"), sceneAppearance: tr("（作品圣经建立后自动填入环境描述）"), style: tr("写实电影感"), rules: "" };
+const FALLBACK_SAMPLE: AssetPreviewSample = {
+    characterName: tr("主角"),
+    characterAppearance: tr("（作品圣经建立后自动填入角色外貌）"),
+    sceneName: tr("主场景"),
+    sceneAppearance: tr("（作品圣经建立后自动填入环境描述）"),
+    style: tr("写实电影感"),
+    rules: "",
+};
 
 /** 方案示意：用色块画出版式，比文字更快看懂差别。 */
 function SchemeGlyph({ mode }: { mode: DramaAssetMode }) {
@@ -197,22 +204,35 @@ export function AssetSchemePicker({ value, onChange, sample, layout = "wide" }: 
                 {unknown.length ? (
                     <p className="drama-assets-warning">
                         <TriangleAlert className="size-3.5" />
-                        {tr("不支持的变量：")}{unknown.join("、")}{tr("。保存时会被拒绝，可用变量见上方。")}
+                        {tr("不支持的变量：")}
+                        {unknown.join("、")}
+                        {tr("。保存时会被拒绝，可用变量见上方。")}
                     </p>
                 ) : null}
                 {tab === "character" && value.sourceSkillName ? (
                     <p className="drama-assets-source">
                         <Sparkles className="size-3.5" />
-                        {tr("约束来自技能「")}{value.sourceSkillName}」{value.sourcePath ? ` · ${value.sourcePath}` : ""}
+                        {tr("约束来自技能「")}
+                        {value.sourceSkillName}」{value.sourcePath ? ` · ${value.sourcePath}` : ""}
                     </p>
                 ) : null}
                 <div className="drama-assets-preview">
                     <div className="drama-assets-preview-head">
                         <Eye className="size-3.5" />
-                        {tr("实际发送预览")}<span>{tr("以「")}{tab === "character" ? preview.characterName : preview.sceneName}{tr("」为例")}</span>
+                        {tr("实际发送预览")}
+                        <span>
+                            {tr("以「")}
+                            {tab === "character" ? preview.characterName : preview.sceneName}
+                            {tr("」为例")}
+                        </span>
                     </div>
                     <p>{rendered}</p>
-                    {tab === "character" && scheme ? <small>{tr("参考图版式说明：")}{scheme.frameHint}</small> : null}
+                    {tab === "character" && scheme ? (
+                        <small>
+                            {tr("参考图版式说明：")}
+                            {scheme.frameHint}
+                        </small>
+                    ) : null}
                 </div>
             </div>
             <SkillPromptImportModal
@@ -302,7 +322,11 @@ function SkillPromptImportModal({ open, onClose, onImport }: { open: boolean; on
                     <section>
                         <div className="drama-skill-import-caption">
                             {path || "原文"}
-                            {content ? <span>{content.length.toLocaleString(currentLocale())} {tr("字")}</span> : null}
+                            {content ? (
+                                <span>
+                                    {content.length.toLocaleString(currentLocale())} {tr("字")}
+                                </span>
+                            ) : null}
                         </div>
                         <pre ref={contentRef} className="drama-skill-import-content thin-scrollbar">
                             {fileQuery.isLoading ? "正在读取…" : content || "选择文件后在这里查看原文，用鼠标选中需要的段落。"}

@@ -213,7 +213,8 @@ function ReferenceEditor({ segment, castById, busy, onChange, onOpenCast }: { se
             <div className="drama-ref-editor-head">
                 <b>{custom ? tr("手动指定参考图") : tr("按镜头自动取参考图")}</b>
                 <small>
-                    {tr("发送")} {sent}/{request.references.length} {tr("张 · 本段最多")} {request.referenceCapacity} {tr("张")}{request.modelMaxImages ? tr(" · 模型上限 {0} 张（含首帧）", request.modelMaxImages) : ""}
+                    {tr("发送")} {sent}/{request.references.length} {tr("张 · 本段最多")} {request.referenceCapacity} {tr("张")}
+                    {request.modelMaxImages ? tr(" · 模型上限 {0} 张（含首帧）", request.modelMaxImages) : ""}
                 </small>
                 {custom ? (
                     <Button size="small" type="text" icon={<RotateCcw className="size-3.5" />} disabled={busy} onClick={() => onChange(null)}>
@@ -314,7 +315,10 @@ function SegmentPrompt({ segment, writing, onSave, onWrite }: { segment: DramaSe
     return (
         <div className="drama-sd-pane">
             <div className="drama-sd-pane-bar">
-                <span className="drama-sd-pane-caption">{tr("完整视频提示词")}{segment.custom ? <em>{tr("已改写")}</em> : null}</span>
+                <span className="drama-sd-pane-caption">
+                    {tr("完整视频提示词")}
+                    {segment.custom ? <em>{tr("已改写")}</em> : null}
+                </span>
                 <span className="drama-sd-pane-tools">
                     {!busy && segment.promptStatus !== "none" ? (
                         <Button size="small" type="text" icon={<Sparkles className="size-3.5" />} loading={writing} onClick={onWrite}>
@@ -390,7 +394,9 @@ function SegmentPrompt({ segment, writing, onSave, onWrite }: { segment: DramaSe
             )}
             <div className="drama-sd-pane-foot">
                 {dirty ? <span className="is-dirty">{tr("未保存 · 失焦或 ⌘↵ 保存，Esc 放弃")}</span> : <span>{tr("直接修改正文，失焦自动保存")}</span>}
-                <span>{draft.length} {tr("字")}</span>
+                <span>
+                    {draft.length} {tr("字")}
+                </span>
             </div>
         </div>
     );

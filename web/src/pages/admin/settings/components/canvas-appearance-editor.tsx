@@ -111,7 +111,9 @@ export function CanvasAppearanceEditor({ value, onChange, disabled, onUploading 
         <div className="grid gap-6 lg:grid-cols-2">
             <div>
                 <h3 className="mb-3 font-semibold">{tr("Agent 身份与文案")}</h3>
-                <p className="mb-4 text-sm text-foreground/60">{tr("独立于站点品牌。助手名称同步用于界面文案和对话中的自我介绍；文案可使用")} {"{agentName}"} {tr("引用名称，不修改工具权限。")}</p>
+                <p className="mb-4 text-sm text-foreground/60">
+                    {tr("独立于站点品牌。助手名称同步用于界面文案和对话中的自我介绍；文案可使用")} {"{agentName}"} {tr("引用名称，不修改工具权限。")}
+                </p>
                 <Form layout="vertical" disabled={disabled || uploading}>
                     {(
                         [
@@ -189,7 +191,8 @@ export function CanvasAppearanceEditor({ value, onChange, disabled, onUploading 
                                 onChange={(event) => setSelectedAvatarState(event.target.value)}
                             />
                             <label className="grid gap-1 text-sm">
-                                {AGENT_AVATAR_STATES.find((item) => item.id === selectedAvatarState)?.label}{tr("动画")}
+                                {AGENT_AVATAR_STATES.find((item) => item.id === selectedAvatarState)?.label}
+                                {tr("动画")}
                                 <Select
                                     aria-label={tr("当前状态动画")}
                                     value={previewClip || undefined}

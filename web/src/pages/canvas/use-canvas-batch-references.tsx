@@ -114,7 +114,9 @@ export function useCanvasBatchReferences({ nodesRef, connectionsRef, setNodes, s
                         <div className="flex gap-3">
                             {preview(state.sourceId, tr("原图"))}
                             <div className="min-w-0 flex-1">
-                                <span>{tr("新图 ·")} {file.name}</span>
+                                <span>
+                                    {tr("新图 ·")} {file.name}
+                                </span>
                                 <img src={url} alt={tr("新图")} className="mt-2 h-28 w-full rounded border object-contain" />
                             </div>
                         </div>

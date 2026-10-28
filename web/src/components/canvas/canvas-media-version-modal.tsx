@@ -341,7 +341,9 @@ function CompareStage({ node, version, current }: { node: CanvasNodeData; versio
                     </svg>
                 </span>
             </div>
-            <StageBadge className="bottom-3 left-3">V{version.number} {tr("· 预览")}</StageBadge>
+            <StageBadge className="bottom-3 left-3">
+                V{version.number} {tr("· 预览")}
+            </StageBadge>
             <StageBadge className="bottom-3 right-3">
                 <Check className="size-3" />V{current.number} {tr("· 当前")}
             </StageBadge>
@@ -497,7 +499,8 @@ function PendingThumb({ progress, number }: { progress?: number; number: number 
             <span className="flex h-[72px] w-full flex-col items-center justify-center gap-2 rounded-[var(--r-md)] border border-dashed border-[color:var(--workspace-border-strong)] text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-2">
                     <LoaderCircle className="size-3 animate-spin motion-reduce:animate-none" />
-                    {tr("生成中")}{percent !== undefined ? ` ${percent}%` : ""}
+                    {tr("生成中")}
+                    {percent !== undefined ? ` ${percent}%` : ""}
                 </span>
                 {percent !== undefined ? (
                     <span className="h-0.5 w-20 overflow-hidden rounded-full bg-[var(--control-selected-bg)]">

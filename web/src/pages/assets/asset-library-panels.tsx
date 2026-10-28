@@ -95,7 +95,11 @@ export function AssetsEmptyState({ onNew, onImport, onGoCanvas }: { onNew: () =>
                     </figure>
                 ))}
                 <span className="assets-empty-banner-caption">
-                    <span>{brandName}{tr("素材库")}</span>{tr("把每次创作的结果，留档成可复用的资产")}
+                    <span>
+                        {brandName}
+                        {tr("素材库")}
+                    </span>
+                    {tr("把每次创作的结果，留档成可复用的资产")}
                 </span>
             </div>
             <div className="assets-empty-cards">
@@ -194,7 +198,11 @@ function CharacterArchive({ asset }: { asset: Extract<LibraryAsset, { kind: "ent
                 <CharacterAssetCover asset={asset} size="hero" />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-4">
                     <div className="text-[var(--fs-label)] font-medium uppercase tracking-[.24em] text-white/55">Character{asset.data.version ? ` · v${asset.data.version}` : ""}</div>
-                    {aliases.length ? <div className="mt-1 truncate text-xs text-white/70">{tr("又名")} {aliases.join("、")}</div> : null}
+                    {aliases.length ? (
+                        <div className="mt-1 truncate text-xs text-white/70">
+                            {tr("又名")} {aliases.join("、")}
+                        </div>
+                    ) : null}
                 </div>
             </div>
             <div className="flex items-center gap-3 rounded-[var(--r-lg)] bg-foreground/[.04] px-4 py-3">

@@ -42,7 +42,9 @@ export function CanvasDeleteProjectsDialog() {
                 </>
             }
         >
-            <p className="text-sm text-stone-500">{tr("将删除")} {ids.length} {tr("个画布，里面的节点和连线也会一起移除。")}</p>
+            <p className="text-sm text-stone-500">
+                {tr("将删除")} {ids.length} {tr("个画布，里面的节点和连线也会一起移除。")}
+            </p>
         </Modal>
     );
 }

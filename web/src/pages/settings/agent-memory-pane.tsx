@@ -446,8 +446,18 @@ export default function AgentMemoryPane({ compact = false }: { compact?: boolean
                                             <details className="mt-2 text-caption leading-5 text-muted-foreground">
                                                 <summary className="cursor-pointer focus-visible:outline focus-visible:outline-2">{tr("来源与执行证据")}</summary>
                                                 <div className="mt-1 space-y-1">
-                                                    {record.source ? <p>{tr("来源：")}{record.source}</p> : null}
-                                                    {record.originRunId ? <p className="break-all">{tr("来源运行：")}{record.originRunId}</p> : null}
+                                                    {record.source ? (
+                                                        <p>
+                                                            {tr("来源：")}
+                                                            {record.source}
+                                                        </p>
+                                                    ) : null}
+                                                    {record.originRunId ? (
+                                                        <p className="break-all">
+                                                            {tr("来源运行：")}
+                                                            {record.originRunId}
+                                                        </p>
+                                                    ) : null}
                                                     {record.evidence?.length ? (
                                                         <ul className="ml-4 list-disc">
                                                             {record.evidence.map((entry, index) => (

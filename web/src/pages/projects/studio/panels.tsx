@@ -274,7 +274,10 @@ function CastEditor({ projectId, cast, ratios, onChanged }: { projectId: string;
                 ) : null}
             </div>
             <div className="drama-editor-row">
-                <span className="drama-eyebrow">{kindLabel}{tr("设定")}</span>
+                <span className="drama-eyebrow">
+                    {kindLabel}
+                    {tr("设定")}
+                </span>
                 <label className="drama-switch-label">
                     <Lock className="size-3.5" />
                     {tr("锁定形象")}
@@ -457,7 +460,9 @@ export function InboxPanel({
                                     {reviews} {tr("集待审阅")}
                                 </span>
                             ) : null}
-                            <span>{tr("共")} {groups.length} {tr("类")}</span>
+                            <span>
+                                {tr("共")} {groups.length} {tr("类")}
+                            </span>
                         </div>
                     ) : null}
                     {failures ? (
@@ -498,7 +503,8 @@ export function InboxPanel({
                                                 ) : null}
                                                 {retryable ? (
                                                     <Button size="small" icon={<RotateCcw className="size-3.5" />} loading={retryingGroup === group.key} onClick={() => onRetryGroup(group.key, group.items)}>
-                                                        {tr("重试")}{group.items.length > 1 ? tr(" {0} 项", group.items.length) : ""}
+                                                        {tr("重试")}
+                                                        {group.items.length > 1 ? tr(" {0} 项", group.items.length) : ""}
                                                     </Button>
                                                 ) : null}
                                                 {group.items.length === 1 && group.kind !== "paused" && group.kind !== "media_ready" ? (
@@ -520,7 +526,11 @@ export function InboxPanel({
                                                 {group.items.slice(0, CHIP_LIMIT).map((item) => (
                                                     <InboxChip key={item.id} item={item} cast={item.castId ? castById.get(item.castId) : undefined} onOpen={onOpen} />
                                                 ))}
-                                                {group.items.length > CHIP_LIMIT ? <span className="drama-inbox-more">{tr("另有")} {group.items.length - CHIP_LIMIT} {tr("项")}</span> : null}
+                                                {group.items.length > CHIP_LIMIT ? (
+                                                    <span className="drama-inbox-more">
+                                                        {tr("另有")} {group.items.length - CHIP_LIMIT} {tr("项")}
+                                                    </span>
+                                                ) : null}
                                             </div>
                                         ) : null}
                                     </article>
@@ -552,7 +562,8 @@ function InboxChip({ item, cast, onOpen }: { item: DramaInboxItem; cast?: DramaC
     } else if (item.kind === "segment_failed") {
         content = (
             <>
-                {item.media ? MEDIA_ICON[item.media] : null}{tr("第")} {item.episodeNumber} {tr("集 · 第")} {item.segmentIndex + 1} {tr("段")}
+                {item.media ? MEDIA_ICON[item.media] : null}
+                {tr("第")} {item.episodeNumber} {tr("集 · 第")} {item.segmentIndex + 1} {tr("段")}
             </>
         );
     } else if (item.kind === "review") {
@@ -606,7 +617,15 @@ export function SettingsPanel({ projectId, summary, cast, onChanged }: { project
     const regenerateAll = useMutation({
         mutationFn: (kind: DramaCastKind) => regenerateDramaCasts(projectId, kind, restyleSegments),
         onSuccess: (result, kind) => {
-            message.success(tr("已按当前方案重做 {0} 个{1}参考图{2}{3}", result.queued, CAST_KIND_LABEL[kind], result.skipped ? tr("，{0} 个已锁定或正在生成", result.skipped) : "", result.affectedSegments ? tr("，{0} 个剧情段需重新生成", result.affectedSegments) : ""));
+            message.success(
+                tr(
+                    "已按当前方案重做 {0} 个{1}参考图{2}{3}",
+                    result.queued,
+                    CAST_KIND_LABEL[kind],
+                    result.skipped ? tr("，{0} 个已锁定或正在生成", result.skipped) : "",
+                    result.affectedSegments ? tr("，{0} 个剧情段需重新生成", result.affectedSegments) : "",
+                ),
+            );
             onChanged();
         },
         onError: (error) => message.error(error instanceof Error ? error.message : tr("操作失败")),
@@ -666,7 +685,9 @@ export function SettingsPanel({ projectId, summary, cast, onChanged }: { project
                                     <div>
                                         <strong>{tr("按当前方案重做已有参考图")}</strong>
                                         <span>
-                                            {CAST_KINDS.map((kind) => tr("{0} 个{1}", countOf(kind), CAST_KIND_LABEL[kind])).join(" · ")}{tr("；锁定的设定不会变。")}{dirty ? tr("请先保存设置。") : ""}
+                                            {CAST_KINDS.map((kind) => tr("{0} 个{1}", countOf(kind), CAST_KIND_LABEL[kind])).join(" · ")}
+                                            {tr("；锁定的设定不会变。")}
+                                            {dirty ? tr("请先保存设置。") : ""}
                                         </span>
                                     </div>
                                     <Checkbox checked={restyleSegments} onChange={(event) => setRestyleSegments(event.target.checked)}>
@@ -688,7 +709,8 @@ export function SettingsPanel({ projectId, summary, cast, onChanged }: { project
                                                 })
                                             }
                                         >
-                                            {tr("重做")}{CAST_KIND_LABEL[kind]}
+                                            {tr("重做")}
+                                            {CAST_KIND_LABEL[kind]}
                                         </Button>
                                     ))}
                                 </div>
@@ -762,7 +784,16 @@ export function SettingsPanel({ projectId, summary, cast, onChanged }: { project
                             </section>
                             <section className="drama-cfg-card">
                                 <SettingsTitle title={tr("每段最多参考图")} detail={tr("自动取参考图时的上限，人物优先；0 为按视频模型上限")} />
-                                <InputNumber className="!w-full" min={0} max={20} precision={0} value={settings.referenceLimit || 0} onChange={(value) => setSettings({ ...settings, referenceLimit: value || 0 })} suffix={tr("张")} aria-label={tr("每段最多参考图")} />
+                                <InputNumber
+                                    className="!w-full"
+                                    min={0}
+                                    max={20}
+                                    precision={0}
+                                    value={settings.referenceLimit || 0}
+                                    onChange={(value) => setSettings({ ...settings, referenceLimit: value || 0 })}
+                                    suffix={tr("张")}
+                                    aria-label={tr("每段最多参考图")}
+                                />
                                 <p className="drama-cfg-note">{tr("超出的设定按文字描述生成，不附图。个别段需要更多参考图时，在剧情段弹窗里手动指定，只受模型上限约束。")}</p>
                             </section>
                         </aside>

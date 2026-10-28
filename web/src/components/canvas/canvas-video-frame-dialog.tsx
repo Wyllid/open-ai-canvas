@@ -177,7 +177,9 @@ export function CanvasVideoFrameDialog({ node, open, onClose, onConfirm }: Canva
                             {frames.map((frame, index) => (
                                 <div key={frame.id} className="flex min-w-0 items-center gap-2 rounded-lg px-2 py-2" style={{ background: theme.toolbar.itemHover }}>
                                     <button type="button" className="min-w-0 flex-1 text-left outline-none focus-visible:ring-2" style={{ "--tw-ring-color": theme.node.activeStroke } as CSSProperties} onClick={() => seekTo(frame.timeMs)}>
-                                        <span className="block text-[var(--fs-micro)] opacity-45">{tr("画面")} {index + 1}</span>
+                                        <span className="block text-[var(--fs-micro)] opacity-45">
+                                            {tr("画面")} {index + 1}
+                                        </span>
                                         <span className="block truncate font-mono text-xs font-medium">{formatVideoFrameTime(frame.timeMs)}</span>
                                     </button>
                                     <Button type="text" size="small" danger icon={<Trash2 className="size-3.5" />} aria-label={tr("删除画面 {0}", index + 1)} onClick={() => removeFrame(frame.id)} />

@@ -845,7 +845,13 @@ export function CanvasTimelineDialog({
                             ) : null}
                         </div>
                         <div className="flex items-start gap-3">
-                            <Input.TextArea autoSize={{ minRows: 1, maxRows: 3 }} value={selectedSubtitleClip.text || ""} placeholder={tr("字幕文本")} className="flex-1" onChange={(event) => updateClip(selectedSubtitleClip.id, { text: event.target.value })} />
+                            <Input.TextArea
+                                autoSize={{ minRows: 1, maxRows: 3 }}
+                                value={selectedSubtitleClip.text || ""}
+                                placeholder={tr("字幕文本")}
+                                className="flex-1"
+                                onChange={(event) => updateClip(selectedSubtitleClip.id, { text: event.target.value })}
+                            />
                             <div className="flex shrink-0 items-center gap-2 text-xs">
                                 <InputNumber size="small" min={0} step={100} value={selectedSubtitleClip.startMs} onChange={(startMs) => updateClip(selectedSubtitleClip.id, { startMs: startMs ?? 0 })} className="w-28" />
                                 <span className="opacity-40">→</span>

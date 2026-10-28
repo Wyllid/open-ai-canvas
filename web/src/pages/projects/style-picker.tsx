@@ -86,7 +86,13 @@ export function DramaStylePicker({ value, onChange }: { value: string; onChange:
                         </button>
                     );
                 })}
-                {!styles.length ? <div className="col-span-full py-10 text-center text-[var(--fs-label)] text-foreground/45">{tr("没有找到“")}{query}{tr("”相关的风格")}</div> : null}
+                {!styles.length ? (
+                    <div className="col-span-full py-10 text-center text-[var(--fs-label)] text-foreground/45">
+                        {tr("没有找到“")}
+                        {query}
+                        {tr("”相关的风格")}
+                    </div>
+                ) : null}
             </div>
         </section>
     );
