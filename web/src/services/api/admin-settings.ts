@@ -69,4 +69,3 @@ export function getAdminEmailSetting() {
 export function updateAdminEmailSetting(input: Partial<EmailSetting>) {
     return http.patch<{ setting: EmailSetting }>("/admin/settings/email", input);
 }
-

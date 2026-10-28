@@ -2914,7 +2914,7 @@
     .drama-job {
         grid-template-columns: 16px minmax(0, 1fr) minmax(0, 1fr) 14px;
     }
-    }
+}
 
 /* 队列详情弹窗 */
 .drama-jobd {

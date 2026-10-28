@@ -114,4 +114,3 @@ export function videoEnhanceTaskInput(options: { config: AiConfig; params: Video
         metadata: { sourceNodeId, videoEditOperation: VIDEO_ENHANCE_OPERATION, providerOptions: videoEnhanceProviderOptions(config, params) },
     };
 }
-

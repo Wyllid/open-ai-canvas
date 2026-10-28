@@ -1,4 +1,3 @@
-
 import { CONTENT_MODERATION_ERROR_CODE, generationErrorMessage, isContentModerationError } from "@/lib/generation-error";
 import { mediaDeliverySummary } from "@/lib/generation-task-display";
 import type { GenerationTask, TaskStatus } from "@/services/api/task-center";
@@ -51,7 +50,6 @@ export function TaskDate({ value }: { value?: string }) {
     if (!value || !Number.isFinite(Date.parse(value))) return <span className="text-xs text-foreground/38">-</span>;
     return <RelativeTime className="task-record-date-value" value={value} />;
 }
-
 
 export function formatModelName(config: AiConfig, task: GenerationTask) {
     const raw = (task.model || task.provider || "").trim();

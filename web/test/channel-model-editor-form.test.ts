@@ -84,10 +84,7 @@ describe("channel model editor drafts", () => {
             capability: "video",
             protocol: "video",
             enabled: false,
-            priceTiers: [
-                { providerModelKey: "" },
-                { providerModelKey: "vendor-video-hq" },
-            ],
+            priceTiers: [{ providerModelKey: "" }, { providerModelKey: "vendor-video-hq" }],
         });
         expect(draft.tags).not.toBe(item.tags);
     });

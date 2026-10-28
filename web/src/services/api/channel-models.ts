@@ -87,4 +87,3 @@ export function deleteAdminChannelModel(channelId: string, id: string) {
 export function deleteAdminChannelModels(channelId: string, modelIds: string[]) {
     return http.post<{ deleted: number }>(`/admin/channels/${encodeURIComponent(channelId)}/models/batch-delete`, { modelIds });
 }
-

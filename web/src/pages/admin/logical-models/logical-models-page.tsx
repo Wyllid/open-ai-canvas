@@ -384,13 +384,7 @@ export default function LogicalModelsPage() {
                         children: (
                             <>
                                 {editingModel?.configurationError ? (
-                                    <Alert
-                                        className="mb-4"
-                                        type="warning"
-                                        showIcon
-                                        message={editingModel.configurationError ? "当前供应线路无法覆盖全部创作端能力" : "当前供应线路暂不可结算"}
-                                        description={editingModel.configurationError}
-                                    />
+                                    <Alert className="mb-4" type="warning" showIcon message={editingModel.configurationError ? "当前供应线路无法覆盖全部创作端能力" : "当前供应线路暂不可结算"} description={editingModel.configurationError} />
                                 ) : null}
                                 <EditorSection icon={<Layers3 className="size-4" />} title="前台展示">
                                     <div className="grid gap-3 sm:grid-cols-2">
@@ -668,8 +662,7 @@ function logicalModelStatusTag(item: AdminLogicalModel) {
 function PricingFields() {
     const form = Form.useFormInstance<LogicalModelFormValues>();
     useEffect(() => {
-        form.setFieldsValue({
-        });
+        form.setFieldsValue({});
     }, [form]);
     return <div className="rounded-md bg-muted/20 px-3 py-3 text-xs leading-5 text-foreground/55">价格、上游 SKU 和可用规格只在“系统渠道 / 模型管理”配置。前台模型只负责展示、能力范围和故障切换，不再保存第二份价格。</div>;
 }

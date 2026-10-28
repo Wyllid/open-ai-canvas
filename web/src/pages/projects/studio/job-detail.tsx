@@ -119,9 +119,7 @@ export function JobDetailModal({ projectId, job, onClose, onLocate }: { projectI
                         </div>
                         <div>
                             <dt>重试</dt>
-                            <dd>
-                                {current.attempt} 次
-                            </dd>
+                            <dd>{current.attempt} 次</dd>
                         </div>
                     </dl>
                     <div className="drama-jobd-body thin-scrollbar">
