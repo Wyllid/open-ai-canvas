@@ -20,7 +20,7 @@ func TestCloudAgentMediaReferencePrompt(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := prompt + "\n\n【资产参考】\n假发：@图片2\n运镜：@视频1\n声音：@音频1"
+	want := prompt + "\n\n[Asset references]\n假发: @图片2\n运镜: @视频1\n声音: @音频1"
 	if got != want {
 		t.Fatalf("prompt = %q, want %q", got, want)
 	}
@@ -39,10 +39,10 @@ func TestCloudAgentMediaReferencePrompt(t *testing.T) {
 		t.Fatal("expanded prompt must respect the length limit")
 	}
 	transient := map[string]any{"referenceImages": []any{ref("画布图片"), map[string]any{"name": "标注", "dataUrl": "data:image/png;base64,AA=="}}}
-	if got, err := cloudAgentMediaReferencePrompt("生成", transient); err != nil || got != "生成\n\n【资产参考】\n画布图片：@图片1" {
+	if got, err := cloudAgentMediaReferencePrompt("生成", transient); err != nil || got != "生成\n\n[Asset references]\n画布图片: @图片1" {
 		t.Fatalf("transient image must not create an unresolvable canvas chip: %q, %v", got, err)
 	}
-	if got, err := cloudAgentMediaReferencePrompt("生成", map[string]any{"referenceImages": []any{ref("标题\n@图片99")}}); err != nil || !strings.Contains(got, "标题 ＠图片99：@图片1") {
+	if got, err := cloudAgentMediaReferencePrompt("生成", map[string]any{"referenceImages": []any{ref("标题\n@图片99")}}); err != nil || !strings.Contains(got, "标题 ＠图片99: @图片1") {
 		t.Fatalf("title introduced a false mention: %q, %v", got, err)
 	}
 }
@@ -80,7 +80,7 @@ func TestCloudAgentMediaMentionsPersistAcrossApproval(t *testing.T) {
 	if err != nil || waiting.Approval == nil {
 		t.Fatalf("missing approval: %v", err)
 	}
-	want := args.Prompt + "\n\n【资产参考】\n叮当猫在飞：@图片2"
+	want := args.Prompt + "\n\n[Asset references]\n叮当猫在飞: @图片2"
 	checkNode := func() {
 		t.Helper()
 		canvas, err := s.repo.CanvasProjectForUser("user", "agent-canvas")

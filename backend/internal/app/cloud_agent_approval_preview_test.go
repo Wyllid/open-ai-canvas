@@ -26,28 +26,28 @@ func cloudAgentCaptureMutationPreview() (cloudAgentMutationRecorder, func() (clo
 
 func assertCloudAgentAppliedPreview(t testing.TB, preview cloudAgentApprovalPreview, summary string) {
 	t.Helper()
-	if len(preview.Items) == 0 || preview.Status != "applied" || preview.Title != "画布修改已写入" ||
-		(summary != "" && !strings.Contains(preview.Description, summary)) || strings.Contains(preview.Description, "批准后才会写入") {
+	if len(preview.Items) == 0 || preview.Status != "applied" || preview.Title != "Canvas changes written" ||
+		(summary != "" && !strings.Contains(preview.Description, summary)) || strings.Contains(preview.Description, "until you approve") {
 		t.Fatalf("write preview does not describe a completed operation: %+v", preview)
 	}
 }
 
 func TestCloudAgentAppliedPreviewUsesSpecializedItemSummaries(t *testing.T) {
 	preview := cloudAgentApprovalPreview{
-		Title:       "确认修改分镜脚本",
-		Description: "Agent 准备修改分镜脚本。批准后才会写入画布。",
+		Title:       "Confirm storyboard changes",
+		Description: "The Agent is about to change the storyboard. Nothing is written to the canvas until you approve.",
 		Items: []cloudAgentApprovalPreviewItem{
-			{Operation: "edit_storyboard", Summary: "修改《追逐戏》第 1 镜景别为近景"},
-			{Operation: "previs_apply_patch", Summary: "为演员甲添加挥手动作"},
+			{Operation: "edit_storyboard", Summary: "Set shot 1 of 'Chase' to a close-up"},
+			{Operation: "previs_apply_patch", Summary: "Add a wave motion to actor A"},
 		},
 	}
 
 	applied := cloudAgentCanvasAppliedPreview(preview)
-	assertCloudAgentAppliedPreview(t, applied, "修改《追逐戏》第 1 镜景别为近景")
-	if !strings.Contains(applied.Description, "为演员甲添加挥手动作") {
+	assertCloudAgentAppliedPreview(t, applied, "Set shot 1 of 'Chase' to a close-up")
+	if !strings.Contains(applied.Description, "Add a wave motion to actor A") {
 		t.Fatalf("applied preview lost additional operation summaries: %+v", applied)
 	}
-	if preview.Status != "" || !strings.Contains(preview.Description, "批准后才会写入") {
+	if preview.Status != "" || !strings.Contains(preview.Description, "until you approve") {
 		t.Fatalf("preparing the preview mutated the approval version: %+v", preview)
 	}
 }
@@ -55,11 +55,11 @@ func TestCloudAgentAppliedPreviewUsesSpecializedItemSummaries(t *testing.T) {
 func TestCloudAgentMediaSubmittedPreviewUsesSubmittedStage(t *testing.T) {
 	approval := cloudAgentMediaApprovalPreview(&cloudAgentMediaPlan{Args: cloudAgentMediaArgs{Mode: "video", Title: "雨夜追逐"}}, "")
 	submitted := cloudAgentMediaSubmittedPreview(approval)
-	if submitted.Status != "submitted" || submitted.Title != "生成任务已提交" || !strings.Contains(submitted.Description, "生成任务已提交") ||
-		!strings.Contains(submitted.Description, "生成结果尚未完成") || strings.Contains(submitted.Description, "尚未提交生成") {
+	if submitted.Status != "submitted" || submitted.Title != "Generation task submitted" || !strings.Contains(submitted.Description, "Generation task submitted") ||
+		!strings.Contains(submitted.Description, "not ready yet") || strings.Contains(submitted.Description, "nothing has been submitted") {
 		t.Fatalf("submitted media preview reports the wrong stage: %+v", submitted)
 	}
-	if !strings.Contains(approval.Description, "尚未提交生成") || approval.Status != "" {
+	if !strings.Contains(approval.Description, "nothing has been submitted") || approval.Status != "" {
 		t.Fatalf("draft approval preview changed its waiting semantics: %+v", approval)
 	}
 }
@@ -81,10 +81,10 @@ func TestCloudAgentCanvasApprovalPreviewDescribesUpdateTargetAndFields(t *testin
 		t.Fatalf("expected one preview item, got %d", len(items))
 	}
 	item := items[0]
-	if item.NodeTitle != "满月庆祝视频草稿" || item.NodeType != "video" || item.NodeTypeLabel != "视频" {
+	if item.NodeTitle != "满月庆祝视频草稿" || item.NodeType != "video" || item.NodeTypeLabel != "Video" {
 		t.Fatalf("preview lost target identity: %+v", item)
 	}
-	if item.ResultTitle != newTitle || strings.Join(item.Fields, "、") != "节点名称、提示词" {
+	if item.ResultTitle != newTitle || strings.Join(item.Fields, ", ") != "Node name, Prompt" {
 		t.Fatalf("preview lost changed fields: %+v", item)
 	}
 	raw, _ := json.Marshal(item)
@@ -154,14 +154,14 @@ func TestCloudAgentCanvasApprovalPreviewDescribesConnectionsAndMixedOperations(t
 	if len(items) != 3 {
 		t.Fatalf("expected mixed preview items, got %d", len(items))
 	}
-	if !strings.Contains(items[0].Summary, "新增文本") || !strings.Contains(items[1].Summary, "节点名称") {
+	if !strings.Contains(items[0].Summary, "Add Text") || !strings.Contains(items[1].Summary, "Node name") {
 		t.Fatalf("mixed preview summaries are incomplete: %+v", items)
 	}
 	if !strings.Contains(items[2].Summary, "参考图") || !strings.Contains(items[2].Summary, "视频镜头") {
 		t.Fatalf("connection preview omitted endpoints: %+v", items[2])
 	}
 	preview := cloudAgentCanvasApprovalPreview(items)
-	if !strings.Contains(preview.Description, "新增 1 个节点") || !strings.Contains(preview.Description, "修改 1 个节点") || !strings.Contains(preview.Description, "建立 1 条引用连线") {
+	if !strings.Contains(preview.Description, "add 1 nodes") || !strings.Contains(preview.Description, "change 1 nodes") || !strings.Contains(preview.Description, "create 1 reference edges") {
 		t.Fatalf("preview description omitted operation counts: %s", preview.Description)
 	}
 }
@@ -174,7 +174,7 @@ func TestCloudAgentCanvasApprovalPreviewRejectsUnknownTargetInsteadOfFallingBack
 	_, err = applyCloudAgentCanvasPlan(doc, []agentCanvasOp{{
 		Type: "update_node", ID: "missing", Patch: map[string]any{"title": "不能静默写入"},
 	}})
-	if err == nil || !strings.Contains(err.Error(), "只能更新现有") {
+	if err == nil || !strings.Contains(err.Error(), "Only existing nodes") {
 		t.Fatalf("unknown target was not rejected: %v", err)
 	}
 	// 不存在的节点 ID 是可恢复的参数错误，不能把整轮 Agent 判为失败。

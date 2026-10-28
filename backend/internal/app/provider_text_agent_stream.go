@@ -306,7 +306,7 @@ func (p *streamingAgentParser) result() (map[string]interface{}, error) {
 		}
 		var parsed interface{}
 		if err := json.Unmarshal([]byte(arguments), &parsed); err != nil {
-			return nil, fmt.Errorf("Agent 工具参数不是完整 JSON：%w", err)
+			return nil, fmt.Errorf("Agent tool arguments are not complete JSON: %w", err)
 		}
 		mapped := map[string]interface{}{"id": call.id, "type": "function", "function": map[string]interface{}{"name": call.name, "arguments": arguments}}
 		if call.itemID != "" {
@@ -316,7 +316,7 @@ func (p *streamingAgentParser) result() (map[string]interface{}, error) {
 	}
 	result["toolCalls"] = calls
 	if p.text.Len() == 0 && len(calls) == 0 {
-		return nil, errors.New("画布 Agent 接口没有返回内容")
+		return nil, errors.New("Canvas Agent API returned no content")
 	}
 	return result, nil
 }

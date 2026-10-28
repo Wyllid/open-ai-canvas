@@ -32,7 +32,7 @@ import (
 // cloudAgentInterjectionContent 插话进入对话的正文格式：前缀是给模型看的结构
 // 信号——按「用户中途改了要求」对待，而不是上一句的延续。与旧循环保持一致。
 func cloudAgentInterjectionContent(text string) string {
-	return "【用户插话】" + text
+	return "[User interjection] " + text
 }
 
 func cloudAgentInterjectionDigest(content string) string {
@@ -169,9 +169,9 @@ func (s *Service) settleCloudAgentPiFinalAnswer(userID, runID string) {
 			if cloudAgentRunTerminal(current.Status) || current.Status == "waiting_approval" || current.Status == "waiting_user" {
 				return nil
 			}
-			cloudAgentDropInterjections(runID, "本轮已达到模型调用上限", &state)
+			cloudAgentDropInterjections(runID, "This run reached its model call limit", &state)
 			current.Status = "completed"
-			state.event(runID, "run_completed", map[string]any{"text": "Agent 已完成", "timestamp": time.Now().Unix()})
+			state.event(runID, "run_completed", map[string]any{"text": "Agent finished", "timestamp": time.Now().Unix()})
 			return cloudAgentSave(current, &state)
 		})
 		if !errors.Is(err, repository.ErrCreationConflict) {

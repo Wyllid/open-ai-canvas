@@ -116,21 +116,21 @@ func RegisterAgentRoutes(r *gin.RouterGroup, svc *service.Service) {
 		switch scope {
 		case "user":
 			if projectID != "" || canvasID != "" {
-				fail(c, http.StatusBadRequest, errors.New("用户偏好不能带项目或画布 ID"))
+				fail(c, http.StatusBadRequest, errors.New("User preferences cannot carry a project or canvas ID"))
 				return
 			}
 		case "project":
 			if projectID == "" || canvasID != "" {
-				fail(c, http.StatusBadRequest, errors.New("项目偏好需要 projectId，且不能带 canvasId"))
+				fail(c, http.StatusBadRequest, errors.New("Project preferences need projectId and cannot carry canvasId"))
 				return
 			}
 		case "canvas":
 			if canvasID == "" {
-				fail(c, http.StatusBadRequest, errors.New("画布偏好需要 canvasId"))
+				fail(c, http.StatusBadRequest, errors.New("Canvas preferences need canvasId"))
 				return
 			}
 		default:
-			fail(c, http.StatusBadRequest, errors.New("无效的 Agent 偏好作用域"))
+			fail(c, http.StatusBadRequest, errors.New("Invalid Agent preference scope"))
 			return
 		}
 		view, err := svc.CloudAgentProfileForScope(user.ID, projectID, canvasID)
@@ -155,7 +155,7 @@ func RegisterAgentRoutes(r *gin.RouterGroup, svc *service.Service) {
 			return
 		}
 		if err := decoder.Decode(&struct{}{}); err != io.EOF {
-			fail(c, http.StatusBadRequest, errors.New("请求必须只包含一个 JSON 对象"))
+			fail(c, http.StatusBadRequest, errors.New("The request must contain exactly one JSON object"))
 			return
 		}
 		view, err := svc.UpdateCloudAgentProfile(user.ID, req)
@@ -184,7 +184,7 @@ func RegisterAgentRoutes(r *gin.RouterGroup, svc *service.Service) {
 			return
 		}
 		if err := decoder.Decode(&struct{}{}); err != io.EOF {
-			fail(c, http.StatusBadRequest, errors.New("请求必须只包含一个 JSON 对象"))
+			fail(c, http.StatusBadRequest, errors.New("The request must contain exactly one JSON object"))
 			return
 		}
 		run, err := svc.CreateCloudAgentRun(user.ID, req, c.Param("id"))
@@ -223,15 +223,15 @@ func RegisterAgentRoutes(r *gin.RouterGroup, svc *service.Service) {
 			return
 		}
 		if req.Text != "" && (!utf8.ValidString(req.Text) || utf8.RuneCountInString(req.Text) > 4000 || strings.ContainsRune(req.Text, 0)) {
-			fail(c, http.StatusBadRequest, errors.New("text 无效"))
+			fail(c, http.StatusBadRequest, errors.New("Invalid text"))
 			return
 		}
 		if req.MessageID != "" && (!utf8.ValidString(req.MessageID) || utf8.RuneCountInString(req.MessageID) > 160) {
-			fail(c, http.StatusBadRequest, errors.New("messageId 无效"))
+			fail(c, http.StatusBadRequest, errors.New("Invalid messageId"))
 			return
 		}
 		if err := decoder.Decode(&struct{}{}); err != io.EOF {
-			fail(c, http.StatusBadRequest, errors.New("请求必须只包含一个 JSON 对象"))
+			fail(c, http.StatusBadRequest, errors.New("The request must contain exactly one JSON object"))
 			return
 		}
 		pending, err := svc.InterjectCloudAgent(user.ID, c.Param("id"), req.MessageID, req.Text)
@@ -261,7 +261,7 @@ func RegisterAgentRoutes(r *gin.RouterGroup, svc *service.Service) {
 			return
 		}
 		// 运行详情只返回一页事件，分页参数越界或非法一律拒绝：静默夹取会让客户端
-		// 以为拿到的是它请求的那一页，从而把缺口当成"没有更多记录"。
+		// 以为拿到的是它请求的那一页，从而把缺口当成"No more records"。
 		options, err := agentRunViewOptions(c)
 		if err != nil {
 			fail(c, http.StatusBadRequest, err)
@@ -305,15 +305,15 @@ func RegisterAgentRoutes(r *gin.RouterGroup, svc *service.Service) {
 			return
 		}
 		if req.StepID != "" && (!utf8.ValidString(req.StepID) || strings.TrimSpace(req.StepID) != req.StepID || utf8.RuneCountInString(req.StepID) > 160) {
-			fail(c, http.StatusBadRequest, errors.New("stepId 无效"))
+			fail(c, http.StatusBadRequest, errors.New("Invalid stepId"))
 			return
 		}
 		if req.Reason != "" && (!utf8.ValidString(req.Reason) || utf8.RuneCountInString(req.Reason) > 2000 || strings.ContainsAny(req.Reason, "\x00\r\n")) {
-			fail(c, http.StatusBadRequest, errors.New("reason 无效"))
+			fail(c, http.StatusBadRequest, errors.New("Invalid reason"))
 			return
 		}
 		if err := decoder.Decode(&struct{}{}); err != io.EOF {
-			fail(c, http.StatusBadRequest, errors.New("请求必须只包含一个 JSON 对象"))
+			fail(c, http.StatusBadRequest, errors.New("The request must contain exactly one JSON object"))
 			return
 		}
 		result, err := svc.UndoCloudAgentCanvas(user.ID, c.Param("id"), req.StepID, req.ExpectedSnapshotHash, req.Reason)
@@ -346,15 +346,15 @@ func RegisterAgentRoutes(r *gin.RouterGroup, svc *service.Service) {
 			return
 		}
 		if req.Decision != "approve" && req.Decision != "reject" {
-			fail(c, http.StatusBadRequest, errors.New("decision 无效"))
+			fail(c, http.StatusBadRequest, errors.New("Invalid decision"))
 			return
 		}
 		if req.Reason != "" && (!utf8.ValidString(req.Reason) || utf8.RuneCountInString(req.Reason) > 2000 || strings.ContainsAny(req.Reason, "\x00\r\n")) {
-			fail(c, http.StatusBadRequest, errors.New("reason 无效"))
+			fail(c, http.StatusBadRequest, errors.New("Invalid reason"))
 			return
 		}
 		if err := decoder.Decode(&struct{}{}); err != io.EOF {
-			fail(c, http.StatusBadRequest, errors.New("请求必须只包含一个 JSON 对象"))
+			fail(c, http.StatusBadRequest, errors.New("The request must contain exactly one JSON object"))
 			return
 		}
 		if err := svc.DecideCloudAgentApproval(user.ID, c.Param("id"), c.Param("approvalId"), req.Decision, req.Reason, req.MediaSettings); err != nil {
@@ -391,7 +391,7 @@ func RegisterAgentRoutes(r *gin.RouterGroup, svc *service.Service) {
 		lastWrite := time.Now()
 		for {
 			if err != nil {
-				c.SSEvent("error", gin.H{"message": "Agent 状态读取失败"})
+				c.SSEvent("error", gin.H{"message": "Reading the Agent state failed"})
 				c.Writer.Flush()
 				return
 			}
@@ -449,7 +449,7 @@ func agentConversationLimit(c *gin.Context) (int, error) {
 	}
 	limit, err := strconv.Atoi(strings.TrimSpace(raw))
 	if err != nil || limit < 1 || limit > 100 {
-		return 0, errors.New("limit 必须是 1–100 之间的整数")
+		return 0, errors.New("limit must be an integer between 1 and 100")
 	}
 	return limit, nil
 }
@@ -459,7 +459,7 @@ func agentRunViewOptions(c *gin.Context) (service.CloudAgentRunViewOptions, erro
 	if raw := strings.TrimSpace(c.Query("fromStart")); raw != "" {
 		value, err := strconv.ParseBool(raw)
 		if err != nil {
-			return options, errors.New("fromStart 必须是布尔值")
+			return options, errors.New("fromStart must be a boolean")
 		}
 		options.FromStart = value
 	}
@@ -478,7 +478,7 @@ func agentRunViewOptions(c *gin.Context) (service.CloudAgentRunViewOptions, erro
 		}
 		parsed, err := strconv.Atoi(raw)
 		if err != nil || parsed < item.min || parsed > item.max {
-			return options, fmt.Errorf("%s 必须是 %d–%d 之间的整数", item.name, item.min, item.max)
+			return options, fmt.Errorf("%s must be an integer between %d and %d", item.name, item.min, item.max)
 		}
 		*item.value = parsed
 	}

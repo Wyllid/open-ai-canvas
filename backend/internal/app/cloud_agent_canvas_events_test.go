@@ -54,7 +54,7 @@ func TestCloudAgentCanvasPatchesPersistDraftSubmissionAndAllTerminalStates(t *te
 					}
 					result = `{"mode":"video","video":{"storageKey":"resource:patch-output"}}`
 				}
-				if err := db.Model(&model.Task{}).Where("id = ?", taskID).Updates(map[string]any{"status": status, "result_json": result, "error": "上游拒绝"}).Error; err != nil {
+				if err := db.Model(&model.Task{}).Where("id = ?", taskID).Updates(map[string]any{"status": status, "result_json": result, "error": "upstream rejected"}).Error; err != nil {
 					t.Fatal(err)
 				}
 				if err := s.advanceCloudAgentByID("user", run.ID); err != nil {
@@ -80,14 +80,14 @@ func TestCloudAgentCanvasPatchesPersistDraftSubmissionAndAllTerminalStates(t *te
 			}
 			submissionEvent := agentCanvasPatchForOperation(t, state, "generate_media_submit")
 			draftPreview := draft["preview"].(map[string]any)
-			if !strings.Contains(stringValue(draftPreview["description"]), "尚未提交生成") {
+			if !strings.Contains(stringValue(draftPreview["description"]), "nothing has been submitted") {
 				t.Fatalf("draft approval lost its waiting semantics: %+v", draftPreview)
 			}
 			submissionPreview := submissionEvent["preview"].(map[string]any)
-			if submissionPreview["status"] != "submitted" || submissionPreview["title"] != "生成任务已提交" ||
-				!strings.Contains(stringValue(submissionEvent["text"]), "生成任务已提交") ||
-				!strings.Contains(stringValue(submissionEvent["text"]), "生成结果尚未完成") ||
-				strings.Contains(stringValue(submissionEvent["text"]), "尚未提交生成") {
+			if submissionPreview["status"] != "submitted" || submissionPreview["title"] != "Generation task submitted" ||
+				!strings.Contains(stringValue(submissionEvent["text"]), "Generation task submitted") ||
+				!strings.Contains(stringValue(submissionEvent["text"]), "not ready yet") ||
+				strings.Contains(stringValue(submissionEvent["text"]), "nothing has been submitted") {
 				t.Fatalf("media submission event lost the submitted stage: %+v", submissionEvent)
 			}
 			submission := submissionEvent["canvasPatch"].(map[string]any)
@@ -158,7 +158,7 @@ func TestCloudAgentMediaImageSourceHasActionableCorrection(t *testing.T) {
 		t.Fatalf("image source must point to the correct field: %v", err)
 	}
 	args.ReferenceNodeIDs = []string{"hero"}
-	if _, _, err := s.prepareCloudAgentMedia(run, &state, agentMediaCall(args)); err == nil || !strings.Contains(err.Error(), "sourceNodeId 仅接受可作为文本输入") {
+	if _, _, err := s.prepareCloudAgentMedia(run, &state, agentMediaCall(args)); err == nil || !strings.Contains(err.Error(), "sourceNodeId only accepts nodes usable as text input") {
 		t.Fatalf("nonduplicate image source must also be rejected: %v", err)
 	}
 	args.SourceNodeID = ""
@@ -222,7 +222,7 @@ func TestCloudAgentCanvasOperationTraceSharesToolCallID(t *testing.T) {
 		t.Fatalf("canvas_apply_ops result did not acknowledge persistence: %+v", result)
 	}
 	preview := result["preview"].(map[string]any)
-	if preview["status"] != "applied" || strings.Contains(stringValue(preview["description"]), "批准后才会写入") {
+	if preview["status"] != "applied" || strings.Contains(stringValue(preview["description"]), "until you approve") {
 		t.Fatalf("canvas_apply_ops result still looks like an approval preview: %+v", preview)
 	}
 	canvas, err := s.repo.CanvasProjectForUser("user", "agent-canvas")
@@ -267,7 +267,7 @@ func TestCloudAgentCanvasOperationTraceSharesToolCallID(t *testing.T) {
 			fieldValues = append(fieldValues, stringValue(field))
 		}
 	}
-	if len(fieldValues) != 2 || fieldValues[0] != "节点名称" || fieldValues[1] != "提示词" {
+	if len(fieldValues) != 2 || fieldValues[0] != "Node name" || fieldValues[1] != "Prompt" {
 		t.Fatalf("canvas operation trace lost updated fields: %+v", updated)
 	}
 	created := byActionAndNode["created:trace-video"]
@@ -315,7 +315,7 @@ func TestCloudAgentMediaPolicyAllowsDefaultsWithoutBypassingApproval(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, text := range []string{"安全默认", "不要求四项逐个确认", "一次性询问", "界面独立审批", "不得自动重提"} {
+	for _, text := range []string{"safe defaults", "need not be confirmed one by one", "ask about them once, together", "separate approval in the interface", "do not resubmit automatically"} {
 		if !strings.Contains(system.Text, text) {
 			t.Fatalf("media policy lost %q", text)
 		}

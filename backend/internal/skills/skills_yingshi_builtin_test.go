@@ -149,7 +149,7 @@ func TestYingshiBuiltinBundleCompatibility(t *testing.T) {
 		}
 	}
 	policy := readYingshiRepoFile(t, root, "backend/internal/prompts/agent-system-policy.md")
-	if !strings.Contains(string(policy), "不执行 shell") {
+	if !strings.Contains(string(policy), "never run shell commands") {
 		t.Error("host Agent policy no longer documents the shell execution boundary")
 	}
 }

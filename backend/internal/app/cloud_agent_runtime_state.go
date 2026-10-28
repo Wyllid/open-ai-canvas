@@ -104,10 +104,10 @@ func cloudAgentDecode(run *model.CloudAgentExecution) (cloudAgentRuntime, error)
 func cloudAgentDecodeForExecution(run *model.CloudAgentExecution) (cloudAgentRuntime, error) {
 	state, err := cloudAgentDecode(run)
 	if err != nil {
-		return state, WrapAppError(409, "Agent 运行记录无法安全恢复；请新建一轮消息", err)
+		return state, WrapAppError(409, "The Agent run record cannot be restored safely; send a new message", err)
 	}
 	if err := validateCloudAgentPolicySnapshot(state.Policy); err != nil {
-		return state, WrapAppError(409, "Agent 运行使用旧版执行合同，无法继续原运行；请新建一轮消息", err)
+		return state, WrapAppError(409, "The Agent run uses an old execution contract and cannot continue; send a new message", err)
 	}
 	return state, nil
 }
@@ -212,7 +212,7 @@ func validateCloudAgentRuntime(run *model.CloudAgentExecution, state *cloudAgent
 		if toolName == "" || utf8.RuneCountInString(toolName) > 80 || repair.Attempt < 1 || repair.Attempt > cloudAgentToolAttemptLimit || repair.GroupID == "" {
 			return errors.New("Agent runtime tool repair state is invalid")
 		}
-		if err := validateCloudAgentID(repair.GroupID, "工具纠错组 ID", 240); err != nil {
+		if err := validateCloudAgentID(repair.GroupID, "Tool correction group ID", 240); err != nil {
 			return err
 		}
 	}
@@ -227,7 +227,7 @@ func validateCloudAgentRuntime(run *model.CloudAgentExecution, state *cloudAgent
 	}
 	seenTasks := make(map[string]struct{}, len(state.TaskIDs))
 	for _, taskID := range state.TaskIDs {
-		if err := validateCloudAgentID(taskID, "任务 ID", 80); err != nil {
+		if err := validateCloudAgentID(taskID, "Task ID", 80); err != nil {
 			return err
 		}
 		if _, exists := seenTasks[taskID]; exists {
@@ -270,7 +270,7 @@ func validateCloudAgentRuntime(run *model.CloudAgentExecution, state *cloudAgent
 		if event.RunID != run.ID || event.Seq != state.EventSeqBase+index+1 || event.EventID == "" || event.Type == "" || event.Payload == nil || event.CreatedAt.IsZero() {
 			return errors.New("Agent runtime event history is invalid")
 		}
-		if err := validateCloudAgentID(event.EventID, "事件 ID", 240); err != nil {
+		if err := validateCloudAgentID(event.EventID, "Event ID", 240); err != nil {
 			return err
 		}
 		raw, err := json.Marshal(event.Payload)
@@ -279,7 +279,7 @@ func validateCloudAgentRuntime(run *model.CloudAgentExecution, state *cloudAgent
 		}
 	}
 	for _, call := range state.Calls {
-		if err := validateCloudAgentID(call.ID, "工具调用 ID", 160); err != nil || call.Function.Name == "" || utf8.RuneCountInString(call.Function.Name) > 80 || !utf8.ValidString(call.Function.Name) {
+		if err := validateCloudAgentID(call.ID, "Tool call ID", 160); err != nil || call.Function.Name == "" || utf8.RuneCountInString(call.Function.Name) > 80 || !utf8.ValidString(call.Function.Name) {
 			return errors.New("Agent runtime tool call is invalid")
 		}
 		if len(call.Function.Arguments) > 32000 {
@@ -290,7 +290,7 @@ func validateCloudAgentRuntime(run *model.CloudAgentExecution, state *cloudAgent
 		}
 	}
 	if state.Approval != nil {
-		if err := validateCloudAgentID(state.Approval.ID, "审批 ID", 200); err != nil || state.CallIndex >= len(state.Calls) {
+		if err := validateCloudAgentID(state.Approval.ID, "Approval ID", 200); err != nil || state.CallIndex >= len(state.Calls) {
 			return errors.New("Agent runtime approval is invalid")
 		}
 		current := state.Calls[state.CallIndex]
@@ -481,7 +481,7 @@ func cloudAgentSave(run *model.CloudAgentExecution, state *cloudAgentRuntime) er
 	if changed, pruned := cloudAgentPruneInspectedImages(&state.Canonical, nil); changed && run.ID != "" {
 		state.event(run.ID, "context_images_pruned", map[string]any{
 			"prunedImages": pruned, "retentionRounds": cloudAgentImageRetentionRounds,
-			"text": "已把超出保留轮次的看图结果移出模型上下文（保留文字回执与 nodeId）",
+			"text": "Removed image views older than the kept rounds from the model context (text receipts and nodeId kept)",
 		})
 	}
 	if run.ID != "" {
@@ -513,7 +513,7 @@ func cloudAgentSave(run *model.CloudAgentExecution, state *cloudAgentRuntime) er
 		}
 	}
 	if len(raw) > cloudAgentStateJSONLimit {
-		return cloudAgentCheckpointFailure("state size", fmt.Errorf("Agent 状态超过 512KB 上限（%d bytes）", len(raw)))
+		return cloudAgentCheckpointFailure("state size", fmt.Errorf("Agent state exceeds the 512KB limit (%d bytes)", len(raw)))
 	}
 	run.CanvasID, run.ActiveTaskID, run.MediaTaskID = state.Request.CanvasID, state.ActiveTaskID, state.MediaTaskID
 	run.ParentID = state.ParentID

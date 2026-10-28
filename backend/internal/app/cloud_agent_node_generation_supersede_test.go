@@ -77,7 +77,7 @@ func TestNodeGenerationSupersedesMatchingAgentApproval(t *testing.T) {
 	// 卡片上的“同意/拒绝”晚到时不能再提交任务，并给出可读原因。
 	for _, decision := range []string{"approve", "reject"} {
 		err = s.DecideCloudAgentApproval("user", run.ID, approvalID, decision, "")
-		if err == nil || !strings.Contains(err.Error(), "直接生成") {
+		if err == nil || !strings.Contains(err.Error(), "generated directly on the canvas node") {
 			t.Fatalf("late %s must be rejected with a superseded reason: %v", decision, err)
 		}
 	}

@@ -51,10 +51,10 @@ type cloudAgentMutationRecorder func(*repository.Repository, cloudAgentMutationI
 
 func recordCloudAgentCanvasMutation(repo *repository.Repository, input cloudAgentMutationInput) error {
 	if input.RunID == "" || input.UserID == "" || input.CanvasID == "" || input.StepID == "" || input.Operation == "" {
-		return BadAuthRequest("画布变更缺少可追踪的 Agent 操作信息")
+		return BadAuthRequest("The canvas change has no traceable Agent operation information")
 	}
 	if input.BeforeSnapshotHash == "" || input.AfterSnapshotHash == "" {
-		return BadAuthRequest("画布变更缺少有效快照")
+		return BadAuthRequest("The canvas change has no valid snapshot")
 	}
 	mutation := &model.CloudAgentCanvasMutation{
 		ID:                 newID(),

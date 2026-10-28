@@ -77,7 +77,7 @@ func TestCloudAgentContinuationKeepsSubmittedTaskIDs(t *testing.T) {
 	if err := json.Unmarshal([]byte(strings.TrimPrefix(context, cloudAgentRuntimeContextMarker)), &frame); err != nil {
 		t.Fatal(err)
 	}
-	if len(frame.SubmittedTaskIDs) != 2 || frame.SubmittedTaskIDs[0] != "task-1" || frame.SubmittedTaskIDs[1] != "task-2" || !strings.Contains(frame.Authority, "重复提交") {
+	if len(frame.SubmittedTaskIDs) != 2 || frame.SubmittedTaskIDs[0] != "task-1" || frame.SubmittedTaskIDs[1] != "task-2" || !strings.Contains(frame.Authority, "resubmit tasks") {
 		t.Fatalf("已提交任务应留下防重发事实：%+v", frame)
 	}
 }
@@ -175,7 +175,7 @@ func TestCloudAgentContinuationFailureReasonIsScrubbed(t *testing.T) {
 	if strings.Contains(context, "https://") || strings.Contains(context, "secret-token") {
 		t.Fatalf("交接帧泄漏了上游正文：%s", context)
 	}
-	if !strings.Contains(context, "上一轮未成功") {
+	if !strings.Contains(context, "The previous turn did not succeed") {
 		t.Fatalf("未脱敏时应用固定说法：%s", context)
 	}
 	// 正常文案原样保留。

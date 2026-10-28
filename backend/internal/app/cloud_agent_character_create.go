@@ -56,8 +56,8 @@ func cloudAgentCharacterCreateSchema() map[string]any {
 		return map[string]any{"type": "string", "description": description}
 	}
 	return map[string]any{
-		"nodeId": str("新节点ID"), "name": str("角色名"), "imageNodeId": str("就绪的形象图片节点ID"), "audioNodeId": str("可选，就绪的声音音频节点ID"),
-		"definition": map[string]any{"type": "object", "description": "可选设定：role/appearance/physique/clothing/personality/props/consistencyPrompt/multiViewPrompt/voiceLanguage/voiceAge/voiceTimbre 为字符串，aliases 为字符串数组"},
+		"nodeId": str("New node ID"), "name": str("Character name"), "imageNodeId": str("ID of a ready look image node"), "audioNodeId": str("Optional ID of a ready voice audio node"),
+		"definition": map[string]any{"type": "object", "description": "Optional profile: role/appearance/physique/clothing/personality/props/consistencyPrompt/multiViewPrompt/voiceLanguage/voiceAge/voiceTimbre are strings, aliases is a string array"},
 		"x":          map[string]any{"type": "number"}, "y": map[string]any{"type": "number"},
 	}
 }
@@ -65,7 +65,7 @@ func cloudAgentCharacterCreateSchema() map[string]any {
 func cloudAgentCharacterText(value string, limit int) (string, error) {
 	value = strings.TrimSpace(value)
 	if utf8.RuneCountInString(value) > limit {
-		return "", BadAuthRequest(fmt.Sprintf("角色设定单项不能超过 %d 字", limit))
+		return "", BadAuthRequest(fmt.Sprintf("Each character profile item must not exceed %d characters", limit))
 	}
 	return value, nil
 }
@@ -86,7 +86,7 @@ func (d cloudAgentCharacterDefinitionArgs) normalized() (map[string]any, error) 
 		}
 	}
 	if len(d.Aliases) > 16 {
-		return nil, BadAuthRequest("角色别名最多 16 个")
+		return nil, BadAuthRequest("At most 16 character aliases")
 	}
 	aliases := []string{}
 	for _, alias := range d.Aliases {
@@ -106,19 +106,19 @@ func (d cloudAgentCharacterDefinitionArgs) normalized() (map[string]any, error) 
 func cloudAgentCharacterMediaResource(repo *repository.Repository, userID string, nodes map[string]map[string]any, nodeID, kind, label string) (string, map[string]any, error) {
 	node := nodes[nodeID]
 	if node == nil || stringValue(node["type"]) != kind {
-		return "", nil, BadAuthRequest(label + "节点不在当前画布或类型不对")
+		return "", nil, BadAuthRequest(label + " node is not on this canvas or has the wrong type")
 	}
 	meta, _ := node["metadata"].(map[string]any)
 	key := stringValue(meta["storageKey"])
 	if !strings.HasPrefix(key, "resource:") {
-		return "", nil, BadAuthRequest(label + "尚未保存到账号资源库，不能用于角色卡")
+		return "", nil, BadAuthRequest(label + " is not saved in the account resource library yet and cannot be used for a character card")
 	}
 	resource, err := repo.ResourceForUser(userID, strings.TrimPrefix(key, "resource:"))
 	if err != nil || resource == nil || resource.Kind != kind || resource.Status != "ready" {
-		return "", nil, BadAuthRequest(label + "资源不存在、未就绪或类型不匹配")
+		return "", nil, BadAuthRequest(label + " resource does not exist, is not ready or has the wrong type")
 	}
 	if kind == "audio" && !isSupportedVoiceSampleMimeType(resource.MimeType) {
-		return "", nil, BadAuthRequest("声音音频格式不支持：请使用 MP3、WAV、M4A/AAC、FLAC、OGG/Opus 或 WebM")
+		return "", nil, BadAuthRequest("Unsupported voice audio format: use MP3, WAV, M4A/AAC, FLAC, OGG/Opus or WebM")
 	}
 	return resource.ID, node, nil
 }
@@ -126,17 +126,17 @@ func cloudAgentCharacterMediaResource(repo *repository.Repository, userID string
 func prepareCloudAgentCharacterCreate(repo *repository.Repository, userID, canvasID string, call cloudAgentCall) (*cloudAgentCharacterCreatePlan, error) {
 	var args cloudAgentCharacterCreateArgs
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("创建角色卡参数无效：仅允许 nodeId、name、imageNodeId、audioNodeId、definition、x、y")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Invalid character card arguments: only nodeId, name, imageNodeId, audioNodeId, definition, x and y are allowed")}
 	}
-	if err := validateCloudAgentID(args.NodeID, "角色卡节点ID", 80); err != nil {
+	if err := validateCloudAgentID(args.NodeID, "Character card node ID", 80); err != nil {
 		return nil, &cloudAgentArgumentError{err}
 	}
 	name, err := cloudAgentCharacterText(args.Name, 80)
 	if err != nil || name == "" {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("角色名不能为空且不超过 80 字")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("The character name must not be empty or longer than 80 characters")}
 	}
 	if args.ImageNodeID == "" {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("创建角色卡需要 imageNodeId：先有一张已就绪的形象/三视图图片节点")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Creating a character card needs imageNodeId: first have a ready look/turnaround image node")}
 	}
 	definition, err := args.Definition.normalized()
 	if err != nil {
@@ -155,27 +155,27 @@ func prepareCloudAgentCharacterCreate(repo *repository.Repository, userID, canva
 		return nil, err
 	}
 	if nodes[args.NodeID] != nil {
-		return nil, &cloudAgentArgumentError{BadAuthRequest("角色卡节点ID已存在，请换一个新ID")}
+		return nil, &cloudAgentArgumentError{BadAuthRequest("Character card node ID already exists; use a new ID")}
 	}
 	plan := &cloudAgentCharacterCreatePlan{Args: args, Definition: definition}
 	plan.Args.Name = name
-	imageID, imageNode, err := cloudAgentCharacterMediaResource(repo, userID, nodes, args.ImageNodeID, "image", "形象图片")
+	imageID, imageNode, err := cloudAgentCharacterMediaResource(repo, userID, nodes, args.ImageNodeID, "image", "Look image")
 	if err != nil {
 		return nil, err
 	}
 	plan.ImageResourceID = imageID
-	details := []string{"形象：《" + cloudAgentApprovalNodeTitle(imageNode, "图片") + "》"}
+	details := []string{"Look: '" + cloudAgentApprovalNodeTitle(imageNode, "Image") + "'"}
 	if args.AudioNodeID != "" {
-		audioID, audioNode, err := cloudAgentCharacterMediaResource(repo, userID, nodes, args.AudioNodeID, "audio", "声音音频")
+		audioID, audioNode, err := cloudAgentCharacterMediaResource(repo, userID, nodes, args.AudioNodeID, "audio", "Voice audio")
 		if err != nil {
 			return nil, err
 		}
 		plan.AudioResourceID = audioID
 		plan.VoiceName = truncateRunes(strings.TrimSpace(stringValue(audioNode["title"])), 160)
-		details = append(details, "声音：《"+cloudAgentApprovalNodeTitle(audioNode, "音频")+"》")
+		details = append(details, "Voice: '"+cloudAgentApprovalNodeTitle(audioNode, "Audio")+"'")
 	}
 	if len(definition) > 1 {
-		details = append(details, fmt.Sprintf("设定 %d 项", len(definition)-1))
+		details = append(details, fmt.Sprintf("%d profile items", len(definition)-1))
 	}
 	// 显式坐标按原样使用；否则落在形象图片右侧的空位，不叠在已有节点上。
 	if args.X != nil && args.Y != nil {
@@ -190,18 +190,18 @@ func prepareCloudAgentCharacterCreate(repo *repository.Repository, userID, canva
 	}
 	withAudio := ""
 	if plan.AudioResourceID != "" {
-		withAudio = "和音频"
+		withAudio = " and audio"
 	}
 	plan.Preview = cloudAgentApprovalPreview{
-		Kind: "canvas_mutation", Title: "确认创建角色卡",
-		Description: fmt.Sprintf("Agent 准备把画布上的图片%s打包为角色卡《%s》：写入账号角色库并在画布放置角色卡节点。批准后才会执行。", withAudio, name),
-		Items:       []cloudAgentApprovalPreviewItem{{Operation: "create_character", NodeID: args.NodeID, NodeTitle: name, NodeType: "character", NodeTypeLabel: "角色卡", Details: details, Summary: fmt.Sprintf("创建角色卡《%s》", name)}},
+		Kind: "canvas_mutation", Title: "Confirm character card creation",
+		Description: fmt.Sprintf("The Agent is about to bundle the canvas image%s into character card '%s': it is saved to the account character library and a character card node is placed on the canvas. Nothing happens until you approve.", withAudio, name),
+		Items:       []cloudAgentApprovalPreviewItem{{Operation: "create_character", NodeID: args.NodeID, NodeTitle: name, NodeType: "character", NodeTypeLabel: "Character card", Details: details, Summary: fmt.Sprintf("Create character card '%s'", name)}},
 	}
 	return plan, nil
 }
 
 func cloudAgentCharacterReferencePrompt(name string, definition map[string]any) string {
-	parts := []string{"【角色卡：" + name + "】"}
+	parts := []string{"[Character card: " + name + "]"}
 	for _, key := range []string{"role", "appearance", "physique", "clothing", "personality", "props", "consistencyPrompt"} {
 		if value := strings.TrimSpace(stringValue(definition[key])); value != "" {
 			parts = append(parts, value)

@@ -83,7 +83,7 @@ func TestCloudAgentToolResultCarriesErrorClass(t *testing.T) {
 		t.Fatalf("tool_failed 载荷缺少归类：%+v", payload)
 	}
 	detail, _ := payload["result"].(map[string]any)
-	if detail["errorClassLabel"] != "画布状态已变化" || detail["retryable"] != true || detail["requiredAction"] != "reread_canvas" {
+	if detail["errorClassLabel"] != "Canvas state changed" || detail["retryable"] != true || detail["requiredAction"] != "reread_canvas" {
 		t.Fatalf("回执里的归类字段不对：%+v", detail)
 	}
 }

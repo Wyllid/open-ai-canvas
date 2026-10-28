@@ -65,7 +65,7 @@ func TestCloudAgentBatchTableCapabilityMatchesCanvasComponent(t *testing.T) {
 	if !ok {
 		t.Fatal("batch-table capability missing")
 	}
-	if descriptor.Label != "批量创作表" || descriptor.DefaultWidth != 1280 || descriptor.DefaultHeight != 560 || descriptor.InputKind != "text" || descriptor.ProjectionKind != "batch_table" || descriptor.ProjectionField != "batchTable" {
+	if descriptor.Label != "Batch table" || descriptor.DefaultWidth != 1280 || descriptor.DefaultHeight != 560 || descriptor.InputKind != "text" || descriptor.ProjectionKind != "batch_table" || descriptor.ProjectionField != "batchTable" {
 		t.Fatalf("batch-table capability differs from component contract: %+v", descriptor)
 	}
 	if err := descriptor.ValidateConnection("image"); err != nil {
@@ -149,7 +149,7 @@ func TestCloudAgentCanReadAndEditBatchTableRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if plan.Preview.Title != "确认修改批量创作表" || strings.Contains(plan.Preview.Description, "生成任务已提交") {
+	if plan.Preview.Title != "Confirm batch table changes" || strings.Contains(plan.Preview.Description, "Generation task submitted") {
 		t.Fatalf("unexpected approval preview: %+v", plan.Preview)
 	}
 	policy, err := s.RuntimePolicy()
@@ -298,7 +298,7 @@ func TestCloudAgentCanSetBatchTableGlobalPrompt(t *testing.T) {
 		"snapshotHash": cleared.(map[string]any)["snapshotHash"], "nodeId": "batch-1", "action": "set_global_prompt",
 		"rowId": "row-should-not-be-accepted", "globalPrompt": "x",
 	})
-	if _, err := prepareCloudAgentBatchTableEdit(s.repo, "user", canvas.ID, reject); err == nil || !strings.Contains(err.Error(), "不接受其他修改参数") {
+	if _, err := prepareCloudAgentBatchTableEdit(s.repo, "user", canvas.ID, reject); err == nil || !strings.Contains(err.Error(), "accepts no other change arguments") {
 		t.Fatalf("set_global_prompt should reject row-level parameters: %v", err)
 	}
 }
@@ -321,13 +321,13 @@ func TestCloudAgentBatchTableRejectsUnsafeAndStaleEdits(t *testing.T) {
 		"snapshotHash": hash, "nodeId": "batch-1", "action": "append",
 		"patch": map[string]any{"inputNodeIds": []string{"batch-1"}},
 	})
-	if _, err := prepareCloudAgentBatchTableEdit(s.repo, "user", canvas.ID, nonImage); err == nil || !strings.Contains(err.Error(), "图片节点") {
+	if _, err := prepareCloudAgentBatchTableEdit(s.repo, "user", canvas.ID, nonImage); err == nil || !strings.Contains(err.Error(), "image nodes") {
 		t.Fatalf("non-image reference was not rejected: %v", err)
 	}
 	stale := cloudAgentBatchTableCall(t, "canvas_edit_batch_table", "stale-row", map[string]any{
 		"snapshotHash": "stale", "nodeId": "batch-1", "action": "set_concurrency", "concurrency": 5,
 	})
-	if _, err := prepareCloudAgentBatchTableEdit(s.repo, "user", canvas.ID, stale); err == nil || !strings.Contains(err.Error(), "被修改过") {
+	if _, err := prepareCloudAgentBatchTableEdit(s.repo, "user", canvas.ID, stale); err == nil || !strings.Contains(err.Error(), "changed after you read it") {
 		t.Fatalf("stale snapshot was not rejected: %v", err)
 	}
 }

@@ -429,8 +429,8 @@ func TestCloudAgentApprovalRejectionMessageMatchesOperation(t *testing.T) {
 		wantText  string
 		forbidden string
 	}{
-		{name: "ordinary write", wantText: "已拒绝本次操作，本次操作未执行。", forbidden: "草稿节点仍保留"},
-		{name: "media generation", media: true, wantText: "已拒绝本次生成，草稿节点仍保留在画布中；未提交任务、未产生扣费。", forbidden: "本次操作未执行"},
+		{name: "ordinary write", wantText: "The operation was rejected and was not executed.", forbidden: "draft node stays"},
+		{name: "media generation", media: true, wantText: "The generation was rejected; the draft node stays on the canvas. No task was submitted and nothing was charged.", forbidden: "operation was rejected and was not executed"},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			s, _, args := agentMediaFixture(t)

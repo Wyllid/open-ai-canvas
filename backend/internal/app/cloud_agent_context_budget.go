@@ -157,7 +157,7 @@ func cloudAgentRequestEstimatedTokens(request *canonicalAgentRequest) (int, erro
 }
 
 func cloudAgentContextBudgetMessage(budget cloudAgentContextBudget) string {
-	return "用户指令与当前执行事实超过模型输入预算（" + formatTokenCount(budget.InputBudgetTokens) + " Token，能力来源：" + strings.TrimSpace(budget.Source) + "），请缩小本轮范围"
+	return "The user instruction and current execution facts exceed the model input budget (" + formatTokenCount(budget.InputBudgetTokens) + " tokens, capability source: " + strings.TrimSpace(budget.Source) + "); narrow the scope of this turn"
 }
 
 func formatTokenCount(value int) string {

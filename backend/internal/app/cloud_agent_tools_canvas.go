@@ -17,7 +17,7 @@ import (
 func cloudAgentSkillPage(version, path, content string, offset int) (any, error) {
 	runes := []rune(content)
 	if offset < 0 || offset > len(runes) {
-		return nil, BadAuthRequest("技能读取偏移超出文件范围")
+		return nil, BadAuthRequest("The skill read offset is beyond the end of the file")
 	}
 	end := offset + min(12000, len(runes)-offset)
 	return map[string]any{"version": version, "path": path, "content": string(runes[offset:end]), "offset": offset, "nextOffset": end, "hasMore": end < len(runes)}, nil
@@ -25,14 +25,14 @@ func cloudAgentSkillPage(version, path, content string, offset int) (any, error)
 
 func validateCloudAgentID(value, label string, maxRunes int) error {
 	if value == "" || strings.TrimSpace(value) != value || !utf8.ValidString(value) {
-		return BadAuthRequest(label + "不能为空、不能包含首尾空白或无效字符")
+		return BadAuthRequest(label + " must not be empty or have leading/trailing whitespace or invalid characters")
 	}
 	if utf8.RuneCountInString(value) > maxRunes {
-		return BadAuthRequest(fmt.Sprintf("%s不能超过 %d 个字符", label, maxRunes))
+		return BadAuthRequest(fmt.Sprintf("%s must not exceed %d characters", label, maxRunes))
 	}
 	for _, r := range value {
 		if unicode.IsControl(r) {
-			return BadAuthRequest(label + "不能包含控制字符")
+			return BadAuthRequest(label + " must not contain control characters")
 		}
 	}
 	return nil
@@ -51,7 +51,7 @@ func validateCloudAgentVideoFramePatch(node map[string]any, nodes, edges []map[s
 		if id == "" {
 			continue
 		}
-		if err := validateCloudAgentID(id, "首尾帧图片节点 ID", 80); err != nil {
+		if err := validateCloudAgentID(id, "First/last frame image node ID", 80); err != nil {
 			return cloudAgentFieldError("patch."+key, "invalid_value", cloudAgentSafeToolError(err))
 		}
 		frame := cloudAgentNodeByID(nodes, id)
@@ -63,7 +63,7 @@ func validateCloudAgentVideoFramePatch(node map[string]any, nodes, edges []map[s
 			}
 		}
 		if frame == nil || stringValue(frame["type"]) != "image" || !connected {
-			return cloudAgentFieldError("patch."+key, "invalid_value", "首尾帧必须选择已连接到该视频节点的图片；请先建立引用连线")
+			return cloudAgentFieldError("patch."+key, "invalid_value", "First and last frames must be images connected to this video node; create the reference edge first")
 		}
 	}
 	return nil
@@ -115,7 +115,7 @@ func applyCloudAgentCanvas(repo *repository.Repository, userID, canvasID string,
 			return nil, err
 		}
 	}
-	return map[string]any{"canvasId": canvasID, "snapshotHash": cloudAgentCanvasHash(plan.Document), "committed": true, "summary": fmt.Sprintf("已完成 %d 项节点/连线操作", len(plan.Args.Ops)), "preview": appliedPreview}, nil
+	return map[string]any{"canvasId": canvasID, "snapshotHash": cloudAgentCanvasHash(plan.Document), "committed": true, "summary": fmt.Sprintf("Completed %d node/edge operations", len(plan.Args.Ops)), "preview": appliedPreview}, nil
 }
 
 func validateCloudAgentConnection(nodes []map[string]any, fromID, toID string, existingConnections ...[]map[string]any) error {
@@ -123,14 +123,14 @@ func validateCloudAgentConnection(nodes []map[string]any, fromID, toID string, e
 }
 
 func validateCloudAgentConnectionWithHandles(nodes []map[string]any, fromID, toID, fromHandleID, toHandleID string, existingConnections ...[]map[string]any) error {
-	if err := validateCloudAgentID(fromID, "来源节点 ID", 80); err != nil {
+	if err := validateCloudAgentID(fromID, "Source node ID", 80); err != nil {
 		return err
 	}
-	if err := validateCloudAgentID(toID, "目标节点 ID", 80); err != nil {
+	if err := validateCloudAgentID(toID, "Target node ID", 80); err != nil {
 		return err
 	}
 	if fromID == toID {
-		return BadAuthRequest("连线不能指向自身")
+		return BadAuthRequest("An edge cannot point to its own node")
 	}
 	var from, to map[string]any
 	for _, node := range nodes {
@@ -142,25 +142,25 @@ func validateCloudAgentConnectionWithHandles(nodes []map[string]any, fromID, toI
 		}
 	}
 	if from == nil || to == nil {
-		return BadAuthRequest("连线端点不存在")
+		return BadAuthRequest("The edge endpoint does not exist")
 	}
-	if err := validateCloudAgentStoryboardHandle(from, fromHandleID, "来源"); err != nil {
+	if err := validateCloudAgentStoryboardHandle(from, fromHandleID, "source"); err != nil {
 		return err
 	}
-	if err := validateCloudAgentStoryboardHandle(to, toHandleID, "目标"); err != nil {
+	if err := validateCloudAgentStoryboardHandle(to, toHandleID, "target"); err != nil {
 		return err
 	}
 	fromCapability, fromKnown := cloudAgentNodeCapabilityForNode(from)
 	toCapability, toKnown := cloudAgentNodeCapabilityForNode(to)
 	if !fromKnown || !toKnown {
-		return BadAuthRequest("连线包含当前 Agent 不支持的节点类型")
+		return BadAuthRequest("The edge involves a node type the Agent does not support")
 	}
 	fromKind := fromCapability.InputKind
 	if fromKind == "" || !fromCapability.Connection.CanSource {
-		return BadAuthRequest(fmt.Sprintf("来源节点类型 %s 不能作为生成输入；引用连线不能用于普通节点关联", fromCapability.Type))
+		return BadAuthRequest(fmt.Sprintf("Source node type %s cannot be a generation input; reference edges are not for linking ordinary nodes", fromCapability.Type))
 	}
 	if !toCapability.Connection.CanTarget {
-		return BadAuthRequest(fmt.Sprintf("目标节点类型 %s 不能接收生成输入；无需为文档归档建立引用连线", toCapability.Type))
+		return BadAuthRequest(fmt.Sprintf("Target node type %s cannot receive generation input; no reference edge is needed to file documents", toCapability.Type))
 	}
 	connections := []map[string]any{}
 	if len(existingConnections) > 0 {
@@ -168,7 +168,7 @@ func validateCloudAgentConnectionWithHandles(nodes []map[string]any, fromID, toI
 	}
 	for _, edge := range connections {
 		if stringValue(edge["toNodeId"]) == toID && stringValue(edge["fromNodeId"]) == fromID && stringValue(edge["fromHandleId"]) == fromHandleID && stringValue(edge["toHandleId"]) == toHandleID {
-			return BadAuthRequest("连线重复")
+			return BadAuthRequest("Duplicate edge")
 		}
 	}
 	if err := toCapability.ValidateConnection(fromKind); err != nil {
@@ -183,7 +183,7 @@ func validateCloudAgentConnectionWithHandles(nodes []map[string]any, fromID, toI
 		}
 		inputIDs[fromID] = true
 		if len(inputIDs) > maxInputs {
-			return BadAuthRequest(fmt.Sprintf("%s最多连接 %d 个输入", toCapability.Label, maxInputs))
+			return BadAuthRequest(fmt.Sprintf("%s accepts at most %d inputs", toCapability.Label, maxInputs))
 		}
 	}
 	return nil
@@ -196,13 +196,13 @@ func validateCloudAgentStoryboardHandle(node map[string]any, handleID, side stri
 		return nil
 	}
 	field := "toHandleId"
-	if side == "来源" {
+	if side == "source" {
 		field = "fromHandleId"
 	}
 	if stringValue(node["type"]) != "script" {
-		message := "toHandleId 只能填写在分镜目标节点；若要指定镜头输出，请使用分镜→图片/视频，并将 row:<真实rowId> 填入分镜来源的 fromHandleId"
-		if side == "来源" {
-			message = "fromHandleId 只能填写在分镜来源节点；若要把素材绑定到镜头行，请使用素材→分镜，省略 fromHandleId，将 row:<真实rowId> 填入分镜目标的 toHandleId"
+		message := "toHandleId is only allowed on a storyboard target node; to pick a shot output, connect storyboard → image/video and put row:<real rowId> in the storyboard source's fromHandleId"
+		if side == "source" {
+			message = "fromHandleId is only allowed on a storyboard source node; to bind an asset to a shot row, connect asset → storyboard, omit fromHandleId and put row:<real rowId> in the storyboard target's toHandleId"
 		}
 		return cloudAgentFieldError(field, "invalid_node_handle", message)
 	}
@@ -210,7 +210,7 @@ func validateCloudAgentStoryboardHandle(node map[string]any, handleID, side stri
 		return nil
 	}
 	if !strings.HasPrefix(handleID, "row:") || strings.TrimSpace(strings.TrimPrefix(handleID, "row:")) == "" {
-		return cloudAgentFieldError(field, "invalid_handle", field+" 必须是 row:<真实rowId> 或 storyboard:context；镜头编号不是 rowId，请先读取分镜")
+		return cloudAgentFieldError(field, "invalid_handle", field+" must be row:<real rowId> or storyboard:context; a shot number is not a rowId, so read the storyboard first")
 	}
 	metadata, _ := node["metadata"].(map[string]any)
 	storyboard, _ := metadata["storyboard"].(map[string]any)
@@ -220,19 +220,19 @@ func validateCloudAgentStoryboardHandle(node map[string]any, handleID, side stri
 			return nil
 		}
 	}
-	return cloudAgentFieldError(field, "not_found", field+" 引用的 rowId 不存在，请先用 canvas_read_storyboard 读取最新真实行 ID，不要用镜头编号代替")
+	return cloudAgentFieldError(field, "not_found", field+" references a rowId that does not exist; read the latest real row IDs with canvas_read_storyboard instead of using shot numbers")
 }
 
 func cloudAgentInputKindLabel(kind string) string {
 	switch kind {
 	case "image":
-		return "图片"
+		return "image"
 	case "video":
-		return "视频"
+		return "video"
 	case "audio":
-		return "音频"
+		return "audio"
 	default:
-		return "文本"
+		return "text"
 	}
 }
 
@@ -311,9 +311,9 @@ func cloudAgentNodeTypes() map[string]any {
 		types = append(types, item)
 	}
 	return map[string]any{"schemaVersion": 2, "nodes": types, "selectionGuide": []string{
-		"单个画面、一次性提示词或快速试验通常使用文本/Markdown与媒体节点更轻量。",
-		"多镜头、连续性、逐镜审查、逐镜生成或需要后续维护时，分镜脚本通常更合适。",
-		"媒体节点只承载单个生成目标，不替代多镜头结构；选择媒体节点后还要用 model_list 按生成模式和本次真实参考节点筛选模型。",
-		"节点选择由Agent结合用户目标决定；不要为了形式创建复杂节点，也不要用普通文本伪装成结构化分镜。",
+		"For a single image, a one-off prompt or a quick experiment, text/Markdown and media nodes are usually lighter.",
+		"For multiple shots, continuity, shot-by-shot review or generation, or later maintenance, a storyboard is usually a better fit.",
+		"A media node holds a single generation target and does not replace a multi-shot structure; after choosing a media node, filter models with model_list by generation mode and this request's real reference nodes.",
+		"The Agent chooses node types from the user's goal; do not create complex nodes for form's sake, and do not pass plain text off as a structured storyboard.",
 	}}
 }

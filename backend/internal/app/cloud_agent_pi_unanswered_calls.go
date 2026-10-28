@@ -32,10 +32,10 @@ import (
 // 重发指引必须按对象区分：分镜等工具的 snapshotHash 是节点级的，同批第一个调用只改变
 // 它自己目标对象的快照——修改同一对象的剩余调用要用回执里的最新快照更新参数；修改其他
 // 对象的调用原快照仍然有效，照原参数重发即可，把回执快照填进去反而必然撞锁。
-const cloudAgentPiUnansweredCallText = `{"error":"该工具调用未被执行：同一步里排在前面的操作进入了用户审批（或本轮被中断），它从未运行。如仍需要它的结果，请重新调用；若它携带 snapshotHash 且与恢复提示回执修改的是同一对象，用回执里的最新 snapshotHash 更新参数；目标对象不同或没有回执时，按原参数重发；重发仍被快照拒绝就先重新读取目标对象再改。","errorClass":"approval_deferred","errorClassLabel":"审批暂停未执行","requiredAction":"resend"}`
+const cloudAgentPiUnansweredCallText = `{"error":"This tool call was not executed: an earlier operation in the same step went to user approval (or the run was interrupted), so it never ran. If you still need its result, call it again; if it carries a snapshotHash and changes the same object as the receipt in the resume prompt, update it with the receipt's latest snapshotHash; when the target differs or there is no receipt, resend it with the original arguments; if the snapshot is still rejected, read the target again before changing it.","errorClass":"approval_deferred","errorClassLabel":"Paused for approval, not executed","requiredAction":"resend"}`
 
 // cloudAgentPiApprovalPauseText 是工具进入审批时交给运行时的占位结果。
-const cloudAgentPiApprovalPauseText = "操作正在等待用户审批。"
+const cloudAgentPiApprovalPauseText = "The operation is waiting for user approval."
 
 // 孤立结果转成数据消息时的保留上限：只保留最近几条，单条截断，避免旧流水撑大上下文。
 const (
@@ -215,7 +215,7 @@ func cloudAgentOrphanToolResultsMessage(results []string) map[string]any {
 	encoded, _ := json.Marshal(map[string]any{"results": clipped, "omitted": omitted})
 	return cloudAgentRuntimeMessage(cloudAgentRuntimeContext{
 		Kind:   cloudAgentContextOrphanToolResults,
-		Detail: "这些工具结果的调用记录已不在上下文里，内容按原样保留：" + string(encoded),
+		Detail: "The calls behind these tool results are no longer in the context; their content is kept as is:" + string(encoded),
 	})
 }
 
@@ -241,7 +241,7 @@ var runtimeToolHistory = toolHistoryFormat{
 				kept = append(kept, value)
 				continue
 			}
-			id, err := strictRuntimeStringAliases(part, "Pi 工具调用 ID", "id", "call_id", "toolCallId", "tool_call_id")
+			id, err := strictRuntimeStringAliases(part, "Pi tool call ID", "id", "call_id", "toolCallId", "tool_call_id")
 			if err != nil || id == "" || seen[id] {
 				rewrite = true
 				continue
@@ -264,7 +264,7 @@ var runtimeToolHistory = toolHistoryFormat{
 		if role := stringField(message, "role"); role != "toolResult" && role != "tool" {
 			return "", false, false
 		}
-		id, err := strictRuntimeStringAliases(message, "Pi 工具结果 call id", "toolCallId", "tool_call_id", "call_id")
+		id, err := strictRuntimeStringAliases(message, "Pi tool result call id", "toolCallId", "tool_call_id", "call_id")
 		return id, true, err == nil && id != ""
 	},
 	withText: func(message map[string]any, text string) map[string]any {
@@ -298,7 +298,7 @@ var canonicalToolHistory = toolHistoryFormat{
 		seen := map[string]bool{}
 		rewrite := false
 		for _, call := range canonicalAgentToolCalls(message["tool_calls"]) {
-			id, err := canonicalAgentToolCallID(call, "画布 Agent 工具调用")
+			id, err := canonicalAgentToolCallID(call, "Canvas Agent tool call")
 			if err != nil || id == "" || seen[id] {
 				rewrite = true
 				continue
@@ -326,7 +326,7 @@ var canonicalToolHistory = toolHistoryFormat{
 		if stringField(message, "role") != "tool" {
 			return "", false, false
 		}
-		id, err := canonicalAgentStringAliases(message, "画布 Agent 工具结果 call_id", "tool_call_id", "toolCallId", "call_id")
+		id, err := canonicalAgentStringAliases(message, "Canvas Agent tool result call_id", "tool_call_id", "toolCallId", "call_id")
 		return id, true, err == nil && id != ""
 	},
 	withText: func(message map[string]any, text string) map[string]any {

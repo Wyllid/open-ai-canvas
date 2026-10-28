@@ -18,7 +18,7 @@ func TestCloudAgentApprovalResumePromptCarriesReceipt(t *testing.T) {
 		{"role": "assistant", "content": "", "tool_calls": []interface{}{
 			map[string]interface{}{"id": "call_00", "type": "function", "function": map[string]interface{}{"name": "canvas_edit_storyboard", "arguments": "{}"}},
 		}},
-		{"role": "tool", "tool_call_id": "call_00", "content": "操作正在等待用户审批。"},
+		{"role": "tool", "tool_call_id": "call_00", "content": "The operation is waiting for user approval."},
 		{"role": "tool", "tool_call_id": "call_00", "content": receipt},
 	}
 
@@ -26,14 +26,14 @@ func TestCloudAgentApprovalResumePromptCarriesReceipt(t *testing.T) {
 	if !strings.Contains(prompt, "b935f1b7") {
 		t.Fatalf("恢复提示应携带执行结果里的最新 snapshotHash：\n%s", prompt)
 	}
-	if !strings.Contains(prompt, "不要重复调用") {
+	if !strings.Contains(prompt, "Do not call this operation again") {
 		t.Fatal("恢复提示必须明确禁止重发已执行的操作")
 	}
 	// 同批还有未执行的调用：CallIndex < len(Calls)。
 	state.Calls = []cloudAgentCall{{ID: "call_00"}, {ID: "call_01"}}
 	state.CallIndex = 0
 	prompt = cloudAgentApprovalResumePrompt(state)
-	if !strings.Contains(prompt, "其余调用未被执行") {
+	if !strings.Contains(prompt, "other calls you issued in the same batch were not executed") {
 		t.Fatalf("同批剩余调用应在恢复提示中说明：\n%s", prompt)
 	}
 }
@@ -43,16 +43,16 @@ func TestCloudAgentApprovalResumePromptCarriesReceipt(t *testing.T) {
 func TestCloudAgentApprovalResumePromptFallsBackWithoutReceipt(t *testing.T) {
 	failed := &cloudAgentRuntime{}
 	failed.Canonical.Messages = []map[string]any{
-		{"role": "tool", "tool_call_id": "call_00", "content": `{"error":"上游拒绝","errorClass":"upstream_failure"}`},
+		{"role": "tool", "tool_call_id": "call_00", "content": `{"error":"upstream rejected","errorClass":"upstream_failure"}`},
 	}
-	if prompt := cloudAgentApprovalResumePrompt(failed); strings.Contains(prompt, "上游拒绝") {
+	if prompt := cloudAgentApprovalResumePrompt(failed); strings.Contains(prompt, "upstream rejected") {
 		t.Fatalf("失败结果不应作为成功回执进入提示：\n%s", prompt)
-	} else if !strings.Contains(prompt, "业务执行器已执行一次") {
+	} else if !strings.Contains(prompt, "The executor ran it once") {
 		t.Fatalf("无回执时应回退通用提示：\n%s", prompt)
 	}
 
 	empty := &cloudAgentRuntime{}
-	if prompt := cloudAgentApprovalResumePrompt(empty); !strings.Contains(prompt, "业务执行器已执行一次") {
+	if prompt := cloudAgentApprovalResumePrompt(empty); !strings.Contains(prompt, "The executor ran it once") {
 		t.Fatalf("空历史应回退通用提示：\n%s", prompt)
 	}
 }
@@ -75,7 +75,7 @@ func TestCloudAgentLastToolReceiptTruncates(t *testing.T) {
 	if got := len([]rune(receipt)); got > 1700 {
 		t.Fatalf("超长回执应被截断：got %d runes", got)
 	}
-	if !strings.Contains(receipt, "已截断") {
+	if !strings.Contains(receipt, "truncated") {
 		t.Fatal("截断回执应说明完整状态需用读取工具获取")
 	}
 }
@@ -117,7 +117,7 @@ func TestCloudAgentLastToolReceiptKeepsSnapshotBehindLargeFields(t *testing.T) {
 		t.Fatalf("摘要应控制在预算内：got %d runes", got)
 	}
 	// 预算不够时长字段要显式登记被丢弃，模型知道去哪补全。
-	if !strings.Contains(receipt, "已截断") {
+	if !strings.Contains(receipt, "truncated") {
 		t.Fatal("被截断的长字段应说明完整内容需用读取工具获取")
 	}
 	// 摘要仍是合法 JSON，模型可结构化解析。
@@ -140,16 +140,16 @@ func TestUnansweredCallPlaceholderAdvisesSnapshotUpdate(t *testing.T) {
 		t.Fatalf("占位文本应是合法 JSON：%v", err)
 	}
 	message, _ := decoded["error"].(string)
-	if strings.Contains(message, "原样重新调用") {
+	if strings.Contains(message, "resend unchanged") {
 		t.Fatal("占位指引不应笼统要求原样重发（同批写同一对象会撞锁）")
 	}
-	for _, needle := range []string{"同一对象", "最新 snapshotHash", "按原参数重发", "重新读取"} {
+	for _, needle := range []string{"same object", "latest snapshotHash", "resend it with the original arguments", "read the target again"} {
 		if !strings.Contains(message, needle) {
 			t.Fatalf("占位指引应包含 %q：\n%s", needle, message)
 		}
 	}
 	// 指引的三条分支必须互斥可判：同对象→用回执快照；跨对象/无回执→原参数；被拒→重读。
-	if !strings.Contains(message, "目标对象不同或没有回执时，按原参数重发") {
+	if !strings.Contains(message, "when the target differs or there is no receipt, resend it with the original arguments") {
 		t.Fatal("跨对象分支必须明确指示按原参数重发")
 	}
 }
@@ -178,7 +178,7 @@ func TestUnansweredCallPlaceholderIsStructuredError(t *testing.T) {
 	if decoded["error"] == nil {
 		t.Fatal("占位结果应保留人可读的 error 说明")
 	}
-	if cloudAgentToolErrorLabel(cloudAgentToolErrorApprovalDeferred) != "审批暂停未执行" {
+	if cloudAgentToolErrorLabel(cloudAgentToolErrorApprovalDeferred) != "Paused for approval, not executed" {
 		t.Fatal("错误码标签缺失")
 	}
 }

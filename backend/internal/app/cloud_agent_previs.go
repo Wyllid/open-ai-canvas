@@ -21,23 +21,23 @@ func cloudAgentPrevisSceneRead(repo *repository.Repository, userID, canvasID str
 		return nil, cloudAgentJSONArgumentError(err)
 	}
 	if args.SceneID != "" {
-		if err := validateCloudAgentID(args.SceneID, "导演场景 ID", 80); err != nil {
+		if err := validateCloudAgentID(args.SceneID, "Previs scene ID", 80); err != nil {
 			return nil, err
 		}
 	}
 	if args.ShotID != "" {
-		if err := validateCloudAgentID(args.ShotID, "导演镜头 ID", 80); err != nil {
+		if err := validateCloudAgentID(args.ShotID, "Previs shot ID", 80); err != nil {
 			return nil, err
 		}
 		if args.SceneID == "" {
-			return nil, cloudAgentFieldError("shotId", "requires_scene", "指定 shotId 时必须同时提供 sceneId")
+			return nil, cloudAgentFieldError("shotId", "requires_scene", "sceneId is required together with shotId")
 		}
 	}
 	if len(args.ObjectIDs) > 16 {
-		return nil, BadAuthRequest("导演对象读取最多包含16个对象 ID")
+		return nil, BadAuthRequest("A previs object read can include at most 16 object IDs")
 	}
 	for _, id := range args.ObjectIDs {
-		if err := validateCloudAgentID(id, "导演对象 ID", 80); err != nil {
+		if err := validateCloudAgentID(id, "Previs object ID", 80); err != nil {
 			return nil, err
 		}
 	}
@@ -67,17 +67,17 @@ func cloudAgentPrevisSceneRead(repo *repository.Repository, userID, canvasID str
 			"canvasSnapshotHash": cloudAgentCanvasHash(doc),
 			"scenes":             items,
 			"count":              len(items),
-			"guidance":           "先用返回的 sceneId 读取一个场景，再使用 shotId 进行布局或预演。创建场景时把 canvasSnapshotHash 原样传回。",
+			"guidance":           "First read a scene with a returned sceneId, then use shotId for layout or preview. When creating a scene, pass canvasSnapshotHash back unchanged.",
 		}, nil
 	}
 
 	scene, ok := findPrevisScene(rawScenes, args.SceneID)
 	if !ok {
-		return nil, BadAuthRequest("导演场景不存在或不属于当前画布")
+		return nil, BadAuthRequest("The previs scene does not exist or does not belong to this canvas")
 	}
 	if args.ShotID != "" {
 		if _, ok := findPrevisShot(scene, args.ShotID); !ok {
-			return nil, BadAuthRequest("导演镜头不存在或不属于指定场景")
+			return nil, BadAuthRequest("The previs shot does not exist or does not belong to the given scene")
 		}
 	}
 	objectIDs := make(map[string]bool, len(args.ObjectIDs))
@@ -88,7 +88,7 @@ func cloudAgentPrevisSceneRead(repo *repository.Repository, userID, canvasID str
 	if args.IncludeTransforms {
 		// Augment with full spatial data for layout planning: object positions, camera transforms, FOV
 		projection["spatialLayout"] = cloudAgentPrevisSpatialLayout(scene)
-		projection["coordinateGuide"] = "坐标系: Y轴向上，单位为米。人物高约1.8m。position=[X,Y,Z]，rotation=[绕X,绕Y,绕Z弧度]。target是摄影机焦点坐标。"
+		projection["coordinateGuide"] = "Coordinate system: Y is up, units are meters. A person is about 1.8m tall. position=[X,Y,Z], rotation=[around X, around Y, around Z in radians]. target is the camera focus point."
 	}
 	return map[string]any{
 		"canvasId":           canvasID,
@@ -96,7 +96,7 @@ func cloudAgentPrevisSceneRead(repo *repository.Repository, userID, canvasID str
 		"snapshotHash":       creationHash(scene),
 		"canvasSnapshotHash": cloudAgentCanvasHash(doc),
 		"revision":           canvas.Revision,
-		"guidance":           "安全摘要。修改用 previs_apply_patch；预演用 previs_preview；布局规划用 includeTransforms=true 获取精确坐标。snapshotHash 只代表该场景。",
+		"guidance":           "Safe summary. Change it with previs_apply_patch; preview with previs_preview; for layout planning use includeTransforms=true to get exact coordinates. snapshotHash covers only this scene.",
 	}, nil
 }
 
@@ -195,20 +195,20 @@ func cloudAgentPrevisPreview(repo *repository.Repository, userID, canvasID strin
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
 		return nil, cloudAgentJSONArgumentError(err)
 	}
-	if err := validateCloudAgentID(args.SceneID, "导演场景 ID", 80); err != nil {
+	if err := validateCloudAgentID(args.SceneID, "Previs scene ID", 80); err != nil {
 		return nil, err
 	}
-	if err := validateCloudAgentID(args.ShotID, "导演镜头 ID", 80); err != nil {
+	if err := validateCloudAgentID(args.ShotID, "Previs shot ID", 80); err != nil {
 		return nil, err
 	}
 	if args.Output != "" && args.Output != "clay_video" {
-		return nil, BadAuthRequest("导演预演 output 目前只支持 clay_video")
+		return nil, BadAuthRequest("Previs preview output only supports clay_video for now")
 	}
 	if args.Duration != nil && (*args.Duration < 0.1 || *args.Duration > 60) {
-		return nil, BadAuthRequest("导演预演 duration 必须在0.1到60秒之间")
+		return nil, BadAuthRequest("Previs preview duration must be between 0.1 and 60 seconds")
 	}
 	if args.FPS != nil && (*args.FPS < 1 || *args.FPS > 60) {
-		return nil, BadAuthRequest("导演预演 fps 必须在1到60之间")
+		return nil, BadAuthRequest("Previs preview fps must be between 1 and 60")
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, canvasID)
 	if err != nil {
@@ -220,11 +220,11 @@ func cloudAgentPrevisPreview(repo *repository.Repository, userID, canvasID strin
 	}
 	scene, ok := findPrevisScene(creationMaps(doc["previsScenes"]), args.SceneID)
 	if !ok {
-		return nil, BadAuthRequest("导演场景不存在或不属于当前画布")
+		return nil, BadAuthRequest("The previs scene does not exist or does not belong to this canvas")
 	}
 	shot, ok := findPrevisShot(scene, args.ShotID)
 	if !ok {
-		return nil, BadAuthRequest("导演镜头不存在或不属于指定场景")
+		return nil, BadAuthRequest("The previs shot does not exist or does not belong to the given scene")
 	}
 	duration := numberValue(shot["duration"], 5)
 	if args.Duration != nil {
@@ -250,7 +250,7 @@ func cloudAgentPrevisPreview(repo *repository.Repository, userID, canvasID strin
 		"output":           "clay_video",
 		"snapshotHash":     creationHash(scene),
 		"execution":        "browser_previs_viewport",
-		"text":             "已请求预演台在浏览器视口录制白模预演；录制完成后会回写为画布视频节点。",
+		"text":             "The previs stage was asked to record a blockout preview in the browser viewport; when recording finishes it is written back as a canvas video node.",
 	}, nil
 }
 

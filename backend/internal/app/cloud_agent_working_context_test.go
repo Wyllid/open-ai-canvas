@@ -91,7 +91,7 @@ func TestCloudAgentHistoryRebuildKeepsContextSource(t *testing.T) {
 	messages := []map[string]interface{}{
 		{"role": "user", "content": "目标"},
 		{"role": "assistant", "content": "回复"},
-		{"role": "user", "content": "【运行状态】{\"source\":\"server\",\"kind\":\"run_handoff\"}", cloudAgentContextSourceKey: "continuation"},
+		{"role": "user", "content": "[Runtime state]{\"source\":\"server\",\"kind\":\"run_handoff\"}", cloudAgentContextSourceKey: "continuation"},
 		{"role": "assistant", "content": "回复2"},
 		{"role": "user", "content": "当前目标"},
 	}

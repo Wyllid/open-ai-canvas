@@ -47,31 +47,31 @@ func cloudAgentReasoningEnabled(mode string) bool { return mode == "auto" || mod
 
 func cloudAgentCapabilityGuide() string {
 	var b strings.Builder
-	b.WriteString("节点能力速查（由服务端能力注册表生成，只用于自主路由，不是工具授权）：\n")
+	b.WriteString("Node capability quick reference (generated from the server capability registry; for routing decisions only, not tool authorization):\n")
 	for _, descriptor := range canvasCapabilityRegistry.List() {
 		b.WriteString("- ")
 		b.WriteString(descriptor.Label)
-		b.WriteString("（")
+		b.WriteString(" (")
 		b.WriteString(descriptor.Type)
-		b.WriteString("）：")
+		b.WriteString("): ")
 		b.WriteString(descriptor.Purpose)
 		if variant := descriptor.Variant; variant != nil {
-			fmt.Fprintf(&b, " 画布识别：type=%s 且 workflowKind=%s，读取结果 kind=%s；不能用 add_node 新建。", variant.BaseType, variant.WorkflowKind, descriptor.Type)
+			fmt.Fprintf(&b, " On the canvas: type=%s with workflowKind=%s, read result kind=%s; cannot be created with add_node.", variant.BaseType, variant.WorkflowKind, descriptor.Type)
 		}
 		if len(descriptor.GoodFor) > 0 {
-			b.WriteString(" 适合：")
-			b.WriteString(strings.Join(descriptor.GoodFor, "、"))
-			b.WriteString("。")
+			b.WriteString(" Good for: ")
+			b.WriteString(strings.Join(descriptor.GoodFor, "; "))
+			b.WriteString(".")
 		}
 		if len(descriptor.NotIdealFor) > 0 {
-			b.WriteString(" 不适合：")
-			b.WriteString(strings.Join(descriptor.NotIdealFor, "、"))
-			b.WriteString("。")
+			b.WriteString(" Not ideal for: ")
+			b.WriteString(strings.Join(descriptor.NotIdealFor, "; "))
+			b.WriteString(".")
 		}
 		if len(descriptor.Tradeoffs) > 0 {
-			b.WriteString(" 维护取舍：")
-			b.WriteString(strings.Join(descriptor.Tradeoffs, "；"))
-			b.WriteString("。")
+			b.WriteString(" Trade-offs: ")
+			b.WriteString(strings.Join(descriptor.Tradeoffs, "; "))
+			b.WriteString(".")
 		}
 		connection, _ := json.Marshal(map[string]any{
 			"inputKind": descriptor.InputKind, "canSource": descriptor.Connection.CanSource,
@@ -80,7 +80,7 @@ func cloudAgentCapabilityGuide() string {
 			"rejectedInputKinds": descriptor.Connection.RejectedInputKinds,
 			"maxInputCount":      descriptor.Connection.MaxInputCount,
 		})
-		b.WriteString(" 连线能力：")
+		b.WriteString(" Connections: ")
 		b.Write(connection)
 		b.WriteString("\n")
 	}
@@ -154,7 +154,7 @@ func compileCloudAgentPolicies(req CloudAgentRequest, agentName string, skills [
 	if err != nil {
 		return "", cloudAgentPolicySnapshot{}, fmt.Errorf("encode Agent execution context: %w", err)
 	}
-	b.WriteString("\n\n本轮执行上下文：\n")
+	b.WriteString("\n\nExecution context for this run:\n")
 	b.Write(encoded)
 	text := strings.TrimSpace(b.String())
 	if text == "" {
@@ -164,10 +164,10 @@ func compileCloudAgentPolicies(req CloudAgentRequest, agentName string, skills [
 }
 
 // cloudAgentReplyLanguages maps the interface locale sent with a run to the language the agent writes in.
-// An empty locale (older clients) keeps the Chinese default.
+// An empty locale (older clients) defaults to English.
 var cloudAgentReplyLanguages = map[string]string{
-	"":      "简体中文",
-	"zh-CN": "简体中文",
+	"":      "English",
+	"zh-CN": "Simplified Chinese",
 	"en":    "English",
 	"pt-BR": "Português (Brasil)",
 }

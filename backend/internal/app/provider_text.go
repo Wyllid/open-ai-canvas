@@ -63,7 +63,7 @@ func executeProtocolCreateRequest(ctx context.Context, input canvasGenerationInp
 	}
 	text := stringField(parsed, "text")
 	if text == "" {
-		return nil, nil, errors.New("流式文本接口没有返回内容")
+		return nil, nil, errors.New("Streaming text API returned no content")
 	}
 	return data, &protocol.Result{Text: text, Reasoning: stringField(parsed, "reasoning")}, nil
 }

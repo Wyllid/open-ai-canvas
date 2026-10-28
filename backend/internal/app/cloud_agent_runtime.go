@@ -97,12 +97,12 @@ func (e *cloudAgentReadLoopError) reasonCode() string {
 
 func (e *cloudAgentReadLoopError) Error() string {
 	if e == nil {
-		return "Agent 重复读取护栏已触发"
+		return "The Agent repeated-read guard was triggered"
 	}
 	if e.Budget {
-		return fmt.Sprintf("Agent 本轮只读工具调用已达到安全上限（%d 次），重复读取已软收敛；请使用已有结果继续，不要继续读取", e.Count)
+		return fmt.Sprintf("This run reached the safety limit of read-only tool calls (%d); repeated reads were soft-converged. Continue with the existing results and stop reading", e.Count)
 	}
-	return fmt.Sprintf("Agent 连续重复读取同一份%s结果，重复读取已软收敛；请使用已有结果继续，不要再次读取", e.ToolName)
+	return fmt.Sprintf("The Agent read the same %s result repeatedly; repeated reads were soft-converged. Continue with the existing results instead of reading again", e.ToolName)
 }
 
 type cloudAgentApproval struct {
@@ -271,7 +271,7 @@ func (s *Service) ensureCloudAgentExecution(task *model.Task, initial cloudAgent
 		for _, skill := range initial.Skills {
 			skillIDs = append(skillIDs, skill.ID)
 		}
-		state.event(task.ID, "tool_completed", map[string]any{"toolName": "skills_load", "skillIds": skillIDs, "text": fmt.Sprintf("已启用 %d 个技能，正文将按需读取", len(initial.Skills))})
+		state.event(task.ID, "tool_completed", map[string]any{"toolName": "skills_load", "skillIds": skillIDs, "text": fmt.Sprintf("%d skills enabled; their content is read on demand", len(initial.Skills))})
 	}
 	if len(state.Plan) > 0 {
 		// 继承的待办清单必须挂到本轮：前端按 plan-<runId> 展示清单，不发这条事件时

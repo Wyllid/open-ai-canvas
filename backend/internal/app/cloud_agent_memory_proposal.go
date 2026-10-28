@@ -51,17 +51,17 @@ type AgentMemoryRevisionView struct {
 
 func agentMemoryProposalError(err error) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return kernel.NotFound("记忆提案或版本不存在")
+		return kernel.NotFound("The memory proposal or version does not exist")
 	}
 	if errors.Is(err, repository.ErrCreationConflict) {
-		return creationConflict("记忆或提案已变化，请刷新后检查；不会覆盖新的修改")
+		return creationConflict("The memory or proposal changed; refresh and check again. Newer changes are not overwritten")
 	}
 	return err
 }
 
 func (s *Service) UserAgentMemoryProposals(userID string, limit int) ([]AgentMemoryProposalView, error) {
 	if strings.TrimSpace(userID) == "" {
-		return nil, kernel.Unauthorized("请先登录")
+		return nil, kernel.Unauthorized("Please sign in first")
 	}
 	rows, err := s.repo.UserAgentMemoryProposals(userID, limit)
 	if err != nil {
@@ -80,7 +80,7 @@ func (s *Service) UserAgentMemoryProposals(userID string, limit int) ([]AgentMem
 
 func (s *Service) DecideUserAgentMemoryProposal(userID, id string, req AgentMemoryProposalDecision) (AgentMemoryProposalView, error) {
 	if strings.TrimSpace(userID) == "" {
-		return AgentMemoryProposalView{}, kernel.Unauthorized("请先登录")
+		return AgentMemoryProposalView{}, kernel.Unauthorized("Please sign in first")
 	}
 	decision := ""
 	switch req.Decision {
@@ -89,10 +89,10 @@ func (s *Service) DecideUserAgentMemoryProposal(userID, id string, req AgentMemo
 	case "reject":
 		decision = model.AgentMemoryProposalRejected
 	default:
-		return AgentMemoryProposalView{}, BadAuthRequest("无效的提案决定")
+		return AgentMemoryProposalView{}, BadAuthRequest("Invalid proposal decision")
 	}
 	if strings.TrimSpace(id) == "" || req.Version <= 0 {
-		return AgentMemoryProposalView{}, BadAuthRequest("提案 ID 和 version 必须有效")
+		return AgentMemoryProposalView{}, BadAuthRequest("Proposal ID and version must be valid")
 	}
 	if err := s.repo.DecideAgentMemoryProposal(userID, id, decision, newID(), req.Version, time.Now().UTC()); err != nil {
 		return AgentMemoryProposalView{}, agentMemoryProposalError(err)
@@ -106,7 +106,7 @@ func (s *Service) DecideUserAgentMemoryProposal(userID, id string, req AgentMemo
 
 func (s *Service) UserAgentMemoryRevisions(userID string, limit int) ([]AgentMemoryRevisionView, error) {
 	if strings.TrimSpace(userID) == "" {
-		return nil, kernel.Unauthorized("请先登录")
+		return nil, kernel.Unauthorized("Please sign in first")
 	}
 	rows, err := s.repo.UserAgentMemoryRevisions(userID, limit)
 	if err != nil {
@@ -125,10 +125,10 @@ func (s *Service) UserAgentMemoryRevisions(userID string, limit int) ([]AgentMem
 
 func (s *Service) RestoreUserAgentMemoryRevision(userID, id string, req AgentMemoryRevisionRestore) (AgentMemoryRevisionView, error) {
 	if strings.TrimSpace(userID) == "" {
-		return AgentMemoryRevisionView{}, kernel.Unauthorized("请先登录")
+		return AgentMemoryRevisionView{}, kernel.Unauthorized("Please sign in first")
 	}
 	if strings.TrimSpace(id) == "" || req.Version <= 0 {
-		return AgentMemoryRevisionView{}, BadAuthRequest("版本 ID 和 version 必须有效")
+		return AgentMemoryRevisionView{}, BadAuthRequest("Version ID and version must be valid")
 	}
 	if err := s.repo.RestoreAgentMemoryRevision(userID, id, req.Version, time.Now().UTC()); err != nil {
 		return AgentMemoryRevisionView{}, agentMemoryProposalError(err)

@@ -38,7 +38,7 @@ func cloudAgentCreativeAnchorForCanvas(repo *repository.Repository, userID strin
 
 	doc, err := creationDocument(canvas.PayloadJSON)
 	if err != nil {
-		return cloudAgentCreativeAnchor{}, BadAuthRequest("服务端画布内容无法解析，请先重新同步")
+		return cloudAgentCreativeAnchor{}, BadAuthRequest("The server copy of the canvas cannot be parsed; sync it again first")
 	}
 	nodes := creationMaps(doc["nodes"])
 	byID := make(map[string]map[string]any, len(nodes))

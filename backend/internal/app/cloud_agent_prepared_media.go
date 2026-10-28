@@ -59,7 +59,7 @@ func cloudAgentMediaDependencyHash(doc map[string]any, args cloudAgentMediaArgs)
 		metadata, _ := node["metadata"].(map[string]any)
 		input, err := contract.NodeGenerationProjection(metadata)
 		if err != nil {
-			return nil, BadAuthRequest("生成依赖字段无效：" + err.Error())
+			return nil, BadAuthRequest("Invalid generation dependency field: " + err.Error())
 		}
 		return input, nil
 	}
@@ -128,7 +128,7 @@ func cloudAgentPreparedReferences(repo *repository.Repository, userID string, pr
 			id := strings.TrimPrefix(stringValue(ref["storageKey"]), "resource:")
 			resource, err := repo.ResourceForUser(userID, id)
 			if err != nil || resource.Status != model.ResourceStatusReady || prepared.ResourceSignatures[id] != cloudAgentResourceSignature(resource) {
-				return nil, creationConflict("已批准的参考资源已失效或不再属于当前用户，请重新准备生成；未提交任务")
+				return nil, creationConflict("An approved reference resource is no longer valid or no longer belongs to the current user; prepare the generation again. No task was submitted")
 			}
 			copy := map[string]any{}
 			for key, value := range ref {
@@ -176,12 +176,12 @@ func prepareCloudAgentMediaApproval(repo *repository.Repository, userID string, 
 		for _, ref := range creationMaps(request.Input[field]) {
 			key := stringValue(ref["storageKey"])
 			if !strings.HasPrefix(key, "resource:") {
-				return nil, BadAuthRequest("生成引用必须先保存到资源库")
+				return nil, BadAuthRequest("Generation references must be saved to the resource library first")
 			}
 			id := strings.TrimPrefix(key, "resource:")
 			resource, err := repo.ResourceForUser(userID, id)
 			if err != nil || resource.Status != model.ResourceStatusReady {
-				return nil, BadAuthRequest("参考资源已失效")
+				return nil, BadAuthRequest("The reference resource is no longer valid")
 			}
 			prepared.ResourceSignatures[id] = cloudAgentResourceSignature(resource)
 		}
@@ -223,17 +223,17 @@ func cloudAgentStaleApprovalError(message, action string) error {
 
 func validateCloudAgentPreparedAdmission(repo *repository.Repository, userID string, prepared *cloudAgentPreparedMedia, task *model.Task, doc map[string]any, args cloudAgentMediaArgs) error {
 	if prepared == nil || prepared.Version != 1 || prepared.Hash == "" {
-		return creationConflict("缺少已批准的生成准备态，请重新申请审批；未提交任务")
+		return creationConflict("The approved generation preparation is missing; request approval again. No task was submitted")
 	}
 	if time.Now().After(prepared.Quote.ExpiresAt) {
-		return cloudAgentStaleApprovalError("生成审批已过期，请重新调用 generate_media 申请审批；未提交任务", "retry")
+		return cloudAgentStaleApprovalError("The generation approval expired; call generate_media again to request approval. No task was submitted", "retry")
 	}
 	dependency, err := cloudAgentMediaDependencyHash(doc, args)
 	if err != nil {
 		return err
 	}
 	if dependency != prepared.DependencyHash {
-		return cloudAgentStaleApprovalError("画布生成依赖已变化，请重新读取画布后再申请审批；未提交任务", "reread_canvas")
+		return cloudAgentStaleApprovalError("The canvas generation dependencies changed; read the canvas again before requesting approval. No task was submitted", "reread_canvas")
 	}
 	if len(prepared.CharacterVersions) > 0 {
 		canvas, err := repo.CanvasProjectForUser(userID, task.ProjectID)
@@ -247,11 +247,11 @@ func validateCloudAgentPreparedAdmission(repo *repository.Repository, userID str
 		for id, versionID := range prepared.CharacterVersions {
 			node := nodes[id]
 			if node == nil || !cloudAgentCharacterNode(node) {
-				return cloudAgentStaleApprovalError("角色卡已变化，请重新读取画布后再申请审批；未提交任务", "reread_canvas")
+				return cloudAgentStaleApprovalError("The character card changed; read the canvas again before requesting approval. No task was submitted", "reread_canvas")
 			}
 			character, err := cloudAgentResolveCharacter(repo, userID, canvas.ProjectID, node)
 			if err != nil || character.Card.VersionID != versionID {
-				return cloudAgentStaleApprovalError("角色卡版本已变化，请重新读取画布后再申请审批；未提交任务", "reread_canvas")
+				return cloudAgentStaleApprovalError("The character card version changed; read the canvas again before requesting approval. No task was submitted", "reread_canvas")
 			}
 		}
 	}
@@ -260,7 +260,7 @@ func validateCloudAgentPreparedAdmission(repo *repository.Repository, userID str
 		return err
 	}
 	if hash != prepared.ResolvedHash {
-		return cloudAgentStaleApprovalError("模型规格或价格已变化，请重新调用 generate_media 申请审批；未提交任务", "retry")
+		return cloudAgentStaleApprovalError("The model specification or price changed; call generate_media again to request approval. No task was submitted", "retry")
 	}
 	if _, err := cloudAgentPreparedReferences(repo, userID, prepared); err != nil {
 		return err

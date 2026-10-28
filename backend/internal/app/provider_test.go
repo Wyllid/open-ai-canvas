@@ -845,7 +845,7 @@ data: {"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta"
 
 `))
 	parser.flush()
-	if _, err := parser.result(); err == nil || !strings.Contains(err.Error(), "完整 JSON") {
+	if _, err := parser.result(); err == nil || !strings.Contains(err.Error(), "complete JSON") {
 		t.Fatalf("incomplete tool arguments error = %v", err)
 	}
 }

@@ -24,7 +24,7 @@ func TestCloudAgentSkillEmptyDirectoryAndRepeatedRead(t *testing.T) {
 		t.Fatal(err)
 	}
 	data := result.(map[string]any)
-	if data["entryPath"] != cloudAgentSkillEntryPath || strings.Join(data["files"].([]string), ",") != cloudAgentSkillEntryPath || !strings.Contains(data["guidance"].(string), "先读取 SKILL.md") {
+	if data["entryPath"] != cloudAgentSkillEntryPath || strings.Join(data["files"].([]string), ",") != cloudAgentSkillEntryPath || !strings.Contains(data["guidance"].(string), "Read SKILL.md first") {
 		t.Fatalf("missing empty-directory guidance: %+v", data)
 	}
 	cloudAgentToolResult("", &state, call, result, nil)
@@ -93,7 +93,7 @@ func TestCloudAgentSkillMissingAndDistinctPaths(t *testing.T) {
 	if state.Events[0].Type != "tool_failed" || state.Events[0].Payload["path"] != "references/missing.md" {
 		t.Fatalf("missing failure context: %+v", state.Events[0])
 	}
-	if _, err := cloudAgentReadTool(nil, "user", &state, call); err == nil || !strings.Contains(err.Error(), "参考文件未包含") {
+	if _, err := cloudAgentReadTool(nil, "user", &state, call); err == nil || !strings.Contains(err.Error(), "reference file is not in") {
 		t.Fatalf("missing path validation changed unexpectedly: %v", err)
 	}
 	if _, err := cloudAgentReadTool(nil, "user", &state, skillFeedbackCall("disabled", "")); err == nil {

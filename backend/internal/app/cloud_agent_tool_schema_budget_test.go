@@ -61,16 +61,12 @@ func TestCloudAgentToolSchemaStaysCompact(t *testing.T) {
 		t.Fatal("启用视觉能力后 canvas_inspect_image 未暴露")
 	}
 
-	// 体积预算：
-	// 之后能力注册表加入角色卡（图片/视频/音频接受 character 输入）到 28,979 字节；再新增
-	// canvas_create_character（角色卡打包创建，设定字段已压成一行描述）后为 25 个工具、29,938
-	// 字节；本轮加入 previs_scene_create 与 previs_apply_patch 后为 27 个工具、34,171 字节，
-	// 因此显式上调到 35,000；视频生成支持 Agent 设置首尾帧（#696）后为 35,050 字节，
-	// 再显式上调到 36,000，保留约2.7%的余量。skill_search 补触发时机与零命中行为
-	// 描述后为 36,072 字节；启用视觉工具后为 29 个工具、36,883 字节，预算显式上调到
-	// 37,500，保留约1.7%的余量。新增工具或字段时请重新测量并有意识地
-	// 调整这个数字，而不是让 schema 悄悄膨胀（它每一步都要发、还在前缀最前面）。
-	if len(raw) > 37500 {
-		t.Fatalf("平台工具 schema 体积 %d 字节超出预算 37500：请压缩描述或显式调整预算", len(raw))
+	// Size budget. The schema is sent on every step at the very start of the prompt prefix, so it must not
+	// grow unnoticed. With 29 tools and English descriptions it measures 40,608 bytes (the Chinese version
+	// was 36,883). English needs more bytes but fewer tokens per byte than Chinese, so the token cost did not
+	// grow; the budget is 41,500, about 2% headroom. When you add a tool or field, measure again and change
+	// this number on purpose.
+	if len(raw) > 41500 {
+		t.Fatalf("platform tool schema is %d bytes, over the 41500 budget: shorten descriptions or raise the budget on purpose", len(raw))
 	}
 }

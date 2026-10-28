@@ -158,7 +158,7 @@ func TestCloudAgentPiInterjectionReachesModelRequest(t *testing.T) {
 	result := interjectionModelStep(t, s, db, "user", root.ID, messages, `{"text":"好的","toolCalls":[]}`)
 
 	steered := interjectionSteerTexts(result)
-	if len(steered) != 1 || steered[0] != "【用户插话】改成 16:9" {
+	if len(steered) != 1 || steered[0] != "[User interjection] 改成 16:9" {
 		t.Fatalf("响应没有携带 steer 正文: %#v", result["steeringMessages"])
 	}
 	_, state := agentInterjectionState(t, s, root.ID)
@@ -300,7 +300,7 @@ func TestCloudAgentPiInterjectionResumesAfterFinalAnswer(t *testing.T) {
 	if len(state.PendingInterjections) != 0 {
 		t.Fatal("完成闸没有出队插话")
 	}
-	if state.PiResumePrompt != "【用户插话】补一句：加字幕" {
+	if state.PiResumePrompt != "[User interjection] 补一句：加字幕" {
 		t.Fatalf("插话没有被写进续跑提示词: %q", state.PiResumePrompt)
 	}
 	if !agentHasEvent(state, "user_interjection_delivered") {

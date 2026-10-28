@@ -106,7 +106,7 @@ func TestCloudAgentPiModelRetriesTruncatedToolArguments(t *testing.T) {
 	}
 	if err := db.Model(&model.Task{}).Where("id = ?", first).Updates(map[string]any{
 		"status": model.TaskStatusFailed,
-		"error":  "Agent 工具参数不是完整 JSON：invalid character '}' after array element",
+		"error":  "Agent tool arguments are not complete JSON: invalid character '}' after array element",
 	}).Error; err != nil {
 		t.Fatal(err)
 	}

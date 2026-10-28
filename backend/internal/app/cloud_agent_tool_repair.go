@@ -69,8 +69,8 @@ func cloudAgentRecordToolResult(run *model.CloudAgentExecution, state *cloudAgen
 		return
 	}
 	run.Status = "failed"
-	run.FailureMessage = truncateRunes(fmt.Sprintf("自动纠正已尝试 %d 次，仍未完成：%s", cloudAgentToolAttemptLimit, cloudAgentSafeToolError(err)), 1000)
-	cloudAgentDropInterjections(run.ID, "本轮已结束："+truncateRunes(run.FailureMessage, 120), state)
+	run.FailureMessage = truncateRunes(fmt.Sprintf("Automatic correction was tried %d times and still did not finish: %s", cloudAgentToolAttemptLimit, cloudAgentSafeToolError(err)), 1000)
+	cloudAgentDropInterjections(run.ID, "This run has ended: "+truncateRunes(run.FailureMessage, 120), state)
 	state.event(run.ID, "run_failed", map[string]any{
 		"text": run.FailureMessage, "reason": "tool_retry_exhausted", "toolName": call.Function.Name,
 		"callId": call.ID, "attempts": cloudAgentToolAttemptLimit, "severity": "error", "terminal": true,

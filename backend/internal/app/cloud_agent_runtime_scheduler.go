@@ -94,7 +94,7 @@ func (s *Service) advanceCloudAgentByID(userID, id string) error {
 		return err
 	}
 	if task.Operation != cloudAgentOperation {
-		return kernel.NotFound("Agent 运行不存在")
+		return kernel.NotFound("Agent run not found")
 	}
 	run, lookupErr := s.repo.CloudAgent(userID, id)
 	if errors.Is(lookupErr, gorm.ErrRecordNotFound) {
@@ -173,15 +173,15 @@ func (s *Service) wakeCloudAgentScheduler() {
 func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) {
 	defer func() {
 		if errors.Is(err, errCloudAgentCheckpoint) {
-			message := "Agent 运行状态保存失败，本轮已停止；已有任务结果保留在任务中心"
+			message := "Saving the Agent run state failed and this run has stopped; existing task results remain in the task center"
 			var checkpointErr *cloudAgentCheckpointError
 			if errors.As(err, &checkpointErr) {
 				log.Printf("agent checkpoint rejected run=%s stage=%s error=%v", run.ID, checkpointErr.Stage, checkpointErr.Err)
 				if checkpointErr.Stage == "state size" {
-					message = "Agent 上下文或执行记录超过安全限制，本轮已停止；已有任务结果保留在任务中心"
+					message = "The Agent context or execution record exceeded the safety limit and this run has stopped; existing task results remain in the task center"
 				}
 			} else {
-				message = "Agent 运行状态保存失败，本轮已停止；已有任务结果保留在任务中心"
+				message = "Saving the Agent run state failed and this run has stopped; existing task results remain in the task center"
 			}
 			err = s.terminateCloudAgent(run, message)
 		}
@@ -198,7 +198,7 @@ func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) 
 		if errors.As(err, &appErr) && appErr != nil {
 			return s.terminateCloudAgent(run, appErr.Message)
 		}
-		return s.terminateCloudAgent(run, "Agent 运行状态损坏，本轮已停止")
+		return s.terminateCloudAgent(run, "The Agent run state is corrupted; this run has stopped")
 	}
 	// 单步边界每次推进都重新解析：管理员改配置后，正在跑的这一轮下一步就用新值。
 	state.StepLimits, err = s.cloudAgentStepLimits()
@@ -208,7 +208,7 @@ func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) 
 	if state.ActiveTaskID != "" {
 		task, err := s.repo.TaskForUser(run.UserID, state.ActiveTaskID)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return s.terminateCloudAgent(run, "Agent 模型任务已不存在，本轮已停止")
+			return s.terminateCloudAgent(run, "The Agent model task no longer exists; this run has stopped")
 		}
 		if err != nil {
 			return err // Transient database failures must not terminate a live task.
@@ -250,7 +250,7 @@ func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) 
 		}
 		if task.Status == model.TaskStatusSucceeded {
 			if err := json.Unmarshal([]byte(task.ResultJSON), &result); err != nil {
-				return s.terminateCloudAgent(run, "模型任务结果损坏，本轮已停止")
+				return s.terminateCloudAgent(run, "The model task result is corrupted; this run has stopped")
 			}
 			calls := result.ToolCalls
 			if len(calls) == 0 {
@@ -260,7 +260,7 @@ func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) 
 				return s.correctCloudAgentOutput(run, &state, violation)
 			}
 			if err := validateCloudAgentCalls(calls); err != nil {
-				return s.correctCloudAgentOutput(run, &state, "工具调用无效或重复（callId 不能重复、参数必须是 JSON 对象）")
+				return s.correctCloudAgentOutput(run, &state, "Invalid or duplicate tool calls (callId must be unique and arguments must be a JSON object)")
 			}
 			result.ToolCalls = calls
 		}
@@ -285,7 +285,7 @@ func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) 
 				current.Status = "failed"
 				text, reason := cloudAgentModelFailure(task)
 				current.FailureMessage = truncateRunes(text, 1000)
-				cloudAgentDropInterjections(run.ID, "本轮已结束："+truncateRunes(text, 120), &state)
+				cloudAgentDropInterjections(run.ID, "This run has ended: "+truncateRunes(text, 120), &state)
 				state.event(run.ID, "run_failed", map[string]any{"text": text, "reason": reason, "taskId": task.ID})
 				return cloudAgentSave(current, &state)
 			}
@@ -319,7 +319,7 @@ func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) 
 					if !cloudAgentStepBudgetExhausted(&state) {
 						return cloudAgentSave(current, &state)
 					}
-					cloudAgentDropInterjections(run.ID, "本轮已达到模型调用上限", &state)
+					cloudAgentDropInterjections(run.ID, "This run reached its model call limit", &state)
 				}
 				if !cloudAgentStepBudgetExhausted(&state) && !state.ActionNudged {
 					if pending := cloudAgentPendingPlanItems(state.Plan); len(pending) > 0 {
@@ -357,7 +357,7 @@ func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) 
 		state.ProfileReads = nil
 	}
 	if stepLimit := cloudAgentStepLimit(state.Request); stepLimit > 0 && state.Step >= stepLimit {
-		return s.failCloudAgent(run, &state, fmt.Sprintf("达到 %d 次模型调用上限，本轮已停止", stepLimit))
+		return s.failCloudAgent(run, &state, fmt.Sprintf("Reached the limit of %d model calls; this run has stopped", stepLimit))
 	}
 	cloudAgentDrainInterjections(run.ID, &state)
 	softReadGuard := state.ReadLoopNudge
@@ -366,7 +366,7 @@ func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) 
 	if changed, pruned := cloudAgentPruneInspectedImages(&state.Canonical, nil); changed {
 		state.event(run.ID, "context_images_pruned", map[string]any{
 			"prunedImages": pruned, "retentionRounds": cloudAgentImageRetentionRounds,
-			"text": "图片裁剪：移出超出保留轮次的看图结果",
+			"text": "Image trimming: removed image views older than the kept rounds",
 		})
 	}
 	canonical, contextErr := s.cloudAgentModelContext(run, &state, contextBudget)
@@ -398,7 +398,7 @@ func (s *Service) advanceCloudAgent(run *model.CloudAgentExecution) (err error) 
 	}
 	tokens, tokenErr := cloudAgentRequestEstimatedTokens(&canonical)
 	if tokenErr != nil {
-		return s.failCloudAgent(run, &state, "模型上下文估算失败，请稍后重试")
+		return s.failCloudAgent(run, &state, "Estimating the model context failed; retry later")
 	}
 	// 超预算不再直接判死：先暂停步进、把历史压成结构化检查点，压完用压缩后的上下文继续本轮。
 	// 次数上限（cloudAgentMaxCompactionsPerRun）用完仍超预算时，才回到下面的判死路径。
@@ -477,7 +477,7 @@ func compactCloudAgentContext(request *canonicalAgentRequest, budget cloudAgentC
 			continue
 		}
 		result["contextCompacted"] = true
-		result["guidance"] = "历史读取正文已移出模型上下文；需要时重新读取。保留的历史状态不是当前状态，也不是执行授权，不得据此重复提交生成。"
+		result["guidance"] = "Earlier read results were removed from the model context; read again when needed. Kept history is not the current state and grants no authorization; never resubmit generation based on it."
 		body, err := json.Marshal(result)
 		if err != nil || len(body) >= len(stringField(message, "content")) {
 			continue
@@ -538,20 +538,20 @@ func cloudAgentBatchInvalidCalls(calls []cloudAgentCall) (map[int]string, bool) 
 // cloudAgentInvalidCallReason 返回单个调用未通过校验的原因与是否属于参数问题；
 // 空原因表示有效。seen 记录本批已出现的调用 ID（重复即无效），有效调用由本函数登记。
 func cloudAgentInvalidCallReason(call cloudAgentCall, seen map[string]bool) (string, bool) {
-	if err := validateCloudAgentID(call.ID, "工具调用 ID", 160); err != nil {
-		return "调用 ID 无效", false
+	if err := validateCloudAgentID(call.ID, "Tool call ID", 160); err != nil {
+		return "Invalid call ID", false
 	}
 	if seen[call.ID] {
-		return "调用 ID 与同批其他调用重复", false
+		return "The call ID repeats another call in the same batch", false
 	}
 	if call.Function.Name == "" || len(call.Function.Name) > 80 || !utf8.ValidString(call.Function.Name) {
-		return "工具名无效", false
+		return "Invalid tool name", false
 	}
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &map[string]any{}); err != nil {
-		return "参数不是合法的 JSON 对象", true
+		return "Arguments are not a valid JSON object", true
 	}
 	if len(call.Function.Arguments) > cloudAgentToolArgumentsByteLimit {
-		return "参数超过 32000 字节上限（中文约一万字）；长文本请拆分为多次调用，例如先建空结构再逐段追加", true
+		return "Arguments exceed the 32000 byte limit; split long text into several calls, for example create an empty structure first and append section by section", true
 	}
 	seen[call.ID] = true
 	return "", false
@@ -572,7 +572,7 @@ func (s *Service) failCloudAgent(run *model.CloudAgentExecution, state *cloudAge
 		current.Status = "failed"
 		current.FailureMessage = truncateRunes(message, 1000)
 		state.PendingLessonDrafts = nil
-		cloudAgentDropInterjections(run.ID, "本轮已结束："+truncateRunes(message, 120), state)
+		cloudAgentDropInterjections(run.ID, "This run has ended: "+truncateRunes(message, 120), state)
 		state.event(run.ID, "run_failed", map[string]any{"text": message})
 		return cloudAgentSave(current, state)
 	})

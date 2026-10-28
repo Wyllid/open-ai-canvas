@@ -56,7 +56,7 @@ func cloudAgentMediaDraftConfiguration(a cloudAgentMediaArgs, doc map[string]any
 		}
 		spec, err := contract.Decode(encoded)
 		if err != nil || spec.Mode != a.Mode {
-			return nil, options, BadAuthRequest("草稿生成配置无效，未提交生成任务")
+			return nil, options, BadAuthRequest("The draft generation configuration is invalid; no generation task was submitted")
 		}
 		options, selection = spec.Options, spec.ModelSelection
 	} else {
@@ -67,7 +67,7 @@ func cloudAgentMediaDraftConfiguration(a cloudAgentMediaArgs, doc map[string]any
 		config["videoSeconds"], config["videoGenerateAudio"], config["videoWatermark"] = meta["seconds"], meta["generateAudio"], meta["watermark"]
 		options, err = contract.OptionsFromTaskConfig(a.Mode, config)
 		if err != nil {
-			return nil, options, BadAuthRequest("草稿生成配置无效，未提交生成任务")
+			return nil, options, BadAuthRequest("The draft generation configuration is invalid; no generation task was submitted")
 		}
 		if id := stringValue(meta["logicalModelId"]); id != "" {
 			selection = &contract.ModelSelection{Kind: "logical", LogicalModelID: id}
@@ -79,7 +79,7 @@ func cloudAgentMediaDraftConfiguration(a cloudAgentMediaArgs, doc map[string]any
 	}
 	if selection != nil {
 		if err := selection.Validate(); err != nil {
-			return nil, options, BadAuthRequest("草稿模型选择无效，未提交生成任务")
+			return nil, options, BadAuthRequest("The draft model selection is invalid; no generation task was submitted")
 		}
 	}
 	return selection, options, nil
@@ -125,14 +125,14 @@ func (s *Service) normalizeCloudAgentImageOptions(a *cloudAgentMediaArgs, refs m
 		}
 		cached, exists := snapshot.Models[a.LogicalModelID]
 		if !exists {
-			return InvalidModelSelection("指定的逻辑模型不存在")
+			return InvalidModelSelection("The given logical model does not exist")
 		}
 		spec = cached.ProductSpec
 		defaults = cached.Defaults
 	} else {
 		item, err := s.repo.ChannelModelByKey(a.ChannelID, a.ChannelModelKey)
 		if err != nil {
-			return InvalidModelSelection("指定的模型不存在")
+			return InvalidModelSelection("The given model does not exist")
 		}
 		profile, err := normalizedChannelModelCapability(item, s.protocolRegistry())
 		if err != nil {
@@ -145,7 +145,7 @@ func (s *Service) normalizeCloudAgentImageOptions(a *cloudAgentMediaArgs, refs m
 		applyChannelCapabilityDefaults(defaults, "image", profile)
 	}
 	if normalizeCapability(spec.Capability) != "image" {
-		return ModelCapabilityNotSupported("所选模型与图片生成能力不匹配")
+		return ModelCapabilityNotSupported("The selected model does not match the image generation capability")
 	}
 	if resolution, declared := spec.Options["imageResolution"]; declared {
 		if _, hasQuality := spec.Options["quality"]; !hasQuality && !a.ConfigurationChange.includes("quality") && a.ImageResolution == "" && a.Quality != "" && matchOptionConstraint("imageResolution", resolution, a.Quality) {

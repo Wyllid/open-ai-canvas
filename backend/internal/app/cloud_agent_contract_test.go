@@ -162,7 +162,7 @@ func TestCloudAgentCanvasSummaryReportsOmittedFocusedNodes(t *testing.T) {
 		t.Fatal(err)
 	}
 	selection := result["selection"].(map[string]any)
-	if selection["omittedFocusCount"] != float64(4) || !strings.Contains(stringValue(selection["note"]), "4 个节点未附带") {
+	if selection["omittedFocusCount"] != float64(4) || !strings.Contains(stringValue(selection["note"]), "4 more selected nodes that were not attached") {
 		t.Fatalf("selection overflow count was not disclosed: %+v", selection)
 	}
 }
@@ -343,15 +343,15 @@ func TestCloudAgentPolicyPublishesCapabilityRoutingGuide(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, expected := range []string{
-		"节点能力速查",
-		"由服务端能力注册表生成",
-		"分镜脚本（script）",
-		"多镜头",
-		"逐镜审查",
-		"后续维护",
-		"单画面、一次性说明或快速试验优先轻量节点",
-		"普通文本或 Markdown 不能伪装成结构化分镜",
-		"不为形式强制使用任何节点",
+		"Node capability quick reference",
+		"generated from the server capability registry",
+		"Storyboard (script)",
+		"Multi-shot",
+		"Shot-by-shot review",
+		"later maintainability",
+		"a single image, a one-off explanation or a quick experiment favors a lightweight node",
+		"plain text or Markdown must not pose as a structured storyboard",
+		"Do not force any node type for form's sake",
 	} {
 		if !strings.Contains(text, expected) {
 			t.Fatalf("compiled policy omitted capability routing guidance %q: %s", expected, text)

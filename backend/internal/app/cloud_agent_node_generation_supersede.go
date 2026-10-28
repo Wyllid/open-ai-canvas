@@ -20,9 +20,9 @@ const cloudAgentApprovalSuperseded = "superseded_by_node"
 // cloudAgentDecisionConflict 给重复/冲突的审批决定一个用户能看懂的原因。
 func cloudAgentDecisionConflict(previous string) error {
 	if previous == cloudAgentApprovalSuperseded {
-		return creationConflict("你已在画布节点上直接生成，本次审批已自动关闭")
+		return creationConflict("You generated directly on the canvas node, so this approval was closed automatically")
 	}
-	return creationConflict("该审批已有不同决定")
+	return creationConflict("This approval already has a different decision")
 }
 
 // supersedeCloudAgentApprovalsForNodeTask 在普通画布生成任务创建成功后调用：
@@ -135,14 +135,14 @@ func applyCloudAgentApprovalSupersede(current *model.CloudAgentExecution, state 
 		"decision":   cloudAgentApprovalSuperseded,
 		"nodeId":     nodeID,
 		"taskId":     taskID,
-		"text":       "你已在画布节点上直接提交了生成，本次审批已自动关闭；Agent 不会重复提交或扣费，结果由画布回写。",
+		"text":       "You submitted the generation directly on the canvas node, so this approval was closed automatically; the Agent will not submit or charge again, and the canvas writes back the result.",
 	})
 	cloudAgentRecordToolResult(current, state, call, map[string]any{
 		"status":        "superseded_by_user",
 		"taskSubmitted": false,
 		"nodeId":        nodeID,
 		"userTaskId":    taskID,
-		"summary":       fmt.Sprintf("用户已在画布节点 %s 上直接提交该生成（taskId=%s）。Agent 未提交任务、未扣费；不要再为该节点调用 generate_media，结果由画布自动回写。", nodeID, taskID),
+		"summary":       fmt.Sprintf("The user submitted this generation directly on canvas node %s (taskId=%s). The Agent submitted no task and charged nothing; do not call generate_media for this node again, the canvas writes back the result automatically.", nodeID, taskID),
 	}, nil)
 	if current.Status == "waiting_approval" {
 		current.Status = "running"
@@ -150,7 +150,7 @@ func applyCloudAgentApprovalSupersede(current *model.CloudAgentExecution, state 
 }
 
 func (s *Service) resumeCloudAgentAfterSupersede(userID, runID, nodeID, taskID string) {
-	prompt := fmt.Sprintf("用户没有使用审批卡片，而是直接在画布节点 %s 上提交了刚才等待审批的生成（taskId=%s）。该调用已记录为用户手动提交：Agent 没有提交任务、没有扣费，生成结果由画布回写。请继续剩余步骤，不要再次为该节点调用 generate_media。", nodeID, taskID)
+	prompt := fmt.Sprintf("Instead of using the approval card, the user submitted the pending generation directly on canvas node %s (taskId=%s). The call is recorded as a manual submission by the user: the Agent submitted no task and charged nothing, and the canvas writes back the result. Continue with the remaining steps and do not call generate_media for this node again.", nodeID, taskID)
 	if err := s.saveCloudAgentPiResumePrompt(userID, runID, prompt); err != nil {
 		slog.Warn("agent approval supersede resume prompt failed", "run", runID, "error", err)
 		return

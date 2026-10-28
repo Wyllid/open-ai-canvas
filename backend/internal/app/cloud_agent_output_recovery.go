@@ -10,10 +10,10 @@ import (
 
 func cloudAgentOutputViolation(text string, callCount int) string {
 	if len(text) > cloudAgentMaxOutputBytes {
-		return fmt.Sprintf("正文 %d 字节，超过单步 %d 字节上限", len(text), cloudAgentMaxOutputBytes)
+		return fmt.Sprintf("The text is %d bytes, over the %d byte limit per step", len(text), cloudAgentMaxOutputBytes)
 	}
 	if callCount > cloudAgentMaxToolCalls {
-		return fmt.Sprintf("一次发起了 %d 个工具调用，超过单步 %d 个上限", callCount, cloudAgentMaxToolCalls)
+		return fmt.Sprintf("%d tool calls were issued at once, over the limit of %d per step", callCount, cloudAgentMaxToolCalls)
 	}
 	return ""
 }
@@ -35,7 +35,7 @@ func cloudAgentTruncatedToolArguments(task *model.Task) bool {
 	if task == nil {
 		return false
 	}
-	return strings.Contains(task.Error, "工具参数不是完整 JSON")
+	return strings.Contains(task.Error, "not complete JSON")
 }
 
 func (s *Service) correctCloudAgentTruncatedCalls(run *model.CloudAgentExecution, state *cloudAgentRuntime) error {

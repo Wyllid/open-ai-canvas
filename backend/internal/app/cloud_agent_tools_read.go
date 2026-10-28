@@ -112,7 +112,7 @@ func cloudAgentReadToolCached(repo *repository.Repository, userID string, state 
 		return cloudAgentReadTool(repo, userID, state, call, services...)
 	}
 	if state == nil {
-		return nil, errors.New("Agent 只读工具缺少运行时状态")
+		return nil, errors.New("Agent read-only tools are missing the runtime state")
 	}
 	if !cloudAgentReadToolCacheable(call.Function.Name) {
 		if state.ReadToolCalls >= cloudAgentMaxReadToolCallsPerRun {
@@ -145,21 +145,21 @@ func cloudAgentReadToolCached(repo *repository.Repository, userID string, state 
 					state.ReadLoopCount = cached.ReplayCount
 				}
 				if len(cached.Result) == 0 {
-					return nil, errors.New("缓存的 Agent 只读结果无效")
+					return nil, errors.New("The cached Agent read-only result is invalid")
 				}
 				if !cloudAgentReadResultInContext(state, cached.Result) {
 					// A compaction may have evicted the original tool body. Restore
 					// the complete result exactly once so the model can continue.
 					var restored any
 					if err := json.Unmarshal(cached.Result, &restored); err != nil {
-						return nil, errors.New("缓存的 Agent 只读结果无效")
+						return nil, errors.New("The cached Agent read-only result is invalid")
 					}
 					return restored, nil
 				}
 				return map[string]any{
 					"cacheReplay": true,
 					"replayCount": cached.ReplayCount,
-					"message":     "该只读结果已在当前上下文中，请直接使用已有结果，不要再次读取",
+					"message":     "This read-only result is already in the current context; use it directly instead of reading again",
 				}, nil
 			}
 		}
@@ -200,7 +200,7 @@ func cloudAgentReadToolCached(repo *repository.Repository, userID string, state 
 func cloudAgentReadTool(repo *repository.Repository, userID string, state *cloudAgentRuntime, call cloudAgentCall, services ...*Service) (any, error) {
 	binding, known := cloudAgentRegistry().Lookup(call.Function.Name)
 	if !known || binding.Handler.Read == nil {
-		return nil, BadAuthRequest("未知或不可读取的工具")
+		return nil, BadAuthRequest("Unknown or unreadable tool")
 	}
 	return binding.Handler.Read(repo, userID, state, call, services...)
 }
@@ -233,11 +233,11 @@ func cloudAgentRenderImageAnnotations(repo *repository.Repository, userID string
 	if err := decodeCloudAgentJSONObject(call.Function.Arguments, &args); err != nil {
 		return nil, cloudAgentJSONArgumentError(err)
 	}
-	if err := validateCloudAgentID(args.NodeID, "图片节点ID", 80); err != nil {
+	if err := validateCloudAgentID(args.NodeID, "Image node ID", 80); err != nil {
 		return nil, err
 	}
 	if len(args.Annotations) == 0 || len(args.Annotations) > 30 {
-		return nil, BadAuthRequest("标注数量必须在1到30之间")
+		return nil, BadAuthRequest("The number of annotations must be between 1 and 30")
 	}
 	canvas, err := repo.CanvasProjectForUser(userID, state.Request.CanvasID)
 	if err != nil {
@@ -253,7 +253,7 @@ func cloudAgentRenderImageAnnotations(repo *repository.Repository, userID string
 	}
 	node := nodes[args.NodeID]
 	if node == nil || stringValue(node["type"]) != "image" {
-		return nil, BadAuthRequest("目标节点不是图片节点")
+		return nil, BadAuthRequest("The target node is not an image node")
 	}
 	width, height := 1024.0, 1024.0
 	if v, ok := node["width"].(float64); ok && v > 0 {
@@ -263,17 +263,17 @@ func cloudAgentRenderImageAnnotations(repo *repository.Repository, userID string
 		height = v
 	}
 	if width < 1 || height < 1 || width > 8192 || height > 8192 || width*height > 16_777_216 {
-		return nil, BadAuthRequest("标注图片尺寸超过 1600 万像素预算，请先缩小图片节点")
+		return nil, BadAuthRequest("The annotated image exceeds the 16 megapixel budget; make the image node smaller first")
 	}
 	if state.RuntimeRunID == "" {
-		return nil, BadAuthRequest("标注缺少运行归属")
+		return nil, BadAuthRequest("The annotation has no owning run")
 	}
 	canvasImage := image.NewRGBA(image.Rect(0, 0, int(width), int(height)))
 	red := color.RGBA{R: 239, G: 68, B: 68, A: 255}
 	white := color.RGBA{R: 255, G: 255, B: 255, A: 255}
 	for _, item := range args.Annotations {
 		if item.X < 0 || item.X > 1 || item.Y < 0 || item.Y > 1 || strings.TrimSpace(item.Label) == "" {
-			return nil, BadAuthRequest("标注坐标必须在0到1之间且文字不能为空")
+			return nil, BadAuthRequest("Annotation coordinates must be between 0 and 1 and the text must not be empty")
 		}
 		x, y := int(item.X*width), int(item.Y*height)
 		drawFilledCircle(canvasImage, x, y, 18, red)
@@ -282,7 +282,7 @@ func cloudAgentRenderImageAnnotations(repo *repository.Repository, userID string
 	}
 	var encoded bytes.Buffer
 	if err := png.Encode(&encoded, canvasImage); err != nil {
-		return nil, fmt.Errorf("编码标注参考图失败: %w", err)
+		return nil, fmt.Errorf("Encoding the annotated reference image failed: %w", err)
 	}
 	if state.TransientReferences == nil {
 		state.TransientReferences = map[string]cloudAgentTransientReference{}

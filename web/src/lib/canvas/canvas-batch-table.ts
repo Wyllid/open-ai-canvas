@@ -3,8 +3,8 @@ import { nanoid } from "nanoid";
 
 import type { CanvasBatchOperation, CanvasBatchReferenceColumn, CanvasBatchRow, CanvasBatchTableData, CanvasConnection, CanvasNodeData } from "@/types/canvas";
 
-export const TRY_ON_BATCH_PROMPT = "参考图1是人物原图，参考图2是目标服装。保持人物身份、五官、姿态和背景不变，将人物服装替换为参考图2中的款式。准确还原服装版型、颜色、材质、纹理和装饰细节，穿着关系自然，光影与原图一致。";
-export const CREATIVE_BATCH_PROMPT = "基于参考图创作一张新的商业图片，保留主体身份和关键产品细节，画面构图完整，光影自然。";
+export const TRY_ON_BATCH_PROMPT = "Reference image 1 is the original photo of the person and reference image 2 is the target garment. Keep the person's identity, facial features, pose and background unchanged, and replace their clothing with the garment in reference image 2. Reproduce the garment's cut, color, material, texture and decorative details accurately, make it fit naturally, and match the lighting of the original photo.";
+export const CREATIVE_BATCH_PROMPT = "Create a new commercial image based on the reference images, keeping the subject's identity and key product details, with a complete composition and natural lighting.";
 export const BATCH_REFERENCE_HANDLE_PREFIX = "batch-reference:";
 /** 操作栏 44 + 全局提示词 76 + 分隔 1 + 列头半高 18，对准表头中线。 */
 export const BATCH_REFERENCE_HANDLE_TOP = 139;

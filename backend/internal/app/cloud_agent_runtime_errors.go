@@ -15,25 +15,25 @@ import (
 
 // Only expose known failure categories; raw provider errors can contain URLs and credentials.
 func cloudAgentModelFailure(task *model.Task) (string, string) {
-	detail, reason := "模型任务未成功", "model_task_failed"
+	detail, reason := "The model task did not succeed", "model_task_failed"
 	if diagnostic := taskExecutionDiagnostic(task); diagnostic != nil && diagnostic.Code == string(ReasonUpstreamDNSFailed) {
-		return "模型服务域名解析失败，请检查渠道域名和后端 DNS 配置；本轮已停止。请在任务中心检查模型任务 " + task.ID, string(ReasonUpstreamDNSFailed)
+		return "The model service domain could not be resolved; check the channel domain and the backend DNS settings. This run has stopped. Check model task " + task.ID, string(ReasonUpstreamDNSFailed)
 	}
 	raw := strings.ToLower(task.Error)
 	switch {
-	case strings.Contains(task.Error, "没有返回内容"):
+	case strings.Contains(task.Error, "returned no content"):
 		// 思考模型的典型失败：整个输出预算被推理吃掉，正文与工具调用皆空。
-		detail, reason = "上游连续返回空内容（通常是思考占满输出预算）；已自动关思考并放大预算重试仍失败，建议换用非思考模型或调小上下文", "model_empty_output"
+		detail, reason = "The upstream returned empty content repeatedly (usually reasoning used up the output budget); retrying with reasoning off and a larger budget still failed. Try a non-reasoning model or a smaller context", "model_empty_output"
 	case strings.Contains(task.Error, cloudAgentStepTimeoutError):
-		detail, reason = "单步模型调用超过执行时限仍未返回（长思考或上下文过大时常见）；已自动关思考重试仍超时，可在管理端调大 Agent 单步超时", "model_step_timeout"
+		detail, reason = "A model step did not return within its time limit (common with long reasoning or a large context); retrying with reasoning off still timed out. An administrator can raise the Agent step timeout", "model_step_timeout"
 	case strings.Contains(raw, "connection reset by peer"):
-		detail, reason = "模型连接被对端或中间网络设备重置", "model_connection_reset"
+		detail, reason = "The model connection was reset by the peer or a network device in between", "model_connection_reset"
 	case strings.Contains(raw, "timeout"), strings.Contains(raw, "deadline exceeded"):
-		detail, reason = "模型请求超时", "model_request_timeout"
+		detail, reason = "The model request timed out", "model_request_timeout"
 	case strings.Contains(raw, "connection refused"):
-		detail, reason = "无法连接模型服务（连接被拒绝）", "model_connection_refused"
+		detail, reason = "Cannot connect to the model service (connection refused)", "model_connection_refused"
 	}
-	return detail + "；本轮已停止。请在任务中心检查模型任务 " + task.ID, reason
+	return detail + ". This run has stopped. Check model task " + task.ID, reason
 }
 
 func cloudAgentSafeToolError(err error) string {
@@ -51,17 +51,19 @@ func cloudAgentSafeToolError(err error) string {
 			return message
 		}
 	}
-	return "工具执行失败，请检查输入或稍后重试"
+	return "Tool execution failed; check the input or retry later"
 }
 
 func cloudAgentSafeUserMessage(message string) bool {
-	if message == "" || !utf8.ValidString(message) || strings.ContainsAny(message, "\x00\r\n") || utf8.RuneCountInString(message) > 240 {
+	if message == "" || !utf8.ValidString(message) || strings.ContainsAny(message, "\x00\r\n") || utf8.RuneCountInString(message) > 600 {
 		return false
 	}
 	lower := strings.ToLower(message)
 	for _, marker := range []string{
-		"http://", "https://", "ftp://", "file://", "authorization", "cookie", "secret", "token", "api_key", "apikey", "x-api-key",
-		"/var/", "/tmp/", "\\", "stack trace", "traceback", " at ", "sql:", "sqlite", "postgres",
+		// Messages are English now, so the markers name credential and stack-trace shapes rather than
+		// common words: "at most" and "tokens" are normal in a user-facing sentence.
+		"http://", "https://", "ftp://", "file://", "authorization", "cookie", "secret", "access_token", "token=", "bearer ", "api_key", "apikey", "x-api-key",
+		"/var/", "/tmp/", "\\", "stack trace", "traceback", "goroutine ", ".go:", ".js:", ".mjs:", "\tat ", " at /", "sql:", "sqlite", "postgres",
 	} {
 		if strings.Contains(lower, marker) {
 			return false
@@ -75,7 +77,7 @@ func cloudAgentSafeUserMessage(message string) bool {
 // internal request metadata. Task.Error is not a safe presentation field.
 func cloudAgentSafeMediaTaskError(task *model.Task) string {
 	if task == nil || strings.TrimSpace(task.Error) == "" {
-		return "媒体任务未成功"
+		return "The media task did not succeed"
 	}
 	// 与画布节点展示同一套分类：网络/审核/存储/HTTP 状态归类，可读的供应商原因原样保留。
 	return userFacingTaskError(task.Error)

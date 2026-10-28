@@ -53,7 +53,7 @@ func cloudAgentMediaReferencePrompt(prompt string, refs map[string]any) (string,
 			title := strings.Join(strings.Fields(stringValue(ref["name"])), " ")
 			title = strings.ReplaceAll(title, "@", "＠")
 			if title == "" {
-				title = kind.label + "参考"
+				title = "Untitled reference"
 			}
 			references = append(references, reference{token, title})
 		}
@@ -61,21 +61,21 @@ func cloudAgentMediaReferencePrompt(prompt string, refs map[string]any) (string,
 	mentioned := map[string]bool{}
 	for _, token := range cloudAgentMediaMention.FindAllString(prompt, -1) {
 		if !available[token] {
-			return "", BadAuthRequest(fmt.Sprintf("提示词中的 %s 没有对应的参考素材；请按 referenceNodeIds 中各媒体类型的顺序修正引用", token))
+			return "", BadAuthRequest(fmt.Sprintf("%s in the prompt has no matching reference; fix the reference by the order of each media type in referenceNodeIds", token))
 		}
 		mentioned[token] = true
 	}
 	missing := []string{}
 	for _, ref := range references {
 		if !mentioned[ref.token] {
-			missing = append(missing, ref.title+"："+ref.token)
+			missing = append(missing, ref.title+": "+ref.token)
 		}
 	}
 	if len(missing) > 0 {
-		prompt += "\n\n【资产参考】\n" + strings.Join(missing, "\n")
+		prompt += "\n\n[Asset references]\n" + strings.Join(missing, "\n")
 	}
 	if count := utf8.RuneCountInString(prompt); count > 16000 {
-		return "", BadAuthRequest(fmt.Sprintf("补齐素材引用后的提示词共%d字符，超过16000字符上限；请缩短提示词后重试，不会自动截断", count))
+		return "", BadAuthRequest(fmt.Sprintf("With the asset references added, the prompt has %d characters, over the 16000 character limit; shorten the prompt and retry. It is never truncated automatically", count))
 	}
 	return prompt, nil
 }

@@ -20,7 +20,7 @@ func TestCloudAgentPiCanonicalRepairsCallSkippedByApprovalPause(t *testing.T) {
 			runtimeToolCallPart("call_01_types", "canvas_list_node_types"),
 		}},
 		{"role": "toolResult", "toolCallId": "call_00_plan", "toolName": "plan_update", "content": []interface{}{map[string]interface{}{"type": "text", "text": "操作正在等待用户审批。"}}},
-		{"role": "user", "content": "用户已批准刚才等待审批的操作。"},
+		{"role": "user", "content": "The user approved the operation that was waiting for approval."},
 	}
 	// 恢复前服务端保存的规范历史：停在审批那一步，比运行时消息短。
 	existing := canonicalAgentRequest{
@@ -48,11 +48,11 @@ func TestCloudAgentPiCanonicalRepairsCallSkippedByApprovalPause(t *testing.T) {
 		t.Fatalf("messages = %d, want 6: %#v", len(canonical.Messages), canonical.Messages)
 	}
 	skipped := canonical.Messages[4]
-	if stringField(skipped, "role") != "tool" || stringField(skipped, "tool_call_id") != "call_01_types" || !strings.Contains(stringField(skipped, "content"), "未被执行") {
+	if stringField(skipped, "role") != "tool" || stringField(skipped, "tool_call_id") != "call_01_types" || !strings.Contains(stringField(skipped, "content"), "was not executed") {
 		t.Fatalf("skipped call was not answered: %#v", skipped)
 	}
 	last := canonical.Messages[5]
-	if stringField(last, "role") != "user" || !strings.Contains(stringField(last, "content"), "已批准") {
+	if stringField(last, "role") != "user" || !strings.Contains(stringField(last, "content"), "approved") {
 		t.Fatalf("resume prompt did not reach the model: %#v", last)
 	}
 	if len(messages) != 4 {

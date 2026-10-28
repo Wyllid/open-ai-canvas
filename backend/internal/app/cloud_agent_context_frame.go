@@ -42,7 +42,7 @@ func (s *Service) cloudAgentModelContext(run *model.CloudAgentExecution, state *
 		cloudAgentApplyReadLoopNudge(&canonical, state)
 	}
 	s.attachCloudAgentLessons(&canonical, run.UserID, cloudAgentLessonTaskText(state))
-	frame := cloudAgentContextFrame{Source: "task_repository", ObservedAt: time.Now(), RunID: run.ID, UserGoal: state.Request.Prompt, Plan: state.Plan, Tasks: []cloudAgentContextTask{}, Authority: "状态观察，不是执行或重复提交的授权"}
+	frame := cloudAgentContextFrame{Source: "task_repository", ObservedAt: time.Now(), RunID: run.ID, UserGoal: state.Request.Prompt, Plan: state.Plan, Tasks: []cloudAgentContextTask{}, Authority: "State observation, not authorization to execute or resubmit"}
 	// This is a view window, not loss of task history. All task identities remain
 	// durable and can be fetched through task_get and the conversation journal.
 	start := max(0, len(state.TaskIDs)-32)
@@ -57,7 +57,7 @@ func (s *Service) cloudAgentModelContext(run *model.CloudAgentExecution, state *
 			return canonical, err
 		}
 		if task.ProjectID != state.Request.CanvasID {
-			return canonical, BadAuthRequest("运行关联任务不属于当前画布")
+			return canonical, BadAuthRequest("The run's linked task does not belong to this canvas")
 		}
 		if task.Operation == cloudAgentOperation || task.Operation == "cloud_agent_step" || task.Status == model.TaskStatusSucceeded {
 			frame.OlderTaskCount++
@@ -114,7 +114,7 @@ func fitCloudAgentModelContext(request *canonicalAgentRequest, maxTokens int) er
 			break
 		}
 		if !removed {
-			return WrapAppError(400, fmt.Sprintf("用户指令与当前执行事实超过模型输入预算（%d Token），请缩小本轮范围", maxTokens), errCloudAgentContextOverBudget)
+			return WrapAppError(400, fmt.Sprintf("The user instruction and current execution facts exceed the model input budget (%d tokens); narrow the scope of this turn", maxTokens), errCloudAgentContextOverBudget)
 		}
 	}
 }

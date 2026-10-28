@@ -114,7 +114,7 @@ func cloudAgentEventFromRecord(row model.CloudAgentEventRecord) CloudAgentEvent 
 		// 这条事件不代表运行的真实动作，客户端应以服务端画布与任务状态为准。
 		return CloudAgentEvent{
 			EventID: fmt.Sprintf("%s:%d", row.RunID, row.Sequence), RunID: row.RunID, Seq: row.Sequence,
-			Type: "unreadable_event", Payload: map[string]any{"text": "该事件记录无法解析，请以服务端画布与任务状态为准"}, CreatedAt: row.CreatedAt,
+			Type: "unreadable_event", Payload: map[string]any{"text": "This event record cannot be parsed; rely on the server canvas and task status"}, CreatedAt: row.CreatedAt,
 		}
 	}
 	if event.RunID == "" {

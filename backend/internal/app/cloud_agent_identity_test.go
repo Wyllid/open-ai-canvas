@@ -86,7 +86,7 @@ func TestCloudAgentIdentityEncodesNameAsDataAndUsesDefault(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			_, raw, ok := strings.Cut(prompt, "本轮执行上下文：\n")
+			_, raw, ok := strings.Cut(prompt, "Execution context for this run:\n")
 			var context struct {
 				AgentIdentity struct {
 					Name string `json:"name"`

@@ -5,7 +5,7 @@ import "encoding/json"
 const (
 	cloudAgentMaxToolCalls         = 8
 	cloudAgentMaxOutputBytes       = 32000
-	cloudAgentRuntimeContextMarker = "【运行状态】"
+	cloudAgentRuntimeContextMarker = "[Runtime state]"
 	cloudAgentContextSourceKey     = "agentContextSource"
 )
 

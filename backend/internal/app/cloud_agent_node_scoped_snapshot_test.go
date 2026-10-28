@@ -86,7 +86,7 @@ func TestCloudAgentStoryboardEditSurvivesUnrelatedCanvasChanges(t *testing.T) {
 	}
 
 	// 目标分镜本身被别处改过：旧版本号必须被拒绝，不能覆盖用户的修改。
-	if _, err := applyCloudAgentStoryboardMutation(s.repo, "user", canvas.ID, edit, policy); err == nil || !strings.Contains(err.Error(), "被修改过") {
+	if _, err := applyCloudAgentStoryboardMutation(s.repo, "user", canvas.ID, edit, policy); err == nil || !strings.Contains(err.Error(), "changed after you read it") {
 		t.Fatalf("stale version of the same storyboard must be rejected: %v", err)
 	}
 }

@@ -109,7 +109,7 @@ async function run() {
     modelsPath: join(isolatedDir, "models.json"),
   });
   modelRuntime.registerProvider(providerID, {
-    name: "影策模型任务",
+    name: "Local Studio model task",
     baseUrl: "http://agent-runtime.invalid/v1",
     apiKey: "managed-by-go-bridge",
     api,
@@ -224,7 +224,7 @@ async function run() {
         emit("approval_wait", { approvalId: result.approvalId, toolName: tool.name, callId: toolCallId });
         session.abort();
         return {
-          content: [{ type: "text", text: result.content || "操作正在等待用户审批。" }],
+          content: [{ type: "text", text: result.content || "The operation is waiting for user approval." }],
           details: { approvalId: result.approvalId, paused: true },
           isError: true,
           terminate: true,
@@ -232,7 +232,7 @@ async function run() {
       }
       // 工具结果必须是非空文本：交回 "null" 会让模型返回空回复。
       let text = typeof result.content === "string" ? result.content : JSON.stringify(result.content ?? result ?? {});
-      if (!text || text === "null") text = JSON.stringify({ error: "工具没有返回结果" });
+      if (!text || text === "null") text = JSON.stringify({ error: "The tool returned no result" });
       return {
         content: [{ type: "text", text }],
         details: result.details,

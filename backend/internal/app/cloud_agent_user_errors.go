@@ -136,17 +136,17 @@ func userFacingTaskKind(task *model.Task) string {
 // 用户看到的是可操作的中文提示和诊断号，不会看到 Go/Node 的原始报错。
 func cloudAgentUserFailureMessage(runID string, cause error) string {
 	if cause == nil {
-		return "Agent 执行中断，请重新发送消息"
+		return "The Agent run was interrupted; send the message again"
 	}
 	var appErr *AppError
-	if errors.As(cause, &appErr) && appErr != nil && cloudAgentReadableMessage(appErr.Message) {
+	if errors.As(cause, &appErr) && appErr != nil && cloudAgentReadableAppMessage(appErr.Message) {
 		return strings.TrimSpace(appErr.Message)
 	}
 	if message := cloudAgentInnermostMessage(cause); cloudAgentReadableMessage(message) {
 		return message
 	}
 	log.Printf("[Agent] internal failure run=%s: %v", runID, cause)
-	return "Agent 执行中断，请重新发送消息；如反复出现，请把诊断号 " + runID + " 反馈给管理员"
+	return "The Agent run was interrupted; send the message again. If it keeps happening, give the administrator diagnostic ID " + runID
 }
 
 // cloudAgentInnermostMessage 沿包装链找到最内层的错误文字。包装前缀（"load session: "
@@ -181,6 +181,22 @@ func cloudAgentReadableMessage(message string) bool {
 		return false
 	}
 	return safeTaskDiagnosticMessage(message) == truncateRunes(message, 240) && !taskErrorInfrastructurePattern.MatchString(message) && !taskErrorNetworkPattern.MatchString(message)
+}
+
+// cloudAgentReadableAppMessage also lets through an English sentence, because business errors (AppError)
+// are written for people. Go and Node errors start in lower case ("load session: …"), so a message must
+// start with a capital letter and contain a space; addresses, stacks and credentials are still refused.
+// English runs longer than Chinese, so it uses the Agent's own 600-character limit.
+func cloudAgentReadableAppMessage(message string) bool {
+	if cloudAgentReadableMessage(message) {
+		return true
+	}
+	message = strings.TrimSpace(message)
+	first, _ := utf8.DecodeRuneInString(message)
+	if !unicode.IsUpper(first) || !strings.Contains(message, " ") || !utf8.ValidString(message) || strings.ContainsAny(message, "\r\n\x00") {
+		return false
+	}
+	return cloudAgentSafeUserMessage(message) && !taskErrorInfrastructurePattern.MatchString(message) && !taskErrorNetworkPattern.MatchString(message)
 }
 
 func taskErrorIsModeration(value string) bool {

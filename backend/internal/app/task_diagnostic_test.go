@@ -86,7 +86,7 @@ func TestCloudAgentDNSDiagnosticSurvivesTransportWrapping(t *testing.T) {
 			t.Fatalf("DNS classification or submission safety changed: %#v", facts)
 		}
 		message, reason := cloudAgentModelFailure(task)
-		if reason != string(ReasonUpstreamDNSFailed) || !strings.Contains(message, "域名解析失败") || !strings.Contains(message, task.ID) {
+		if reason != string(ReasonUpstreamDNSFailed) || !strings.Contains(message, "domain could not be resolved") || !strings.Contains(message, task.ID) {
 			t.Fatalf("DNS cause hidden in generic failure: %s %s", reason, message)
 		}
 		raw, _ := json.Marshal(facts)
