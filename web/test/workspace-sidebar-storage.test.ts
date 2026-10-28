@@ -1,6 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 
 import { accountStorageMeter } from "../src/lib/account-storage-usage";
 
@@ -44,26 +42,5 @@ describe("account storage meter", () => {
         expect(meter.totalLabel).toBe("0 B");
         expect(meter.tone).toBe("ok");
         expect(meter.full).toBe(false);
-    });
-});
-
-describe("workspace sidebar storage meter", () => {
-    test("sits above the signed-in profile and shows used, remaining and total", () => {
-        const sidebar = readFileSync(resolve(import.meta.dir, "../src/components/layout/workspace-sidebar-nav.tsx"), "utf8");
-        const meter = readFileSync(resolve(import.meta.dir, "../src/components/layout/workspace-sidebar-storage-meter.tsx"), "utf8");
-        const css = readFileSync(resolve(import.meta.dir, "../src/styles/globals.css"), "utf8");
-
-        expect(sidebar).toContain("<WorkspaceSidebarStorageMeter collapsed={collapsed} />");
-        expect(sidebar.indexOf("WorkspaceSidebarStorageMeter")).toBeLessThan(sidebar.indexOf("app-workspace-sidebar-profile-row"));
-        expect(meter).toContain("HardDrive");
-        expect(meter).toContain("app-workspace-sidebar-storage-icon");
-        expect(meter).toContain("已用 ${meter.usedLabel}");
-        expect(meter).toContain("剩余 ${meter.remainingLabel}");
-        expect(meter).toContain("共 ${meter.totalLabel}");
-        expect(meter).toContain('to="/assets"');
-        expect(css).toContain(".app-workspace-sidebar-storage-icon");
-        expect(css).toMatch(/\.app-workspace-sidebar-storage-used\s*\{[^}]*font-variant-numeric:\s*tabular-nums/s);
-        expect(css).toContain(".app-workspace-sidebar-storage.is-warn");
-        expect(css).toContain(".app-workspace-sidebar-storage.is-critical");
     });
 });

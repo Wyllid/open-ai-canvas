@@ -1,6 +1,6 @@
 import { App, Button, InputNumber } from "antd";
 import { SettingsRow } from "@/components/ui/product/settings-row";
-import { ArrowLeft, Boxes, Brain, Bug, Cloud, Inbox, MessageSquareText, RadioTower, SlidersHorizontal, UserRound, Workflow } from "lucide-react";
+import { ArrowLeft, Boxes, Brain, Bug, Cloud, MessageSquareText, RadioTower, SlidersHorizontal, UserRound, Workflow } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -17,9 +17,8 @@ import { RunningHubSettingsPane } from "./runninghub-settings-pane";
 import { RUNNINGHUB_PLUGIN_ID } from "@/lib/plugins/builtin/workflows";
 import { usePluginStore } from "@/stores/use-plugin-store";
 import { ProfilePane } from "./profile-pane";
-import { FeedbackInboxPane } from "./feedback-inbox-pane";
 
-type ConfigSectionKey = "profile" | "channels" | "models" | "runninghub" | "preferences" | "prompts" | "agent-memory" | "storage" | "diagnostics" | "feedbacks";
+type ConfigSectionKey = "profile" | "channels" | "models" | "runninghub" | "preferences" | "prompts" | "agent-memory" | "storage" | "diagnostics";
 
 const configSections: Array<{ key: ConfigSectionKey; label: string; description: string; icon: ReactNode }> = [
     { key: "profile", label: "个人信息", description: "头像、密码与邮箱", icon: <UserRound className="size-4" /> },
@@ -31,7 +30,6 @@ const configSections: Array<{ key: ConfigSectionKey; label: string; description:
     { key: "agent-memory", label: "Agent 记忆", description: "批准、添加、导出导入、压缩", icon: <Brain className="size-4" /> },
     { key: "storage", label: "我的对象存储", description: "管理个人媒体存储", icon: <Cloud className="size-4" /> },
     { key: "diagnostics", label: "问题诊断", description: "导出日志协助排查", icon: <Bug className="size-4" /> },
-    { key: "feedbacks", label: "我的反馈", description: "提交问题、建议与官方答复", icon: <Inbox className="size-4" /> },
 ];
 
 export function isConfigSection(value: string | null): value is ConfigSectionKey {
@@ -55,8 +53,10 @@ export default function SettingsPage() {
     const shouldPromptContinue = searchParams.get("continue") === "1";
     const userId = useUserStore((state) => state.user?.id);
     const userChannels = config.channels.filter((channel) => channel.scope !== "system");
-    const visibleConfigSections = useMemo(() => (customChannelsEnabled ? configSections : configSections.filter((section) => section.key !== "channels"))
-        .filter((section) => section.key !== "runninghub" || runningHubPluginEnabled), [customChannelsEnabled, runningHubPluginEnabled]);
+    const visibleConfigSections = useMemo(
+        () => (customChannelsEnabled ? configSections : configSections.filter((section) => section.key !== "channels")).filter((section) => section.key !== "runninghub" || runningHubPluginEnabled),
+        [customChannelsEnabled, runningHubPluginEnabled],
+    );
 
     const isVisibleConfigSection = (value: string | null): value is ConfigSectionKey => isConfigSection(value) && visibleConfigSections.some((section) => section.key === value);
 
@@ -106,8 +106,16 @@ export default function SettingsPage() {
     };
 
     const panes: Record<ConfigSectionKey, ReactNode> = {
-        profile: <SettingsPane><ProfilePane key={userId} /></SettingsPane>,
-        channels: <SettingsPane><ChannelSettingsPane onOpenModels={() => selectSection("models")} onOpenRunningHub={runningHubPluginEnabled ? () => selectSection("runninghub") : undefined} /></SettingsPane>,
+        profile: (
+            <SettingsPane>
+                <ProfilePane key={userId} />
+            </SettingsPane>
+        ),
+        channels: (
+            <SettingsPane>
+                <ChannelSettingsPane onOpenModels={() => selectSection("models")} onOpenRunningHub={runningHubPluginEnabled ? () => selectSection("runninghub") : undefined} />
+            </SettingsPane>
+        ),
         models: (
             <SettingsPane>
                 <div className="settings-pane-header">
@@ -121,7 +129,11 @@ export default function SettingsPage() {
                 </div>
             </SettingsPane>
         ),
-        runninghub: <SettingsPane><RunningHubSettingsPane /></SettingsPane>,
+        runninghub: (
+            <SettingsPane>
+                <RunningHubSettingsPane />
+            </SettingsPane>
+        ),
         preferences: (
             <SettingsPane>
                 <div className="settings-pane-header">
@@ -154,7 +166,11 @@ export default function SettingsPage() {
                 </div>
             </SettingsPane>
         ),
-        prompts: <SettingsPane fill><PromptPreferencesPane /></SettingsPane>,
+        prompts: (
+            <SettingsPane fill>
+                <PromptPreferencesPane />
+            </SettingsPane>
+        ),
         "agent-memory": (
             <SettingsPane>
                 <div className="settings-pane-header">
@@ -168,7 +184,11 @@ export default function SettingsPage() {
                 </div>
             </SettingsPane>
         ),
-        diagnostics: <SettingsPane><DiagnosticsPanel taskId={searchParams.get("taskId") || undefined} projectId={searchParams.get("projectId") || undefined} /></SettingsPane>,
+        diagnostics: (
+            <SettingsPane>
+                <DiagnosticsPanel taskId={searchParams.get("taskId") || undefined} projectId={searchParams.get("projectId") || undefined} />
+            </SettingsPane>
+        ),
         storage: (
             <SettingsPane>
                 <div className="settings-section">
@@ -176,7 +196,6 @@ export default function SettingsPage() {
                 </div>
             </SettingsPane>
         ),
-        feedbacks: <SettingsPane><FeedbackInboxPane /></SettingsPane>,
     };
 
     return (
@@ -184,8 +203,12 @@ export default function SettingsPage() {
             {shouldPromptContinue ? (
                 <div className="settings-topbar shrink-0">
                     <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-                        <Button icon={<ArrowLeft className="size-4" />} onClick={() => navigate(-1)}>返回创作</Button>
-                        <Button type="primary" onClick={finishConfig}>保存并返回</Button>
+                        <Button icon={<ArrowLeft className="size-4" />} onClick={() => navigate(-1)}>
+                            返回创作
+                        </Button>
+                        <Button type="primary" onClick={finishConfig}>
+                            保存并返回
+                        </Button>
                     </div>
                 </div>
             ) : null}
@@ -214,9 +237,7 @@ export default function SettingsPage() {
                 </aside>
                 <section className="settings-content flex min-h-0 min-w-0 flex-1 flex-col">
                     <div className="app-workspace-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 md:px-6 md:py-5">
-                        <div className={`settings-pane-root ${activeTab === "prompts" ? "h-full w-full" : "mx-auto w-full max-w-none"}`}>
-                            {panes[activeTab]}
-                        </div>
+                        <div className={`settings-pane-root ${activeTab === "prompts" ? "h-full w-full" : "mx-auto w-full max-w-none"}`}>{panes[activeTab]}</div>
                     </div>
                 </section>
             </div>
