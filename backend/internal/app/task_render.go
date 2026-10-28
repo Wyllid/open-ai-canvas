@@ -55,6 +55,11 @@ func (w *taskWorkerCoordinator) processTimelineRender(task *model.Task, ctx cont
 		seg.Source.HasAudio = hasAudio
 	}
 
+	if plan.ASS != "" {
+		if err := os.WriteFile(filepath.Join(workDir, renderASSFile), []byte(plan.ASS), 0o600); err != nil {
+			return w.failTimelineTask(task, "渲染失败", "写入字幕文件失败")
+		}
+	}
 	args := buildRenderFFmpegArgs(plan, filepath.Join(workDir, "render-output.mp4"))
 	if len(args) == 0 {
 		return w.failTimelineTask(task, "渲染失败", "无法生成渲染命令")
@@ -152,6 +157,9 @@ func materializeRenderSources(ctx context.Context, s *Service, userID string, pl
 	}
 	for i := range plan.AudioOverlays {
 		segments = append(segments, &plan.AudioOverlays[i])
+	}
+	for i := range plan.VideoOverlays {
+		segments = append(segments, &plan.VideoOverlays[i])
 	}
 	for _, seg := range segments {
 		resourceID, ok := mediaResourceID(seg.Clip)

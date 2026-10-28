@@ -368,7 +368,7 @@ export default function DramaStudioPage() {
                                         empty={episodeEmpty}
                                     />
                                 ) : (
-                                    <FinalView title={summary.project.name} detail={detail} aspectRatio={aspectRatio} onOpenSegment={(index) => setParams({ tab: null, segment: String(index), shot: null })} />
+                                    <FinalView projectId={projectId} title={summary.project.name} detail={detail} aspectRatio={aspectRatio} onOpenSegment={(index) => setParams({ tab: null, segment: String(index), shot: null })} />
                                 )}
                             </div>
                         </main>

@@ -125,7 +125,11 @@ type DramaEpisode struct {
 	// MusicCuesJSON 是本集配乐（DramaMusicCue 列表），合成成片时放到音乐轨上。
 	MusicCuesJSON string `json:"-" gorm:"type:text"`
 	// ReviewJSON 是最近一次审阅工序（DramaReviewState）：请求的岗位、进度与逐条意见。
-	ReviewJSON string    `json:"-" gorm:"type:text"`
+	ReviewJSON string `json:"-" gorm:"type:text"`
+	// CaptionsJSON 是字幕设置（是否烧录、样式）与改写后的字幕；空串表示自动字幕、不烧录。
+	CaptionsJSON string `json:"-" gorm:"type:text"`
+	// MotionJSON 是成片图形元素（DramaMotionItem 列表：人名条、台标等）。
+	MotionJSON string    `json:"-" gorm:"type:text"`
 	Revision   int64     `json:"revision"`
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`

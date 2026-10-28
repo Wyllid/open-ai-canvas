@@ -5506,3 +5506,67 @@
     display: flex;
     gap: 6px;
 }
+
+/* ===== Post-production: captions and graphics ===== */
+.drama-post {
+    display: grid;
+    gap: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--drama-line);
+}
+.drama-post-block {
+    display: grid;
+    gap: 8px;
+}
+.drama-post-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.drama-post-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--fs-label);
+}
+.drama-post-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.drama-post-list {
+    display: grid;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.drama-post-cue {
+    display: grid;
+    gap: 2px;
+}
+.drama-post-cue small {
+    color: var(--drama-faint);
+    font-variant-numeric: tabular-nums;
+}
+.drama-post-item {
+    display: grid;
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid var(--drama-line);
+    border-radius: 8px;
+}
+.drama-post-overlay {
+    font-size: var(--fs-label);
+    color: var(--drama-muted);
+}
+.drama-post-times {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.drama-post-times .ant-input-number {
+    flex: 1;
+    min-width: 0;
+}

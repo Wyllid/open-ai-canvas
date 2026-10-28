@@ -343,7 +343,11 @@ func (s *Service) DramaEpisodeDetail(userID string, projectID string, episodeID 
 			views = append(views, dramaJobView(job))
 		}
 	}
-	detail := DramaEpisodeDetail{Episode: *episode, Shots: shots, Chapters: refs, Jobs: views, MusicCues: decodeDramaMusicCues(episode.MusicCuesJSON), Review: decodeDramaReview(episode.ReviewJSON)}
+	segmentRows, err := s.repo.DramaSegments(episode.ID)
+	if err != nil {
+		return DramaEpisodeDetail{}, err
+	}
+	detail := DramaEpisodeDetail{Episode: *episode, Shots: shots, Chapters: refs, Jobs: views, MusicCues: decodeDramaMusicCues(episode.MusicCuesJSON), Review: decodeDramaReview(episode.ReviewJSON), Captions: dramaCaptionsView(episode, segmentRows, shots), Motion: decodeDramaMotion(episode.MotionJSON)}
 	if review := detail.Review; review != nil && review.Status == model.DramaMediaQueued && productionRow.Status != model.DramaStatusRunning {
 		review.Waiting = "the review waits for the production to run; resume it to start the review"
 	}
