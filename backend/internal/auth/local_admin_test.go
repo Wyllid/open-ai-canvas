@@ -99,8 +99,8 @@ func TestEnsureLocalAdminPromotesExistingUser(t *testing.T) {
 	}
 }
 
-func TestEnsureLocalAdminRetiresTheOldAccountAfterARename(t *testing.T) {
-	svc, repo := newLocalAdminTestService(t)
+func TestEnsureLocalAdminRenamesTheBoundAdminInPlace(t *testing.T) {
+	svc, _ := newLocalAdminTestService(t)
 	old, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "admin", Password: "admin"})
 	if err != nil {
 		t.Fatal(err)
@@ -113,14 +113,37 @@ func TestEnsureLocalAdminRetiresTheOldAccountAfterARename(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if renamed.ID == old.ID {
-		t.Fatal("a new username is a new account")
+	if renamed.ID != old.ID {
+		t.Fatal("renaming the .env admin must keep the account, so projects keep their owner")
 	}
 	if _, err := svc.Login(LoginRequest{Username: "admin", Password: "admin"}); err == nil {
-		t.Fatal("the old default admin still signs in after the rename")
+		t.Fatal("the old username still signs in after the rename")
 	}
 	if _, err := svc.CurrentUser(session.Session); err == nil {
-		t.Fatal("the old admin's session is still valid after the rename")
+		t.Fatal("the session from the old password is still valid")
+	}
+	if _, err := svc.Login(LoginRequest{Username: "owner", Password: "a-long-new-secret"}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestEnsureLocalAdminRetiresTheBoundAdminWhenTheNewUsernameIsAnotherAccount(t *testing.T) {
+	svc, repo := newLocalAdminTestService(t)
+	old, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "admin", Password: "admin"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash, _ := HashPassword("whatever")
+	other := model.User{ID: "u2", Username: "owner", Role: model.UserRoleUser, Status: model.UserStatusActive, PasswordHash: hash}
+	if err := repo.CreateRegisteredUser(&other); err != nil {
+		t.Fatal(err)
+	}
+	promoted, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "owner", Password: "a-long-new-secret"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if promoted.ID != other.ID {
+		t.Fatalf("promoted %s, want the existing owner account", promoted.ID)
 	}
 	stored, err := repo.User(old.ID)
 	if err != nil {
@@ -129,15 +152,57 @@ func TestEnsureLocalAdminRetiresTheOldAccountAfterARename(t *testing.T) {
 	if stored.Role == model.UserRoleAdmin || stored.Status != model.UserStatusDisabled {
 		t.Fatalf("old admin = %#v", stored)
 	}
-	if _, err := svc.Login(LoginRequest{Username: "owner", Password: "a-long-new-secret"}); err != nil {
+}
+
+func TestAccountChangedInSettingsSurvivesRestartUntilTheEnvChanges(t *testing.T) {
+	svc, _ := newLocalAdminTestService(t)
+	env := LocalAdminCredentials{Username: "admin", Password: "admin"}
+	admin, err := svc.EnsureLocalAdmin(env)
+	if err != nil {
 		t.Fatal(err)
 	}
-	// Restarting with the same settings leaves the new admin alone.
-	if _, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "owner", Password: "a-long-new-secret"}); err != nil {
+	session, err := svc.Login(LoginRequest{Username: "admin", Password: "admin"})
+	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := svc.Login(LoginRequest{Username: "owner", Password: "a-long-new-secret"}); err != nil {
+	if err := svc.ChangeLocalAccount(admin, session.Session, LocalAccountRequest{CurrentPassword: "wrong", Username: "studio", NewPassword: "a-long-ui-password"}); err == nil {
+		t.Fatal("account change accepted a wrong current password")
+	}
+	if err := svc.ChangeLocalAccount(admin, session.Session, LocalAccountRequest{CurrentPassword: "admin", Username: "studio", NewPassword: "short"}); err == nil {
+		t.Fatal("account change accepted a weak password")
+	}
+	if err := svc.ChangeLocalAccount(admin, session.Session, LocalAccountRequest{CurrentPassword: "admin", Username: "studio", NewPassword: "a-long-ui-password"}); err != nil {
 		t.Fatal(err)
+	}
+	if _, err := svc.CurrentUser(session.Session); err == nil {
+		t.Fatal("sessions survive an account change")
+	}
+	// The new password is strong, so public addresses may sign in.
+	if _, err := svc.Login(LoginRequest{Username: "studio", Password: "a-long-ui-password", LoginContext: LoginContext{IP: "203.0.113.7"}}); err != nil {
+		t.Fatalf("public login after a strong password: %v", err)
+	}
+
+	// Restart with the same .env: the settings win.
+	if _, err := svc.EnsureLocalAdmin(env); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Login(LoginRequest{Username: "studio", Password: "a-long-ui-password"}); err != nil {
+		t.Fatalf("restart reverted the account changed in the settings: %v", err)
+	}
+	if _, err := svc.Login(LoginRequest{Username: "admin", Password: "admin"}); err == nil {
+		t.Fatal("restart brought the .env credentials back without a change in the .env")
+	}
+
+	// Changing the .env recovers access and keeps the same account.
+	recovered, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "admin", Password: "a-recovery-password"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if recovered.ID != admin.ID {
+		t.Fatal("recovery through the .env created a new account")
+	}
+	if _, err := svc.Login(LoginRequest{Username: "admin", Password: "a-recovery-password"}); err != nil {
+		t.Fatalf("recovery credentials rejected: %v", err)
 	}
 }
 

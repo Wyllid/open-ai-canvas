@@ -14,7 +14,7 @@ import (
 
 func TestLoginLogsPasswordAndLogoutLifecycle(t *testing.T) {
 	router, db, _ := profileHandlerFixture(t)
-	rec := profileRequest(router, "POST", "/api/auth/login", `{"username":"profile-user","password":"old-password"}`, "")
+	rec := profileRequest(router, "POST", "/api/auth/login", `{"username":"profile-user","password":"old-password-12"}`, "")
 	if rec.Code != 200 {
 		t.Fatalf("login: %d %s", rec.Code, rec.Body.String())
 	}
@@ -80,7 +80,7 @@ func TestLoginLogsWriteFailureRollsBackSessionChanges(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, req := range []struct{ path, body, cookie string }{
-		{"/api/auth/login", `{"username":"profile-user","password":"old-password"}`, ""},
+		{"/api/auth/login", `{"username":"profile-user","password":"old-password-12"}`, ""},
 		{"/api/auth/logout", "", cookie},
 	} {
 		rec := profileRequest(router, "POST", req.path, req.body, req.cookie)

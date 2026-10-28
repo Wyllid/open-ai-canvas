@@ -197,6 +197,8 @@ func (r *Repository) DeleteExpiredEmailVerificationCodes(now time.Time) error {
 func (r *Repository) SyncLocalAdmin(user *model.User, revokeSessions bool) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&model.User{}).Where("id = ?", user.ID).Updates(map[string]any{
+			"username":      user.Username,
+			"display_name":  user.DisplayName,
 			"password_hash": user.PasswordHash,
 			"role":          user.Role,
 			"status":        user.Status,
