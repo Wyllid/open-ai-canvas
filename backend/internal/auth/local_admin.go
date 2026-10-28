@@ -3,8 +3,10 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"net"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"gorm.io/gorm"
 	"yingce/backend/internal/kernel"
@@ -24,7 +26,15 @@ const localAdminSettingKey = "local_admin"
 
 type localAdminBinding struct {
 	UserID string `json:"userId"`
+	// WeakPassword limits sign-in to loopback and private networks until a strong password is set.
+	WeakPassword bool `json:"weakPassword,omitempty"`
 }
+
+// MinRemoteAdminPasswordLength is the shortest admin password accepted for sign-in from public addresses.
+const MinRemoteAdminPasswordLength = 12
+
+// errWeakAdminPasswordRemote is returned to public clients while the admin password is weak.
+const errWeakAdminPasswordRemote = "管理员密码过于简单，只能从本机或内网登录。请在服务器 .env 中设置至少 12 位的 CANVAS_ADMIN_PASSWORD 并重启服务。"
 
 // EnsureLocalAdmin creates the admin account on first start and keeps its password,
 // role and status in sync with the environment on every later start. When the
@@ -34,13 +44,13 @@ func (s *Service) EnsureLocalAdmin(creds LocalAdminCredentials) (*model.User, er
 	if err != nil {
 		return nil, err
 	}
-	if err := s.retirePreviousLocalAdmin(user); err != nil {
+	if err := s.retirePreviousLocalAdmin(user, IsWeakAdminPassword(creds.Password)); err != nil {
 		return nil, err
 	}
 	return user, nil
 }
 
-func (s *Service) retirePreviousLocalAdmin(user *model.User) error {
+func (s *Service) retirePreviousLocalAdmin(user *model.User, weakPassword bool) error {
 	setting, err := s.repo.SystemSettingOptional(localAdminSettingKey)
 	if err != nil {
 		return err
@@ -49,10 +59,10 @@ func (s *Service) retirePreviousLocalAdmin(user *model.User) error {
 	if setting != nil {
 		_ = json.Unmarshal([]byte(setting.ValueJSON), &binding)
 	}
-	if binding.UserID == user.ID {
+	if binding.UserID == user.ID && binding.WeakPassword == weakPassword {
 		return nil
 	}
-	if binding.UserID != "" {
+	if binding.UserID != "" && binding.UserID != user.ID {
 		previous, err := s.repo.User(binding.UserID)
 		switch {
 		case errors.Is(err, gorm.ErrRecordNotFound):
@@ -65,7 +75,7 @@ func (s *Service) retirePreviousLocalAdmin(user *model.User) error {
 			}
 		}
 	}
-	encoded, err := json.Marshal(localAdminBinding{UserID: user.ID})
+	encoded, err := json.Marshal(localAdminBinding{UserID: user.ID, WeakPassword: weakPassword})
 	if err != nil {
 		return err
 	}
@@ -138,4 +148,37 @@ func LocalAdminPublicSettings() *PublicAuthSettings {
 // IsLocalAdminPassword reports whether the configured password is the insecure default.
 func IsLocalAdminPassword(value string) bool {
 	return strings.TrimSpace(value) == "admin"
+}
+
+// IsWeakAdminPassword reports whether the password is the default or shorter than MinRemoteAdminPasswordLength.
+func IsWeakAdminPassword(value string) bool {
+	return IsLocalAdminPassword(value) || utf8.RuneCountInString(value) < MinRemoteAdminPasswordLength
+}
+
+// IsLocalNetworkIP reports whether a client address is loopback, private or link-local.
+// An empty address (in-process callers) counts as local; an unparsable one does not.
+func IsLocalNetworkIP(value string) bool {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return true
+	}
+	ip := net.ParseIP(value)
+	return ip != nil && (ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast())
+}
+
+// rejectWeakAdminPasswordRemote blocks sign-in from public addresses while the admin password is weak,
+// so a server published on a VPS with the default admin/admin cannot be taken over.
+func (s *Service) rejectWeakAdminPasswordRemote(ip string) error {
+	if IsLocalNetworkIP(ip) {
+		return nil
+	}
+	setting, err := s.repo.SystemSettingOptional(localAdminSettingKey)
+	if err != nil || setting == nil {
+		return err
+	}
+	var binding localAdminBinding
+	if json.Unmarshal([]byte(setting.ValueJSON), &binding) == nil && binding.WeakPassword {
+		return kernel.Forbidden(errWeakAdminPasswordRemote)
+	}
+	return nil
 }

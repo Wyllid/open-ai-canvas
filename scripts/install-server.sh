@@ -109,6 +109,8 @@ CANVAS_BACKEND_IMAGE=open-ai-canvas-backend:server
 CANVAS_WEB_IMAGE=open-ai-canvas-web:server
 CANVAS_YINGCE_AGENT_IMAGE=open-ai-canvas-yingce-agent:server
 YINGCE_AGENT_TOKEN=$(openssl rand -hex 32)
+CANVAS_ADMIN_USERNAME=admin
+CANVAS_ADMIN_PASSWORD=$(openssl rand -hex 16)
 CANVAS_REGISTRATION_ENABLED=false
 CANVAS_ALLOW_PRIVATE_UPSTREAMS=false
 CANVAS_ALLOWED_PRIVATE_UPSTREAM_HOSTS=
@@ -134,7 +136,9 @@ print_result() {
     printf '访问地址：http://%s:%s\n' "$local_ip" "$CANVAS_HTTP_PORT"
     printf '安装目录：%s\n' "$INSTALL_DIR"
     printf '查看状态：cd %q && docker compose --env-file .env -f %s -f %s ps\n' "$INSTALL_DIR" "$COMPOSE_FILE" "$BUILD_COMPOSE_FILE"
-    printf '\n首次打开后注册的第一个账号会自动成为管理员。公网长期使用前请配置 HTTPS。\n'
+    printf '管理员账号：%s\n' "$(sed -n 's/^CANVAS_ADMIN_USERNAME=//p' .env | tail -n 1)"
+    printf '管理员密码：见 %s/.env 中的 CANVAS_ADMIN_PASSWORD（修改后重启 backend 生效）\n' "$INSTALL_DIR"
+    printf '\n本系统只有 .env 定义的本地管理员账号，没有注册入口。公网长期使用前请配置 HTTPS。\n'
 }
 
 main() {

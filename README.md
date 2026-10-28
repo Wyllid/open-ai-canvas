@@ -28,7 +28,12 @@ Local Studio is a self-hosted fork of [影策 / open-ai-canvas](https://github.c
 - **Agent setup and MCP.** One form configures the agent model for the admin, and an MCP endpoint exposes drama production tools to local agents (Codex, Claude Code).
 - **Storyboard tables** can be pasted with English or Portuguese headers.
 
-> Run it on a machine or VPS you control. Set a strong `CANVAS_ADMIN_PASSWORD` before exposing the server, and put it behind HTTPS.
+### Running on a VPS
+
+- **Admin password.** While `CANVAS_ADMIN_PASSWORD` is `admin` or shorter than 12 characters, sign-in only works from the machine itself and private networks (LAN, Docker). Set a long random value (`openssl rand -base64 24`) in `.env` and restart before reaching the server over the internet. `scripts/install-server.sh` generates one.
+- **HTTPS.** Put the server behind a TLS reverse proxy (Caddy, nginx, Traefik). The session cookie is `HttpOnly`, `SameSite=Lax`, marked `Secure` behind HTTPS, and expires after 30 days.
+- **Brute force.** Sign-in is rate limited per client IP and per account. Only loopback and private-network proxies may set `X-Forwarded-For`; if a load balancer or CDN sits in front, list its addresses in `CANVAS_TRUSTED_PROXIES`.
+- **Surface.** There is no registration, password reset, email/SMS code or third-party login route. The MCP endpoint stays off until `CANVAS_MCP_TOKEN` is set.
 
 The sections below are kept from the upstream README (in Chinese) and describe the shared foundation: features, local start, deployment and architecture.
 

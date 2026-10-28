@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"strings"
 	"testing"
 
 	"yingce/backend/internal/model"
@@ -137,5 +138,36 @@ func TestEnsureLocalAdminRetiresTheOldAccountAfterARename(t *testing.T) {
 	}
 	if _, err := svc.Login(LoginRequest{Username: "owner", Password: "a-long-new-secret"}); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestWeakAdminPasswordOnlySignsInFromLocalNetworks(t *testing.T) {
+	svc, _ := newLocalAdminTestService(t)
+	if _, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "admin", Password: "admin"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, ip := range []string{"127.0.0.1", "::1", "192.168.1.20", "10.0.0.5", "172.18.0.3"} {
+		if _, err := svc.Login(LoginRequest{Username: "admin", Password: "admin", LoginContext: LoginContext{IP: ip}}); err != nil {
+			t.Fatalf("login from %s with weak password: %v", ip, err)
+		}
+	}
+	if _, err := svc.Login(LoginRequest{Username: "admin", Password: "admin", LoginContext: LoginContext{IP: "203.0.113.7"}}); err == nil || !strings.Contains(err.Error(), "CANVAS_ADMIN_PASSWORD") {
+		t.Fatalf("public login with weak password error = %v", err)
+	}
+
+	strong := "a-long-admin-secret"
+	if _, err := svc.EnsureLocalAdmin(LocalAdminCredentials{Username: "admin", Password: strong}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.Login(LoginRequest{Username: "admin", Password: strong, LoginContext: LoginContext{IP: "203.0.113.7"}}); err != nil {
+		t.Fatalf("public login with strong password: %v", err)
+	}
+}
+
+func TestIsWeakAdminPassword(t *testing.T) {
+	for value, want := range map[string]bool{"admin": true, "short-pass1": true, "twelve-chars": false, "a-long-admin-secret": false} {
+		if got := IsWeakAdminPassword(value); got != want {
+			t.Errorf("IsWeakAdminPassword(%q) = %v, want %v", value, got, want)
+		}
 	}
 }

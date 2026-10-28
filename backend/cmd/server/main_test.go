@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -106,5 +107,42 @@ func TestRedactCanvasSharePath(t *testing.T) {
 	}
 	if got := redactCanvasSharePath("/api/tasks"); got != "/api/tasks" {
 		t.Fatalf("unrelated path changed: %s", got)
+	}
+}
+
+func TestTrustedProxies(t *testing.T) {
+	if got, err := trustedProxies(""); err != nil || len(got) != len(defaultTrustedProxies) {
+		t.Fatalf("trustedProxies(\"\") = %v, %v", got, err)
+	}
+	if got, err := trustedProxies("none"); err != nil || got != nil {
+		t.Fatalf("trustedProxies(none) = %v, %v", got, err)
+	}
+	if got, err := trustedProxies("203.0.113.10, 198.51.100.0/24"); err != nil || len(got) != 2 {
+		t.Fatalf("trustedProxies(list) = %v, %v", got, err)
+	}
+	if _, err := trustedProxies("not-an-ip"); err == nil {
+		t.Fatal("trustedProxies accepted an invalid address")
+	}
+}
+
+func TestSpoofedForwardedForIsIgnoredFromPublicClients(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	if err := router.SetTrustedProxies(defaultTrustedProxies); err != nil {
+		t.Fatal(err)
+	}
+	router.GET("/ip", func(c *gin.Context) { c.String(http.StatusOK, c.ClientIP()) })
+	for _, tc := range []struct{ remote, forwarded, want string }{
+		{"203.0.113.7:5000", "1.2.3.4", "203.0.113.7"},
+		{"172.18.0.2:5000", "9.9.9.9, 203.0.113.7", "203.0.113.7"},
+	} {
+		req := httptest.NewRequest(http.MethodGet, "/ip", nil)
+		req.RemoteAddr = tc.remote
+		req.Header.Set("X-Forwarded-For", tc.forwarded)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		if w.Body.String() != tc.want {
+			t.Errorf("remote %s XFF %q: ClientIP = %s, want %s", tc.remote, tc.forwarded, w.Body.String(), tc.want)
+		}
 	}
 }
