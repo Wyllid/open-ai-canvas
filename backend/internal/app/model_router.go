@@ -278,7 +278,6 @@ func channelModelHasCompatiblePriceTier(channelModel model.ChannelModel, intent 
 	return false
 }
 
-
 func channelModelHasActivePriceTier(channelModel model.ChannelModel) bool {
 	for _, tier := range channelModel.PriceTiers {
 		if tier.Enabled {
