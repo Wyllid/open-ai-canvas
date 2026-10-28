@@ -1234,7 +1234,9 @@ func dramaRenderSize(aspect string) (int, int) {
 }
 
 // buildDramaTimeline 把一集镜头装配为时间线：视频轨静音，配音轨按镜头起点对齐，字幕单独输出。
-func buildDramaTimeline(segments []model.DramaSegment, aspect string) (renderProject, error) {
+func buildDramaTimeline(settings DramaSettings, segments []model.DramaSegment, shots []model.DramaShot) (renderProject, error) {
+	aspect := settings.AspectRatio
+	fadeIn, fadeOut := dramaBoundaryFades(settings, shots, segments)
 	width, height := dramaRenderSize(aspect)
 	visible := true
 	timeline := renderProject{Version: 2, Width: width, Height: height, Tracks: []renderTrack{{ID: "video", Kind: "video", Visible: &visible}}}
@@ -1247,6 +1249,12 @@ func buildDramaTimeline(segments []model.DramaSegment, aspect string) (renderPro
 		}
 		duration := int64(seg.VideoSeconds) * 1000
 		clip := renderClip{ID: "v-" + seg.ID, Kind: "video", TrackID: "video", StartMs: timeline.DurationMs, DurationMs: duration, SourceDurationMs: duration, Volume: 1}
+		if fade, ok := fadeIn[seg.ID]; ok {
+			clip.FadeInMs, clip.FadeInColor = fade.Ms, fade.Color
+		}
+		if fade, ok := fadeOut[seg.ID]; ok {
+			clip.FadeOutMs, clip.FadeOutColor = fade.Ms, fade.Color
+		}
 		clip.DirectMedia = &struct {
 			ID         string `json:"id"`
 			Kind       string `json:"kind"`
@@ -1267,7 +1275,11 @@ func (r *dramaRun) submitRender(job *model.DramaJob) (*model.Task, bool, error) 
 	if err != nil {
 		return nil, false, err
 	}
-	timeline, err := buildDramaTimeline(segments, r.settings.AspectRatio)
+	shots, err := r.s.repo.DramaShots(episode.ID)
+	if err != nil {
+		return nil, false, err
+	}
+	timeline, err := buildDramaTimeline(r.settings, segments, shots)
 	if err != nil {
 		return nil, false, err
 	}

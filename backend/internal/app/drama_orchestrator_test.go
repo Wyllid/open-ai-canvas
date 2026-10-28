@@ -132,10 +132,17 @@ func createTestDrama(t *testing.T, svc *Service, review string) DramaSummary {
 
 func createTestDramaWithMedia(t *testing.T, svc *Service, review string, media string) DramaSummary {
 	t.Helper()
+	// 夹具剧本的两个镜头换了场景；chain 让第二段仍接第一段最后一帧，覆盖段间首帧衔接。
+	return createTestDramaWithSettings(t, svc, review, media, production.ContinuityChain)
+}
+
+func createTestDramaWithSettings(t *testing.T, svc *Service, review string, media string, continuity string) DramaSummary {
+	t.Helper()
 	settings := DramaSettings{ReviewMode: review, MediaMode: media, Concurrency: 16, Models: fakeDramaModels}
 	settings.EpisodeSeconds = 60
-	// 剧情段固定 5 秒：夹具剧本的两个镜头（3 秒、6 秒）各成一段，覆盖段间首帧衔接。
+	// 剧情段固定 5 秒：夹具剧本的两个镜头（3 秒、6 秒）各成一段。
 	settings.Storyboard.SegmentMode, settings.Storyboard.SegmentSeconds = production.SegmentFixed, 5
+	settings.Storyboard.Continuity = continuity
 	summary, err := svc.CreateDrama("usr-drama", CreateDramaRequest{Name: "斗破", Start: true, Settings: settings, Chapters: []DramaChapterInput{
 		{Title: "第一章 陨落的天才", Text: "萧炎……"}, {Title: "第二章 退婚", Text: "纳兰嫣然……"}, {Title: "第三章 药老", Text: "戒指……"},
 	}})
@@ -143,6 +150,32 @@ func createTestDramaWithMedia(t *testing.T, svc *Service, review string, media s
 		t.Fatalf("create drama: %v", err)
 	}
 	return summary
+}
+
+func TestDramaAutoContinuityReanchorsANewScene(t *testing.T) {
+	svc, fake := newDramaTestService(t)
+	project := createTestDramaWithSettings(t, svc, DramaReviewAuto, DramaMediaAuto, production.ContinuityAuto).Project.ID
+	runDramaTicks(t, svc, project, 24)
+	requests := []CreateTaskRequest{}
+	for _, req := range fake.requests {
+		if req.Type == "canvas_video" {
+			requests = append(requests, req)
+		}
+	}
+	if len(requests) < 2 {
+		t.Fatalf("want at least two segment videos, got %d", len(requests))
+	}
+	for i, req := range requests[:2] {
+		if req.Operation != "reference_to_video" {
+			t.Fatalf("segment %d operation = %s, want reference_to_video after a scene change", i, req.Operation)
+		}
+		refs, _ := req.Input["referenceImages"].([]any)
+		for _, ref := range refs {
+			if ref.(map[string]any)["role"] == "first_frame" {
+				t.Fatalf("segment %d must not reuse the previous last frame: %+v", i, refs)
+			}
+		}
+	}
 }
 
 func TestDramaPipelineRunsNovelToFinalCutWithSampleGate(t *testing.T) {

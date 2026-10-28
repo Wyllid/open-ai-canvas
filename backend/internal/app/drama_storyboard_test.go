@@ -6,11 +6,12 @@ import (
 	"testing"
 	"time"
 	"yingce/backend/internal/model"
+	"yingce/backend/internal/production"
 )
 
 func TestDramaTimelineUsesWholeSegmentAudioAndRejectsMissingMedia(t *testing.T) {
 	segments := []model.DramaSegment{{ID: "a", VideoStatus: "ready", VideoResourceID: "video-a", VideoSeconds: 5}, {ID: "b", VideoStatus: "ready", VideoResourceID: "video-b", VideoSeconds: 10}}
-	timeline, err := buildDramaTimeline(segments, "9:16")
+	timeline, err := buildDramaTimeline(DramaSettings{Settings: production.Settings{AspectRatio: "9:16"}}, segments, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -19,7 +20,7 @@ func TestDramaTimelineUsesWholeSegmentAudioAndRejectsMissingMedia(t *testing.T) 
 	}
 	for _, status := range []string{"", "failed", "running", "stale"} {
 		segments[1].VideoStatus = status
-		if _, err := buildDramaTimeline(segments, "9:16"); err == nil {
+		if _, err := buildDramaTimeline(DramaSettings{Settings: production.Settings{AspectRatio: "9:16"}}, segments, nil); err == nil {
 			t.Fatalf("must reject %q", status)
 		}
 	}

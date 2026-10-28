@@ -117,6 +117,11 @@ const TRANSITIONS: Array<{ value: DramaStoryboardSettings["transition"]; label: 
     { value: "fadewhite", label: TRANSITION_LABEL.fadewhite, detail: "每次切镜都短暂闪白" },
 ];
 
+const CONTINUITY: Array<{ value: DramaStoryboardSettings["continuity"]; label: string; detail: string }> = [
+    { value: "auto", label: "By scene", detail: "Start from the previous segment's last frame only in the same scene on a cut; a new scene or a fade starts fresh from the references and can render in parallel" },
+    { value: "chain", label: "Always chain", detail: "Every segment starts from the previous segment's last frame and waits for it" },
+];
+
 function Segmented<V extends string | number>({ label, value, options, onChange }: { label: string; value: V; options: Array<{ value: V; label: string; detail?: string }>; onChange: (value: V) => void }) {
     return (
         <div className="drama-tabs is-block" role="radiogroup" aria-label={label}>
@@ -215,6 +220,11 @@ export function StoryboardRules({
             <div className="drama-sbrules-row">
                 <span className="drama-sbrules-label">转场</span>
                 <Segmented label="镜头转场" value={rules.transition} options={TRANSITIONS} onChange={(transition) => set({ transition })} />
+            </div>
+            <div className="drama-sbrules-row">
+                <span className="drama-sbrules-label">Continuity</span>
+                <Segmented label="Segment continuity" value={rules.continuity} options={CONTINUITY} onChange={(continuity) => set({ continuity })} />
+                <span className="drama-sbrules-hint">{CONTINUITY.find((item) => item.value === rules.continuity)?.detail}</span>
             </div>
             {rules.transition !== "cut" ? (
                 <div className="drama-sbrules-row">
