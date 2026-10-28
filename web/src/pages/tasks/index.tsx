@@ -388,7 +388,7 @@ export default function TasksPage() {
                     <PageHeader
                         title={tr("创作历史")}
                         description={tr("查看文本、图片和视频生成任务，跟踪进度并处理失败任务。")}
-                        meta={<span className="app-projects-header-meta">{taskStats.total} {tr("个任务")}</span>}
+                        meta={<span className="app-projects-header-meta">{tr("{0} 个任务", taskStats.total)}</span>}
                         actions={
                             <Button type="primary" icon={<Plus className="size-3.5" />} onClick={() => setCreateOpen(true)}>
                                 {tr("新建任务")}

@@ -241,7 +241,7 @@ function AssetEditor({ asset, onChange, onDelete }: { asset: StyleAssetBinding; 
             {asset.enabled !== false && (asset.kind === "lora" || asset.kind === "reference") ? (
                 <div className="flex gap-2 rounded-md bg-amber-500/8 px-3 py-2 text-[var(--fs-label)] leading-5 text-foreground/60">
                     <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-500" />
-                    <span>{tr("当前通用生成协议尚未启用")}{asset.kind === "lora" ? " LoRA" : tr("参考图组自动注入")}{tr("适配器。兼容降级会继续执行项目 Prompt；严格策略会在生成前阻止任务。")}</span>
+                    <span>{tr("当前通用生成协议尚未启用{0}适配器。兼容降级会继续执行项目 Prompt；严格策略会在生成前阻止任务。", asset.kind === "lora" ? " LoRA" : tr("参考图组自动注入"))}</span>
                 </div>
             ) : null}
         </div>

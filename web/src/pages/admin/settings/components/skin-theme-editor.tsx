@@ -49,7 +49,7 @@ export function SkinThemeEditor({
             <div className="admin-skin-library-toolbar">
                 <div>
                     <strong>{tr("主题库")}</strong>
-                    <span>{tr("共")} {themes.length} {tr("套，最多 16 套")}</span>
+                    <span>{tr("共 {0} 套，最多 16 套", themes.length)}</span>
                 </div>
                 <div>
                     <Button icon={<Plus className="size-3.5" />} disabled={disabled || themes.length >= 16} onClick={onCreate}>
@@ -170,7 +170,7 @@ export function SkinThemeEditor({
                 <SkinThemePreview theme={selected} mode={mode} />
 
                 <details className="admin-skin-token-group" open>
-                    <summary><span>{tr("主按钮填充")}</span><small>{mode === "light" ? tr("浅色") : tr("深色")}{tr("模式")}</small></summary>
+                    <summary><span>{tr("主按钮填充")}</span><small>{tr("{0}模式", mode === "light" ? tr("浅色") : tr("深色"))}</small></summary>
                     <div className="admin-skin-component-grid">
                         <label className="admin-skin-number-field">
                             <span>{tr("填充方式")}</span>
@@ -195,7 +195,7 @@ export function SkinThemeEditor({
                         <details key={group.key} className="admin-skin-token-group" open={index < 2}>
                             <summary>
                                 <span>{group.label}</span>
-                                <small>{group.fields.length} {tr("项")}</small>
+                                <small>{tr("{0} 项", group.fields.length)}</small>
                             </summary>
                             <div className="admin-skin-color-grid">
                                 {group.fields.map((field) => (

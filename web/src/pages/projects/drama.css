@@ -4433,6 +4433,10 @@
     position: absolute;
     left: 2px;
     bottom: 2px;
+    max-width: calc(100% - 4px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     padding: 0 4px;
     border-radius: 4px;
     background: rgba(0, 0, 0, 0.6);

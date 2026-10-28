@@ -163,9 +163,7 @@ export function AgentSceneCapsules({
                             >
                                 <Icon aria-hidden="true" />
                                 <span className="agent-scene-capsule-label">{bucket.label}</span>
-                                <span className="agent-scene-capsule-meta">
-                                    {count} {tr("项")}
-                                </span>
+                                <span className="agent-scene-capsule-meta">{tr("{0} 项", count)}</span>
                             </button>
                         );
                     })

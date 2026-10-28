@@ -235,7 +235,7 @@ export function AgentMemoryProposalPanel({ refreshKey, onApplied }: { refreshKey
                                         onClick={() => setSelected({ kind: "proposal", id: item.id })}
                                     >
                                         <span className="text-caption text-foreground">
-                                            {new Date(item.createdAt).toLocaleString()} · {item.changes.length} {tr("项变更")}
+                                            {new Date(item.createdAt).toLocaleString()} · {tr("{0} 项变更", item.changes.length)}
                                         </span>
                                         <StatusBadge size="sm" tone={item.status === "pending" ? "warning" : item.status === "approved" ? "success" : "neutral"} label={PROPOSAL_LABELS[item.status]} />
                                     </button>
@@ -255,7 +255,7 @@ export function AgentMemoryProposalPanel({ refreshKey, onApplied }: { refreshKey
                                         onClick={() => setSelected({ kind: "revision", id: item.id })}
                                     >
                                         <span className="text-caption text-foreground">
-                                            {new Date(item.createdAt).toLocaleString()} · {item.before.length} {tr("条原始记忆")}
+                                            {new Date(item.createdAt).toLocaleString()} · {tr("{0} 条原始记忆", item.before.length)}
                                         </span>
                                         <span className="text-caption text-muted-foreground">{item.restoredAt ? tr("已恢复") : tr("查看与恢复")}</span>
                                     </button>

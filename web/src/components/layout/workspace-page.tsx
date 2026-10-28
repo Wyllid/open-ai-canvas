@@ -1,4 +1,4 @@
-import { currentLocale, tr } from "@/i18n";
+import { currentLocale, tr, trParts } from "@/i18n";
 import { Button } from "antd";
 import { ChevronLeft, ChevronRight, ListFilter, RotateCcw } from "lucide-react";
 import type { ReactNode } from "react";
@@ -135,7 +135,7 @@ export function PaginationBar({
     return (
         <nav className={cn("app-pagination-bar", className)} aria-label={tr("分页")}>
             <span className="app-pagination-total">
-                {total === 0 ? <>{tr("共")} <b>0</b> {itemLabel}</> : <>{tr("第")} <b>{start}–{end}</b> {itemLabel}{tr("，共")} <b>{total.toLocaleString(currentLocale())}</b> {itemLabel}</>}
+                {total === 0 ? trParts("共 {0} {1}", <b key="total">0</b>, itemLabel) : trParts("第 {0} {1}，共 {2} {1}", <b key="range">{start}–{end}</b>, itemLabel, <b key="total">{total.toLocaleString(currentLocale())}</b>)}
             </span>
             <div className="app-pagination-controls">
                 <div className="app-pagination-pages">

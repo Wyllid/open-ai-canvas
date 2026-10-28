@@ -235,7 +235,7 @@ export function CanvasBatchTableNodeContent({ node, nodes, connections, batch, t
                             <BatchChoiceGroup ariaLabel={tr("并发数")} theme={theme} disabled={readOnly} compact options={CONCURRENCY_OPTIONS.map((value) => ({ value, label: String(value) }))} value={table.concurrency} onChange={(concurrency) => onPatchTable({ concurrency: Number(concurrency) })} />
                         </div>
                         <div className="flex h-8 shrink-0 items-center gap-0.5 rounded-lg px-2" style={{ background: theme.node.panel, color: theme.node.muted }}>
-                            <span className="pr-1">{referenceColumns.length}/{MAX_BATCH_REFERENCE_COLUMNS} {tr("组参考")}</span>
+                            <span className="pr-1">{referenceColumns.length}/{tr("{0} 组参考", MAX_BATCH_REFERENCE_COLUMNS)}</span>
                             {!readOnly ? (
                                 <>
                                     <Tooltip title={referenceColumns.length <= MIN_BATCH_REFERENCE_COLUMNS ? tr("至少保留 1 组参考图") : tr("减少一组参考图")}>
@@ -251,7 +251,7 @@ export function CanvasBatchTableNodeContent({ node, nodes, connections, batch, t
                                 </>
                             ) : null}
                         </div>
-                        <span className="shrink-0 tabular-nums" style={{ color: theme.node.muted }}>{tr("已连")} {connectedImageCount} {tr("· 完成")} {completed}/{table.rows.length}</span>
+                        <span className="shrink-0 tabular-nums" style={{ color: theme.node.muted }}>{tr("已连 {0} · 完成", connectedImageCount)} {completed}/{table.rows.length}</span>
                     </div>
                     {!readOnly ? (
                         <div className="ml-auto flex shrink-0 items-center gap-2" onPointerDown={(event) => event.stopPropagation()}>

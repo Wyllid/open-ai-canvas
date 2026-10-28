@@ -245,8 +245,8 @@ export default function DramaStudioPage() {
                     {episodes.length ? (
                         <div className="drama-topbar-progress">
                             <span className="drama-meter" aria-label={tr("成片进度 {0}%", Math.round(progress * 100))}><span style={progressFillStyle(Math.max(progress * 100, 2))} /></span>
-                            <span>{doneEpisodes}/{episodes.length} {tr("集成片")}{production.planDone ? "" : tr(" · 分集中")}</span>
-                            <span>· {formatCount(production.chapterCount)} {tr("章原文")}</span>
+                            <span>{doneEpisodes}/{tr("{0} 集成片", episodes.length)}{production.planDone ? "" : tr(" · 分集中")}</span>
+                            <span>· {tr("{0} 章原文", formatCount(production.chapterCount))}</span>
                         </div>
                     ) : null}
                     <nav className="drama-nav" aria-label={tr("制作台视图")}>
@@ -256,7 +256,7 @@ export default function DramaStudioPage() {
                         <button type="button" className="drama-nav-item" aria-current={view === "settings" ? "page" : undefined} onClick={() => openView("settings")}><Settings2 className="size-4" />{tr("设置")}</button>
                     </nav>
                     <div className="drama-topbar-actions">
-                        {awaitingCount ? <Button icon={<Sparkles className="size-4" />} loading={release.isPending && release.variables?.target === "all"} onClick={confirmReleaseAll}>{tr("全部生成视频 ·")} {awaitingCount} {tr("集")}</Button> : null}
+                        {awaitingCount ? <Button icon={<Sparkles className="size-4" />} loading={release.isPending && release.variables?.target === "all"} onClick={confirmReleaseAll}>{tr("全部生成视频 · {0} 集", awaitingCount)}</Button> : null}
                         {production.status !== "completed" ? (
                             <Button type={running ? "default" : "primary"} icon={running ? <Pause className="size-4" /> : <Play className="size-4" />} loading={toggleRun.isPending} onClick={() => toggleRun.mutate()}>{running ? tr("暂停") : production.status === "draft" ? tr("开始制作") : tr("继续制作")}</Button>
                         ) : null}
@@ -273,7 +273,7 @@ export default function DramaStudioPage() {
                             {episodeRow ? (
                                 <div className="drama-ep-header">
                                     <div className="drama-ep-heading">
-                                        <div className="drama-eyebrow">{tr("第")} {episodeRow.number} {tr("集 ·")} {STAGE_LABEL[episodeRow.stage]}</div>
+                                        <div className="drama-eyebrow">{tr("第 {0} 集 · {1}", episodeRow.number, STAGE_LABEL[episodeRow.stage])}</div>
                                         {renaming ? (
                                             <div className="drama-title-editor">
                                                 <input className="drama-title-input" autoFocus defaultValue={episodeRow.title} maxLength={60} aria-label={tr("集标题")} disabled={rename.isPending}
@@ -286,7 +286,7 @@ export default function DramaStudioPage() {
                                             <h2 title={episodeRow.title}>{episodeRow.title}<button type="button" className="drama-title-edit" aria-label={tr("重命名本集")} onClick={() => setRenaming(true)}><Pencil className="size-3.5" /></button></h2>
                                         )}
                                         <p>
-                                            <span>{episodeRow.shotCount} {tr("镜")}</span>
+                                            <span>{tr("{0} 镜", episodeRow.shotCount)}</span>
                                             {episodeRow.durationMs ? <span>{formatDuration(episodeRow.durationMs)}</span> : null}
                                             <StagePips episode={episodeRow} size="md" />
                                         </p>

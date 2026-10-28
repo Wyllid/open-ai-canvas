@@ -464,9 +464,7 @@ function ThirdPartySaveFooter({ setting, dirty, saving, refreshing, onReset, onS
         <div className="admin-third-party-footer">
             <div className="admin-third-party-footer-note">
                 <ShieldCheck className="size-4" aria-hidden="true" />
-                <span>
-                    {formatSettingTime(setting.updatedAt, tr("尚未保存 LibTV 配置"))} {tr("· 保存不会读取外部画布")}
-                </span>
+                <span>{tr("{0} · 保存不会读取外部画布", formatSettingTime(setting.updatedAt, tr("尚未保存 LibTV 配置")))}</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
                 {dirty ? (

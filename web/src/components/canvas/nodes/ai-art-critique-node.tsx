@@ -63,11 +63,7 @@ export function ArtCritiqueNodeContent({ node }: ArtCritiqueNodeProps) {
                                 : tr("从图片节点拖入一条连线")}
                         </div>
                     </div>
-                    {status === "completed" && issueCount ? (
-                        <span className="shrink-0 rounded-full bg-black/45 px-2 py-1 text-[var(--fs-micro)] font-semibold">
-                            {issueCount} {tr("项")}
-                        </span>
-                    ) : null}
+                    {status === "completed" && issueCount ? <span className="shrink-0 rounded-full bg-black/45 px-2 py-1 text-[var(--fs-micro)] font-semibold">{tr("{0} 项", issueCount)}</span> : null}
                 </div>
             </div>
 

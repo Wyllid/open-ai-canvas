@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, trIn } from "@/i18n";
 import { App, Button, Drawer, Form, Input } from "antd";
 import { Select } from "@/pages/admin/ui/controls";
 import { useEffect, useState } from "react";
@@ -90,7 +90,7 @@ export function AdminUserEditDrawer({ user, actorId, onClose, onSaved }: { user:
                 <Form.Item name="password" label={tr("重置密码")} extra={tr("留空表示不修改；保存后该用户已有登录会话会失效。")} rules={[{ min: 8, message: tr("密码至少 8 位") }]}>
                     <Input.Password placeholder={tr("输入新密码以手动重置")} autoComplete="new-password" />
                 </Form.Item>
-                <Form.Item name="role" label={tr("角色")} extra={editingSelf ? tr("不能在此修改当前管理员自己的角色。") : tr("角色变更会立即影响后台访问权限。")}>
+                <Form.Item name="role" label={trIn("user", "角色")} extra={editingSelf ? tr("不能在此修改当前管理员自己的角色。") : tr("角色变更会立即影响后台访问权限。")}>
                     <Select
                         disabled={editingSelf}
                         options={[
@@ -199,7 +199,7 @@ export function AdminUserCreateDrawer({ open, onClose, onCreated }: { open: bool
                 <Form.Item name="password" label={tr("初始密码")} rules={[{ required: true, message: tr("请设置初始密码") }]}>
                     <Input.Password placeholder={tr("至少 8 位")} />
                 </Form.Item>
-                <Form.Item name="role" label={tr("角色")}>
+                <Form.Item name="role" label={trIn("user", "角色")}>
                     <Select
                         options={[
                             { label: tr("管理员"), value: "admin" },

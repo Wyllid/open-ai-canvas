@@ -67,7 +67,7 @@ const SKIP_CALLEES = new Set([
     "containsAny",
     "matches",
 ]);
-const TRANSLATE_FNS = new Set(["tr", "trI18n"]);
+const TRANSLATE_FNS = new Set(["tr", "trI18n", "trParts"]);
 const NON_TEXT_ATTRS = /^(className|key|id|href|src|type|name|value|role|data-|style|defaultValue|htmlFor|accept|pattern|rel|target)/;
 const SKIP_DIRS = [path.join(srcDir, "i18n")];
 // Text sent to models (system prompts, output contracts): never wrapped, so the model sees it unchanged.

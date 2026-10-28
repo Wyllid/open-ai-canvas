@@ -151,9 +151,7 @@ export function AssetCover({
                     <AudioWaveCover asset={asset} />
                 ) : asset.kind === "entity" && (asset.category === "environment" || asset.category === "prop") ? (
                     <div className="assets-cover-fallback">
-                        <span>
-                            {assetCategoryLabel(asset.category)} {tr("· 待生成图片")}
-                        </span>
+                        <span>{tr("{0} · 待生成图片", assetCategoryLabel(asset.category))}</span>
                     </div>
                 ) : asset.kind === "entity" ? (
                     <CharacterAssetCover asset={asset} />

@@ -448,7 +448,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                 ]}
             >
                 <div className="space-y-3">
-                    <p className="m-0 text-sm text-foreground/65">{tr("上游共返回")} {fetchPreviewModels.length} {tr("个模型。默认勾选已存在的模型，新模型默认不勾选；可批量全选或取消全选，已存在的模型不会重复导入。")}</p>
+                    <p className="m-0 text-sm text-foreground/65">{tr("上游共返回 {0} 个模型。默认勾选已存在的模型，新模型默认不勾选；可批量全选或取消全选，已存在的模型不会重复导入。", fetchPreviewModels.length)}</p>
                     <Input
                         allowClear
                         autoFocus
@@ -462,7 +462,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                     />
                     <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/70 bg-muted/25 px-3 py-2">
                         <span className="text-sm font-medium text-foreground/70" aria-live="polite">
-                            {tr("已选择")} {selectedFetchModels.length} / {fetchPreviewModels.length} {tr("个模型")}
+                            {tr("已选择 {0} / {1} 个模型", selectedFetchModels.length, fetchPreviewModels.length)}
                             {fetchKeywordQuery ? tr("，当前匹配 {0} 个（其中 {1} 个已勾选）", visibleFetchModels.length, selectedVisibleFetchCount) : ""}
                         </span>
                         <Space size={4}>
@@ -493,7 +493,7 @@ export function ChannelModelManager({ channel, onChanged }: { channel: ModelChan
                             />
                         ) : (
                             <p className="m-0 py-6 text-center text-sm text-foreground/55">
-                                {tr("没有匹配「")}{fetchKeyword.trim()}{tr("」的模型")}
+                                {tr("没有匹配「{0}」的模型", fetchKeyword.trim())}
                             </p>
                         )}
                     </div>

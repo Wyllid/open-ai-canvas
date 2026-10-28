@@ -413,9 +413,7 @@ export default function ChannelsPage() {
                                     <ChevronRight className="admin-channel-item-arrow size-3.5" aria-hidden="true" />
                                 </span>
                                 <span className="admin-channel-item-meta">
-                                    <span>
-                                        {channel.models?.length || 0} {tr("个模型")}
-                                    </span>
+                                    <span>{tr("{0} 个模型", channel.models?.length || 0)}</span>
                                     <span className="admin-channel-item-status" data-enabled={channel.enabled !== false}>
                                         {channel.enabled !== false ? tr("已启用") : tr("已停用")}
                                     </span>

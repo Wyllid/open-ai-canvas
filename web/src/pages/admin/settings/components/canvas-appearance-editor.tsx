@@ -111,9 +111,7 @@ export function CanvasAppearanceEditor({ value, onChange, disabled, onUploading 
         <div className="grid gap-6 lg:grid-cols-2">
             <div>
                 <h3 className="mb-3 font-semibold">{tr("Agent 身份与文案")}</h3>
-                <p className="mb-4 text-sm text-foreground/60">
-                    {tr("独立于站点品牌。助手名称同步用于界面文案和对话中的自我介绍；文案可使用")} {"{agentName}"} {tr("引用名称，不修改工具权限。")}
-                </p>
+                <p className="mb-4 text-sm text-foreground/60">{tr("独立于站点品牌。助手名称同步用于界面文案和对话中的自我介绍；文案可使用 {0} 引用名称，不修改工具权限。", "{agentName}")}</p>
                 <Form layout="vertical" disabled={disabled || uploading}>
                     {(
                         [
@@ -210,7 +208,7 @@ export function CanvasAppearanceEditor({ value, onChange, disabled, onUploading 
                         </div>
                         {bundleManifest ? (
                             <p className="text-xs text-foreground/60">
-                                {Object.keys(bundleManifest.clips).length} {tr("个动画 ·")} {bundleManifest.width} × {bundleManifest.height}
+                                {tr("{0} 个动画 ·", Object.keys(bundleManifest.clips).length)} {bundleManifest.width} × {bundleManifest.height}
                             </p>
                         ) : null}
                         {bundleError ? (

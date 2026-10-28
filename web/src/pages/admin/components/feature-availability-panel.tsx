@@ -313,11 +313,7 @@ function FeatureSettingRow({ row, saved, draft, saving, onChange, step }: { row:
             <div className="admin-feature-board-row-copy">
                 <span className="admin-feature-board-row-icon">{row.icon}</span>
                 <span className="admin-feature-board-row-name">
-                    {step ? (
-                        <small>
-                            {tr("第")} {step} {tr("步")}
-                        </small>
-                    ) : null}
+                    {step ? <small>{tr("第 {0} 步", step)}</small> : null}
                     <strong>{row.title}</strong>
                     <span>{row.description}</span>
                 </span>

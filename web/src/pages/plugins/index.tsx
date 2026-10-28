@@ -413,7 +413,7 @@ export default function PluginsPage() {
                                                                             <span key={capability}>{capabilityLabel(capability)}</span>
                                                                         ))}
                                                                         {plugin.manifest.contributes.providers?.some((provider) => provider.poll) ? <span>{tr("异步轮询")}</span> : null}
-                                                                        <span>{plugin.manifest.permissions.length} {tr("项能力")}</span>
+                                                                        <span>{tr("{0} 项能力", plugin.manifest.permissions.length)}</span>
                                                                     </div>
                                                                 </button>
 
@@ -514,14 +514,14 @@ export default function PluginsPage() {
                                                 <div className="min-w-0">
                                                     <label htmlFor="eagle-base-url">{tr("Eagle 本地 API 地址")}</label>
                                                     <Input id="eagle-base-url" aria-label={tr("Eagle 本地 API 地址")} value={eagleBaseUrl} onChange={(event) => setEagleBaseUrl(event.target.value)} placeholder="http://localhost:41595" />
-                                                    <p>{tr("Eagle 必须在本机运行；")}{brandName}{tr("通过插件直接读取和写入 Eagle 原始文件。")}</p>
+                                                    <p>{tr("Eagle 必须在本机运行；{0}通过插件直接读取和写入 Eagle 原始文件。", brandName)}</p>
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="plugin-setting-label-row">
                                                         <label htmlFor="eagle-auto-upload-generated">{tr("自动归档生成结果")}</label>
                                                         <Switch id="eagle-auto-upload-generated" checked={eagleAutoUploadGenerated} onChange={setEagleAutoUploadGenerated} aria-label={tr("自动归档生成结果到 Eagle")} />
                                                     </div>
-                                                    <p>{tr("图片、视频和音频生成成功后，自动写入 Eagle；")}{brandName}{tr("本地素材仍会保留。")}</p>
+                                                    <p>{tr("图片、视频和音频生成成功后，自动写入 Eagle；{0}本地素材仍会保留。", brandName)}</p>
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="plugin-setting-label-row">

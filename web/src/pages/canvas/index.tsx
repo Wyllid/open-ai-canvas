@@ -413,7 +413,7 @@ export default function CanvasPage() {
                 <PageHeader
                     title={tr("我的画布")}
                     description={tr("把镜头、素材和想法留在同一张画布里。")}
-                    meta={<span className="app-projects-header-meta">{totalProjects} {tr("个")}</span>}
+                    meta={<span className="app-projects-header-meta">{tr("{0} 个", totalProjects)}</span>}
                     actions={
                         <div className="collection-header-actions">
                             <Button type="primary" disabled={!hydrated} icon={<Plus />} onClick={createAndEnter}>
@@ -445,7 +445,7 @@ export default function CanvasPage() {
             <div className="collection-content">
                 {selectedIds.length ? (
                     <div className="collection-selection-bar">
-                        <strong className="mr-auto font-medium">{tr("已选")} {selectedIds.length} {tr("个画布")}</strong>
+                        <strong className="mr-auto font-medium">{tr("已选 {0} 个画布", selectedIds.length)}</strong>
                         <Button
                             size="small"
                             disabled={!hydrated || projectQuery.isLoading}

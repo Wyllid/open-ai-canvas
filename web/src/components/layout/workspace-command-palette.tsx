@@ -149,7 +149,7 @@ export function WorkspaceCommandPalette({ open, onClose }: { open: boolean; onCl
                     ) : (
                         <div className="flex flex-col items-center justify-center py-8">
                             <Command className="mb-2 size-6 text-foreground/30" strokeWidth={1.5} />
-                            <p className="text-[var(--fs-caption)] font-medium text-foreground/55">{tr("未找到「")}{query}{tr("」相关页面")}</p>
+                            <p className="text-[var(--fs-caption)] font-medium text-foreground/55">{tr("未找到「{0}」相关页面", query)}</p>
                         </div>
                     )}
                 </div>

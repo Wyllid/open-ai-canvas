@@ -268,7 +268,7 @@ export function CanvasVideoSegmentDialog({ node, nodes, connections, open, mode,
                                 <span className="opacity-60">{tr("时长")}</span>
                                 <span>{durationSec ? formatSegmentTime(durationSec) : tr("未知")}</span>
                                 <span className="opacity-60">{tr("已选")}</span>
-                                <span>{segments.length} {tr("段")}</span>
+                                <span>{tr("{0} 段", segments.length)}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Button size="small" icon={<Plus className="size-3.5" />} disabled={!durationSec} onClick={addManualSegment}>

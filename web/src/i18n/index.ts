@@ -88,6 +88,18 @@ export function tr(source: string, ...args: unknown[]): string {
     return format(text, args);
 }
 
+/** tr for a word whose meaning depends on where it is shown: the catalog key is "source@context". */
+export function trIn(context: string, source: string, ...args: unknown[]): string {
+    const key = `${source}@${context}`;
+    return format(catalog?.[key] || fallback?.[key] || catalog?.[source] || fallback?.[source] || source, args);
+}
+
+/** Like tr, but keeps args as values (e.g. React elements) so a whole sentence can wrap rich parts. */
+export function trParts<T>(source: string, ...args: Array<T | string>): Array<string | T> {
+    const text = catalog?.[source] || fallback?.[source] || source;
+    return text.split(PLACEHOLDER).map((part, index) => (index % 2 ? args[Number(part)] : part));
+}
+
 /** Translates a message that came from the backend when it matches a catalog key exactly. */
 export function trMessage(message: string): string {
     return catalog?.[message] || fallback?.[message] || message;

@@ -195,7 +195,7 @@ export function WorkflowTestWorkbench({ provider, workflowId, workflowKind = "wo
                 <div className="min-w-0">
                     <strong>{title || workflowId || tr("未选择工作流")}</strong>
                     <span>
-                        RunningHub · {capabilityName(capability)}{tr("工作流 · 测试值不会覆盖保存配置")}
+                        RunningHub · {tr("{0}工作流 · 测试值不会覆盖保存配置", capabilityName(capability))}
                     </span>
                 </div>
                 <div className="workflow-test-toolbar-actions">
@@ -343,7 +343,7 @@ function MediaPicker({ kind, limit, files, maskIndex, onChange }: { kind: MediaK
             ) : (
                 <span>
                     <Upload />
-                    {tr("选择")}{mediaName(kind)}{tr("（最多")} {limit} {tr("个）")}
+                    {tr("选择{0}（最多 {1} 个）", mediaName(kind), limit)}
                 </span>
             )}
         </label>

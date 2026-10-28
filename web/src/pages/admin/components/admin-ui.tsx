@@ -298,7 +298,7 @@ export function AdminBatchBar({ count, onClear, children }: { count: number; onC
         <div className="admin-batch-bar sticky top-0 z-20 flex min-h-11 flex-wrap items-center justify-between gap-3 px-3 py-2">
             <div className="flex items-center gap-2 text-sm font-medium">
                 <CheckSquare2 className="size-4" />
-                {tr("已选择")} {count} {tr("项")}
+                {tr("已选择 {0} 项", count)}
             </div>
             <div className="flex flex-wrap items-center gap-2">
                 {children}

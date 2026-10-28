@@ -1,4 +1,4 @@
-import { tr } from "@/i18n";
+import { tr, trMessage } from "@/i18n";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, Play } from "lucide-react";
@@ -79,8 +79,8 @@ export function AuthScene() {
                         className="absolute inset-x-0 bottom-0 max-w-2xl p-5 sm:p-7 lg:p-10"
                     >
                         <p className="auth-scene-hero-muted text-xs font-semibold tracking-[0.18em]">{brandStudioLabel(appearance)}</p>
-                        <h1 className="auth-scene-hero-title mt-3 max-w-xl whitespace-pre-line text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">{appearance.authHeroTitle}</h1>
-                        {appearance.authHeroDescription ? <p className="auth-scene-hero-muted mt-4 max-w-xl whitespace-pre-line text-sm leading-6 sm:text-base sm:leading-7">{appearance.authHeroDescription}</p> : null}
+                        <h1 className="auth-scene-hero-title mt-3 max-w-xl whitespace-pre-line text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">{trMessage(appearance.authHeroTitle)}</h1>
+                        {appearance.authHeroDescription ? <p className="auth-scene-hero-muted mt-4 max-w-xl whitespace-pre-line text-sm leading-6 sm:text-base sm:leading-7">{trMessage(appearance.authHeroDescription)}</p> : null}
                     </motion.div>
                 </section>
 

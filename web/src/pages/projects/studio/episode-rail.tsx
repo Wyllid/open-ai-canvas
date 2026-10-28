@@ -171,7 +171,7 @@ export function EpisodeRail({ episodes, currentId, planning, onSelect, onAdd }: 
                     {!planning && filter === "all" && !deferredQuery ? (
                         <button type="button" className="drama-rail-add" onClick={onAdd}>
                             <Plus className="size-3.5" />
-                            {tr("添加第")} {nextNumber} {tr("集")}
+                            {tr("添加第 {0} 集", nextNumber)}
                         </button>
                     ) : null}
                 </div>

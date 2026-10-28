@@ -157,7 +157,7 @@ export function BannerTitleEditor({ value, onChange }: { value: BannerTitleRun[]
             </div>
 
             <p className="text-[var(--fs-label)] text-foreground/45">
-                {tr("选中文字后调整样式；未选中时设置后续输入的文字样式。「图标」可在光标处插入 emoji 素材，位置与个数不限。默认字号")} {BANNER_TITLE_DEFAULT_FONT_SIZE}{tr("px、字重")} {BANNER_TITLE_DEFAULT_FONT_WEIGHT}{tr("，与通知条一致。")}
+                {tr("选中文字后调整样式；未选中时设置后续输入的文字样式。「图标」可在光标处插入 emoji 素材，位置与个数不限。默认字号 {0}px、字重 {1}，与通知条一致。", BANNER_TITLE_DEFAULT_FONT_SIZE, BANNER_TITLE_DEFAULT_FONT_WEIGHT)}
             </p>
         </div>
     );

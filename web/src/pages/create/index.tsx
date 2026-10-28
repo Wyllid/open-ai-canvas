@@ -1077,7 +1077,7 @@ export default function CreatePage() {
                 <section ref={launchpadRef} className="creation-launchpad" aria-label={tr("开始创作")}>
                     <header className="creation-start-heading">
                         <div>
-                            <h1>{tr("和")}{brandName}{tr("聊聊创作想法")}</h1>
+                            <h1>{tr("和{0}聊聊创作想法", brandName)}</h1>
                             <p>{tr("从一个画面、一个角色或一句话开始。")}</p>
                         </div>
                         <button type="button" className="creation-history-entry" aria-label={tr("查看历史对话")} aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)}><History aria-hidden="true" /><span>{tr("历史对话")}</span></button>

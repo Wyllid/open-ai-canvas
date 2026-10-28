@@ -65,7 +65,7 @@ export function CanvasActiveTaskPanel({ tasks, align = "right", topInset = "var(
                                 <span className="min-w-0">
                                     <span className="block text-sm font-semibold leading-5">{tr("生成任务")}</span>
                                     <span className="block truncate text-[var(--fs-label)]" style={{ color: theme.node.muted }} aria-live="polite">
-                                        {tr("当前画布 ·")} {tasks.length} {tr("个进行中")}
+                                        {tr("当前画布 · {0} 个进行中", tasks.length)}
                                     </span>
                                 </span>
                             </span>

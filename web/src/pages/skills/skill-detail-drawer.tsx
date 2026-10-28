@@ -122,7 +122,7 @@ export function SkillDetailModal({ skill, loading, mutating, categories, onClose
                     <div className="skill-package-workspace">
                         <aside className="skill-package-sidebar" aria-label={tr("技能文件")}>
                             <div className="skill-package-sidebar-summary">
-                                <span><FileArchive className="size-3.5" />{skill.fileCount || files.length} {tr("个文件")}</span>
+                                <span><FileArchive className="size-3.5" />{tr("{0} 个文件", skill.fileCount || files.length)}</span>
                                 <span>{formatBytes(skill.totalBytes)}</span>
                             </div>
                             <Input allowClear size="small" value={pathFilter} onChange={(event) => setPathFilter(event.target.value)} placeholder={tr("筛选文件…")} prefix={<File className="size-3.5 text-foreground/30" />} />
@@ -142,7 +142,7 @@ export function SkillDetailModal({ skill, loading, mutating, categories, onClose
                                 ) : <div className="skill-package-empty">{tr("没有匹配文件")}</div>}
                             </div>
                             <div className="skill-package-sidebar-footer">
-                                <span className="inline-flex items-center gap-1"><Users className="size-3.5" />{formatSkillCount(skill.addedCount)} {tr("人加入")}</span>
+                                <span className="inline-flex items-center gap-1"><Users className="size-3.5" />{tr("{0} 人加入", formatSkillCount(skill.addedCount))}</span>
                                 <span>{skill.isPrivate ? tr("仅自己可见") : tr("公开")}</span>
                             </div>
                         </aside>

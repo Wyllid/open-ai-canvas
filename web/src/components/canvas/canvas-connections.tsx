@@ -51,7 +51,7 @@ export const ConnectionPath = React.memo(function ConnectionPath({
     return (
         <g>
             {targetCell ? <title>{targetCell.label}{targetCell.clipped ? tr("（位于表格滚动区域外）") : ""}</title> : null}
-            {targetCell?.clipped && !hideVisual && emphasized ? <text x={endX + 8} y={endY - 8} fill={theme.node.text} fontSize={12} style={{ pointerEvents: "none" }}>{targetCell.label} {tr("· 滚动查看")}</text> : null}
+            {targetCell?.clipped && !hideVisual && emphasized ? <text x={endX + 8} y={endY - 8} fill={theme.node.text} fontSize={12} style={{ pointerEvents: "none" }}>{tr("{0} · 滚动查看", targetCell.label)}</text> : null}
             <path
                 data-connection-id={connection.id}
                 d={pathD}

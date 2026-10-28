@@ -299,7 +299,7 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                             ) : null}
                         </div>
                         <div className="mt-0.5 truncate text-xs" style={{ color: theme.node.muted }}>
-                            {input?.title || tr("等待图片输入")} {tr("· 输入图片，输出批改报告，不修改原图")}
+                            {tr("{0} · 输入图片，输出批改报告，不修改原图", input?.title || tr("等待图片输入"))}
                         </div>
                     </div>
                     <div className="hidden shrink-0 items-center gap-2 sm:flex">
@@ -431,7 +431,7 @@ export function AiArtCritiqueModal({ node, upstreamNodes, open, onClose, onUpdat
                                             <div className="flex items-center justify-between gap-3">
                                                 <h3 className="m-0 text-sm font-semibold">{tr("重点问题")}</h3>
                                                 <span className="text-xs" style={{ color: theme.node.muted }}>
-                                                    {visibleIssues.length} / {visibleState.report.issues.length} {tr("项")}
+                                                    {visibleIssues.length} / {tr("{0} 项", visibleState.report.issues.length)}
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-1 overflow-x-auto pb-1" role="group" aria-label={tr("问题分类筛选")}>

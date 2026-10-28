@@ -56,9 +56,7 @@ export function EpisodeDurationInput({ value, onChange }: { value: number; onCha
                         label: (
                             <span className="drama-duration-option">
                                 <span>{formatEpisodeSeconds(seconds)}</span>
-                                <small>
-                                    {seconds} {tr("秒")}
-                                </small>
+                                <small>{tr("{0} 秒", seconds)}</small>
                             </span>
                         ),
                     })),
@@ -86,13 +84,7 @@ export function EpisodeDurationInput({ value, onChange }: { value: number; onCha
                     suffix={<ChevronDown className={`size-3.5 opacity-50 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />}
                 />
             </Dropdown>
-            {error ? (
-                <small className="drama-field-error">{error}</small>
-            ) : (
-                <small className="drama-field-hint">
-                    {tr("约")} {Math.round((value / 60) * 10) / 10} {tr("分钟 · 也可直接输入")}
-                </small>
-            )}
+            {error ? <small className="drama-field-error">{error}</small> : <small className="drama-field-hint">{tr("约 {0} 分钟 · 也可直接输入", Math.round((value / 60) * 10) / 10)}</small>}
         </div>
     );
 }
@@ -259,7 +251,7 @@ export function StoryboardRules({
                 <p className="drama-sbrules-warn">
                     <TriangleAlert className="size-3.5 shrink-0" />
                     {modelName}
-                    {tr("单次最长")} {maxVideoSeconds} {tr("秒，")}
+                    {tr("单次最长 {0} 秒，", maxVideoSeconds)}
                     {rules.segmentMode === "fixed" ? tr("剧情段按 {0} 秒切分", maxVideoSeconds) : tr("剧情段上限按 {0} 秒执行", maxVideoSeconds)}。
                 </p>
             ) : null}

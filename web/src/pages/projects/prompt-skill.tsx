@@ -118,7 +118,7 @@ function PromptSkillModal({ open, initial, onClose, onPick }: { open: boolean; i
                             {path || "原文"}
                             {content ? (
                                 <span>
-                                    {content.length.toLocaleString(currentLocale())} {tr("字")}
+                                    {tr("{0} 字", content.length.toLocaleString(currentLocale()))}
                                     {content.length > 16000 ? " · 超过 16000 字的部分不会发送" : ""}
                                 </span>
                             ) : null}

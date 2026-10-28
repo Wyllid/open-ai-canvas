@@ -209,9 +209,7 @@ export function CanvasHistoryDrawer({ open, onClose }: { open: boolean; onClose:
                                                             </span>
                                                         </div>
                                                     )}
-                                                    <div className="text-[var(--fs-label)] text-stone-500 dark:text-stone-400 pt-0.5">
-                                                        {tr("包含")} {item.nodeCount} {tr("个节点")}
-                                                    </div>
+                                                    <div className="text-[var(--fs-label)] text-stone-500 dark:text-stone-400 pt-0.5">{tr("包含 {0} 个节点", item.nodeCount)}</div>
                                                 </div>
                                             </div>
 

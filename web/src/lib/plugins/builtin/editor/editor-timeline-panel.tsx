@@ -515,7 +515,7 @@ function TrackRow({
                     >
                         {track.label}
                     </div>
-                    <div className="text-[var(--fs-label)] text-[var(--previs-dock-fg)]">{clips.length} {tr("个片段")}</div>
+                    <div className="text-[var(--fs-label)] text-[var(--previs-dock-fg)]">{tr("{0} 个片段", clips.length)}</div>
                 </div>
                 <button
                     type="button"

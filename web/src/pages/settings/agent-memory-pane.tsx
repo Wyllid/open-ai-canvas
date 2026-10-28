@@ -462,7 +462,7 @@ export default function AgentMemoryPane({ compact = false }: { compact?: boolean
                                                         <ul className="ml-4 list-disc">
                                                             {record.evidence.map((entry, index) => (
                                                                 <li key={`${entry.sequence}-${index}`}>
-                                                                    {entry.tool} {tr("· 事件")} {entry.sequence}
+                                                                    {tr("{0} · 事件", entry.tool)} {entry.sequence}
                                                                 </li>
                                                             ))}
                                                         </ul>

@@ -182,7 +182,7 @@ export function ModelPicker({
                                         ) : null}
                                     </span>
                                     <small className="canvas-model-picker-brand-meta">
-                                        <span className="canvas-model-picker-brand-subtext">{group.models.length} {tr("个")}{group.kind === "product" ? tr("渠道") : tr("模型")}{group.scope ? ` · ${group.scope}` : ""}</span>
+                                        <span className="canvas-model-picker-brand-subtext">{tr("{0} 个", group.models.length)}{group.kind === "product" ? tr("渠道") : tr("模型")}{group.scope ? ` · ${group.scope}` : ""}</span>
                                         <ModelRecentHealthTrack availability={groupAvailability(config, group)} />
                                     </small>
                                 </span>
@@ -205,7 +205,7 @@ export function ModelPicker({
                                         ) : null}
                                     </span>
                                     <small className="canvas-model-picker-brand-meta">
-                                        <span className="canvas-model-picker-brand-subtext">{group.models.length} {tr("个")}{group.kind === "product" ? tr("渠道") : tr("模型")}{group.scope ? ` · ${group.scope}` : ""}</span>
+                                        <span className="canvas-model-picker-brand-subtext">{tr("{0} 个", group.models.length)}{group.kind === "product" ? tr("渠道") : tr("模型")}{group.scope ? ` · ${group.scope}` : ""}</span>
                                         <ModelRecentHealthTrack availability={groupAvailability(config, group)} />
                                     </small>
                                 </span>
@@ -546,7 +546,7 @@ function ModelAvailabilityBadge({ availability, available, showAvailability }: {
                 <strong>{tr("近24小时成功率")}</strong>
                 <span>{label}</span>
             </div>
-            <div className="model-picker-availability-popover-meta">{availability.sampleCount24h} {tr("次 create 尝试 · 7天样本")} {trendSamples} {tr("条")}</div>
+            <div className="model-picker-availability-popover-meta">{tr("{0} 次 create 尝试 · 7天样本 {1} 条", availability.sampleCount24h, trendSamples)}</div>
             <div className="model-picker-availability-trend" aria-label={tr("近7天成功率趋势")}>
                 {trend.map((item) => {
                     const dayLabel = item.rate === null ? tr("暂无数据") : `${Math.round(item.rate * 100)}%`;

@@ -52,7 +52,7 @@ export function CanvasWorkspaceNodeListPanel({
                         </button>
                     ) : null}
                 </label>
-                {deferredQuery ? <div className="mt-1 px-0.5 text-[var(--fs-micro)] tabular-nums text-foreground/35">{tr("找到")} {results.length.toLocaleString(currentLocale())} {tr("个节点")}</div> : null}
+                {deferredQuery ? <div className="mt-1 px-0.5 text-[var(--fs-micro)] tabular-nums text-foreground/35">{tr("找到 {0} 个节点", results.length.toLocaleString(currentLocale()))}</div> : null}
             </div>
             <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain py-1" role="listbox" aria-label={tr("画布节点列表")}>
                 {results.length ? (

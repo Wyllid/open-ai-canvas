@@ -40,7 +40,7 @@ export function ModelDefaultGrid({ config, onChange }: { config: AiConfig; onCha
                                 <h3 id={`default-${group.capability}-title`} className="text-sm font-semibold">{group.title}</h3>
                                 <p className="mt-0.5 text-xs text-foreground/48">{group.description}</p>
                             </div>
-                            <span className="ml-auto shrink-0 text-xs tabular-nums text-foreground/38">{models.length} {tr("个可用")}</span>
+                            <span className="ml-auto shrink-0 text-xs tabular-nums text-foreground/38">{tr("{0} 个可用", models.length)}</span>
                         </div>
                         {models.length ? (
                             <div role="radiogroup" aria-label={group.title} className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -79,7 +79,7 @@ export function ModelDefaultGrid({ config, onChange }: { config: AiConfig; onCha
                                 })}
                             </div>
                         ) : (
-                            <div className="rounded-md bg-surface-active px-4 py-6 text-center text-xs text-foreground/45">{tr("当前渠道中没有可用的")}{capabilityLabel(group.capability)}{tr("模型")}</div>
+                            <div className="rounded-md bg-surface-active px-4 py-6 text-center text-xs text-foreground/45">{tr("当前渠道中没有可用的{0}模型", capabilityLabel(group.capability))}</div>
                         )}
                     </section>
                 );

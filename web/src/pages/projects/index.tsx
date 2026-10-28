@@ -95,7 +95,7 @@ export default function DramaListPage() {
         <WorkspacePage className="studio-collection-page drama-library">
             <div className="drama-root" {...dragProps}>
                 <div className="studio-band">
-                    <PageHeader title={tr("短剧")} description={tr("上传一本小说，流水线自动改编、拆集、建角色、出分镜并合成成片。")} meta={<span className="app-projects-header-meta">{total} {tr("部")}</span>} actions={total ? actions : undefined} />
+                    <PageHeader title={tr("短剧")} description={tr("上传一本小说，流水线自动改编、拆集、建角色、出分镜并合成成片。")} meta={<span className="app-projects-header-meta">{tr("{0} 部", total)}</span>} actions={total ? actions : undefined} />
                     {total ? (
                         <CollectionToolbar label={tr("短剧浏览工具")} active={filtered} onReset={() => { setKeyword(""); setStatus("all"); }}>
                             <Input prefix={<Search />} value={keyword} allowClear placeholder={tr("搜索作品名")} aria-label={tr("搜索作品名")} onChange={(event) => setKeyword(event.target.value)} />

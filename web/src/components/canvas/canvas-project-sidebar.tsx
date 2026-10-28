@@ -189,7 +189,7 @@ export function CanvasProjectSidebar({ projectId, detail, onAddChapter, onLocate
                             </button>
                         ) : null}
                     </label>
-                    {deferredQuery ? <div className="mt-1 px-0.5 text-[var(--fs-micro)] tabular-nums text-foreground/35">{tr("找到")} {visibleUnits.length.toLocaleString(currentLocale())} {tr("章")}</div> : null}
+                    {deferredQuery ? <div className="mt-1 px-0.5 text-[var(--fs-micro)] tabular-nums text-foreground/35">{tr("找到 {0} 章", visibleUnits.length.toLocaleString(currentLocale()))}</div> : null}
                 </div>
 
                 <div ref={scrollRef} className="canvas-project-sidebar-chapter-scroll thin-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-2" aria-label={tr("项目章节列表")}>
@@ -293,7 +293,7 @@ function ChapterPreview({
         >
             <header className="flex items-start gap-2 border-b border-border/70 px-3 py-2">
                 <div className="min-w-0 flex-1">
-                    <div className="text-[var(--fs-tiny)] tabular-nums text-foreground/38">{tr("第")} {chapterNumber.toLocaleString(currentLocale())} {tr("章")}</div>
+                    <div className="text-[var(--fs-tiny)] tabular-nums text-foreground/38">{tr("第 {0} 章", chapterNumber.toLocaleString(currentLocale()))}</div>
                     <h2 className="mt-0.5 truncate text-sm font-semibold">{unit.title}</h2>
                 </div>
                 <button type="button" onClick={onClose} className="grid size-6 shrink-0 place-items-center rounded text-foreground/38 hover:bg-surface-hover hover:text-foreground" aria-label={tr("关闭章节预览")}>
@@ -302,7 +302,7 @@ function ChapterPreview({
             </header>
             <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto px-3 py-3">
                 <p className="whitespace-pre-wrap text-xs leading-5 text-foreground/58">{loading ? tr("正在读取本章正文…") : loadError ? tr("正文读取失败，请稍后重试") : text || tr("本章还没有正文")}</p>
-                {!loading && !loadError ? <div className="mt-2 text-[var(--fs-tiny)] tabular-nums text-foreground/35">{text.length.toLocaleString(currentLocale())} {tr("字")}</div> : null}
+                {!loading && !loadError ? <div className="mt-2 text-[var(--fs-tiny)] tabular-nums text-foreground/35">{tr("{0} 字", text.length.toLocaleString(currentLocale()))}</div> : null}
             </div>
             <footer className="flex shrink-0 items-center justify-between border-t border-border/70 px-2 py-2">
                 <button

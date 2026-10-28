@@ -99,9 +99,7 @@ export function SegmentDialog({
                 <div className="drama-sd">
                     <header className="drama-sd-head">
                         <div className="min-w-0">
-                            <div className="drama-eyebrow">
-                                {tr("第")} {detail.episode.number} {tr("集 · 第")} {segment.index + 1} / {segments.length} {tr("段 ·")} {shots.length} {tr("镜 ·")} {secondsLabel(segment.durationMs)}
-                            </div>
+                            <div className="drama-eyebrow">{tr("第 {0} 集 · 第 {1} / {2} 段 · {3} 镜 · {4}", detail.episode.number, segment.index + 1, segments.length, shots.length, secondsLabel(segment.durationMs))}</div>
                             <div className="drama-sd-title">
                                 <h2>{segment.title}</h2>
                                 <SegmentStatus segment={segment} />
@@ -213,7 +211,7 @@ function ReferenceEditor({ segment, castById, busy, onChange, onOpenCast }: { se
             <div className="drama-ref-editor-head">
                 <b>{custom ? tr("手动指定参考图") : tr("按镜头自动取参考图")}</b>
                 <small>
-                    {tr("发送")} {sent}/{request.references.length} {tr("张 · 本段最多")} {request.referenceCapacity} {tr("张")}
+                    {tr("发送")} {sent}/{tr("{0} 张 · 本段最多 {1} 张", request.references.length, request.referenceCapacity)}
                     {request.modelMaxImages ? tr(" · 模型上限 {0} 张（含首帧）", request.modelMaxImages) : ""}
                 </small>
                 {custom ? (
@@ -394,9 +392,7 @@ function SegmentPrompt({ segment, writing, onSave, onWrite }: { segment: DramaSe
             )}
             <div className="drama-sd-pane-foot">
                 {dirty ? <span className="is-dirty">{tr("未保存 · 失焦或 ⌘↵ 保存，Esc 放弃")}</span> : <span>{tr("直接修改正文，失焦自动保存")}</span>}
-                <span>
-                    {draft.length} {tr("字")}
-                </span>
+                <span>{tr("{0} 字", draft.length)}</span>
             </div>
         </div>
     );

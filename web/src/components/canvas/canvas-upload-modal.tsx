@@ -60,7 +60,7 @@ export function CanvasUploadModal({ open, onClose, onUpload }: CanvasUploadModal
                         <div role="heading" aria-level={2} className="text-sm font-semibold leading-5">{tr("上传文件")}</div>
                         <div className="mt-0.5 text-[var(--fs-label)] leading-4 text-foreground/45">{tr("批量导入图片、视频、音频和文本到当前画布")}</div>
                     </div>
-                    <span className="shrink-0 text-[var(--fs-label)] text-foreground/45">{tr("已选")} {fileList.length} {tr("项")}</span>
+                    <span className="shrink-0 text-[var(--fs-label)] text-foreground/45">{tr("已选 {0} 项", fileList.length)}</span>
                 </header>
 
                 <section className="min-h-0 flex-1 overflow-y-auto p-4">

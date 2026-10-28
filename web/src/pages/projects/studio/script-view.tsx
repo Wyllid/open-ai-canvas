@@ -155,9 +155,7 @@ export function ScriptView({
                     <div className="drama-scriptv-rules">
                         <span>{tr("分镜规则")}</span>
                         <b>{storyboardSummary(storyboard)}</b>
-                        <span>
-                            {tr("· 实际")} {shots.length} {tr("镜 ·")} {(shots.reduce((sum, shot) => sum + shot.durationMs, 0) / 1000).toFixed(0)} {tr("秒")}
-                        </span>
+                        <span>{tr("· 实际 {0} 镜 · {1} 秒", shots.length, (shots.reduce((sum, shot) => sum + shot.durationMs, 0) / 1000).toFixed(0))}</span>
                     </div>
                     {detail.dialogueCheck ? <DialogueCheckNotice check={detail.dialogueCheck} busy={busy} onRescript={confirmRescript} /> : null}
                     {shots.length ? <ReviewPanel key={episode.id} projectId={projectId} episodeId={episode.id} review={detail.review} busy={busy} onJump={onCurrent} /> : null}
@@ -172,9 +170,7 @@ export function ScriptView({
                                         {tr("场")} {sceneIndex + 1}
                                     </span>
                                     <strong>{group.scene || tr("未命名场景")}</strong>
-                                    <span className="drama-screenplay-scene-meta">
-                                        {group.shots.length} {tr("镜 ·")} {(group.shots.reduce((sum, shot) => sum + shot.durationMs, 0) / 1000).toFixed(0)} {tr("秒")}
-                                    </span>
+                                    <span className="drama-screenplay-scene-meta">{tr("{0} 镜 · {1} 秒", group.shots.length, (group.shots.reduce((sum, shot) => sum + shot.durationMs, 0) / 1000).toFixed(0))}</span>
                                 </header>
                                 {group.shots.map((shot) => (
                                     <div
@@ -255,9 +251,7 @@ export function ScriptView({
                     <div className="drama-scriptv-pending">
                         <Clapperboard className="size-7" />
                         <strong>{empty.title}</strong>
-                        <span>
-                            {empty.text} {tr("右侧可以先读本集对应的小说原文。")}
-                        </span>
+                        <span>{tr("{0} 右侧可以先读本集对应的小说原文。", empty.text)}</span>
                         {empty.action}
                     </div>
                 )}
@@ -288,7 +282,7 @@ function DialogueCheckNotice({ check, busy, onRescript }: { check: DramaDialogue
         return (
             <div className="drama-dialogue-check is-ok">
                 <CheckCircle2 className="size-3.5 shrink-0" />
-                {tr("原文")} {check.sourceLines} {tr("句台词都已逐字保留在镜头里")}
+                {tr("原文 {0} 句台词都已逐字保留在镜头里", check.sourceLines)}
             </div>
         );
     }
@@ -297,9 +291,7 @@ function DialogueCheckNotice({ check, busy, onRescript }: { check: DramaDialogue
         <div className="drama-dialogue-check" role="status">
             <div className="drama-dialogue-check-head">
                 <AlertTriangle className="size-4 shrink-0" />
-                <strong>
-                    {tr("原文")} {check.sourceLines} {tr("句台词中有")} {check.missingCount} {tr("句没有逐字出现在镜头里")}
-                </strong>
+                <strong>{tr("原文 {0} 句台词中有 {1} 句没有逐字出现在镜头里", check.sourceLines, check.missingCount)}</strong>
                 <span className="flex-1" />
                 <Button size="small" disabled={busy} onClick={onRescript}>
                     {tr("重新改编")}
@@ -361,9 +353,7 @@ function SourcePane({ projectId, chapters, quote, onEdit }: { projectId: string;
                     {chapters.map((chapter) => (
                         <button key={chapter.id} type="button" role="tab" aria-selected={chapter.id === activeId} onClick={() => setChapterId(chapter.id)}>
                             {chapter.title}
-                            <span>
-                                {formatCount(chapter.wordCount)} {tr("字")}
-                            </span>
+                            <span>{tr("{0} 字", formatCount(chapter.wordCount))}</span>
                         </button>
                     ))}
                 </div>

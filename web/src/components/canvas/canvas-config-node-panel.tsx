@@ -340,7 +340,7 @@ export function WorkflowParameterControls({ fields, node, theme, onConfigChange,
             <div className="flex h-7 min-w-0 items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>
                     <span className="font-semibold">{tr("工作流参数")}</span>
-                    <span>{fields.length} {tr("项")}</span>
+                    <span>{tr("{0} 项", fields.length)}</span>
                 </div>
                 <Tooltip title={expanded ? tr("折叠工作流参数") : tr("展开工作流参数")}>
                     <Button

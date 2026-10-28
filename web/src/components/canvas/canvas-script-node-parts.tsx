@@ -70,9 +70,7 @@ export function GenerationBatchDetails({ batch, rows, onRetryItem }: { batch: Ca
                     {generationBatchModeLabel(batch)}
                     {tr("详情")}
                 </span>
-                <span className="text-xs text-foreground/50">
-                    {batch.items.length} {tr("项")}
-                </span>
+                <span className="text-xs text-foreground/50">{tr("{0} 项", batch.items.length)}</span>
             </div>
             <div className="thin-scrollbar max-h-72 overflow-y-auto">
                 {batch.items.map((item) => {

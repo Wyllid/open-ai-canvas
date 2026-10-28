@@ -138,7 +138,7 @@ export function EditorExport() {
                                 </li>
                             ))}
                             {plan.steps.length > 8 && (
-                                <li className="pt-0.5 text-[var(--fs-label)] text-[var(--previs-dock-fg)]/50">{tr("…共")} {plan.steps.length} {tr("步")}</li>
+                                <li className="pt-0.5 text-[var(--fs-label)] text-[var(--previs-dock-fg)]/50">{tr("…共 {0} 步", plan.steps.length)}</li>
                             )}
                         </ul>
                     ) : (
@@ -151,7 +151,7 @@ export function EditorExport() {
                         <PackageOpen className="size-3.5 text-[var(--previs-dock-fg)]/60" />
                         {tr("渲染源")}
                     </span>
-                    <span className="tabular-nums text-[var(--previs-dock-fg)]/80">{sources.length} {tr("个")}</span>
+                    <span className="tabular-nums text-[var(--previs-dock-fg)]/80">{tr("{0} 个", sources.length)}</span>
                 </div>
 
                 <button

@@ -320,9 +320,7 @@ export function ObjectInspector({
                                 <Button size="small" block icon={<Focus className="size-3.5" />} onClick={onAddKeyframe}>
                                     {selectedBone ? tr("在 {0}s 记录当前部位", playhead.toFixed(1)) : tr("在 {0}s 记录关键帧", playhead.toFixed(1))}
                                 </Button>
-                                <div className="previs-inspector-note">
-                                    {tr("位置")} {object.keyframes.length} {tr("帧 · 骨骼")} {boneKeyCount} {tr("帧。打开时间轴上的「自动关键帧」后，拖动对象会直接在播放头处记帧。")}
-                                </div>
+                                <div className="previs-inspector-note">{tr("位置 {0} 帧 · 骨骼 {1} 帧。打开时间轴上的「自动关键帧」后，拖动对象会直接在播放头处记帧。", object.keyframes.length, boneKeyCount)}</div>
                             </div>
                         </details>
                     ) : null}

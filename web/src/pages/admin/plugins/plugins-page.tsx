@@ -180,7 +180,7 @@ export default function AdminPluginsPage() {
                         <div className="font-medium text-foreground/78">{tr("用户自主启用")}</div>
                         <div className="mt-1 inline-flex items-center gap-1 text-xs text-foreground/48">
                             <UsersRound className="size-3.5" aria-hidden="true" />
-                            {states[item.manifest.id]?.enabledUserCount || 0} {tr("位已启用")}
+                            {tr("{0} 位已启用", states[item.manifest.id]?.enabledUserCount || 0)}
                         </div>
                     </div>
                 ) : (

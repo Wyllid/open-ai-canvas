@@ -99,8 +99,8 @@ function EnhanceEditor({ node, config, onClose, onConfirm }: Props) {
 
             <div className="mb-5 flex flex-wrap gap-2 text-xs">
                 <InfoChip>{width && height ? `${width} × ${height}` : tr("尺寸未知")}</InfoChip>
-                {seconds ? <InfoChip>{seconds} {tr("秒")}</InfoChip> : null}
-                <InfoChip>{tr("上限")} {profile.maxSourceSeconds} {tr("秒")}</InfoChip>
+                {seconds ? <InfoChip>{tr("{0} 秒", seconds)}</InfoChip> : null}
+                <InfoChip>{tr("上限 {0} 秒", profile.maxSourceSeconds)}</InfoChip>
             </div>
 
             {!models.length ? (

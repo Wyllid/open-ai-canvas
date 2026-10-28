@@ -16611,6 +16611,8 @@ html:not(.dark) .creation-home .creation-user-message-copy-wrap { box-shadow: 0 
 
 .app-user-workspace .creation-empty-suggest .suggest-copy strong,
 .app-user-workspace .creation-empty-suggest .creation-hero-prompt-copy strong {
+    /* 列内省略，长译文不压到相邻卡片。 */
+    max-width: 100%;
     overflow: hidden;
     font-size: 12px;
     text-overflow: ellipsis;

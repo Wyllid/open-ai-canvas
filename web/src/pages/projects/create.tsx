@@ -402,9 +402,7 @@ export default function DramaCreatePage() {
                         <section className="drama-compose-preview">
                             <div className="drama-section-title">
                                 <h2>{previewChapter.title}</h2>
-                                <span>
-                                    {tr("原文预览 ·")} {formatCount(previewChapter.words)} {tr("字")}
-                                </span>
+                                <span>{tr("原文预览 · {0} 字", formatCount(previewChapter.words))}</span>
                             </div>
                             <div className="drama-compose-text thin-scrollbar">
                                 {previewChapter.text.slice(0, 6000)}
@@ -491,9 +489,7 @@ export default function DramaCreatePage() {
                         <div className="drama-compose-estimate">
                             <div>
                                 <b>{estimate ? tr("{0} 集", estimate.episodes) : "—"}</b>
-                                <span>
-                                    {tr("约")} {estimate?.durationMinutes ?? "—"} {tr("分钟")}
-                                </span>
+                                <span>{tr("约 {0} 分钟", estimate?.durationMinutes ?? "—")}</span>
                             </div>
                             <div>
                                 <b>{estimate ? formatCount(estimate.shots) : "—"}</b>

@@ -104,9 +104,9 @@ export function CreativeQuoteCard({ quote, onApprove, onRefresh, busy, disabled 
     const quantity = quote.items.reduce((total, item) => total + item.quantity, 0);
     return <section className="creative-agent-card creative-agent-quote-card" aria-label={tr("生成确认")} data-canvas-no-zoom data-canvas-wheel-scroll>
         <div className="creative-agent-overline">{tr("本批生成 · 确认")}</div>
-        <h3>{quote.title}</h3><div className="creative-agent-quote-total"><span>{tr("本批")} {quantity} {tr("项生成")}</span></div>
+        <h3>{quote.title}</h3><div className="creative-agent-quote-total"><span>{tr("本批 {0} 项生成", quantity)}</span></div>
         <details className="creative-agent-quote-details"><summary>{tr("查看明细")}</summary><div className="creative-agent-card-content"><ul className="creative-agent-quote-items">{quote.items.map((item) => <li key={item.id}><div><strong>{item.label}</strong><span>{item.model} · {item.specification}</span></div><b>× {item.quantity}</b></li>)}</ul><p className="creative-agent-muted">{quote.basis}</p>
-        {quote.expiresAt && <p>{tr("有效期至")} {quote.expiresAt}</p>}{quote.approvedQuantity !== undefined && <p>{tr("已批准")} {quote.approvedQuantity} {tr("项")}</p>}
+        {quote.expiresAt && <p>{tr("有效期至")} {quote.expiresAt}</p>}{quote.approvedQuantity !== undefined && <p>{tr("已批准 {0} 项", quote.approvedQuantity)}</p>}
         {onRefresh && <Button className="creative-agent-detail-toggle" type="text" disabled={disabled || busy} onClick={onRefresh}>{tr("刷新")}</Button>}</div></details>
         {quote.externalChannel && <p>{tr("包含个人渠道调用，将使用你在该渠道配置的密钥。")}</p>}
         <div className="creative-agent-actions creative-agent-primary-actions"><Button type="primary" loading={busy} disabled={disabled || busy} onClick={onApprove}>{tr("确认生成")}</Button></div>

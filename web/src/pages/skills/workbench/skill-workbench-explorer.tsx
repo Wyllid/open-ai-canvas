@@ -186,9 +186,7 @@ export function SkillWorkbenchExplorer(props: ExplorerProps) {
         <div className="skill-wb-explorer" aria-label={tr("资源管理器")}>
             <div className="skill-wb-explorer-head">
                 <span className="skill-wb-explorer-title">{tr("资源管理器")}</span>
-                <span className="skill-wb-explorer-count">
-                    {fileCount} {tr("个文件")}
-                </span>
+                <span className="skill-wb-explorer-count">{tr("{0} 个文件", fileCount)}</span>
                 <div className="skill-wb-explorer-tools">
                     {!readOnly ? (
                         <>

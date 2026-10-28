@@ -69,7 +69,7 @@ export function EditorSubtitleTools() {
                 <div className="mb-3 rounded-md border border-[var(--previs-sequencer-border)] bg-[var(--previs-control-hover)] p-2">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-[var(--previs-dock-fg-strong)]">{tr("时间线字幕")}</span>
-                        <span className="text-[var(--fs-label)] text-[var(--previs-dock-fg)]/60">{subtitleClips.length} {tr("条")}</span>
+                        <span className="text-[var(--fs-label)] text-[var(--previs-dock-fg)]/60">{tr("{0} 条", subtitleClips.length)}</span>
                     </div>
                     {subtitleClips.length === 0 ? (
                         <p className="mt-2 text-[var(--fs-label)] leading-relaxed text-[var(--previs-dock-fg)]/55">{tr("暂无字幕快照。粘贴 SRT 导入后，字幕会重建到时间线。")}</p>
@@ -79,7 +79,7 @@ export function EditorSubtitleTools() {
                                 <SubtitleRow key={clip.id} clip={clip} />
                             ))}
                             {subtitleClips.length > 6 && (
-                                <li className="pt-1 text-[var(--fs-label)] text-[var(--previs-dock-fg)]/50">{tr("…共")} {subtitleClips.length} {tr("条")}</li>
+                                <li className="pt-1 text-[var(--fs-label)] text-[var(--previs-dock-fg)]/50">{tr("…共 {0} 条", subtitleClips.length)}</li>
                             )}
                         </ul>
                     )}

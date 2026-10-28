@@ -221,9 +221,7 @@ export default function AgentLessonsPanel() {
                         <Button icon={<RefreshCw className="size-4" />} onClick={() => void load()}>
                             {tr("刷新")}
                         </Button>
-                        <span className="text-xs opacity-60">
-                            {tr("共")} {items.length} {tr("条")}
-                        </span>
+                        <span className="text-xs opacity-60">{tr("共 {0} 条", items.length)}</span>
                     </div>
                 }
                 table={{

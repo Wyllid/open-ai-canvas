@@ -146,7 +146,7 @@ export function LibTVImportDialog({ open, projectId, viewport, viewportSize, onC
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <div className="text-sm font-semibold">{result.projectName || tr("LibTV 画布")}</div>
-                                    <div className="mt-1 text-sm text-foreground/60">{tr("可导入")} {result.importedNodeCount} {tr("个节点 ·")} {result.importedConnectionCount} {tr("条连线")}</div>
+                                    <div className="mt-1 text-sm text-foreground/60">{tr("可导入 {0} 个节点 · {1} 条连线", result.importedNodeCount, result.importedConnectionCount)}</div>
                                 </div>
                                 <Tag color="blue">{tr("批次：")}{formatLibTVBatchTime(result.batchCreatedAt)}</Tag>
                             </div>
@@ -156,13 +156,13 @@ export function LibTVImportDialog({ open, projectId, viewport, viewportSize, onC
                             <div className="flex items-start gap-2 rounded-lg px-3 py-2 text-xs leading-5 text-foreground/60" style={{ background: "var(--surface-hover)" }}>
                                 <CircleAlert className="mt-0.5 size-4 shrink-0" />
                                 <div>
-                                    {result.skippedNodes.length ? <div>{result.skippedNodes.length} {tr("个暂不支持的节点未导入，相关连线已自动忽略。")}</div> : null}
-                                    {!result.skippedNodes.length && result.skippedConnections.length ? <div>{result.skippedConnections.length} {tr("条无效连线已自动忽略。")}</div> : null}
-                                    {result.reusedFailedNodeCount ? <div>{result.reusedFailedNodeCount} {tr("个最近任务失败但仍有历史结果的节点已保留。")}</div> : null}
-                                    {result.placeholderNodeCount ? <div>{result.placeholderNodeCount} {tr("个尚未生成结果的节点已作为占位节点保留。")}</div> : null}
-                                    {result.convertedSpecialCount ? <div>{result.convertedSpecialCount} {tr("个特殊节点已转换为图片参考节点。")}</div> : null}
-                                    {result.multiResultNodeCount ? <div>{result.multiResultNodeCount} {tr("个多结果节点已使用首个结果。")}</div> : null}
-                                    {result.staleNodeCount ? <div>{result.staleNodeCount} {tr("个过期标记节点仍保留现有结果。")}</div> : null}
+                                    {result.skippedNodes.length ? <div>{tr("{0} 个暂不支持的节点未导入，相关连线已自动忽略。", result.skippedNodes.length)}</div> : null}
+                                    {!result.skippedNodes.length && result.skippedConnections.length ? <div>{tr("{0} 条无效连线已自动忽略。", result.skippedConnections.length)}</div> : null}
+                                    {result.reusedFailedNodeCount ? <div>{tr("{0} 个最近任务失败但仍有历史结果的节点已保留。", result.reusedFailedNodeCount)}</div> : null}
+                                    {result.placeholderNodeCount ? <div>{tr("{0} 个尚未生成结果的节点已作为占位节点保留。", result.placeholderNodeCount)}</div> : null}
+                                    {result.convertedSpecialCount ? <div>{tr("{0} 个特殊节点已转换为图片参考节点。", result.convertedSpecialCount)}</div> : null}
+                                    {result.multiResultNodeCount ? <div>{tr("{0} 个多结果节点已使用首个结果。", result.multiResultNodeCount)}</div> : null}
+                                    {result.staleNodeCount ? <div>{tr("{0} 个过期标记节点仍保留现有结果。", result.staleNodeCount)}</div> : null}
                                 </div>
                             </div>
                         ) : null}

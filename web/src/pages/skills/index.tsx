@@ -631,7 +631,7 @@ function SkillCard({ skill, accentKey, categoryLabel, libraryCategories, canCate
                 </Tooltip>
                 <span className="skill-tile-stat" title={tr("{0} 人已加入技能库", skill.addedCount)}>
                     <Users aria-hidden="true" />
-                    <span>{formatSkillCount(skill.addedCount)} {tr("人加入")}</span>
+                    <span>{tr("{0} 人加入", formatSkillCount(skill.addedCount))}</span>
                 </span>
                 {/* 次要操作：hover / focus-within 显示，触屏常显；菜单展开时保持可见。 */}
                 <div className="skill-tile-actions">

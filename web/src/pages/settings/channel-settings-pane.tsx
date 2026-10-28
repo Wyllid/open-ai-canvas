@@ -213,7 +213,7 @@ export function ChannelSettingsPane({ onOpenModels, onOpenRunningHub }: ChannelS
                                     <div className="min-w-0 flex-1 basis-52">
                                         <h3 id={`channel-${channel.id}-title`} className="truncate text-sm font-semibold">{channel.name || tr("未命名渠道")}</h3>
                                         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-foreground/55">
-                                            {channelProtocolLabel(channel)} {tr("· 已保存")} {channel.models.length} {tr("个模型")}
+                                            {tr("{0} · 已保存 {1} 个模型", channelProtocolLabel(channel), channel.models.length)}
                                             <ChannelStatus channel={channel} />
                                         </div>
                                     </div>

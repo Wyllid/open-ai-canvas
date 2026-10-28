@@ -172,7 +172,7 @@ export default function LogsPage() {
         try {
             const result = await batchRecoverAdminApiLogs(videoIds);
             const totalSkipped = skipped + result.skipped;
-            Modal.info({ title: tr("批量恢复处理结果"), width: 560, content: <div className="max-h-[50vh] space-y-2 overflow-auto"><div className="mb-3">{tr("成功")} {result.success} {tr("条，失败")} {result.failed} {tr("条，跳过")} {totalSkipped} {tr("条")}</div>{result.items.map((item) => <div key={item.logId} className="rounded border border-border/70 px-3 py-2 text-xs"><div className="font-mono">{item.logId}</div><div>{item.recovered ? tr("成功") : item.error?.startsWith("跳过") ? item.error : item.providerStatus ? tr("仍在生成中（{0}）", item.providerStatus) : tr("失败：{0}", item.error || tr("未恢复"))}</div></div>)}</div> });
+            Modal.info({ title: tr("批量恢复处理结果"), width: 560, content: <div className="max-h-[50vh] space-y-2 overflow-auto"><div className="mb-3">{tr("成功 {0} 条，失败 {1} 条，跳过 {2} 条", result.success, result.failed, totalSkipped)}</div>{result.items.map((item) => <div key={item.logId} className="rounded border border-border/70 px-3 py-2 text-xs"><div className="font-mono">{item.logId}</div><div>{item.recovered ? tr("成功") : item.error?.startsWith("跳过") ? item.error : item.providerStatus ? tr("仍在生成中（{0}）", item.providerStatus) : tr("失败：{0}", item.error || tr("未恢复"))}</div></div>)}</div> });
             setRetry((value) => value + 1);
         } catch (error) { message.error(error instanceof Error ? error.message : tr("批量恢复失败")); }
         finally { setBatchRecovering(false); }
@@ -374,7 +374,7 @@ function CallStatus({ log }: { log: ApiCallLog }) {
             <div className="mb-1 text-xs font-medium text-foreground/70">{requestKindText(log.requestKind)}</div>
             <AdminStatusBadge {...logStatus(log)} />
             {log.mediaStage ? <div className="mt-1 text-xs text-foreground/60">{mediaDeliverySummary(log.taskStatus, log.mediaStage)}</div> : null}
-            {log.capability === "video" ? <div className="mt-1 text-xs tabular-nums text-foreground/45">{tr("已轮询")} {log.pollCount || 0} {tr("次")}</div> : null}
+            {log.capability === "video" ? <div className="mt-1 text-xs tabular-nums text-foreground/45">{tr("已轮询 {0} 次", log.pollCount || 0)}</div> : null}
         </div>
     );
 }

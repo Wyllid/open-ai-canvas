@@ -32,7 +32,8 @@ for (const file of walk(srcDir, [])) {
     traverse(ast, {
         CallExpression(p) {
             const { callee, arguments: args } = p.node;
-            if (callee.type === "Identifier" && (callee.name === "tr" || callee.name === "trI18n") && args[0]?.type === "StringLiteral") keys.add(args[0].value);
+            if (callee.type === "Identifier" && (callee.name === "tr" || callee.name === "trI18n" || callee.name === "trParts") && args[0]?.type === "StringLiteral") keys.add(args[0].value);
+            if (callee.type === "Identifier" && callee.name === "trIn" && args[0]?.type === "StringLiteral" && args[1]?.type === "StringLiteral") keys.add(`${args[1].value}@${args[0].value}`);
         },
     });
 }
@@ -44,7 +45,8 @@ if (!process.argv.includes("--check")) {
     fs.writeFileSync(path.join(srcDir, "i18n/keys-en.json"), JSON.stringify(english, null, 2) + "\n");
     console.log(`${chinese.length} Chinese keys, ${english.length} English keys`);
 } else {
-    const tokens = (text) => (text.match(TOKENS) || []).sort().join(" ");
+    // A placeholder may repeat in one language and not the other ("第 {0} {1}，共 {2} {1}"), so compare the distinct set.
+    const tokens = (text) => [...new Set(text.match(TOKENS) || [])].sort().join(" ");
     let problems = 0;
     for (const locale of ["en", "pt-BR"]) {
         const catalog = JSON.parse(fs.readFileSync(path.join(srcDir, `i18n/locales/${locale}.json`), "utf8"));

@@ -124,9 +124,7 @@ export function JobDetailModal({ projectId, job, onClose, onLocate }: { projectI
                         </div>
                         <div>
                             <dt>{tr("重试")}</dt>
-                            <dd>
-                                {current.attempt} {tr("次")}
-                            </dd>
+                            <dd>{tr("{0} 次", current.attempt)}</dd>
                         </div>
                     </dl>
                     <div className="drama-jobd-body thin-scrollbar">
@@ -153,9 +151,7 @@ function AttemptCard({ attempt, index, latest }: { attempt: DramaJobAttempt; ind
     return (
         <article className={`drama-jobd-attempt ${latest ? "is-latest" : ""}`}>
             <header>
-                <span className="drama-jobd-attempt-index">
-                    {tr("第")} {index} {tr("次")}
-                </span>
+                <span className="drama-jobd-attempt-index">{tr("第 {0} 次", index)}</span>
                 <JobStatusIcon status={attempt.status} />
                 <strong>{JOB_STATUS_LABEL[attempt.status] || attempt.status}</strong>
                 {task?.stage && attempt.status !== "succeeded" ? <span className="drama-jobd-muted">{task.stage}</span> : null}
@@ -191,9 +187,7 @@ function AttemptCard({ attempt, index, latest }: { attempt: DramaJobAttempt; ind
                 <details className="drama-disclosure">
                     <summary>
                         {tr("提示词")}
-                        <span className="drama-jobd-muted">
-                            {task.prompt.length} {tr("字")}
-                        </span>
+                        <span className="drama-jobd-muted">{tr("{0} 字", task.prompt.length)}</span>
                         <Button
                             size="small"
                             type="text"
@@ -221,9 +215,7 @@ function AttemptResult({ task }: { task: DramaJobTask }) {
             <details className="drama-disclosure">
                 <summary>
                     {tr("返回结果")}
-                    <span className="drama-jobd-muted">
-                        {task.resultText.length} {tr("字")}
-                    </span>
+                    <span className="drama-jobd-muted">{tr("{0} 字", task.resultText.length)}</span>
                 </summary>
                 <pre className="drama-jobd-pre thin-scrollbar">{task.resultText}</pre>
             </details>

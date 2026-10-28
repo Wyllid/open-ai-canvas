@@ -32,9 +32,7 @@ export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title
                     ) : (
                         <div className="drama-finalv-empty">
                             <Film className="size-6" aria-hidden />
-                            <span>
-                                {STAGE_LABEL[episode.stage]} {tr("· 全部段视频生成后自动合成")}
-                            </span>
+                            <span>{tr("{0} · 全部段视频生成后自动合成", STAGE_LABEL[episode.stage])}</span>
                         </div>
                     )}
                 </div>
@@ -51,19 +49,15 @@ export function FinalView({ title, detail, aspectRatio, onOpenSegment }: { title
                             }}
                         >
                             <MediaThumb resourceId={segment.tailFrameResourceId} alt={segment.title} fallback={<span className="drama-filmstrip-empty" />} />
-                            <span>
-                                {tr("第")} {segment.index + 1} {tr("段 ·")} {secondsLabel(segment.durationMs)}
-                            </span>
+                            <span>{tr("第 {0} 段 · {1}", segment.index + 1, secondsLabel(segment.durationMs))}</span>
                         </button>
                     ))}
                 </div>
             </div>
             <aside className="drama-finalv-side">
-                <h2>
-                    {tr("第")} {episode.number} {tr("集 ·")} {episode.title}
-                </h2>
+                <h2>{tr("第 {0} 集 · {1}", episode.number, episode.title)}</h2>
                 <p>
-                    {formatDuration(episode.durationMs)} · {segments.length} {tr("个剧情段 · 对白与音效来自视频模型")}
+                    {formatDuration(episode.durationMs)} · {tr("{0} 个剧情段 · 对白与音效来自视频模型", segments.length)}
                 </p>
                 {episode.finalStale ? (
                     <p className="drama-finalv-stale" role="status">

@@ -389,7 +389,7 @@ export default function StorageSettingsPage() {
                             <>
                                 <div className="admin-storage-footer-note">
                                     <BadgeCheck className="size-4" aria-hidden="true" />
-                                    <span>{formatSettingTime(setting.updatedAt, tr("尚未保存平台存储配置"))} {tr("· 保存不会自动连接存储服务，建议先执行连接测试")}</span>
+                                    <span>{tr("{0} · 保存不会自动连接存储服务，建议先执行连接测试", formatSettingTime(setting.updatedAt, tr("尚未保存平台存储配置")))}</span>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                     {dirty ? (

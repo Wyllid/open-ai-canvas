@@ -111,7 +111,7 @@ export function BatchGenerationSettingsDialog({ open, config, rowCount, concurre
                             cameraControl,
                         })}
                     >
-                        {tr("开始生成")} {rowCount} {tr("个任务")}
+                        {tr("开始生成 {0} 个任务", rowCount)}
                     </Button>
                 </div>
             </div>

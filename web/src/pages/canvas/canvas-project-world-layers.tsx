@@ -283,7 +283,7 @@ function BatchConnectionTail({ item, top, scroll, fromScrollTop, fromBatchScroll
         <path d={path.pathD} fill="none" stroke={theme.connection.stroke} strokeWidth={CANVAS_CONNECTION_STROKE_WIDTH} strokeOpacity={0.8} vectorEffect="non-scaling-stroke" />
         {active ? <CanvasConnectionBeam pathD={path.pathD} color={theme.connection.beam} /> : null}
         <circle cx={cell.x} cy={cell.y} r={3} fill={theme.connection.beam} fillOpacity={active ? 1 : 0.65} />
-        {active && cell.clipped ? <text x={cell.x + 8} y={cell.y <= top + 8 ? cell.y + 15 : cell.y - 8} fill="var(--foreground)" fontSize={12}>{cell.label} {tr("· 滚动查看")}</text> : null}
+        {active && cell.clipped ? <text x={cell.x + 8} y={cell.y <= top + 8 ? cell.y + 15 : cell.y - 8} fill="var(--foreground)" fontSize={12}>{tr("{0} · 滚动查看", cell.label)}</text> : null}
     </g>;
 }
 
@@ -310,7 +310,7 @@ function BatchConnectionHandle({ scale, count, active, onPointerDown }: { scale:
             onPointerDown={onPointerDown}
         >
             <Link2 style={{ width: 14 * inverseScale, height: 14 * inverseScale }} strokeWidth={2} />
-            <span className="sr-only">{tr("连接")} {count} {tr("个节点")}</span>
+            <span className="sr-only">{tr("连接 {0} 个节点", count)}</span>
         </button>
     );
 }

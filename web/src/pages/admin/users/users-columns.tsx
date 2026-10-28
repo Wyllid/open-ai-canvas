@@ -1,4 +1,4 @@
-import { currentLocale, tr } from "@/i18n";
+import { currentLocale, tr, trIn } from "@/i18n";
 import type { ColumnsType } from "antd/es/table";
 import { Eye, Pencil, Power } from "lucide-react";
 
@@ -12,7 +12,7 @@ export const userColumnOptions: Array<{ key: UserColumnKey; label: string; locke
     { key: "user", label: tr("用户"), locked: true },
     { key: "email", label: tr("邮箱") },
     { key: "credits", label: tr("当前积分") },
-    { key: "role", label: tr("角色") },
+    { key: "role", label: trIn("user", "角色") },
     { key: "status", label: tr("状态") },
     { key: "createdAt", label: tr("注册时间") },
     { key: "actions", label: tr("操作"), locked: true },
@@ -46,7 +46,7 @@ export function createUserColumns({
         { key: "email", title: tr("邮箱"), dataIndex: "email", align: "center", render: (email) => email || <span className="text-foreground/40">{tr("未填写")}</span> },
         {
             key: "role",
-            title: tr("角色"),
+            title: trIn("user", "角色"),
             dataIndex: "role",
             width: 150,
             align: "center",

@@ -50,7 +50,7 @@ function CharCounter({ chars, limit }: { chars: number; limit: number }) {
     const over = chars > limit;
     return (
         <span className={`drama-composer-count ${over ? "is-over" : ""}`}>
-            {formatCount(chars)} / {formatCount(limit)} {tr("字")}
+            {formatCount(chars)} / {tr("{0} 字", formatCount(limit))}
             {over ? tr(" · 超出部分会丢台词，请拆成多集") : ""}
         </span>
     );

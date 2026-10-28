@@ -341,11 +341,9 @@ function CompareStage({ node, version, current }: { node: CanvasNodeData; versio
                     </svg>
                 </span>
             </div>
-            <StageBadge className="bottom-3 left-3">
-                V{version.number} {tr("· 预览")}
-            </StageBadge>
+            <StageBadge className="bottom-3 left-3">V{tr("{0} · 预览", version.number)}</StageBadge>
             <StageBadge className="bottom-3 right-3">
-                <Check className="size-3" />V{current.number} {tr("· 当前")}
+                <Check className="size-3" />V{tr("{0} · 当前", current.number)}
             </StageBadge>
         </div>
     );

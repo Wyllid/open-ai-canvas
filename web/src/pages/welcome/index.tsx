@@ -149,7 +149,7 @@ function WelcomeExperience({ look, brandName, onLookChange }: { look: WelcomeLoo
                 <WelcomeContributorsCard /></section>
             </main>
             <footer className="welcome-footer"><a href="/welcome">{brandName}</a><span>{tr("开源 AI 影视创作工作台")}</span><a href={`${github}/blob/main/LICENSE`} target="_blank" rel="noreferrer">Open Source · MIT License<ArrowUpRight size={12} /></a></footer>
-            {look.credit && <div className="welcome-media-credit"><a href={`/welcome/credits.html#${look.id}`} target="_blank" rel="noreferrer">{look.credit} {tr("· 署名与许可")}<ArrowUpRight size={12} /></a></div>}
+            {look.credit && <div className="welcome-media-credit"><a href={`/welcome/credits.html#${look.id}`} target="_blank" rel="noreferrer">{tr("{0} · 署名与许可", look.credit)}<ArrowUpRight size={12} /></a></div>}
             {playing && look.video && <FilmDialog look={look} onClose={() => setPlaying(false)} videoRef={videoRef} />}
         </div>
     );

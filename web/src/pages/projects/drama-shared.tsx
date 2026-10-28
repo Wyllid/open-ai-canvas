@@ -17,7 +17,7 @@ const STAGE_INDEX: Record<DramaEpisodeStage, number> = { queued: -1, script: 0, 
 export const STAGE_LABEL: Record<DramaEpisodeStage, string> = {
     queued: tr("排队中"),
     script: tr("改编剧本"),
-    prompts: "撰写段提示词",
+    prompts: tr("撰写段提示词"),
     review: tr("等待审阅"),
     video: tr("生成视频"),
     render: tr("合成成片"),

@@ -310,7 +310,7 @@ function FramePreview({ nodes, frame, theme }: { nodes: CanvasNodeData[]; frame:
                         {node.type === CanvasNodeType.Image && node.metadata?.content ? <img src={node.metadata.content} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" draggable={false} /> : null}
                         {node.type === CanvasNodeType.Video ? <CanvasVideoPreviewImage node={node} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" draggable={false} fallback={<Video className="m-auto size-4 h-full opacity-40" />} /> : null}
                         {node.type === CanvasNodeType.Text ? <div className="line-clamp-3 p-1 text-[var(--fs-nano)] leading-[9px]" style={{ color: theme.node.text }}>{node.metadata?.content || node.title}</div> : null}
-                        {node.type === CanvasNodeType.Script ? <div className="p-1 text-[var(--fs-nano)] leading-[9px]" style={{ color: theme.node.text }}>{tr("分镜脚本 ·")} {node.metadata?.storyboard?.rows.length || 0} {tr("镜")}</div> : null}
+                        {node.type === CanvasNodeType.Script ? <div className="p-1 text-[var(--fs-nano)] leading-[9px]" style={{ color: theme.node.text }}>{tr("分镜脚本 · {0} 镜", node.metadata?.storyboard?.rows.length || 0)}</div> : null}
                     </div>;
                 })
             ) : (

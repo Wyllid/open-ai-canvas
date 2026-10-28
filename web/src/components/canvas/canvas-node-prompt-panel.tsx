@@ -298,7 +298,7 @@ export function CanvasNodePromptPanel({ projectId, node, isRunning, onPromptChan
                     <span className="canvas-node-composer-mode-icon" style={{ color: monochromeAccent }}>
                         <GenerationModeIcon mode={mode} />
                     </span>
-                    <span className="canvas-node-composer-mode-title truncate">{modeDisplayName(mode)}{tr("生成")}</span>
+                    <span className="canvas-node-composer-mode-title truncate">{tr("{0}生成", modeDisplayName(mode))}</span>
                     {activeReferenceCount > 0 ? <span className="canvas-node-composer-reference-heading">{referenceShelfHeading(activeReferences)}</span> : null}
                 </div>
             )}

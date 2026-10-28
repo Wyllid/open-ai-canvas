@@ -95,9 +95,7 @@ export function CreationFeaturedWorks({ onStartPrompt }: { onStartPrompt: (mode:
                 <div>
                     <h2 id="creation-featured-title">{tr("精选灵感")}</h2>
                 </div>
-                <p>
-                    {curatedInspirations.length} {tr("个创意起点 · 点击填入提示词，不自动生成")}
-                </p>
+                <p>{tr("{0} 个创意起点 · 点击填入提示词，不自动生成", curatedInspirations.length)}</p>
             </div>
             <div className="creation-inspiration-filters" role="group" aria-label={tr("灵感类型")}>
                 {(["all", "video", "image", "text"] as const).map((value) => (
@@ -143,9 +141,7 @@ export function CreationFeaturedWorks({ onStartPrompt }: { onStartPrompt: (mode:
                         <ChevronDown />
                     </Button>
                 ) : (
-                    <span>
-                        {tr("已展示全部")} {filtered.length} {tr("个创意")}
-                    </span>
+                    <span>{tr("已展示全部 {0} 个创意", filtered.length)}</span>
                 )}
                 <details>
                     <summary>{tr("模板与封面来源")}</summary>

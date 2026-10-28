@@ -177,7 +177,7 @@ export function PanoramaNodeContent({ node, theme, disableMediaEffects }: Panora
                             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
                                 <div className="min-w-0">
                                     <div className="truncate text-sm font-semibold text-white">{node.title || tr("全景环视")}</div>
-                                    <div className="mt-0.5 text-white/45" style={{ fontSize: "var(--fs-tiny)" }}>{projectionLabel} {tr("· 拖拽环视 · 方向键旋转 · 滚轮缩放")}</div>
+                                    <div className="mt-0.5 text-white/45" style={{ fontSize: "var(--fs-tiny)" }}>{tr("{0} · 拖拽环视 · 方向键旋转 · 滚轮缩放", projectionLabel)}</div>
                                 </div>
                                 <button
                                     type="button"
@@ -225,7 +225,7 @@ export function PanoramaNodeContent({ node, theme, disableMediaEffects }: Panora
                 closeLabel={tr("退出环视")}
             />
             <div className="pointer-events-none absolute bottom-2 left-2 rounded bg-black/55 px-2 py-0.5 text-[var(--fs-label)] text-white/70 backdrop-blur-sm">
-                {projectionLabel} {tr("· 拖拽环视 · 方向键旋转")}
+                {tr("{0} · 拖拽环视 · 方向键旋转", projectionLabel)}
             </div>
         </div>
     );

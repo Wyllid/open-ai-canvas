@@ -922,7 +922,7 @@ export function CanvasTimelineDialog({
 
                 <div className="flex items-center gap-3 border-t px-4 py-2" style={{ borderColor: theme.toolbar.border, background: theme.toolbar.panel }}>
                     <span className="text-xs opacity-60">
-                        {tr("总时长")} {formatTimelineTime(durationMs)} · {draft.clips.length} {tr("个片段 ·")} {draft.tracks.length} {tr("条轨道")}
+                        {tr("总时长")} {formatTimelineTime(durationMs)} · {tr("{0} 个片段 · {1} 条轨道", draft.clips.length, draft.tracks.length)}
                     </span>
                     <span className="ml-auto truncate text-xs opacity-45">{tr("拖拽片段移动，左右边缘裁剪，字幕片段来自视频节点的字幕数据")}</span>
                 </div>

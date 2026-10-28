@@ -113,7 +113,7 @@ export function CreationRecentCanvases({ onRequireLogin }: { onRequireLogin: () 
                                 <span className="creation-canvas-copy">
                                     <strong>{project.title || tr("未命名画布")}</strong>
                                     <small>
-                                        {project.nodeCount} {tr("个节点 ·")} <RelativeTime value={project.updatedAt} />
+                                        {tr("{0} 个节点 ·", project.nodeCount)} <RelativeTime value={project.updatedAt} />
                                     </small>
                                 </span>
                             </Link>

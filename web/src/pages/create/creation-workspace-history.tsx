@@ -118,9 +118,7 @@ export function CreationHistoryDrawer({
             title={
                 <div className="creation-history-title">
                     <span>{tr("历史对话")}</span>
-                    <small>
-                        {conversations.length} {tr("个对话")}
-                    </small>
+                    <small>{tr("{0} 个对话", conversations.length)}</small>
                 </div>
             }
         >

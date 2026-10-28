@@ -102,7 +102,7 @@ export function ReportSummary({ report, theme, isDraft }: { report: NonNullable<
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-semibold outline-none focus-visible:underline [&::-webkit-details-marker]:hidden" style={{ color: theme.node.muted }}>
                         {tr("画面已有的优点")}
                         <span className="inline-flex items-center gap-1 font-medium">
-                            {report.strengths.length} {tr("项")}
+                            {tr("{0} 项", report.strengths.length)}
                             <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" aria-hidden="true" />
                         </span>
                     </summary>
@@ -113,7 +113,7 @@ export function ReportSummary({ report, theme, isDraft }: { report: NonNullable<
                     </ul>
                     {report.strengths.length > 3 ? (
                         <div className="mt-1 text-xs" style={{ color: theme.node.muted }}>
-                            {tr("还有")} {report.strengths.length - 3} {tr("项优点")}
+                            {tr("还有 {0} 项优点", report.strengths.length - 3)}
                         </div>
                     ) : null}
                 </details>

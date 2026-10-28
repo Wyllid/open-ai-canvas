@@ -71,7 +71,7 @@ export function ChannelModelSettings({ channel, onChange }: { channel: ModelChan
                     <div className="text-xs font-medium">{tr("模型能力与请求协议")}</div>
                     <div className="mt-0.5 text-[var(--fs-tiny)] text-foreground/42">{tr("与运营后台使用同一能力目录；测试会发起真实请求并可能产生供应商费用")}</div>
                 </div>
-                <span className="text-[var(--fs-tiny)] text-foreground/35">{channel.models.length} {tr("个模型")}</span>
+                <span className="text-[var(--fs-tiny)] text-foreground/35">{tr("{0} 个模型", channel.models.length)}</span>
             </div>
             <div className="space-y-2">
                 {channel.models.map((rawModel) => {

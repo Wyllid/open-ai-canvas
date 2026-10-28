@@ -269,7 +269,7 @@ export default function AdminBannerAnnouncementsPanel({
                 const endStr = record.endsAt ? dayjs(record.endsAt).format("YYYY-MM-DD HH:mm") : tr("不限");
                 return (
                     <span className="text-xs text-foreground/75 font-mono">
-                        {startStr} {tr("至")} {endStr}
+                        {tr("{0} 至", startStr)} {endStr}
                     </span>
                 );
             },

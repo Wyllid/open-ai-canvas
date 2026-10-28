@@ -106,7 +106,7 @@ export function CanvasShortcutsModal({ open, onClose }: { open: boolean; onClose
                 </div>
 
                 <footer className="canvas-shortcuts-footer">
-                    <span>{tr("共")} {results.length} {tr("个快捷键")}</span>
+                    <span>{tr("共 {0} 个快捷键", results.length)}</span>
                     <span className="canvas-shortcuts-close-hint"><Kbd>Esc</Kbd> {tr("关闭")}</span>
                 </footer>
             </div>

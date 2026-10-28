@@ -719,7 +719,7 @@ export function CanvasNodeInfoModal({ node, open, onClose, onMetadataChange, rea
                                             <span>{tr("资产标签")}</span>
                                             <p>{tr("一条标签描述一个角色、环境、道具或镜头用途。")}</p>
                                         </div>
-                                        <em>{assetTags.length} {tr("条")}</em>
+                                        <em>{tr("{0} 条", assetTags.length)}</em>
                                     </div>
                                     {readOnly ? (
                                         <div className="canvas-node-inspector-notice">{tr("分享画布为只读，标签无法编辑。")}</div>

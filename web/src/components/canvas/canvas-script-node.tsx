@@ -253,7 +253,7 @@ export function CanvasScriptNodeContent({
                     </span>
                 ) : null}
                 <span className="text-[var(--fs-caption)] font-semibold tabular-nums" style={{ color: theme.node.muted }}>
-                    {rows.length} {tr("镜 ·")} {totalDuration}s
+                    {tr("{0} 镜 ·", rows.length)} {totalDuration}s
                 </span>
                 <Tooltip title={tr("全屏编辑")}>
                     <button

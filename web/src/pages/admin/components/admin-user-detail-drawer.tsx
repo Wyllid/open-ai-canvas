@@ -1,4 +1,4 @@
-import { currentLocale, tr } from "@/i18n";
+import { currentLocale, tr, trIn } from "@/i18n";
 import { useEffect, useState } from "react";
 import { App, Button, Descriptions, Progress, Skeleton, Tabs } from "antd";
 import { AdminDrawer } from "@/pages/admin/ui/overlays";
@@ -100,7 +100,7 @@ export function AdminUserDetailDrawer({ userId, onClose, previousUserId, nextUse
                                         items={[
                                             { key: "username", label: tr("用户名"), children: `@${detail.user.username}` },
                                             { key: "email", label: tr("邮箱"), children: detail.user.email || tr("未填写") },
-                                            { key: "role", label: tr("角色"), children: detail.user.role === "admin" ? tr("管理员") : tr("普通用户") },
+                                            { key: "role", label: trIn("user", "角色"), children: detail.user.role === "admin" ? tr("管理员") : tr("普通用户") },
                                             { key: "status", label: tr("状态"), children: <AdminStatusBadge label={detail.user.status === "active" ? tr("启用") : tr("停用")} tone={detail.user.status === "active" ? "success" : "neutral"} /> },
                                             { key: "created", label: tr("注册时间"), children: formatTime(detail.user.createdAt) },
                                             { key: "login", label: tr("最后登录"), children: formatTime(detail.user.lastLoginAt) },

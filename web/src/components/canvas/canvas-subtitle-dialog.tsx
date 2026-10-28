@@ -583,9 +583,7 @@ export function CanvasSubtitleDialog({ node, open, projectId, config, onClose, o
                 </div>
 
                 <div className="flex items-center justify-between gap-3 border-t px-4 py-3" style={{ borderColor: theme.toolbar.border, background: theme.toolbar.panel }}>
-                    <div className="text-xs opacity-45">
-                        {entries.length} {tr("条字幕 · 单条上限")} {style.maxCharsPerEntry || DEFAULT_MAX_CHARS_PER_ENTRY} {tr("字")}
-                    </div>
+                    <div className="text-xs opacity-45">{tr("{0} 条字幕 · 单条上限 {1} 字", entries.length, style.maxCharsPerEntry || DEFAULT_MAX_CHARS_PER_ENTRY)}</div>
                     <div className="flex items-center gap-2">
                         <Button disabled={running} onClick={onClose}>
                             {tr("取消")}

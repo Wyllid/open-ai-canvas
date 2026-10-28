@@ -129,7 +129,7 @@ export function CanvasOperationChangeToast({ change, theme, onView, onUndo, onCl
                 <span className="min-w-0 flex-1">
                     <span className="block text-xs font-semibold">{tr("Agent 已写回画布")}</span>
                     <span className="mt-0.5 block truncate text-[var(--fs-label)]" style={{ color: theme.node.muted }}>
-                        {change.summary} {tr("· 可撤销最近")} {change.undoCount} {tr("批")}
+                        {tr("{0} · 可撤销最近 {1} 批", change.summary, change.undoCount)}
                     </span>
                 </span>
                 <button type="button" className="grid size-7 place-items-center rounded-md opacity-55 transition hover:opacity-100" onClick={onClose} aria-label={tr("关闭")}>

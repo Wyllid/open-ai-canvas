@@ -215,7 +215,7 @@ function DrawingContent({ node, theme, drawingProjectId }: CanvasNodeContentProp
                         {node.title || tr("绘图")}
                     </div>
                     <div className="mt-0.5 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>
-                        {shapeCount} {tr("个图形 ·")} {pageCount} {tr("个页面")}
+                        {tr("{0} 个图形 · {1} 个页面", shapeCount, pageCount)}
                     </div>
                 </div>
                 <Pencil className="size-3.5 shrink-0" style={{ color: theme.accent.primary }} />

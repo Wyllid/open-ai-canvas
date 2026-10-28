@@ -544,7 +544,7 @@ export default function AssetsPage() {
                     <PageHeader
                         title={viewMode === "trash" ? tr("素材库 / 回收站") : tr("素材库")}
                         description={viewMode === "trash" ? tr("已删除画布或手动归档的临时素材，可随时还原或彻底清理。") : tr("管理文本、图片、视频、音频和 3D 模型素材。")}
-                        meta={<span className="app-projects-header-meta assets-header-meta">{totalAssets} {tr("个素材")}</span>}
+                        meta={<span className="app-projects-header-meta assets-header-meta">{tr("{0} 个素材", totalAssets)}</span>}
                         actions={
                             <div className="assets-header-actions">
                                 <AssetStorageUsage />
@@ -991,7 +991,7 @@ export default function AssetsPage() {
                 okText={tr("移入回收站")}
                 cancelText={tr("取消")}
             >
-                {tr("确定将「")}{archivingAsset?.title}{tr("」移入回收站吗？移入后不会出现在正常素材库中，可在回收站随时还原。")}
+                {tr("确定将「{0}」移入回收站吗？移入后不会出现在正常素材库中，可在回收站随时还原。", archivingAsset?.title)}
             </Modal>
             <Modal
                 className="library-modal library-confirm-modal"
@@ -1004,7 +1004,7 @@ export default function AssetsPage() {
                 okText={tr("移入回收站")}
                 cancelText={tr("取消")}
             >
-                {tr("确定将已选择的")} {selectedIds.length} {tr("个素材移入回收站吗？移入后可随时在回收站批量还原。")}
+                {tr("确定将已选择的 {0} 个素材移入回收站吗？移入后可随时在回收站批量还原。", selectedIds.length)}
             </Modal>
             <Modal
                 className="library-modal library-confirm-modal"
@@ -1016,7 +1016,7 @@ export default function AssetsPage() {
                 okButtonProps={{ danger: true }}
                 cancelText={tr("取消")}
             >
-                {tr("确定彻底删除「")}{deletingAsset?.title}{tr("」吗？未被其他素材复用的服务器文件会直接释放，原画布或任务中的旧引用可能失效，操作不可恢复。")}
+                {tr("确定彻底删除「{0}」吗？未被其他素材复用的服务器文件会直接释放，原画布或任务中的旧引用可能失效，操作不可恢复。", deletingAsset?.title)}
             </Modal>
             <Modal
                 className="library-modal library-confirm-modal"
@@ -1030,7 +1030,7 @@ export default function AssetsPage() {
                 okButtonProps={{ danger: true }}
                 cancelText={tr("取消")}
             >
-                {tr("确定彻底删除已选择的")} {selectedIds.length} {tr("个素材吗？未被其他素材复用的服务器文件会直接释放，原画布或任务中的旧引用可能失效，操作不可恢复。")}
+                {tr("确定彻底删除已选择的 {0} 个素材吗？未被其他素材复用的服务器文件会直接释放，原画布或任务中的旧引用可能失效，操作不可恢复。", selectedIds.length)}
             </Modal>
         </>
     );

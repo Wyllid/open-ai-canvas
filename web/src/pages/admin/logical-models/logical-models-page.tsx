@@ -253,12 +253,8 @@ export default function LogicalModelsPage() {
             width: 110,
             render: (_, item) => (
                 <div className="text-xs">
-                    <div>
-                        {(item.routes || []).filter((route) => route.enabled && route.available).length} {tr("条可用")}
-                    </div>
-                    <div className="text-foreground/45">
-                        {tr("共")} {(item.routes || []).length} {tr("条")}
-                    </div>
+                    <div>{tr("{0} 条可用", (item.routes || []).filter((route) => route.enabled && route.available).length)}</div>
+                    <div className="text-foreground/45">{tr("共 {0} 条", (item.routes || []).length)}</div>
                 </div>
             ),
         },
@@ -589,9 +585,7 @@ function RouteFields({
                 return (
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs text-foreground/50">
-                                {tr("共")} {fields.length} {tr("条供应线路")}
-                            </span>
+                            <span className="text-xs text-foreground/50">{tr("共 {0} 条供应线路", fields.length)}</span>
                             <Button size="small" icon={<Plus className="size-3.5" />} disabled={!canAdd} onClick={() => add({ channelModelId: "", enabled: true, priority: 100, weight: 100 })}>
                                 {tr("添加供应线路")}
                             </Button>
@@ -679,11 +673,7 @@ function PricingFields() {
 function logicalSpecLabel(item: AdminLogicalModel) {
     const priceTiers = item.priceTiers || [];
     if (!priceTiers.length) return <span className="text-xs text-foreground/45">{tr("待配置系统规格")}</span>;
-    return (
-        <span className="text-xs">
-            {priceTiers.length} {tr("个系统规格档")}
-        </span>
-    );
+    return <span className="text-xs">{tr("{0} 个系统规格档", priceTiers.length)}</span>;
 }
 
 function logicalModelToForm(item: AdminLogicalModel): LogicalModelFormValues {

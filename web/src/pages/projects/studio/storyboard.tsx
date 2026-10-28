@@ -152,7 +152,7 @@ const SegmentCard = memo(function SegmentCard({ segment, segmentShots, aspectRat
                     <div className="drama-sg-meta">
                         <SegmentStatus segment={segment} />
                         <span>
-                            {segmentShots.length} {tr("镜")}
+                            {tr("{0} 镜", segmentShots.length)}
                             {segment.request.maxVideoSeconds ? tr(" · 上限 {0}s", segment.request.maxVideoSeconds) : ""}
                         </span>
                     </div>
@@ -186,11 +186,7 @@ const SegmentCard = memo(function SegmentCard({ segment, segmentShots, aspectRat
                                     </button>
                                 </li>
                             ))}
-                            {segmentShots.length > SHOT_PREVIEW ? (
-                                <li className="drama-sg-more">
-                                    {tr("还有")} {segmentShots.length - SHOT_PREVIEW} {tr("镜")}
-                                </li>
-                            ) : null}
+                            {segmentShots.length > SHOT_PREVIEW ? <li className="drama-sg-more">{tr("还有 {0} 镜", segmentShots.length - SHOT_PREVIEW)}</li> : null}
                         </ol>
                     )}
                 </div>
@@ -364,9 +360,7 @@ export function Storyboard({ shots, segments, aspectRatio, castById, defaultVide
             <div className={`drama-board-toolbar ${selected.size ? "is-selecting" : ""}`}>
                 {selected.size ? (
                     <>
-                        <b className="text-[var(--fs-label)]">
-                            {tr("已选")} {selected.size} {tr("段")}
-                        </b>
+                        <b className="text-[var(--fs-label)]">{tr("已选 {0} 段", selected.size)}</b>
                         <div className="drama-board-model">
                             <DramaModelPicker capability="video" size="sm" value={batchModel || defaultVideoModel} onChange={setBatchModel} placeholder={tr("视频模型")} />
                         </div>
@@ -381,7 +375,7 @@ export function Storyboard({ shots, segments, aspectRatio, castById, defaultVide
                                     setSelected(new Set());
                                 }}
                             >
-                                {tr("生成视频 ·")} {toGenerate.length} {tr("段")}
+                                {tr("生成视频 · {0} 段", toGenerate.length)}
                             </Button>
                         </Tooltip>
                         <Button
@@ -393,7 +387,7 @@ export function Storyboard({ shots, segments, aspectRatio, castById, defaultVide
                                 setSelected(new Set());
                             }}
                         >
-                            {tr("重新撰写提示词 ·")} {toWrite.length} {tr("段")}
+                            {tr("重新撰写提示词 · {0} 段", toWrite.length)}
                         </Button>
                         <Button size="small" type="text" onClick={() => setSelected(new Set(order))}>
                             {tr("全选")}

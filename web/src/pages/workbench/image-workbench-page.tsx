@@ -1066,7 +1066,7 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                                                             </div>
                                                             <div className="workbench-reference-slot-meta">
                                                                 <span>
-                                                                    {slot.minCount}-{slot.maxCount} {tr("个")}
+                                                                    {slot.minCount}-{tr("{0} 个", slot.maxCount)}
                                                                 </span>
                                                                 <span>{mediaLabel}</span>
                                                             </div>
@@ -1093,7 +1093,7 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                                                                     <ImagePlus />
                                                                 </span>
                                                                 <span className="workbench-reference-slot-empty-copy">
-                                                                    <strong>{tr("上传")}{slot.name || tr("参考")}{tr("素材")}</strong>
+                                                                    <strong>{tr("上传{0}素材", slot.name || tr("参考"))}</strong>
                                                                     <small>{tr("从设备中选择文件")}</small>
                                                                 </span>
                                                             </button>
@@ -1187,7 +1187,7 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                                     />
                                 ) : (
                                     <div className="workbench-model-empty">
-                                        <span>{tr("暂无可用的")}{kind === "image" ? tr("图片") : tr("视频")}{tr("模型")}</span>
+                                        <span>{tr("暂无可用的{0}模型", kind === "image" ? tr("图片") : tr("视频"))}</span>
                                         <a href="/settings?section=models" target="_blank" rel="noreferrer">
                                             {tr("模型设置")}
                                         </a>
@@ -1289,7 +1289,7 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                                             <strong>{tr("输入素材")}</strong>
                                             {tool.inputContract.slots.map((slot) => (
                                                 <span key={slot.key}>
-                                                    {slot.name} · {slot.required ? tr("必填") : tr("可选")} {tr("· 最多")} {slot.maxCount} {tr("个")}
+                                                    {slot.name} · {tr("{0} · 最多 {1} 个", slot.required ? tr("必填") : tr("可选"), slot.maxCount)}
                                                 </span>
                                             ))}
                                         </div>
@@ -1321,7 +1321,7 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                             <div className="workbench-section-heading">
                                 <div>
                                     <h2>{tr("进行中的任务")}</h2>
-                                    <span>{activeTasks.length} {tr("个任务")}</span>
+                                    <span>{tr("{0} 个任务", activeTasks.length)}</span>
                                 </div>
                                 <Tooltip title={tr("刷新任务")}>
                                     <button type="button" aria-label={tr("刷新任务列表")} onClick={() => void loadTasks()}>
@@ -1341,7 +1341,7 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                             <div className="workbench-section-heading">
                                 <div>
                                     <h2>{tr("历史生成")}</h2>
-                                    <span>{historyTasks.length} {tr("条记录")}</span>
+                                    <span>{tr("{0} 条记录", historyTasks.length)}</span>
                                 </div>
                                 <Input aria-label={tr("搜索历史任务")} prefix={<Search className="size-3.5" />} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tr("搜索提示词")} allowClear />
                             </div>
@@ -1434,7 +1434,7 @@ export function WorkbenchPage({ kind }: { kind: WorkbenchKind }) {
                     </Button>,
                 ]}
             >
-                {presetPending ? <p>{tr("将应用“")}{presetPending.name}{tr("”提示词。你可以替换当前内容，也可以追加到末尾。")}</p> : null}
+                {presetPending ? <p>{tr("将应用“{0}”提示词。你可以替换当前内容，也可以追加到末尾。", presetPending.name)}</p> : null}
             </Modal>
         </WorkspacePage>
     );

@@ -170,7 +170,7 @@ export default function StoryboardPromptsPage() {
 
     const columns: ColumnsType<PromptTemplate> = [
         { title: "模板类型", dataIndex: "operation", width: 180, render: (operation: string) => { const definition = definitionByOperation.get(operation); return <div><div className="font-medium">{definition?.label || operation}</div><div className="mt-1 text-xs text-foreground/45">{definition?.category || "--"}</div></div>; } },
-        { title: "版本", dataIndex: "name", render: (_, template) => <div><div className="font-medium">{template.name}</div><div className="mt-1 text-xs text-foreground/45">v{template.version} · {template.content.length} {tr("字符")}</div></div> },
+        { title: "版本", dataIndex: "name", render: (_, template) => <div><div className="font-medium">{template.name}</div><div className="mt-1 text-xs text-foreground/45">v{template.version} · {tr("{0} 字符", template.content.length)}</div></div> },
         { title: "输出", dataIndex: "outputType", width: 120, align: "center", render: (outputType: string, template) => <span className="inline-flex items-center gap-2 text-xs text-foreground/65">{outputType === "json" ? <FileJson className="size-3.5" /> : <FileText className="size-3.5" />}{outputType === "json" ? definitionByOperation.get(template.operation)?.schemaKey || "JSON" : tr("文本")}</span> },
         { title: "状态", dataIndex: "enabled", width: 100, align: "center", render: (enabled) => <AdminStatusBadge label={enabled ? tr("启用中") : tr("历史版")} tone={enabled ? "success" : "neutral"} /> },
         { title: "更新时间", dataIndex: "updatedAt", width: 180, align: "center", render: formatTime },

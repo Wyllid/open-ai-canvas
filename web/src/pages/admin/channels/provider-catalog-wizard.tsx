@@ -236,9 +236,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                                     ))}
                                 </span>
                                 <span className="pcw-card-meta">
-                                    <span>
-                                        {item.models.length} {tr("个推荐模型")}
-                                    </span>
+                                    <span>{tr("{0} 个推荐模型", item.models.length)}</span>
                                     {item.installedCount ? (
                                         <span className="pcw-installed">
                                             <Check className="size-3" /> {tr("已接入")} {item.installedCount}
@@ -350,7 +348,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                     ) : null}
                     {guide.url || current.website ? (
                         <Button block href={guide.url || current.website} target="_blank" rel="noopener noreferrer" icon={<ExternalLink className="size-4" />}>
-                            {tr("前往")} {current.name} {tr("获取 Key")}
+                            {tr("前往 {0} 获取 Key", current.name)}
                         </Button>
                     ) : null}
                 </aside>
@@ -365,7 +363,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                 <div className="pcw-pricing-bar">
                     {verified ? (
                         <span className="pcw-verified">
-                            <Check className="size-3.5" /> {tr("连接成功 · 上游可用")} {verified.availableModels.length}/{current.models.length} {tr("个推荐模型")}
+                            <Check className="size-3.5" /> {tr("连接成功 · 上游可用")} {verified.availableModels.length}/{tr("{0} 个推荐模型", current.models.length)}
                         </span>
                     ) : (
                         <span className="pcw-unverified">{tr("未验证 · 渠道将默认停用")}</span>
@@ -413,9 +411,7 @@ export function ProviderCatalogWizard({ open, onClose, onCustom, onInstalled }: 
                     </ul>
                 </div>
                 <footer className="pcw-footer">
-                    <span>
-                        {tr("将创建：1 个渠道 ·")} {chosenModels.length} {tr("个模型 ·")} {totalTiers} {tr("个规格档")}
-                    </span>
+                    <span>{tr("将创建：1 个渠道 · {0} 个模型 · {1} 个规格档", chosenModels.length, totalTiers)}</span>
                     <div className="pcw-actions">
                         <Button disabled={installing} onClick={() => setStep("connect")}>
                             {tr("上一步")}

@@ -245,7 +245,7 @@ export function CanvasAssetTray({ assetImages, canvasImages, showLibrary = true,
 
                         <div className="flex items-center justify-between px-1 pt-2 text-[var(--fs-tiny)]" style={{ color: theme.node.muted }}>
                             <span>{showLibrary && tab === "library" ? tr("点击插入 · 拖拽定位") : tr("点击回到节点")}</span>
-                            <span className="rounded-full px-2 py-0.5 tabular-nums" style={{ background: theme.spatial.surface }}>{activeItems.length} {tr("项")}</span>
+                            <span className="rounded-full px-2 py-0.5 tabular-nums" style={{ background: theme.spatial.surface }}>{tr("{0} 项", activeItems.length)}</span>
                         </div>
                     </motion.aside>
                 ) : null}

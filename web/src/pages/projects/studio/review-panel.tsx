@@ -18,15 +18,17 @@ const PASS_LABEL: Record<DramaReviewPass, string> = {
 
 const PASSES = Object.keys(PASS_LABEL) as DramaReviewPass[];
 
+const SEVERITY_LABEL: Record<DramaReviewFinding["severity"], string> = { high: tr("high"), medium: tr("medium"), low: tr("low") };
+
 const FIELD_LABEL: Record<string, string> = {
-    speaker: "speaker",
-    dialogue: "line",
-    action: "action",
+    speaker: tr("speaker"),
+    dialogue: tr("line"),
+    action: tr("action"),
     shotSize: tr("shot size"),
-    camera: "camera",
-    imagePrompt: "frame",
-    videoPrompt: "motion",
-    transition: "transition",
+    camera: tr("camera"),
+    imagePrompt: tr("frame"),
+    videoPrompt: tr("motion"),
+    transition: tr("transition"),
     durationSeconds: tr("duration (s)"),
 };
 
@@ -107,7 +109,7 @@ export function ReviewPanel({ projectId, episodeId, review, busy, onJump }: Prop
                                 ) : (
                                     <span>{tr("Whole episode")}</span>
                                 )}
-                                <span className="drama-review-severity">{finding.severity}</span>
+                                <span className="drama-review-severity">{SEVERITY_LABEL[finding.severity] || finding.severity}</span>
                             </div>
                             <p>{finding.problem}</p>
                             {finding.field ? (

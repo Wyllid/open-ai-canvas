@@ -98,9 +98,7 @@ export function StoryboardAssetPickerModal({
                     </div>
                     <div className="mt-4 border-t border-foreground/10 pt-3">
                         <div className="mb-2 flex items-center justify-between text-xs text-foreground/55">
-                            <span>
-                                {tr("已选")} {draft.length} {tr("项")}
-                            </span>
+                            <span>{tr("已选 {0} 项", draft.length)}</span>
                             <Button type="text" size="small" disabled={!draft.length} onClick={() => setDraft([])}>
                                 {tr("清空选择")}
                             </Button>

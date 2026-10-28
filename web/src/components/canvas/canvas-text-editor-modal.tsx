@@ -162,7 +162,7 @@ export function CanvasTextEditorModal({ node, open, onClose, onChange }: CanvasT
                         placeholder={tr("文本节点标题")}
                         aria-label={tr("文本节点标题")}
                     />
-                    <span className="hidden shrink-0 text-[var(--fs-label)] sm:inline" style={{ color: theme.node.muted }}>{characterCount.toLocaleString(currentLocale())} {tr("字 ·")} {wordCount.toLocaleString(currentLocale())} {tr("词")}</span>
+                    <span className="hidden shrink-0 text-[var(--fs-label)] sm:inline" style={{ color: theme.node.muted }}>{tr("{0} 字 · {1} 词", characterCount.toLocaleString(currentLocale()), wordCount.toLocaleString(currentLocale()))}</span>
                     <span className="ml-auto hidden text-[var(--fs-label)] sm:inline" style={{ color: theme.node.muted }}>{tr("画布内容")}</span>
                     <Tooltip title={tr("关闭")}>
                         <Button size="small" type="text" icon={<X className="size-4" />} aria-label={tr("关闭文本编辑器")} onClick={close} />

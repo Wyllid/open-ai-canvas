@@ -250,7 +250,7 @@ export function AssetDrawer({ asset, onClose, onCopy, onDownload }: { asset: Lib
                         <div className="min-w-0">
                             <h2 className="asset-archive-title">{asset.title}</h2>
                             <p className="asset-archive-subtitle">
-                                {assetCategoryLabel(asset.category)} · {formatAssetDateTime(asset.createdAt)} {tr("创建")}
+                                {assetCategoryLabel(asset.category)} · {tr("{0} 创建", formatAssetDateTime(asset.createdAt))}
                             </p>
                         </div>
                     </div>

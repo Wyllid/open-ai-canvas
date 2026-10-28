@@ -192,7 +192,7 @@ export function ModelIconPicker({ value, onChange }: { value?: string; onChange?
                                 <span>{query ? tr("搜索结果") : categoryLabel}</span>
                                 <span className="text-xs font-normal text-muted-foreground" role="status">
                                     {query ? tr("全部分类 · ") : ""}
-                                    {filteredIcons.length} {tr("个 Logo")}
+                                    {tr("{0} 个 Logo", filteredIcons.length)}
                                 </span>
                             </div>
                             {filteredIcons.length ? (

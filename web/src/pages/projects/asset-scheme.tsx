@@ -322,11 +322,7 @@ function SkillPromptImportModal({ open, onClose, onImport }: { open: boolean; on
                     <section>
                         <div className="drama-skill-import-caption">
                             {path || "原文"}
-                            {content ? (
-                                <span>
-                                    {content.length.toLocaleString(currentLocale())} {tr("字")}
-                                </span>
-                            ) : null}
+                            {content ? <span>{tr("{0} 字", content.length.toLocaleString(currentLocale()))}</span> : null}
                         </div>
                         <pre ref={contentRef} className="drama-skill-import-content thin-scrollbar">
                             {fileQuery.isLoading ? "正在读取…" : content || "选择文件后在这里查看原文，用鼠标选中需要的段落。"}
@@ -335,7 +331,7 @@ function SkillPromptImportModal({ open, onClose, onImport }: { open: boolean; on
                 </div>
                 <footer className="drama-skill-import-foot">
                     <span>
-                        {tr("未包含")} {"{{角色名称}}"} / {"{{角色设定}}"} {tr("时，导入后会在末尾自动补上本角色信息。")}
+                        {tr("未包含")} {"{{角色名称}}"} / {tr("{0} 时，导入后会在末尾自动补上本角色信息。", "{{角色设定}}")}
                     </span>
                     <Button onClick={onClose}>{tr("取消")}</Button>
                     <Button disabled={!content} onClick={() => importText(true)}>

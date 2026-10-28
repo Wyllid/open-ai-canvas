@@ -72,7 +72,7 @@ export function StyleProfileEditorModal({ open, initialProfile, saving = false, 
                                 <span className="grid size-8 shrink-0 place-items-center rounded-md border border-border bg-foreground/5"><Sparkles className="size-3.5" /></span>
                                 <div>
                                     <h2 className="text-sm font-semibold">{tr("风格编辑器")}</h2>
-                                    <p className="mt-0.5 truncate text-[var(--fs-tiny)] text-foreground/45">{draft.title || tr("未命名风格")} {tr("· 我的风格")}</p>
+                                    <p className="mt-0.5 truncate text-[var(--fs-tiny)] text-foreground/45">{tr("{0} · 我的风格", draft.title || tr("未命名风格"))}</p>
                                 </div>
                             </div>
                         </div>
@@ -193,7 +193,7 @@ function ExecutionFields({ profile, onChange, onEditAssets }: EditorFieldsProps 
             <div className="flex flex-col gap-3 border-y border-border py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h4 className="text-sm font-medium">{tr("执行资产")}</h4>
-                    <p className="mt-1 text-[var(--fs-label)] text-foreground/45">{profile.assets.length} {tr("个已绑定，")}{enabled.length} {tr("个已启用")}</p>
+                    <p className="mt-1 text-[var(--fs-label)] text-foreground/45">{tr("{0} 个已绑定，{1} 个已启用", profile.assets.length, enabled.length)}</p>
                 </div>
                 <Button icon={<Layers3 className="size-3.5" />} onClick={onEditAssets}>{tr("配置 LoRA、模板与参考图")}</Button>
             </div>

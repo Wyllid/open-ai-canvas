@@ -493,7 +493,7 @@ export function AssetLibraryPickerModal({
                         <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder={tr("搜索素材名称或标签")} aria-label={tr("搜索素材")} />
                     </label>
                     <span className="asset-picker-count">
-                        {tr("已选")} {selectedIds.length} · {effectivePagination ? effectivePagination.total : visibleItems.length} {tr("个素材")}
+                        {tr("已选")} {selectedIds.length} · {tr("{0} 个素材", effectivePagination ? effectivePagination.total : visibleItems.length)}
                     </span>
                 </header>
                 <div className="asset-picker-body">

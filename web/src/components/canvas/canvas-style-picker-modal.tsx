@@ -570,7 +570,7 @@ export function CanvasStylePickerModal({ open, value, currentProfile, startInEdi
                         <main className="flex min-h-0 min-w-0 flex-col">
                             <div className="flex h-11 shrink-0 items-center justify-between gap-3 border-b px-3 sm:px-4" style={{ borderColor: theme.node.stroke }}>
                                 <div className="min-w-0 truncate text-xs font-medium">{styleCenterViewTitle(tab, category)}</div>
-                                <div className="shrink-0 text-[var(--fs-tiny)] tabular-nums" style={{ color: theme.node.muted }}>{visibleItems.length} {tr("个风格")}</div>
+                                <div className="shrink-0 text-[var(--fs-tiny)] tabular-nums" style={{ color: theme.node.muted }}>{tr("{0} 个风格", visibleItems.length)}</div>
                             </div>
                             <div className="style-center-grid thin-scrollbar min-h-0 flex-1 content-start overflow-y-auto p-3 sm:p-4">
                             {visibleItems.map((item) => (

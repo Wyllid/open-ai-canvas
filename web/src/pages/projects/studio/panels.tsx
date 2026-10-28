@@ -128,7 +128,7 @@ export function CastPanel({
                     </div>
                     {failed ? (
                         <Button className="!ml-auto" icon={<RotateCcw className="size-4" />} loading={retrying} onClick={onRetry}>
-                            {tr("重试失败的")} {failed} {tr("个")}
+                            {tr("重试失败的 {0} 个", failed)}
                         </Button>
                     ) : null}
                 </div>
@@ -304,11 +304,7 @@ function CastEditor({ projectId, cast, ratios, onChanged }: { projectId: string;
                 <Checkbox checked={restyle} onChange={(event) => setRestyle(event.target.checked)}>
                     {tr("让引用它的剧情段视频重新生成")}
                 </Checkbox>
-                {impact ? (
-                    <span>
-                        {impact.episodes} {tr("集 ·")} {impact.segments} {tr("段")}
-                    </span>
-                ) : null}
+                {impact ? <span>{tr("{0} 集 · {1} 段", impact.episodes, impact.segments)}</span> : null}
             </div>
             <div className="drama-editor-actions">
                 <Button disabled={!dirty} loading={save.isPending} onClick={() => save.mutate()}>
@@ -451,18 +447,16 @@ export function InboxPanel({
                             {failures ? (
                                 <span className="is-err">
                                     <AlertCircle className="size-3.5" />
-                                    {failures} {tr("项失败")}
+                                    {tr("{0} 项失败", failures)}
                                 </span>
                             ) : null}
                             {reviews ? (
                                 <span className="is-info">
                                     <CheckCheck className="size-3.5" />
-                                    {reviews} {tr("集待审阅")}
+                                    {tr("{0} 集待审阅", reviews)}
                                 </span>
                             ) : null}
-                            <span>
-                                {tr("共")} {groups.length} {tr("类")}
-                            </span>
+                            <span>{tr("共 {0} 类", groups.length)}</span>
                         </div>
                     ) : null}
                     {failures ? (
@@ -526,11 +520,7 @@ export function InboxPanel({
                                                 {group.items.slice(0, CHIP_LIMIT).map((item) => (
                                                     <InboxChip key={item.id} item={item} cast={item.castId ? castById.get(item.castId) : undefined} onOpen={onOpen} />
                                                 ))}
-                                                {group.items.length > CHIP_LIMIT ? (
-                                                    <span className="drama-inbox-more">
-                                                        {tr("另有")} {group.items.length - CHIP_LIMIT} {tr("项")}
-                                                    </span>
-                                                ) : null}
+                                                {group.items.length > CHIP_LIMIT ? <span className="drama-inbox-more">{tr("另有 {0} 项", group.items.length - CHIP_LIMIT)}</span> : null}
                                             </div>
                                         ) : null}
                                     </article>
@@ -563,7 +553,7 @@ function InboxChip({ item, cast, onOpen }: { item: DramaInboxItem; cast?: DramaC
         content = (
             <>
                 {item.media ? MEDIA_ICON[item.media] : null}
-                {tr("第")} {item.episodeNumber} {tr("集 · 第")} {item.segmentIndex + 1} {tr("段")}
+                {tr("第 {0} 集 · 第 {1} 段", item.episodeNumber, item.segmentIndex + 1)}
             </>
         );
     } else if (item.kind === "review") {

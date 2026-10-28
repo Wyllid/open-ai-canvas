@@ -84,7 +84,7 @@ export function CanvasProjectCard({ project, projectName, variant = "library", r
                     </span>
                 ) : null}
                 <div className="canvas-project-cover-meta" aria-hidden="true">
-                    <span className="canvas-project-node-count">{project.nodes.length} {tr("节点")}</span>
+                    <span className="canvas-project-node-count">{tr("{0} 节点", project.nodes.length)}</span>
                 </div>
             </div>
 
