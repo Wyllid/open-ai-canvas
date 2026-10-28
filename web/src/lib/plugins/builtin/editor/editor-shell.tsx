@@ -20,7 +20,7 @@ const manifest: PluginManifestV2 = {
     name: tr("剪辑工作台"),
     version: "0.1.0",
     description: tr("注册时间线、预览、检查器、素材、字幕、转写、导出和 AI 编辑八个工作台插槽。"),
-    author: tr("影策团队"),
+    author: tr("Local Studio团队"),
     surfaces: ["fullscreen"],
     permissions: ["timeline.read", "timeline.command", "export.run"],
     trusted: true,

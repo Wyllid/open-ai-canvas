@@ -1,31 +1,36 @@
 <p align="center">
-  <img src="web/public/logo.svg" width="88" alt="影策 logo">
+  <img src="web/public/logo.svg" width="88" alt="Local Studio logo">
 </p>
 
-<h1 align="center">影策</h1>
+<h1 align="center">Local Studio</h1>
 
-<p align="center">让一个故事，从文字走向银幕</p>
+<p align="center">Self-hosted AI film and short-drama studio · English · Português (Brasil) · 中文</p>
 
 <p align="center">
-  <a href="https://github.com/ddcat-ai/open-ai-canvas">GitHub</a> ·
-  <a href="docs/content/docs/overview/features.mdx">功能</a> ·
-  <a href="docs/content/docs/overview/quick-start.mdx">文档</a> ·
-  <a href="SECURITY.md">安全策略</a>
+  <a href="https://github.com/Wyllid/open-ai-canvas">GitHub</a> ·
+  <a href="#快速开始">Quick start</a> ·
+  <a href="#服务器部署">Server deployment</a> ·
+  <a href="SECURITY.md">Security</a>
 </p>
 
-影策是一个开源的 AI 影视与短剧创作工作台。上传一本小说，流水线会完成改编、拆集、建角色、出分镜，再逐段生成视频并合成成片；需要自由发挥时，可以在无限画布上用节点组织图片、视频、文本和 3D 预演，也可以让 Agent 直接在画布上动手。模型渠道、技能、插件、素材和计费都可以自部署、自管理。
+Local Studio is a self-hosted fork of [影策 / open-ai-canvas](https://github.com/ddcat-ai/open-ai-canvas) for running an AI film and short-drama workspace on your own machine or VPS. Upload a novel and the pipeline adapts it, splits episodes, builds characters, writes storyboards, generates segment videos and assembles the final cut; or work freely on the infinite canvas with image, video, text and 3D previs nodes, with an agent that can act on the canvas. Model channels, skills, plugins and assets stay on your server.
 
 <p align="center">
-  <img src="assets/screenshots/storyboard.jpg" alt="短剧制作：分镜视图，每段显示镜头、台词、参考图和视频生成状态" width="100%">
+  <img src="assets/screenshots/storyboard.jpg" alt="Short-drama production: storyboard view with shots, lines, reference images and video status per segment" width="100%">
 </p>
 
-<p align="center">
-  <a href="https://yingce.tv"><strong>在线演示 yingce.tv</strong></a>（账号/密码：test/test123456） ·
-  <a href="#快速开始">本地启动</a> ·
-  <a href="#服务器部署">服务器部署</a>
-</p>
+## What Local Studio changes
 
-> 项目仍在快速开发，数据结构和外部接口可能调整。默认适合个人、本地或可信环境部署；未经安全配置，不要直接作为公网多人服务使用。
+- **Single local administrator.** No sign-up, third-party login or account creation: the only account comes from `CANVAS_ADMIN_USERNAME` / `CANVAS_ADMIN_PASSWORD` in the server `.env`, and changing the username retires the previous admin. The sign-in screen is one centered card.
+- **No billing.** Credits, wallet, payments, pricing, the feedback inbox and the storage meter were removed; generation runs against your own model channels.
+- **Interface in English and Português (Brasil)** besides Chinese, with a language switcher on the sign-in page, the workspace and the admin panel.
+- **Short-drama studio improvements:** continuity between segments (fades in the render, first frame carried only within a scene), music track with ducking and loudness normalization, review of segment takes to pick what goes into the cut, and review roles (script, direction, camera, continuity, sound) whose findings stay on the shots they were written for.
+- **Agent setup and MCP.** One form configures the agent model for the admin, and an MCP endpoint exposes drama production tools to local agents (Codex, Claude Code).
+- **Storyboard tables** can be pasted with English or Portuguese headers.
+
+> Run it on a machine or VPS you control. Set a strong `CANVAS_ADMIN_PASSWORD` before exposing the server, and put it behind HTTPS.
+
+The sections below are kept from the upstream README (in Chinese) and describe the shared foundation: features, local start, deployment and architecture.
 
 ## 下个版本：影策世界引擎（内测中）
 

@@ -37,7 +37,7 @@ func TestPasswordResetChangesPasswordConsumesCodeAndRevokesSessions(t *testing.T
 
 	var deliveredCode string
 	svc.SetMailSender(func(_ EmailSettingValue, recipient string, subject string, body string) error {
-		if recipient != user.Email || subject != "影策密码重置验证码" {
+		if recipient != user.Email || subject != DefaultBrandName+"密码重置验证码" {
 			t.Fatalf("unexpected reset email: recipient=%q subject=%q", recipient, subject)
 		}
 		deliveredCode = codeFromEmailBody(body)

@@ -246,7 +246,7 @@ export default function AppearanceSettingsPage() {
     const restoreBuiltInAppearance = () => {
         if (!setting?.configured || saving || refreshing || restoring || canvasUploading) return;
         modal.confirm({
-            title: tr("恢复影策默认品牌标识？"),
+            title: tr("恢复默认品牌标识？"),
             content: tr("品牌名称、英文标识、Logo、画布 Agent 名称/文案/形象、更新公告、登录页文案、视频、封面、SEO、备案和皮肤主题会立即恢复为项目内置值；自定义公告会清空并关闭，展示原有更新日志。已上传文件仍保留在存储资源中，不会被删除。"),
             okText: tr("恢复默认"),
             cancelText: tr("取消"),
@@ -261,7 +261,7 @@ export default function AppearanceSettingsPage() {
                     Object.values(inputRefs).forEach((ref) => {
                         if (ref.current) ref.current.value = "";
                     });
-                    message.success(tr("已恢复影策默认品牌标识"));
+                    message.success(tr("已恢复默认品牌标识"));
                 } catch (error) {
                     message.error(error instanceof Error ? error.message : tr("恢复默认外观失败"));
                     throw error;
@@ -487,7 +487,7 @@ export default function AppearanceSettingsPage() {
                                 </Button>
                             ) : null}
                             <Button icon={<RotateCcw className="size-4" />} loading={restoring} disabled={!setting.configured || saving || refreshing || canvasUploading} onClick={restoreBuiltInAppearance}>
-                                {tr("恢复影策默认")}
+                                {tr("恢复默认品牌")}
                             </Button>
                             <Button icon={<RefreshCw className="size-4" />} loading={refreshing} disabled={saving || restoring || canvasUploading} onClick={requestRefresh}>
                                 {tr("刷新状态")}

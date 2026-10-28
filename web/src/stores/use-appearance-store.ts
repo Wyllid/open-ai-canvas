@@ -10,8 +10,8 @@ export const DEFAULT_PUBLIC_APPEARANCE: PublicAppearance = {
     updates: DEFAULT_UPDATE_ANNOUNCEMENT,
     canvas: DEFAULT_CANVAS_APPEARANCE,
     schemaVersion: 10,
-    brandName: tr("影策"),
-    brandSlug: "open-ai-canvas",
+    brandName: "Local Studio",
+    brandSlug: "local-studio",
     authHeroTitle: tr("让一个故事，\n从文字走向银幕。"),
     authHeroDescription: "",
     logoUrl: "/logo.svg",
@@ -22,10 +22,10 @@ export const DEFAULT_PUBLIC_APPEARANCE: PublicAppearance = {
     authVideoAutoplay: true,
     skinId: "classic",
     activeSkin: DEFAULT_CLASSIC_SKIN,
-    seoTitle: tr("影策"),
-    seoDescription: tr("影策，面向 AI 影视与短剧创作的工作台。"),
+    seoTitle: "Local Studio",
+    seoDescription: tr("{0}，面向 AI 影视与短剧创作的工作台。", "Local Studio"),
     seoKeywords: "",
-    footerCopyright: tr("© {0} 影策. All rights reserved.", new Date().getFullYear()),
+    footerCopyright: `© ${new Date().getFullYear()} Local Studio`,
     icpFilingEnabled: false,
     icpFilingNumber: "",
     redeemPurchaseUrl: "",
@@ -165,7 +165,7 @@ export function appearanceLogoURL(appearance: PublicAppearance, theme: "light" |
 }
 
 export function brandStudioLabel(appearance: PublicAppearance) {
-    if (appearance.brandName === DEFAULT_PUBLIC_APPEARANCE.brandName && appearance.brandSlug === DEFAULT_PUBLIC_APPEARANCE.brandSlug) return "YINGCE STUDIO";
+    if (appearance.brandName === DEFAULT_PUBLIC_APPEARANCE.brandName && appearance.brandSlug === DEFAULT_PUBLIC_APPEARANCE.brandSlug) return "LOCAL STUDIO";
     return appearance.brandSlug.replace(/-+/g, " ").toLocaleUpperCase();
 }
 

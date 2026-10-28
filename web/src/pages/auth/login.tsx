@@ -7,12 +7,12 @@ import { useNavigate, useSearchParams } from "react-router";
 import { getAuthSession, login } from "@/services/api/auth";
 import { useUserStore } from "@/stores/use-user-store";
 
-/** Single local admin sign-in. The backend keeps the session in an HttpOnly cookie for a year. */
+/** Single local admin sign-in (credentials come from the server .env). The backend keeps the session in an HttpOnly cookie for a year. */
 export default function LoginPage() {
     const navigate = useNavigate();
     const [params] = useSearchParams();
     const { message } = App.useApp();
-    const [username, setUsername] = useState("admin");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const next = safeNext(params.get("next"));
@@ -44,7 +44,17 @@ export default function LoginPage() {
     return (
         <form onSubmit={submit} className="space-y-5">
             <AuthField label={tr("Username")} htmlFor="login-account">
-                <Input id="login-account" size="large" prefix={<UserRound className="auth-scene-icon size-4" />} value={username} onChange={(event) => setUsername(event.target.value)} placeholder="admin" autoComplete="username" required />
+                <Input
+                    id="login-account"
+                    size="large"
+                    prefix={<UserRound className="auth-scene-icon size-4" />}
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    placeholder={tr("Username")}
+                    autoComplete="username"
+                    autoFocus
+                    required
+                />
             </AuthField>
             <AuthField label={tr("Password")} htmlFor="login-password">
                 <Input.Password
@@ -61,7 +71,7 @@ export default function LoginPage() {
             <Button type="primary" htmlType="submit" size="large" block loading={submitting} icon={<ArrowRight className="size-4" />} iconPlacement="end">
                 {tr("Sign in")}
             </Button>
-            <p className="auth-scene-muted text-center text-xs leading-5">{tr("Credentials come from CANVAS_ADMIN_USERNAME and CANVAS_ADMIN_PASSWORD (default admin / admin).")}</p>
+            <p className="auth-scene-muted text-center text-xs leading-5">{tr("Access is managed by the server administrator.")}</p>
         </form>
     );
 }

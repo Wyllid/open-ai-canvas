@@ -14,7 +14,7 @@ export const userFeedbackPlugin: RegisteredPlugin = {
         updatedAt: "2026-10-20",
         apiVersion: PLUGIN_API_VERSION,
         description: tr("在工作台首页右下角提供便捷的反馈按钮，支持提交 Bug 反馈、功能提议并附带图片/视频附件，支持用户与管理员收件箱式跟进查看。"),
-        author: tr("影策社区"),
+        author: tr("Local Studio社区"),
         surfaces: ["hybrid"],
         permissions: ["canvas.read"],
         trusted: true,

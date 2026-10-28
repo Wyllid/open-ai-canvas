@@ -32,7 +32,8 @@ describe("authentication follows the application theme", () => {
         expect(scene).not.toContain("getAntThemeConfig");
         expect(scene).not.toContain("auth-card-dark");
         expect(scene.match(/<main className="([^"]+)"/)?.[1]).not.toContain("text-white");
-        expect(scene).toContain("auth-scene-hero");
+        expect(scene).toContain("auth-scene-card");
+        expect(scene).not.toContain("SiteComplianceFooter");
         expect(scene).toContain("<BrandLogo theme={theme}");
         expect(source("components/layout/app-providers.tsx")).toContain("getAntThemeConfig(dark, appearance.activeSkin)");
     });

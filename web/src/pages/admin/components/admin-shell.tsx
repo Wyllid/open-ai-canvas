@@ -13,7 +13,6 @@ import {
     FileClock,
     HardDrive,
     Home,
-    Infinity as InfinityIcon,
     KeyRound,
     Layers3,
     Mail,
@@ -42,6 +41,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router";
 
 import { AppChangelogButton } from "@/components/layout/app-changelog-modal";
 import { BrandLogoFrame } from "@/components/brand/brand-logo";
+import { LocalStudioMark } from "@/components/brand/local-studio-mark";
 import { publishWorkspaceSidebarCollapsed, readWorkspaceSidebarCollapsed, subscribeWorkspaceSidebarCollapsed } from "@/components/layout/workspace-sidebar-state";
 import { AppFeedbackProvider } from "@/components/layout/app-feedback";
 import { cn } from "@/lib/utils";
@@ -164,7 +164,14 @@ function AdminShellLayout() {
                             <AdminTooltip title={collapsed ? (appearance.updates?.enabled ? tr("查看更新公告") : tr("查看更新日志")) : undefined} placement="right">
                                 <AppChangelogButton
                                     className={cn("admin-sidebar-brand-button", collapsed && "is-collapsed")}
-                                    icon={<BrandLogoFrame className="admin-sidebar-brand-mark grid shrink-0 place-items-center bg-foreground text-background" logoClassName="size-5 object-contain" alt="" fallback={<InfinityIcon className="size-4" />} />}
+                                    icon={
+                                        <BrandLogoFrame
+                                            className="admin-sidebar-brand-mark grid shrink-0 place-items-center bg-foreground text-background"
+                                            logoClassName="size-5 object-contain"
+                                            alt=""
+                                            fallback={<LocalStudioMark className="size-[18px]" />}
+                                        />
+                                    }
                                     label={appearance.brandName}
                                     showLabel={!collapsed}
                                     showVersion={!collapsed}

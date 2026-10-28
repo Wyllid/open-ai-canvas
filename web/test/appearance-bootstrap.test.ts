@@ -68,20 +68,18 @@ test("appearance selects theme logos and falls back to the single configured log
     expect(single.logoFrameEnabled).toBe(true);
 });
 
-test("auth scene consumes resolved appearance instead of hardcoded media constants", async () => {
+test("auth scene is a clean self-hosted sign-in built from the resolved appearance", async () => {
     const source = await Bun.file(new URL("../src/pages/auth/auth-scene.tsx", import.meta.url)).text();
 
-    expect(source).toContain("appearance.authVideoUrl");
-    expect(source).toContain("appearance.authVideoAutoplay");
-    expect(source).toContain("appearance.authVideoPosterUrl || undefined");
     expect(source).toContain("appearance.brandName");
-    expect(source).toContain("appearance.authHeroTitle");
-    expect(source).toContain("appearance.authHeroDescription");
     expect(source).toContain("useThemeStore((state) => state.theme)");
     expect(source).toContain("theme={theme}");
+    expect(source).toContain("<LocalStudioMark");
+    // No brand film, hero copy or legal footer on the sign-in screen.
+    expect(source).not.toContain("authVideoUrl");
+    expect(source).not.toContain("authHeroTitle");
+    expect(source).not.toContain("SiteComplianceFooter");
     expect(source).not.toContain("让一个故事，");
-    expect(source).not.toContain("AUTH_VIDEO_URL");
-    expect(source).not.toContain("AUTH_VIDEO_POSTER");
 });
 
 test("appearance management exposes light and dark logo uploads plus the frame switch", async () => {
@@ -122,10 +120,10 @@ test("object storage can adopt the configured English brand identifier without r
     expect(source).toContain("setting.pathPrefix || DEFAULT_OSS_PATH_PREFIX");
 });
 
-test("appearance management exposes a server-side reset to the built-in Yingce brand", async () => {
+test("appearance management exposes a server-side reset to the built-in Local Studio brand", async () => {
     const [pageSource, apiSource] = await Promise.all([Promise.resolve(moduleGroupSource("pages/admin/settings/appearance-settings-page.tsx")), Bun.file(new URL("../src/services/api/appearance.ts", import.meta.url)).text()]);
 
-    expect(pageSource).toContain("恢复影策默认");
+    expect(pageSource).toContain("恢复默认品牌");
     expect(pageSource).toContain("resetAdminAppearance()");
     expect(pageSource).toContain("已上传文件仍保留在存储资源中");
     expect(apiSource).toContain('http.delete<{ setting: AdminAppearance }>("/admin/settings/appearance")');

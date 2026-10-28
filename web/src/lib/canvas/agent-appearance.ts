@@ -83,7 +83,7 @@ export function suggestedAgentAvatarClipStates(manifest: AgentAvatarBundleManife
 }
 
 export const DEFAULT_CANVAS_APPEARANCE: CanvasAppearance = {
-    agentName: tr("影策"),
+    agentName: "Local Studio",
     launcherLabel: "Agent",
     panelTitle: tr("画布助手"),
     welcomeTitle: tr("在这里，和{agentName}让灵感，慢慢成形"),

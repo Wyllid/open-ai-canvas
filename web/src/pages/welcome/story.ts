@@ -1,6 +1,6 @@
 import { tr } from "@/i18n";
 export const chapters = [
-    { id: "opening", label: tr("序幕"), title: tr("影策"), subtitle: tr("让一个故事，从文字走向银幕。"), description: tr("面向 AI 影视与短剧创作的开源工作台。") },
+    { id: "opening", label: tr("序幕"), title: "Local Studio", subtitle: tr("让一个故事，从文字走向银幕。"), description: tr("面向 AI 影视与短剧创作的开源工作台。") },
     { id: "story", label: tr("故事"), title: tr("一念，成故事。") },
     { id: "world", label: tr("角色"), title: tr("让想象，有了面孔。") },
     { id: "shots", label: tr("分镜"), title: tr("字里行间，皆是镜头。") },

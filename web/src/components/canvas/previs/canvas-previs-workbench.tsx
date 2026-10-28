@@ -1320,7 +1320,7 @@ export function CanvasPrevisWorkbench({
                     <X className="size-4" />
                 </button>
                 <div className="previs-desk-brand">
-                    <span className="previs-desk-logo">{tr("影策")}</span>
+                    <span className="previs-desk-logo">Local Studio</span>
                     <span className="previs-desk-brand-title">{tr("预演台")}</span>
                     <span className="previs-desk-brand-sub">{tr("AI 短剧预演")}</span>
                 </div>
