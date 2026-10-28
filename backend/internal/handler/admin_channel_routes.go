@@ -11,6 +11,40 @@ import (
 )
 
 func registerAdminChannelRoutes(r *gin.RouterGroup, svc *service.Service) {
+	// Quick setup for the agent's text model: one form writes a system channel and
+	// its text model. The API key is accepted on write and never returned.
+	r.GET("/admin/agent-model", func(c *gin.Context) {
+		user, err := currentUser(c, svc)
+		if err != nil {
+			failService(c, err)
+			return
+		}
+		setup, err := svc.AgentModelSetup(user)
+		if err != nil {
+			failService(c, err)
+			return
+		}
+		ok(c, gin.H{"setup": setup})
+	})
+	r.PUT("/admin/agent-model", func(c *gin.Context) {
+		user, err := currentUser(c, svc)
+		if err != nil {
+			failService(c, err)
+			return
+		}
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 32<<10)
+		var req service.AgentModelSetupRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			fail(c, http.StatusBadRequest, err)
+			return
+		}
+		setup, err := svc.SaveAgentModelSetup(user, req)
+		if err != nil {
+			failService(c, err)
+			return
+		}
+		ok(c, gin.H{"setup": setup})
+	})
 	r.GET("/admin/channels", func(c *gin.Context) {
 		user, err := currentUser(c, svc)
 		if err != nil {
